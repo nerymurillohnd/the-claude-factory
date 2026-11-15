@@ -70,16 +70,47 @@ class GateEvalResultTest(unittest.TestCase):
                 self.assertEqual(self.run_gate(json.dumps(doc), flag, "0.2")[0], 1)
 
     def test_partial_result_is_not_comparable(self) -> None:
-        """A run stopped by the cost ceiling is left out of the gate."""
-        doc = result(partial=True, partialReason="cost ceiling")
-        self.assertEqual(self.run_gate(json.dumps(doc), "--min-mean-delta", "0.2")[0], 2)
+        """A suite that didn't finish is left out of the gate, whatever the documented reason."""
+        for reason in ("cost_ceiling", "interrupted", "auth_failed"):
+            with self.subTest(reason=reason):
+                doc = result(partial=True, partialReason=reason)
+                code, out = self.run_gate(json.dumps(doc), "--min-mean-delta", "0.2")
+                self.assertEqual(code, 2)
+                self.assertIn(f"partial result ({reason})", out)
 
-    def test_run_error_is_not_comparable(self) -> None:
-        """A run that ended on an API error makes the result not comparable."""
-        case = {"name": "demo", "arms": {"with": [{"error": "429"}], "without": []}}
+    def test_timed_out_run_still_gates_on_mean_delta(self) -> None:
+        """A run error doesn't imply score 0: the gate still applies and the error is a warning."""
+        timed_out = {
+            "name": "demo",
+            "aggregates": {"delta": 0.25},
+            "arms": {"with": [{"error": "timed out after 300s"}], "without": [{"score": 0.75}]},
+        }
+        code, out = self.run_gate(json.dumps(result(cases=[timed_out])), "--min-mean-delta", "0.2")
+        self.assertEqual(code, 0)
+        self.assertIn("warning: demo [with run 1] error: timed out after 300s", out)
+        low = result(cases=[timed_out], aggregates={"overallScore": 0.5, "meanDelta": 0.1})
+        self.assertEqual(self.run_gate(json.dumps(low), "--min-mean-delta", "0.2")[0], 1)
+
+    def test_mock_abort_is_not_comparable(self) -> None:
+        """A run a mock aborted scores 0 with error null, so the result is left out of the gate."""
+        aborted = {"server": "db", "tool": "query", "reason": "expect failed"}
+        case = {"name": "demo", "arms": {"with": [{"error": None, "aborted": aborted}]}}
         code, out = self.run_gate(json.dumps(result(cases=[case])), "--min-mean-delta", "0.2")
         self.assertEqual(code, 2)
-        self.assertIn("demo [with run 1] error: 429", out)
+        self.assertIn("demo [with run 1] aborted by mock db/query: expect failed", out)
+
+    def test_skipped_paid_graders_is_not_comparable(self) -> None:
+        """A run whose judge graders the cost ceiling skipped has a score that isn't comparable."""
+        case = {"name": "demo", "arms": {"without": [{"skippedPaidGraders": True}]}}
+        code = self.run_gate(json.dumps(result(cases=[case])), "--min-mean-delta", "0.2")[0]
+        self.assertEqual(code, 2)
+
+    def test_one_arm_result_fails_a_delta_gate(self) -> None:
+        """A one-arm result has no meanDelta, so a requested delta gate fails, never passes."""
+        doc = result(aggregates={"overallScore": 1.0, "casesPassed": 1, "casesTotal": 1})
+        code, out = self.run_gate(json.dumps(doc), "--min-mean-delta", "0.2")
+        self.assertEqual(code, 1)
+        self.assertIn("no meanDelta", out)
 
     def test_unreadable_file_exits_3(self) -> None:
         """Text that is not a JSON object is not an eval result."""

@@ -21,15 +21,23 @@ status=$?
 case "${status}" in
   0) ;;
   1)
-    echo "eval failed: a case below threshold, a load error, or a run that ended on an API error; read stderr and cases[].arms.*[].error" >&2
+    echo "eval failed: a case below threshold, a case file that failed to load, no cases found, a run that couldn't start, an untrusted plugin directory, an invalid option, an unwritable --json result, or a run that ended on an API error (scored 0 without grading, baseline runs included); read stderr and cases[].arms.with[].error and cases[].arms.without[].error" >&2
     exit 1
     ;;
   2)
     echo "partial run (cost ceiling or rejected credential); result marked partial: true, not used for the gate" >&2
     exit 2
     ;;
+  130)
+    echo "eval interrupted (exit 130); partial results were written, not used for the gate" >&2
+    exit 130
+    ;;
+  143)
+    echo "eval terminated (exit 143), such as by a CI timeout" >&2
+    exit 143
+    ;;
   *)
-    echo "eval interrupted or terminated (exit ${status})" >&2
+    echo "eval ended with an undocumented exit ${status}" >&2
     exit "${status}"
     ;;
 esac

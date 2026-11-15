@@ -12,10 +12,15 @@ Usage:
 Exit codes:
   0  every requested gate passed
   1  a gate failed, or a delta gate was requested on a one-arm result
-  2  the result is not comparable (partial run, judge graders skipped by the
-     cost ceiling, or a run that errored or a mock aborted, which scores 0 and
-     skews the delta); leave it out of trends
+  2  the result is not comparable: the suite didn't finish (partial), a mock
+     aborted a run (score 0, error null), or the cost ceiling skipped a run's
+     judge graders (skippedPaidGraders); leave it out of trends
   3  the file could not be read as an eval result
+
+A run's non-null error, such as a timeout or a max_turns hit, doesn't imply
+score 0: some of those runs are still graded on what they produced, and a run
+that ended on an API error already makes `claude plugin eval` exit 1. So run
+errors print as warnings on stdout and the gates still apply.
 
 Standard library only. Unknown fields are ignored, as the result format adds
 fields without renaming.
@@ -70,8 +75,9 @@ def as_number(value: object) -> float | None:
     return number if math.isfinite(number) else None
 
 
-def run_problems(cases: list[object]) -> tuple[list[str], bool]:
+def run_problems(cases: list[object]) -> tuple[list[str], list[str], bool]:
     """List run errors and mock aborts; report whether judge graders were skipped."""
+    errors: list[str] = []
     problems: list[str] = []
     skipped_paid = False
     for case_obj in cases:
@@ -82,7 +88,7 @@ def run_problems(cases: list[object]) -> tuple[list[str], bool]:
             for i, run_obj in enumerate(as_list(arms.get(arm)), start=1):
                 run = as_dict(run_obj)
                 if run.get("error"):
-                    problems.append(f"{name} [{arm} run {i}] error: {run['error']}")
+                    errors.append(f"{name} [{arm} run {i}] error: {run['error']}")
                 aborted = as_dict(run.get("aborted"))
                 if aborted:
                     where = f"{aborted.get('server')}/{aborted.get('tool')}"
@@ -91,7 +97,7 @@ def run_problems(cases: list[object]) -> tuple[list[str], bool]:
                     )
                 if run.get("skippedPaidGraders"):
                     skipped_paid = True
-    return problems, skipped_paid
+    return errors, problems, skipped_paid
 
 
 def case_delta_failures(cases: list[object], min_case: float) -> list[str]:
@@ -143,16 +149,18 @@ def parse_args() -> argparse.Namespace:
 
 
 def not_comparable(doc: dict[str, object], cases: list[object]) -> str | None:
-    """Print each run problem, and return why the result can't be gated, or None."""
+    """Print each run error and abort, and return why the result can't be gated, or None."""
     if doc.get("partial"):
         return f"partial result ({doc.get('partialReason')})"
-    problems, skipped_paid = run_problems(cases)
+    errors, problems, skipped_paid = run_problems(cases)
+    for line in errors:
+        out("warning: " + line)
     for line in problems:
         out(line)
     if skipped_paid:
         return "the cost ceiling skipped judge graders in at least one run"
     if problems:
-        return "a run errored or a mock aborted it"
+        return "a mock aborted a run"
     return None
 
 

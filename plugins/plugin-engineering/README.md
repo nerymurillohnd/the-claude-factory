@@ -49,13 +49,19 @@ Plugin Engineering gives Claude the official documentation for running a public 
 
 ## 📋 Prerequisites
 
-| Tool        | Minimum version | Check               |
-| :---------- | :-------------- | :------------------ |
-| Claude Code | 2.1.295         | `claude --version`  |
-| curl        | any             | `curl --version`    |
-| Python 3    | any             | `python3 --version` |
+| Tool                                                      | Minimum version | Check               |
+| :-------------------------------------------------------- | :-------------- | :------------------ |
+| Claude Code                                               | 2.1.295         | `claude --version`  |
+| curl                                                      | any             | `curl --version`    |
+| Python 3                                                  | any             | `python3 --version` |
+| git (optional; if installed, eval runs need this version) | 2.31            | `git --version`     |
+| bubblewrap (Linux, for eval suites that grant Bash)       | —               | `bwrap --version`   |
+| socat (Linux, for eval suites that grant Bash)            | —               | `socat -V`          |
+| Claude Code docs MCP server (recommended)                 | —               | `claude mcp list`   |
 
 The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux. Python 3 is needed only for the eval gate script, when you gate a CI job on eval results.
+
+git matters only when you run `claude plugin eval`: with a git older than 2.31 on your `PATH`, the command stops before running any case; without git, it runs normally. Eval suites that grant Bash run every command in Claude Code's OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`. The docs server is Anthropic's official docs MCP server: the skills carry dated copies of the official pages and send Claude to the live page when a copy is missing a section or may be outdated, and the server lets Claude search and read that page instead of recalling it. You add it once; the plugin doesn't install it.
 
 ### 🤖 Claude Code
 
@@ -151,6 +157,129 @@ sudo dnf install python3
 ```bash
 python3 --version
 ```
+
+### 🌿 git
+
+<details>
+<summary>🍏 <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>Git PPA (latest stable)</b> — Ubuntu</summary>
+
+```bash
+sudo add-apt-repository ppa:git-core/ppa
+sudo apt update
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+
+```bash
+git --version
+```
+
+### 📦 bubblewrap and socat
+
+Needed on Linux only, and only for eval suites that grant Bash.
+
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install bubblewrap socat
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install bubblewrap socat
+```
+
+</details>
+
+### 📖 Claude Code docs server
+
+Run this once in your terminal, not inside a session. `--scope user` makes it available in every project:
+
+<details>
+<summary>💻 <b>Claude Code</b> — any platform</summary>
+
+```bash
+claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp
+```
+
+</details>
+
+Check it; `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
+
+```bash
+claude mcp list
+```
+
+Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses. Without the server, Claude reads the live pages with its own web tools instead.
+
+In Claude, add it as a custom connector instead:
+
+1. On a Pro or Max plan: **Customize** → **Connectors** → **+ Add** → **Add custom connector**.
+2. Enter a name such as `Claude Code Docs` and the URL `https://code.claude.com/docs/mcp`, select **Continue**, check the detected settings and select **Continue** again.
+3. Choose **No sign in** under **Authentication**, then select **Add**.
+
+On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
 ## 📥 Installation
 
@@ -270,7 +399,7 @@ Our eval job passes even when the plugin stopped helping. Make it fail then.
 
 - **Hooks:** none. The plugin ships skills and their reference files, plus what the `plugin-testing-and-debugging` skill gives you for evals: the gate script `gate_eval_result.py` and the templates `ci-evals.sh` (a CI step) and `fixture.sh` (an eval case's workspace setup). None of them runs on its own: you, Claude at your request, or your CI run them.
 - **MCP servers:** none.
-- **Network:** none from the plugin itself. When Claude checks whether something changed in a newer Claude Code release, the skill tells it to download the public Claude Code changelog (`raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`) with `curl` to a temporary file, read only the releases it needs, and delete the file; or to read the live Claude Code docs (`code.claude.com`) and release notes with Claude's own web tools. Nothing about you is sent there.
+- **Network:** none from the plugin itself. When Claude checks whether something changed in a newer Claude Code release, the skill tells it to download the public Claude Code changelog (`raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`) with `curl` to a temporary file, read only the releases it needs, and delete the file; or to read the live Claude Code docs (`code.claude.com`) and release notes with Claude's own web tools, or through the Claude Code docs server when you added it. Nothing about you is sent there.
 - **Commands run:** only the `claude plugin` commands your task needs, such as `claude plugin validate --strict` after Claude changes plugin files, and `python3 gate_eval_result.py` when you ask Claude to gate an eval result, through Claude's Bash tool and its usual permission prompts. The skill tells Claude to confirm before a command that deletes data, such as `claude plugin marketplace remove` or `claude plugin uninstall`.
 - **Evals:** `claude plugin eval` makes real model calls on your account, billed to your plan or API usage. The skill tells Claude to agree the scope and the cost with you before the first run.
 - **Files written:** none by the plugin itself. Claude creates or changes plugin and marketplace files only when your task asks for it, through its usual edit permission prompts.

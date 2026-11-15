@@ -77,6 +77,22 @@ class CiEvalsTest(unittest.TestCase):
         """A partial eval run keeps its own exit 2."""
         self.assertEqual(self.run_step(str(GATE), stub_exit=2)[0], 2)
 
+    def test_failing_interrupted_and_terminated_runs_pass_through(self) -> None:
+        """Exits 1, 130 and 143 reach CI unchanged, and the gate never runs on that result."""
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "gate-ran"
+            spy = Path(tmp) / "spy_gate.py"
+            _ = spy.write_text(
+                f"from pathlib import Path\n_ = Path({str(marker)!r}).write_text('ran')\n",
+                encoding="utf-8",
+            )
+            for stub_exit in (1, 130, 143):
+                with self.subTest(stub_exit=stub_exit):
+                    code, err = self.run_step(str(spy), stub_exit=stub_exit)
+                    self.assertEqual(code, stub_exit)
+                    self.assertNotEqual(err, "")
+                    self.assertFalse(marker.exists())
+
 
 if __name__ == "__main__":
     _ = unittest.main()

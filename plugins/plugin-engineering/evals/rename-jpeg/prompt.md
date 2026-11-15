@@ -1,7 +1,7 @@
 ---
 description: "Unrelated shell task"
 tags: [trigger, should-not-trigger, effort-low]
-max_turns: 4
+max_turns: 10
 model: claude-sonnet-5-5
 timeout_seconds: 180
 allowed_tools: [Read, Glob, Grep, Skill]

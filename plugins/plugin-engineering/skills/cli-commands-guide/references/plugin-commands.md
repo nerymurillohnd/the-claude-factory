@@ -356,7 +356,7 @@ Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-eva
 `claude plugin eval [target] [options]`. Runs a plugin's eval cases and reports scored results. Requires Claude Code v2.1.269 or later. Case format, graders, results and CI usage: `https://code.claude.com/docs/en/plugin-evals.md`.
 
 - Each case is a prompt plus graders, run several times in an isolated session with only the target plugin loaded, and by default also without the plugin (the baseline arm).
-- Cases: `<eval dir>/**/case.yaml`, or `prompt.md` + `graders/*.md`.
+- A case is a directory under the eval directory that holds a `prompt.md`, a `case.yaml`, or both, and at least one grader, as a `graders/<name>.md` file or a `graders:` entry in `case.yaml`; a case without one fails to load. To group cases, nest them under a directory that isn't itself a case.
 - It runs the plugin and its suite on your machine, as you. Only evaluate plugins you trust: sandboxing is not a guarantee, and a bundled suite passing is not a security vetting. The first run in an untrusted plugin directory asks you to confirm.
 
 Target (optional, defaults to the current directory):
@@ -365,40 +365,42 @@ Target (optional, defaults to the current directory):
 - An installed plugin as `name` or `name@marketplace`.
 - `name@skills-dir`.
 
-Put the target before `--tag`, `--allow-tools` and `--json`. Each of these takes the words that follow it as its value, so a target written after one of them is read as a tag, a tool name or the JSON output path.
+Put the target before `--tag`, `--allow-tools` and `--json`. The first two take a list and `--json` takes an optional path, so a target written after one of them is read as a tag, a tool name or the JSON output path.
 
-Options (full set on binary 2.1.321):
+Options (the full set in `claude plugin eval --help` on 2.1.325; where the help text and the docs page differ, the page wins and the help is quoted as such):
 - `--runs <n>`: runs per case in each arm. Default: each case's `runs`, else `3`.
 - `-j, --concurrency <n>`: agent runs at once, `1` to `8`. Default `1`. Each run is a full claude child on your credential; they share one rate limit.
 - `--model <model>`: model for the agent under test. Default: each case's `model`, else `ANTHROPIC_MODEL` if set, else Claude Code's default.
-- `--judge-model <model>`: model for `llm` and `baseline` graders. Docs: the model for background tasks; binary 2.1.319 help: `haiku`.
-- `--ablation <mode>`: `none` or `with-without`. Binary 2.1.319: default `with-without` whenever a plugin resolves (by name or from the target path), `none` when nothing does; under `with-without`, graders marked with-only, including `tool_used: Skill`, are a plugin-fired indicator rather than part of the score. Docs: decided per case.
+- `--judge-model <model>`: model for `llm` and `baseline` graders. Default: the model Claude Code uses for background tasks (the `--help` text on 2.1.325 names `haiku`).
+- `--ablation <mode>`: `none` or `with-without`. Default: decided per case. A case runs both arms unless `--ablation none` is passed, the case resumes a transcript through `context.history_file` and the target is a path, or no plugin was found for the case with a path target. In a two-arm run, `tool_used: Skill` graders, `mock_calls` graders on the plugin's own mocked servers, and graders marked `arm: with-only` are plugin-fired indicators rather than part of the score, unless every grader in the case is one of them.
 - `--threshold <0..1>`: exit `1` if any case scores below this. Default `1.0`.
-- `--max-cost-usd <usd>`: stop before the next run once spend reaches this, exit `2`, report partial results. Checked before each run launches, so overrun is bounded to runs in flight; when a run breaches, paid graders (`llm`/`baseline`) are skipped while free graders still score it. Default: no limit.
+- `--max-cost-usd <usd>`: a ceiling on the run's list-price cost estimate, not on plan usage. Checked before each run starts; once spent, nothing further starts, and runs already started finish, so spend can pass the ceiling by those runs. If any run is left unstarted, the command exits `2` with partial results. A run whose judge graders the ceiling skipped carries `skippedPaidGraders: true` in the JSON result, and its score isn't comparable. Default: no ceiling.
 - `--allow-tools <tools...>`: grant gated tools beyond the read-only set, such as `Bash`, `Write`, `Edit`, `WebFetch` or `"mcp__plugin_<plugin>_<server>__*"`. Supports `Tool(pattern:*)` syntax.
 - `--disallow-tools <tools...>`: built-in tools kept from Claude in every case even if granted, such as `Agent` or `TaskStop` (changelog 2.1.299; also a `disallowed_tools` case field).
 - `--case <glob>`: filter cases by name glob.
 - `--tag <tag...>`: filter cases by tag (repeatable).
 - `--scaffold`: run each case's `scaffold_script` (author-supplied bash, as you). Default off.
-- `--no-scaffold`: explicitly skip `scaffold_script` (binary 2.1.319).
+- `--no-scaffold`: explicitly skip `scaffold_script`.
 - `--trust-plugin`: assert you trust the plugin's code and suite and skip the first-run trust prompt, for CI. Does not imply `--scaffold`, `--allow-tools` or `--mocks off`.
-- `--mocks <mode>`: `record` or `off`, stand-ins from `<eval dir>/mocks/`. Default `record`. `record`: a plugin server with no mock is not started. `off`: no stand-ins, every real server starts, as you, outside the OS sandbox, its tools gated by `--allow-tools`.
+- `--mocks <mode>`: `record` or `off`, stand-ins from `<eval dir>/mocks/`. Default `record`. `record` answers MCP tool calls from mocks, doesn't start the plugin's real servers, and saves agent-mock answers for replay. `off` ignores mocks and starts the plugin's real MCP servers, as you, outside the OS sandbox, their tools gated by `--allow-tools`.
 - `--allow-real-servers`: with `--mocks record`, also start the plugin's real MCP server processes for servers with no mock (as you, outside the OS sandbox).
 - `--eval-dir <dir>`: directory below the plugin that holds the cases. Default: the manifest's `experimental.evals`, else `evals`. Results go to `<plugin>/<dir>/results/`; for an installed-plugin target, `./<dir>/results/` with this flag, else `./evals/results/`.
-- `--output-dir <dir>`: directory for `aggregate-result.json`. Default `./<eval dir>/results/<timestamp>/`.
-- `--json [path]`: print the result document (prompts, graders, per-run scores) to stdout, or write it to a `.json` path.
+- `--output-dir <dir>`: where `aggregate-result.json` and `report.html` go. Default `<eval dir>/results/<timestamp>/`.
+- `--json [path]`: print the result document to stdout, or write it to a path ending in `.json`. The run is quiet: no progress lines or summary table.
 - `--report <path>`: write the self-contained HTML report to `<path>` instead of the results dir.
 - `--no-publish`: keep the HTML report local; skip publishing it to claude.ai.
-- `--publish-report`: also require publishing the report to claude.ai (already the default when your account supports it); explains why if unavailable (binary 2.1.319).
-- `--keep-temp`: preserve scaffold dirs for debugging.
+- `--publish-report`: publish the report even where it would stay local by default, such as a run a Claude Code session started.
+- `--keep-temp`: keep every run's sandbox directory and print its path, for debugging what Claude produced.
 - `--verbose`: log per-message trace events to the debug log (read them with `--debug-file`).
 
 Exit codes:
 - `0`: the suite passed: every case meets the threshold and nothing else failed the run.
 - `1`: a failing case, a load error, an untrusted plugin directory, a run that ended on an API error (such a run scores 0 without grading since changelog 2.1.299), or another cause listed under Run evals in CI in the evals docs.
-- `2`: a partial run.
-- `130`: interrupted.
-- `143`: terminated.
+- `2`: a partial run: the `--max-cost-usd` ceiling left a run unstarted, or the credential was rejected before or at the first run. `results.json` is still written with `partial: true` and the reason.
+- `130`: interrupted. Partial results are written.
+- `143`: terminated, such as by a CI timeout.
+
+With a `git` older than 2.31 on `PATH`, the command stops before running any case and exits `1` with a message naming the version (since v2.1.283). Without git it runs normally.
 
 ## plugin eval init
 

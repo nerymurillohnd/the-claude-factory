@@ -126,7 +126,7 @@ An interactive Claude Code session then opens. Claude reads the plugin and asks 
 
 When Claude reports that the suite is ready, exit that session with `/exit` or Ctrl+D to return to the shell.
 
-When a Claude Code session is already open at the plugin root, run `claude plugin eval init` from that session instead. Claude runs the command and then asks the user the same questions in that conversation.
+When a Claude Code session is already open at the plugin root, ask Claude there to run `claude plugin eval init` instead. Claude runs the command and then asks the user the same questions in that conversation.
 
 To write a case by hand and see exactly what the files contain, follow [Write a case manually](#write-a-case-manually), then return here to run it.
 
@@ -386,6 +386,7 @@ Usually, run `claude plugin eval .` from the plugin root, which runs every case 
 | A plugin's root directory, such as `.` | Every case under its eval directory, with that plugin loaded |
 | A single `prompt.md` or `case.yaml` file | That case, with its enclosing plugin loaded |
 | An installed plugin by name, `name` or `name@marketplace` | The plugin and the cases in its eval directory, read [in place or from the installed copy](https://code.claude.com/docs/en/plugins/loading.md#in-place-and-copied-plugins). Results are written under `./evals/results/` in your current directory, or `./<dir>/results/` with `--eval-dir` |
+| `name@skills-dir` | The same, for a [skills-directory plugin](https://code.claude.com/docs/en/plugins/loading.md#plugins-shared-through-a-repository) |
 | Omitted | The current directory as a path |
 
 Add `--case <glob>` to filter by case name and `--tag <tag>` to keep cases with any of the given tags.
