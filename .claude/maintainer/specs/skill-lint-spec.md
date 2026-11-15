@@ -43,7 +43,7 @@ Each check has one owner:
   - The frontmatter reference.
   - "Using skill frontmatter outside Claude Code": the six fields; anything else is a hard upload error.
   - Description + `when_to_use` is truncated at 1,536 characters (`skillListingMaxDescChars`).
-  - "Available string substitutions": `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` exist only in plugin skills.
+  - "Available string substitutions": `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` exist only in plugin skills. The skill's Markdown content is substituted when it loads; one backslash escapes an argument placeholder, and nothing escapes a `${CLAUDE_*}` variable (read 2026-11-15 for CA-05 and CA-06).
   - "Inject dynamic context" and "Permission checks on injected commands": an injected command never prompts. Outside auto mode, anything but allow aborts the invocation. `allowed-tools` pre-approves the command.
   - How synced and Cowork skills handle the body.
   - "Characters a skill name can't hold".
@@ -135,6 +135,8 @@ The manifest always lists these.
 | CA-02 | ⚠ | An unscoped `Bash` or `Bash(*)` in `allowed-tools` |
 | CA-03 | ⚠ | A `!` command that the skill's own `allowed-tools` approves (a self-approved injection) |
 | CA-04 | ⚠ | Network or credential signals in scripts (not in Markdown): curl, wget, urllib, requests, sockets, `~/.ssh`, `.env`, `.netrc` |
+| CA-05 | ✗ | An argument placeholder in the SKILL.md body (`$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`) of a skill that declares neither `arguments` nor `argument-hint`. Claude Code replaces it with the skill's arguments when it loads, so a literal such as an awk `$0` or a prompt hook's `$ARGUMENTS` changes meaning. One backslash before the token escapes it; two don't. `!` commands are CA-01's; reference files and frontmatter are never substituted |
+| CA-06 | ⚠ | A path variable (`${CLAUDE_SKILL_DIR}`, `${CLAUDE_PROJECT_DIR}`, and in a plugin skill `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`) written as a name in the SKILL.md body: in prose, or alone in an inline code span, and not followed by `/`. Claude reads the substituted path instead of the name. Code blocks and longer inline spans, such as commands, use it as a value and are not findings; `${CLAUDE_SESSION_ID}` and `${CLAUDE_EFFORT}` exist to be read as values. A warning, because a sentence that means the path is right |
 
 ### Not checked here (owned elsewhere)
 
@@ -162,6 +164,7 @@ scripts/validators/
     ├── rules_portability.py
     ├── rules_scripts.py
     ├── rules_capabilities.py
+    ├── rules_substitutions.py # CA-05, CA-06: text Claude Code replaces when SKILL.md loads
     └── report.py            # table, details, --manifest, --json
 scripts/testers/
 ├── __init__.py
