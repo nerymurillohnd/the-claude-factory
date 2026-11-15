@@ -515,12 +515,27 @@ class CompiledPattern:
         return any(g.match(rel) for g in self.globs)
 
 
+def anchor(pattern: str) -> str:
+    """Return the base-relative glob a `paths` pattern stands for.
+
+    From the pattern table of code.claude.com/docs/en/memory (Path-specific rules): a leading
+    '/' anchors the pattern to the base directory ('/*.md': only the base's own files); a pattern
+    with no '/' matches at any depth ('*.md': anywhere under the base); a pattern with a '/'
+    inside it is relative to the base ('src/components/*.tsx').
+    """
+    if pattern.startswith("/"):
+        return pattern[1:]
+    if "/" not in pattern:
+        return "**/" + pattern
+    return pattern
+
+
 def compile_expansions(expanded: list[str]) -> list[Glob] | None:
     """Compile every expansion of a pattern; None when a bracket expression is invalid."""
     if not all(bracket_is_valid(x) for x in expanded):
         return None
     try:
-        return [compile_glob(x) for x in expanded]
+        return [compile_glob(anchor(x)) for x in expanded]
     except re.error:  # a class re rejects, such as '[z-a]'
         return None
 
@@ -1254,23 +1269,22 @@ def check_pattern(
         )
         findings.append(Finding("error", "glob-invalid-bracket", where, msg))
         return
-    if pat.startswith(("./", "/")):
+    if pat.startswith("./"):
         msg = (
-            f"'{pat}' starts with a path prefix; "
-            "the docs show patterns relative to the base with no prefix"
+            f"'{pat}' starts with './'; the docs show a pattern relative to the base with no "
+            "prefix, or a leading '/' to anchor it to the base"
         )
         findings.append(Finding("info", "glob-leading-slash", where, msg))
     if not any(compiled.matches(rel) for rel in scope.rel_files):
         report_no_match(where, pat, scope, findings)
-    if pat.startswith("*.") and "/" not in pat:
-        deeper_glob = compile_glob("**/" + pat)
-        deeper = sum(1 for rel in scope.rel_files if "/" in rel and deeper_glob.match(rel))
+    if "/" not in pat:
+        deeper = sum(1 for rel in scope.rel_files if "/" in rel and compiled.matches(rel))
         if deeper:
             msg = (
-                f"'{pat}' matches only the base directory; "
-                f"{deeper} file(s) in subdirectories need '**/{pat}'"
+                f"'{pat}' has no '/', so it matches at any depth, including {deeper} file(s) "
+                f"in subdirectories; write '/{pat}' to match only the base directory's own files"
             )
-            findings.append(Finding("info", "glob-root-only", where, msg))
+            findings.append(Finding("info", "glob-any-depth", where, msg))
 
 
 def check_rule(f: InstructionFile, scope: RuleScope, findings: list[Finding]) -> None:

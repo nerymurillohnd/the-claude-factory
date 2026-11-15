@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- The checker now matches a rule's `paths` the way Claude Code documents them. A leading `/` anchors a pattern to the folder that holds `.claude/`: `/package.json` matches only the root file. Before, the checker reported such a pattern as matching no file and said the rule never loads through it. A pattern with no `/`, such as `*.md`, matches at any depth: before, the checker treated it as matching only the root. The skill's references teach the same rules, and the plugin now ships tests for them.
+
 ## [0.1.3] - 2026-11-06
 
 ### Changed
