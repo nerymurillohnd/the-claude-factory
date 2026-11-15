@@ -71,13 +71,20 @@ class EvalGateTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("no meanDelta", out)
 
-    def test_run_error_is_reported(self) -> None:
-        """A run that ended on an API error is printed with its case and arm."""
+    def test_run_error_is_not_comparable(self) -> None:
+        """A run that ended on an API error is printed, and the result is left out of the gate."""
         case = {"name": "demo", "arms": {"with": [{"error": "429"}], "without": []}}
-        doc = _result(cases=[case])
-        code, out = self._run(doc, "--min-mean-delta", "0.2")
-        self.assertEqual(code, 0)
+        code, out = self._run(_result(cases=[case]), "--min-mean-delta", "0.2")
+        self.assertEqual(code, 2)
         self.assertIn("demo [with run 1] error: 429", out)
+
+    def test_mock_abort_is_not_comparable(self) -> None:
+        """An aborted run scores 0 and can inflate meanDelta, so the result is left out."""
+        aborted = {"server": "s", "tool": "t", "reason": "budget"}
+        case = {"name": "demo", "arms": {"with": [], "without": [{"aborted": aborted}]}}
+        code, out = self._run(_result(cases=[case]), "--min-mean-delta", "0.2")
+        self.assertEqual(code, 2)
+        self.assertIn("demo [without run 1] aborted by mock s/t: budget", out)
 
     def test_unreadable_file_exits_3(self) -> None:
         """Text that is not a JSON object is not an eval result."""

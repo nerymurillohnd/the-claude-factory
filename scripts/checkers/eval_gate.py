@@ -5,8 +5,9 @@ Maintainer tooling: run it through `npm run evals:gate`, which uses the project'
 
 `claude plugin eval` never fails on the with-minus-without delta, so the evals workflow reads
 `aggregates.meanDelta` from the result and fails when the plugin stops helping. Exit codes:
-0 the gate passed, 1 it failed, 2 the result is not comparable (partial, or judge graders skipped
-by the cost ceiling), 3 the file is not an eval result.
+0 the gate passed, 1 it failed, 2 the result is not comparable (partial, judge graders skipped
+by the cost ceiling, or a run that errored or a mock aborted, which scores 0 and skews the delta),
+3 the file is not an eval result.
 """
 
 from __future__ import annotations
@@ -110,6 +111,9 @@ def verdict(doc: JsonObject, min_mean_delta: float | None) -> int:
     _ = sys.stdout.write("".join(f"{line}\n" for line in problems))
     if skipped:
         _ = sys.stdout.write("not comparable: the cost ceiling skipped judge graders\n")
+        return EXIT_NOT_COMPARABLE
+    if problems:
+        _ = sys.stdout.write("not comparable: a run errored or a mock aborted it\n")
         return EXIT_NOT_COMPARABLE
     aggregates = field(doc, "aggregates")
     mean = number(field(aggregates, "meanDelta"))
