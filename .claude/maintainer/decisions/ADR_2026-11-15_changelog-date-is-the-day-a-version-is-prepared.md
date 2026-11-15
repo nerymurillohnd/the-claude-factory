@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-11-15_consistency-check-exempts-the-current-version-and-checks-its-date
-superseded-by: none
+superseded-by: ADR_2026-11-15_changelog-date-is-the-day-a-version-is-prepared-and-validate-passes-main
 ---
 
 # A changelog date is the day a version is prepared, and check:consistency no longer compares it with today
