@@ -1,4 +1,0 @@
-schema_version: "1.1"
-name: pinned-version-gate
-context:
-  scaffold_script: fixture.sh

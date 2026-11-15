@@ -1,4 +1,0 @@
-schema_version: "1.1"
-name: adr-superseded
-context:
-  scaffold_script: fixture.sh

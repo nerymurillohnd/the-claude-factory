@@ -1,4 +1,0 @@
-schema_version: "1.1"
-name: batch-note-posttoolbatch
-context:
-  scaffold_script: fixture.sh

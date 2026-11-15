@@ -34,7 +34,7 @@
 ├── .claude-plugin/marketplace.json   # Marketplace catalog: one entry per plugin
 ├── plugins/<plugin>/                 # One self-contained plugin
 │   ├── .claude-plugin/plugin.json    # Plugin manifest
-│   ├── skills/ agents/ commands/ hooks/ tests/ evals/
+│   ├── skills/ agents/ commands/ hooks/ tests/
 │   └── README.md CHANGELOG.md LICENSE NOTICE.txt
 ├── .claude/
 │   ├── CLAUDE.md settings.json
