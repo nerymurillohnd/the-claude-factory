@@ -48,11 +48,21 @@ def _pull_request_paths(text: str) -> set[str]:
     return {path for path in paths if isinstance(path, str)}
 
 
-def _suite_cases(root: Path, name: str) -> list[Path]:
-    """Return the case folders of a plugin's eval suite."""
-    suite = root / "plugins" / name / "evals"
+def _cases_in(suite: Path) -> list[Path]:
+    """Return the case folders of one eval directory: each holds prompt.md or case.yaml."""
     folders = {p.parent for p in [*suite.glob("*/prompt.md"), *suite.glob("*/case.yaml")]}
     return sorted(folders)
+
+
+def _suite_cases(root: Path, name: str) -> list[Path]:
+    """Return the case folders of a plugin's eval suite, the one evals.yml runs."""
+    return _cases_in(root / "plugins" / name / "evals")
+
+
+def _extra_cases(root: Path, name: str) -> list[Path]:
+    """Return the case folders of a plugin's other eval directories (evals-<name>/)."""
+    plugin = root / "plugins" / name
+    return [case for suite in sorted(plugin.glob("evals-*/")) for case in _cases_in(suite)]
 
 
 def _tags(case: Path) -> list[str]:
@@ -84,7 +94,7 @@ def _eval_paths(root: Path, suites: dict[str, list[Path]]) -> Iterator[Finding]:
 
 
 def _effort_tags(root: Path, suites: dict[str, list[Path]]) -> Iterator[Finding]:
-    """PC-14: each case has exactly one known effort tag, or no CI group runs it."""
+    """PC-14: each case has exactly one known effort tag, or no CI group or local run selects it."""
     for cases in suites.values():
         for case in cases:
             efforts = [tag for tag in _tags(case) if tag.startswith("effort-")]
@@ -96,11 +106,13 @@ def _effort_tags(root: Path, suites: dict[str, list[Path]]) -> Iterator[Finding]
 
 
 def eval_findings(root: Path) -> Iterator[Finding]:
-    """Run PC-12 and PC-14 over every listed plugin that has an eval suite."""
+    """Run PC-12 on each listed plugin with an evals/ suite, and PC-14 on all its eval cases."""
     suites = {
         name: cases
         for entry in entries(root)
         if (cases := _suite_cases(root, name := str(entry.get("name", ""))))
     }
     yield from _eval_paths(root, suites)
-    yield from _effort_tags(root, suites)
+    names = [str(entry.get("name", "")) for entry in entries(root)]
+    tagged = {name: suites.get(name, []) + _extra_cases(root, name) for name in names}
+    yield from _effort_tags(root, tagged)

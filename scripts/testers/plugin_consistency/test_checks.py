@@ -342,6 +342,23 @@ class ChecksTest(unittest.TestCase):
             ],
         )
 
+    def test_pc14_covers_extra_eval_directories(self) -> None:
+        """A case in an extra suite such as evals-loading/ needs its effort tag too."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
+            )
+            f.m.write("plugins/demo/evals/ok/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            f.m.write("plugins/demo/evals-loading/none/prompt.md", "---\ntags: [x]\n---\n\nHi.\n")
+            f.m.write(
+                "plugins/demo/evals-loading/good/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n"
+            )
+            found = sorted(str(x) for x in check(f.m.root, offline=True))
+        expected = PC14.replace("plugins/demo/evals/", "plugins/demo/evals-loading/")
+        self.assertEqual(found, [expected.format(case="none", found="none")])
+
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""
         with tempfile.TemporaryDirectory() as tmp:
