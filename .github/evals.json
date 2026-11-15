@@ -1,3 +1,15 @@
 {
-  "project-maintainer": ["--scaffold"]
+  "hook-engineering": [
+    "--scaffold",
+    "--allow-tools",
+    "Write",
+    "Edit",
+    "Bash",
+    "WebSearch",
+    "WebFetch",
+    "WebFetch(domain:code.claude.com)"
+  ],
+  "project-maintainer": [
+    "--scaffold"
+  ]
 }

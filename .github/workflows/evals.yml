@@ -7,7 +7,7 @@ name: Evals
 # start it. workflow_dispatch runs one plugin's whole suite by hand.
 # Each effort group runs on its own: the cases on claude-sonnet-5-5, the judge on claude-opus-5-5,
 # a case passing at 0.8, at most USD 10 per group, and the suite failing when the plugin's mean
-# contribution over no plugin is below 0.2. Every run bills the owner's Claude subscription
+# contribution over no plugin is below 0.2, or below the plugin's own floor in .github/eval-gates.json. Every run bills the owner's Claude subscription
 # through the CLAUDE_CODE_OAUTH_TOKEN secret of the `claude` environment, never an API key. It
 # runs only when the repository variable CLAUDE_EVALS is `enabled`.
 
@@ -16,6 +16,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - plugins/*/evals/**
+      - plugins/hook-engineering/**
       - plugins/plugin-engineering/**
       - plugins/project-maintainer/**
   workflow_dispatch:
@@ -163,8 +164,16 @@ jobs:
             2) echo "::error::partial run: the USD 10 ceiling was hit or the token was rejected"; exit 2 ;;
             *) echo "::error::claude plugin eval ended with exit ${status}"; exit "${status}" ;;
           esac
-          # The delta never changes the exit code above, so gate on it from the result.
-          uv run python scripts/checkers/eval_gate.py "${OUT}/result.json" --min-mean-delta 0.2
+          # The delta never changes the exit code above, so gate on it from the result, at 0.2 or the
+          # stricter floor .github/eval-gates.json sets for this plugin. Fail closed on a bad entry.
+          gate=0
+          min_delta="$(jq -r --arg p "${PLUGIN}" '(.[$p] // 0.2) | if type == "number" and . >= 0.2 then . else error("not a number of at least 0.2") end' \
+            .github/eval-gates.json)" || gate=$?
+          if ((gate != 0)); then
+            echo "::error::.github/eval-gates.json can't be read for ${PLUGIN} (jq exit ${gate})"
+            exit 1
+          fi
+          uv run python scripts/checkers/eval_gate.py "${OUT}/result.json" --min-mean-delta "${min_delta}"
       - if: always() && steps.cases.outputs.count != '0'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
