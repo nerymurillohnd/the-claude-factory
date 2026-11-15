@@ -55,7 +55,9 @@
 
 ### Plugins
 
-Run everything to do with plugins mainly through Claude Code CLI commands.
+All work in this repository, including building and preparing plugins, puts the complete list of plugin commands first.
+
+Use `plugin-engineering:cli-commands-guide` at all times.
 
 - When building a plugin, load and use `plugin-engineering:public-marketplace-dev`.
 - When running or scripting a plugin CLI command, load and use `plugin-engineering:cli-commands-guide`.
