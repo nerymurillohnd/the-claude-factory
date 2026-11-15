@@ -1,0 +1,80 @@
+name: Maintainer toolchain
+description: >-
+  Installs what the maintainer npm scripts need, at the versions the maintainers run: Node from
+  .nvmrc with npm 12, Python from .python-version through uv, the npm and uv locks, the pinned uv
+  tools, ShellCheck, shfmt, actionlint and Claude Code.
+
+runs:
+  using: composite
+  steps:
+    # No npm cache: setup-node's `npm config get cache` fails devEngines on the npm 11 that Node 26
+    # ships, before npm 12 is installed.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+    - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      with:
+        enable-cache: false
+    - name: npm 12, the locks and the uv tools
+      shell: bash
+      run: |
+        set -euo pipefail
+        # devEngines requires npm ^12.2.1; install it outside the checkout, where devEngines applies.
+        (cd "${RUNNER_TEMP}" && npm install -g npm@12.2.1 --no-audit --no-fund)
+        npm ci --no-audit --no-fund
+        # typecheck:ts follows plugin imports into plugin code that needs its runtime packages.
+        for lock in plugins/*/package-lock.json; do
+          [[ -e ${lock} ]] || continue
+          npm ci --prefix "$(dirname "${lock}")" --no-audit --no-fund
+        done
+        uv python install
+        uv sync --locked
+        npm run tools:install
+        # uv puts the tools in ~/.local/bin; link them where every later step finds them.
+        for tool in ruff basedpyright zizmor check-jsonschema; do
+          sudo ln -sf "${HOME}/.local/bin/${tool}" "/usr/local/bin/${tool}"
+        done
+    # The same releases the maintainers run, each checked against its SHA-256.
+    - name: ShellCheck, shfmt and actionlint
+      shell: bash
+      run: |
+        set -euo pipefail
+        bin=/usr/local/bin
+        cd "${RUNNER_TEMP}"
+        get() { curl -sSfL --retry 6 -o "$1" "$2"; echo "$3  $1" | sha256sum --check --strict; }
+        get shellcheck.tar.xz https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz \
+          8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+        tar -xJf shellcheck.tar.xz
+        sudo install -m 755 shellcheck-v0.11.0/shellcheck "${bin}/shellcheck"
+        get shfmt https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64 \
+          76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf
+        sudo install -m 755 shfmt "${bin}/shfmt"
+        get actionlint.tar.gz https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+          8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        tar -xzf actionlint.tar.gz actionlint
+        sudo install -m 755 actionlint "${bin}/actionlint"
+    # Claude Code from Anthropic's signed apt repository, pinned to the build the maintainers run, so
+    # CI and the local checks see the same CLI; bump CLAUDE_CODE_VERSION by hand with the local
+    # upgrade. apt verifies the package against the repository key, and the key is checked against
+    # the fingerprint the setup docs publish
+    # (https://code.claude.com/docs/en/setup#install-with-linux-package-managers). No sign-in:
+    # claude plugin validate, test and install need none.
+    - name: Claude Code
+      shell: bash
+      env:
+        CLAUDE_CODE_VERSION: 2.1.325
+      run: |
+        set -euo pipefail
+        sudo install -d -m 0755 /etc/apt/keyrings
+        sudo curl -sSfL --retry 6 https://downloads.claude.ai/keys/claude-code.asc -o /etc/apt/keyrings/claude-code.asc
+        gpg --show-keys --with-colons /etc/apt/keyrings/claude-code.asc |
+          grep -qx 'fpr:::::::::31DDDE24DDFAB679F42D7BD2BAA929FF1A7ECACE:' ||
+          { echo "unexpected Claude Code signing key" >&2; exit 1; }
+        echo "deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/latest latest main" |
+          sudo tee /etc/apt/sources.list.d/claude-code.list >/dev/null
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq "claude-code=${CLAUDE_CODE_VERSION}-1"
+        installed="$(claude --version)"
+        [[ ${installed} == "${CLAUDE_CODE_VERSION} "* ]] ||
+          { echo "expected Claude Code ${CLAUDE_CODE_VERSION}, got ${installed}" >&2; exit 1; }

@@ -1,0 +1,139 @@
+name: Validate
+
+# The merge gate. On every pull request, and on every push to main, `checks` runs every check that
+# passes today and blocks on any failure; `debt` runs the checks that a logged technical-debt item
+# holds back and never blocks. On a push to main, once `checks` passes, `release` calls release.yml,
+# which tags and publishes each plugin whose current version has no tag yet.
+# A check moves from `debt` to `checks` when its DEBT item closes.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+# A pull request keeps only its newest run. Every push to main gets its own run, never cancelled,
+# so each merged commit is checked and released.
+concurrency:
+  group: validate-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003); `debt` checks them.
+  DEBT_003_PLUGINS: file-tree-pane model-trace project-maintainer tool-ledger turn-meter
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Lint (Python, shell, workflows, GitHub files)
+        run: |
+          npm run lint:python
+          npm run lint:shell
+          npm run lint:workflows
+          npm run lint:github
+      - name: Type check
+        run: npm run typecheck
+      - name: Maintainer script tests
+        run: npm run test:scripts
+      - name: Plugin hook tests
+        run: npm run test:plugins
+      - name: claude plugin validate --strict (plugins outside DEBT-003, the marketplace, .claude)
+        run: |
+          set -euo pipefail
+          for dir in plugins/*/; do
+            name="$(basename "${dir}")"
+            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then continue; fi
+            claude plugin validate --strict "${dir}"
+          done
+          claude plugin validate --strict .
+          npm run validate:claude
+      - name: Mod tests
+        run: npm run validate:mods
+      - name: Consistency
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          case "${EVENT}" in
+            pull_request) npm run check:consistency -- --date-check ;;
+            push) npm run check:consistency -- --main ;;
+            *) npm run check:consistency ;;
+          esac
+      # Each plugin's Release body must build before the merge: release.yml stops at the first
+      # plugin whose notes are missing.
+      - name: Release notes for every plugin
+        run: |
+          set -euo pipefail
+          names="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map((p) => p.name).join(" "))')"
+          for name in ${names}; do
+            npm run --silent release:notes -- "${name}" >/dev/null
+          done
+      - name: Install check for each changed plugin
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "${BASE_SHA}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
+          listed=()
+          for name in ${changed}; do
+            [[ -f plugins/${name}/.claude-plugin/plugin.json ]] && listed+=("${name}")
+          done
+          if ((${#listed[@]} == 0)); then
+            echo "No plugin changed."
+            exit 0
+          fi
+          npm run check:install -- --from local "${listed[@]}"
+
+  debt:
+    name: Debt (non-blocking)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: DEBT-006 — npm run lint:js
+        continue-on-error: true
+        run: npm run lint:js
+      - name: DEBT-005 — npm run lint:frontmatter
+        continue-on-error: true
+        run: npm run lint:frontmatter
+      - name: DEBT-003 — claude plugin validate --strict on the five plugins
+        continue-on-error: true
+        run: |
+          status=0
+          for name in ${DEBT_003_PLUGINS}; do
+            claude plugin validate --strict "plugins/${name}/" || status=1
+          done
+          exit "${status}"
+      - name: DEBT-003 — npm run validate:portable
+        continue-on-error: true
+        run: npm run validate:portable
+      - name: DEBT-003 — npm run validate:hooks-catch
+        continue-on-error: true
+        run: npm run validate:hooks-catch
+
+  release:
+    name: Release
+    if: github.event_name == 'push'
+    needs: checks
+    permissions:
+      contents: write # release.yml creates the tags and the Releases
+    uses: ./.github/workflows/release.yml

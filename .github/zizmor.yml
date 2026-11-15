@@ -1,3 +1,14 @@
 # Findings this repository accepts on purpose, each with its reason. Every other zizmor finding fails
-# npm run lint:workflows. None is accepted today.
-rules: {}
+# npm run lint:workflows.
+rules:
+  # The workflows call this repository's own action and reusable workflow as ./.github/..., which
+  # GitHub documents. zizmor recommends the newer $/... form, but actionlint 1.7.12, which
+  # lint:workflows also runs, rejects it as an invalid action reference.
+  self-repository:
+    ignore:
+      - validate.yml
+  # npm 12.2.1 is installed by its exact version because devEngines requires npm ^12.2.1 and Node 26
+  # ships npm 11; no lockfile can hold the npm that installs the lockfile.
+  adhoc-packages:
+    ignore:
+      - action.yml
