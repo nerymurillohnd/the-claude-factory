@@ -305,6 +305,7 @@ Run this on every README you touched, before your final message.
 - [ ] Every relative link and `#anchor` resolves to a real path or heading; links to files that do not exist yet are reported in the final message.
 - [ ] The file has at least 40 words outside code blocks and at most 500 KiB.
 - [ ] Only the two alerts the template defines are present, and only closed `<details>` blocks are used.
+- [ ] `npx biome check --write plugins/<plugin>/README.md` ran after your last edit, and `npx biome check plugins/<plugin>/README.md` reports no error: Validate fails a pull request on a changed file Biome would reformat.
 - [ ] `claude plugin validate --strict plugins/<plugin>` passes with the README in place.
 - [ ] The final message states what you did, the files, the missing values and the changes other files need.
 
