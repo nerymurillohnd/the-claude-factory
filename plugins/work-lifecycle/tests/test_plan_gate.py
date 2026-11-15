@@ -237,12 +237,42 @@ class PlanGateTest(unittest.TestCase):
             _ = box.write_state(state("running", [task("1")]))
             _ = self.assert_blocks(box.stop(), "status")
 
-    def test_same_pending_after_a_block_hands_control_back(self) -> None:
-        """No progress since the last block: Claude is stuck, so stop blocking."""
+    def test_long_task_keeps_blocking_for_three_continuations(self) -> None:
+        """A task that takes a whole continuation is not mistaken for a stuck loop."""
         with project() as box:
             _ = box.write_state(state("executing", [task("1"), task("2")]))
             _ = self.assert_blocks(box.stop(), "Task 1")
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+
+    def test_three_continuations_without_progress_hand_control_back(self) -> None:
+        """The same pending tasks after three continuations: Claude is stuck, so stop blocking."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1"), task("2")]))
+            for _round in range(3):
+                _ = self.assert_blocks(box.stop(active=_round > 0), "Task 1")
             self.assert_warns(box.stop(active=True), "Task 1")
+
+    def test_new_user_turn_restarts_the_count(self) -> None:
+        """A stop that is not a continuation starts counting again."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1")]))
+            _ = self.assert_blocks(box.stop(), "Task 1")
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+            _ = self.assert_blocks(box.stop(), "Task 1")
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+
+    def test_progress_restarts_the_count(self) -> None:
+        """A task gaining evidence restarts the count for the tasks still pending."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1"), task("2")]))
+            _ = self.assert_blocks(box.stop(), "Task 1")
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+            _ = box.write_state(state("executing", [task("1", recorded=DONE), task("2")]))
+            for _round in range(3):
+                _ = self.assert_blocks(box.stop(active=True), "Task 2")
+            self.assert_warns(box.stop(active=True), "Task 2")
 
     def test_progress_after_a_block_blocks_again(self) -> None:
         """A task finished since the last block: keep gating the rest."""

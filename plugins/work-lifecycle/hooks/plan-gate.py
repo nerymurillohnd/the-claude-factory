@@ -25,6 +25,7 @@ FOLDER = ".work-lifecycle"
 STATUSES = ("planning", "executing", "awaiting-authorization", "done")
 RUNS = ("evidence", "red", "green")
 SESSION_ID = re.compile(r"[A-Za-z0-9_-]{1,128}")
+RELEASE_AFTER = 3
 VALIDATE = "the validate-state.py command of the planning-before-execution skill"
 
 
@@ -170,6 +171,17 @@ def unreadable(event: StopEvent, found: list[str]) -> int:
     )
 
 
+def previous_blocks(memo: Path, signature: str) -> int:
+    """How many blocks in a row named exactly these pending tasks; 0 when none or unreadable."""
+    try:
+        count, _, recorded = memo.read_text(encoding="utf-8").partition("\n")
+    except OSError:
+        return 0
+    if recorded != signature or not count.isdigit():
+        return 0
+    return int(count)
+
+
 def decide(event: StopEvent, data: JsonObject) -> int:
     """Allow stopping, or block while executing tasks lack evidence."""
     memo = event.path.with_suffix(".gate")
@@ -180,17 +192,18 @@ def decide(event: StopEvent, data: JsonObject) -> int:
     if event.busy:
         return 0
     signature = "\n".join(lines)
-    if event.continuing and memo.exists() and memo.read_text(encoding="utf-8") == signature:
+    blocks = previous_blocks(memo, signature) if event.continuing else 0
+    if blocks >= RELEASE_AFTER:
         forget(memo)
         return emit(
             {
                 "systemMessage": (
-                    "work-lifecycle plan gate stopped blocking: no task gained evidence since its "
-                    f"last block. Still pending: {'; '.join(lines)}"
+                    f"work-lifecycle plan gate stopped blocking: no task gained evidence in "
+                    f"{RELEASE_AFTER} continuations. Still pending: {'; '.join(lines)}"
                 )
             }
         )
-    _ = memo.write_text(signature, encoding="utf-8")
+    _ = memo.write_text(f"{blocks + 1}\n{signature}", encoding="utf-8")
     listing = "\n".join(f"- {line}" for line in lines)
     return emit(
         {
@@ -198,9 +211,9 @@ def decide(event: StopEvent, data: JsonObject) -> int:
             "reason": (
                 f"The plan is executing and these tasks have no recorded evidence:\n{listing}\n"
                 f"Run each task's check, record its command and real output in {event.path}, and "
-                "validate the file. If you must wait for the user's authorization, set status to "
-                "awaiting-authorization first; every task needs its evidence before status "
-                "becomes done."
+                "validate the file. If you must stop for the user (a question, a decision or an "
+                "authorization), set status to awaiting-authorization first; every task needs its "
+                "evidence before status becomes done."
             ),
         }
     )
