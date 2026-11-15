@@ -49,5 +49,6 @@ Chosen option: **a per-plugin floor in `.github/eval-gates.json`**, because it e
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | The floor is read per plugin | `jq` on `.github/eval-gates.json` for hook-engineering and plugin-engineering | 2026-11-15: 0.25 and 0.2 | After the file changes |
+| A `null`, `false` or below-0.2 entry fails the job instead of falling back to 0.2 | `jq` with `if has($p) then .[$p] else 0.2 end` on each value (the code review found `// 0.2` fell back on `null` and `false`) | 2026-11-15: 0.25 passes, a missing entry gives 0.2, `null`, `false` and 0.1 error | After the filter changes |
 | The workflow is valid | `npm run lint:workflows` (actionlint, zizmor) | 2026-11-15: no findings | After `evals.yml` changes |
 | A hook-engineering suite gates at 0.25 in CI | The first run with the token and the variable set | pending | After the owner's setup |

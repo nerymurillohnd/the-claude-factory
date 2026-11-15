@@ -167,7 +167,7 @@ jobs:
           # The delta never changes the exit code above, so gate on it from the result, at 0.2 or the
           # stricter floor .github/eval-gates.json sets for this plugin. Fail closed on a bad entry.
           gate=0
-          min_delta="$(jq -r --arg p "${PLUGIN}" '(.[$p] // 0.2) | if type == "number" and . >= 0.2 then . else error("not a number of at least 0.2") end' \
+          min_delta="$(jq -r --arg p "${PLUGIN}" '(if has($p) then .[$p] else 0.2 end) | if type == "number" and . >= 0.2 then . else error("not a number of at least 0.2") end' \
             .github/eval-gates.json)" || gate=$?
           if ((gate != 0)); then
             echo "::error::.github/eval-gates.json can't be read for ${PLUGIN} (jq exit ${gate})"
