@@ -33,7 +33,7 @@ Each rule says what to do and why, so it holds in cases the phases don't name.
 8. Report flaky tests as flaky. A lucky pass is a false pass.
 9. Mock only the slow or external level (network, clock, filesystem outside the project, paid services), mirroring the real structure. Assertions on a mock test the mock.
 10. Leave push, deploys and anything outside the task to the user. Commit at green only as the project's conventions say.
-11. Run the red-green-refactor cycle in the session that writes the code; never delegate it. Test and code share context, and a delegated cycle returns summarized evidence instead of raw output. On high-stakes work, have the `work-lifecycle:plan-verifier` agent check test quality in work mode once the task is done, from the main session, giving it the test files, the code under test and the red and green runs.
+11. Run the whole red-green-refactor cycle in the one session that writes the code, the main session or the subagent given that one task; never split it, such as one agent writing the test and another the code. Test and code share context, and a split cycle returns summarized evidence instead of raw output. On high-stakes work, have the `work-lifecycle:plan-verifier` agent check test quality in work mode once the task is done, from the main session, giving it the test files, the code under test and the red and green runs.
 
 ## Workflow
 

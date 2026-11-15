@@ -414,6 +414,22 @@ class GateRobustnessTest(GateCase):
             sub.mkdir()
             _ = self.assert_blocks(box.stop(changes={"cwd": str(sub)}), "Task 1")
 
+    def test_long_running_shell_or_monitor_does_not_open_the_gate(self) -> None:
+        """A dev server or a monitor never wakes the session, so it never counts as busy."""
+        for kind in ("shell", "monitor"):
+            with self.subTest(kind=kind), project() as box:
+                _ = box.write_state(state("executing", [task("1")]))
+                running = [{"id": "t1", "type": kind, "status": "running", "description": "dev"}]
+                _ = self.assert_blocks(box.stop(background=running), "Task 1")
+
+    def test_work_that_wakes_the_session_allows_pausing(self) -> None:
+        """Subagents, workflows, teammates, cloud sessions and MCP tasks report back."""
+        for kind in ("subagent", "workflow", "teammate", "cloud session", "MCP task"):
+            with self.subTest(kind=kind), project() as box:
+                _ = box.write_state(state("executing", [task("1")]))
+                running = [{"id": "t1", "type": kind, "status": "running", "description": "x"}]
+                self.assert_silent(box.stop(background=running))
+
     def test_missing_background_tasks_still_blocks(self) -> None:
         """An input without background_tasks is not treated as busy."""
         with project() as box:

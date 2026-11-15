@@ -29,6 +29,9 @@ RUNS = ("evidence", "red", "green")
 SESSION_ID = re.compile(r"[A-Za-z0-9_-]{1,128}")
 RELEASE_AFTER = 3
 DONE_MARK = "done"
+# Background work that reports back and wakes the session. A shell command or a monitor can run
+# for good (a dev server, a log tail), so neither counts as a reason to let Claude pause.
+WAKES_SESSION = frozenset({"subagent", "workflow", "teammate", "cloud session", "MCP task"})
 VALIDATE = "the validate-state.py command of the planning-before-execution skill"
 
 
@@ -203,8 +206,13 @@ def read_event(raw: str) -> StopEvent | str:
     return StopEvent(
         path=Path(root) / FOLDER / f"{session}.json",
         continuing=payload.get("stop_hook_active") is True,
-        busy=_is_list(background) and len(background) > 0,
+        busy=_is_list(background) and any(waits_for(task) for task in background),
     )
+
+
+def waits_for(task: object) -> bool:
+    """Whether a background task will report back and wake the session."""
+    return isinstance(task, JsonObject) and task.get("type") in WAKES_SESSION
 
 
 def unreadable(event: StopEvent, found: list[str]) -> int:
@@ -298,9 +306,12 @@ def executing(event: StopEvent, lines: list[str]) -> int:
 def state_exists(path: Path) -> bool | str:
     """Whether a state file is there, a dangling link included; a reason when that can't be told."""
     try:
-        return os.path.lexists(path)
+        _ = os.lstat(path)
+    except (FileNotFoundError, NotADirectoryError):
+        return False
     except OSError as error:
         return f"cannot check the file: {error.strerror}"
+    return True
 
 
 def gate(raw: str) -> int:
