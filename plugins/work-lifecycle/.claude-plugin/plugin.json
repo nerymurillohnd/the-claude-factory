@@ -9,6 +9,7 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/work-lifecycle#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
   "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/work-lifecycle#readme",
   "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
   "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
