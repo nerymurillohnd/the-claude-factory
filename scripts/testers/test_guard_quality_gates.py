@@ -94,6 +94,57 @@ class GuardQualityGatesTest(unittest.TestCase):
         """A suppression the cell didn't have goes to Nery."""
         self.assertEqual(self.notebook("x = 1\n", "x = 1  # type: ignore\n"), (0, "ask"))
 
+    def bash(self, command: str) -> tuple[int, str]:
+        """Run the hook on a Bash call."""
+        return self.guard("Bash", {"command": command})
+
+    def test_bash_writing_a_protected_file_asks(self) -> None:
+        """Bash can write protected files too: redirects, sed -i, cp, scripts and git."""
+        heredoc = "python3 - <<'EOF'\nPath('.github/workflows/validate.yml').write_text('x')\nEOF"
+        commands = (
+            "sed -i 's/a/b/' ruff.toml",
+            "echo x >> .claude/CLAUDE.md",
+            "echo x > 'ruff'.toml",
+            "cp /tmp/x .github/workflows/validate.yml",
+            heredoc,
+            "git checkout -- pyrightconfig.json",
+            "mv a.py .claude/hooks/guard.py",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assertEqual(self.bash(command), (0, "ask"))
+
+    def test_bash_writing_every_file_asks(self) -> None:
+        """A command that rewrites the whole tree reaches protected files without naming them."""
+        commands = (
+            "npx biome check --write .",
+            "ruff check --fix .",
+            "git stash",
+            "git reset --hard",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assertEqual(self.bash(command), (0, "ask"))
+
+    def test_bash_reading_or_writing_elsewhere_passes(self) -> None:
+        """Reads of protected files, and writes to other files, get no decision."""
+        commands = (
+            "cat .claude/settings.json",
+            "git diff -- .github/workflows/validate.yml",
+            "grep -n include pyrightconfig.json",
+            "sed -i 's/a/b/' plugins/demo/package.json",
+            "ruff check --fix scripts/checkers/eval_gate.py",
+            "echo hi > /dev/null",
+            "npm run test:scripts",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assertEqual(self.bash(command), (0, ""))
+
+    def test_bash_without_a_command_blocks(self) -> None:
+        """A Bash call the guard can't read fails closed."""
+        self.assertEqual(self.guard("Bash", {"description": "x"})[0], 2)
+
     def test_unreadable_input_blocks(self) -> None:
         """Input that isn't JSON fails closed with exit 2."""
         done = subprocess.run(
