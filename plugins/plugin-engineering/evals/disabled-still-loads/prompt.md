@@ -1,7 +1,8 @@
 ---
 description: "Debug: a plugin that loads after being turned off"
-tags: [trigger, should-trigger]
+tags: [trigger, should-trigger, effort-low]
 max_turns: 4
+model: claude-sonnet-5-5
 timeout_seconds: 180
 allowed_tools: [Read, Glob, Grep, Skill]
 ---

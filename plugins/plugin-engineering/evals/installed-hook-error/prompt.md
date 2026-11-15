@@ -1,7 +1,8 @@
 ---
 description: "Troubleshoot: a plugin hook error that appears only after a marketplace install"
-tags: [trigger, should-trigger]
+tags: [trigger, should-trigger, effort-low]
 max_turns: 4
+model: claude-sonnet-5-5
 timeout_seconds: 180
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
