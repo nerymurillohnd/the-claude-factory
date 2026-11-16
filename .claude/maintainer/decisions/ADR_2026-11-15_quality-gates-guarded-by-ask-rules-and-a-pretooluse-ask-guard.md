@@ -51,7 +51,7 @@ Chosen option: **Ask rules plus a PreToolUse guard that answers `ask`**, because
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | The guard answers `ask` on protected paths and new suppressions, and stays silent otherwise | 17 synthetic probes, 2026-11-14 | Passed | Any change to the guard |
-| A live session shows the prompt | In a session started in the repository, ask Claude to add a `# noqa` and watch for the prompt | Pending | The next session started in the repository |
+| A live session shows the prompt | In a session started in the repository, ask Claude to add a `# noqa` and watch for the prompt | Not required: the owner dropped the live test on 2026-11-16 | none |
 
 ## More information
 
