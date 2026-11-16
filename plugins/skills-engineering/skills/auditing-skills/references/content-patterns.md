@@ -1,19 +1,18 @@
 # Content patterns
 
-This file teaches you how to audit a skill's examples and output templates, its embedded commands and code, the shape of its content (prose, lists, steps, tables), and its wording. Each section gives you the principle, why it matters, and what to do when you audit.
+This file teaches you how to audit a skill's examples, its embedded commands and code, the shape of its content (prose, lists, steps, tables), and its wording. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 
 - How to use this file
   - Before auditing: establish the context
   - Then, audit area by area
-- 1. Examples and output templates
+- 1. Examples
   - 1.1 When an example earns its place
   - 1.2 How drift is really fixed
-  - 1.3 Where an example or template lives
+  - 1.3 Where an example lives
   - 1.4 How a good example is written
-  - 1.5 Output templates
-  - 1.6 How a skill teaches a "don't"
+  - 1.5 How a skill teaches a "don't"
 - 2. Embedded commands and code inside a skill
   - 2.1 Freedom matched to fragility
   - 2.2 Commands Claude will run
@@ -41,7 +40,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 The prompt you receive carries the results of the mechanical checks your areas use, such as where the body's first 5,000 tokens end or where an inline `!` command is misplaced. Take them as verified and judge what they mean; never measure or run anything yourself. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else.
 
-Audit from the seat of a Claude that loads the skill with no prior context and has to use it. Read every example, template, command and instruction as that Claude would meet it, and ask whether it would know exactly what to do. Wherever it would hesitate, guess, misread, or meet an ambiguity, a friction or a gray area, record a finding under the point of this file it falls under.
+Audit from the seat of a Claude that loads the skill with no prior context and has to use it. Read every example, command and instruction as that Claude would meet it, and ask whether it would know exactly what to do. Wherever it would hesitate, guess, misread, or meet an ambiguity, a friction or a gray area, record a finding under the point of this file it falls under.
 
 ### Before auditing: establish the context
 
@@ -50,11 +49,11 @@ A judgment that's correct for one skill can be wrong for another, so settle thes
 1. **Where the skill lives.** Identify whether it is a personal skill (`~/.claude/skills/`), a project skill (`.claude/skills/`, at any nested level), a skill from an added directory (`--add-dir`), a skill inside a plugin's `skills/` subdirectory, a plugin that packages a single skill at its own root (`SKILL.md` directly at the plugin root, no `skills/` folder), a skill synced from a claude.ai account (which may be synced but not enabled), or a skill delivered through managed or enterprise settings. These differ in real ways — a plugin-root skill's command-name rules aren't a `skills/`-subdirectory skill's, for instance — so don't judge one by the other's rules.
 2. **How the skill gets invoked.** Determine whether it runs directly in a normal session, where it can see the conversation so far, or is forced into a forked subagent (`context: fork`), or is preloaded into a custom subagent's startup context. The last two start with zero conversation history (see §4.4), so hold such a skill to a stricter bar for self-containment.
 3. **Which surface will load it.** Determine whether Claude Code loads it — terminal, IDE, desktop app or a cloud session, including the Claude app's tasks on an account where chat and Cowork are unified — or Cowork on the desktop app of an account not yet unified, or claude.ai chat or the API. Claude-Code-only body syntax (§2.4) is dead weight, or literal garbage text, on a surface that doesn't support it, so judge every such line against the surfaces you found here.
-4. **What the skill is actually trying to do**, from its own description and body. Use this to decide which sections apply. A skill that never embeds a command has nothing to check against §2. A skill with no fixed output format needs no template under §1.5. Apply each section only where the skill's own stated purpose makes it relevant, and never flag an absence the skill never had a reason to fill.
+4. **What the skill is actually trying to do**, from its own description and body. Use this to decide which sections apply. A skill that never embeds a command has nothing to check against §2. Apply each section only where the skill's own stated purpose makes it relevant, and never flag an absence the skill never had a reason to fill.
 
 ### Then, audit area by area
 
-Audit what the skill has, and also what it should have. In each of the four areas, start from the skill's nature and purpose and ask which examples, output templates, commands, snippets, outputs and assets a skill like this one needs to work at its best. Then compare that with what the skill actually contains, and give every item exactly one of these outcomes:
+Audit what the skill has, and also what it should have. In each of the four areas, start from the skill's nature and purpose and ask which examples, commands, snippets, outputs and assets a skill like this one needs to work at its best. Then compare that with what the skill actually contains, and give every item exactly one of these outcomes:
 
 - **Present and optimal.** It is the right pattern for this skill's purpose, written the way this file describes. Record no finding.
 - **Present but wrong.** It violates a rule of this file, misleads Claude, or shouldn't be in the skill at all. Record it as a defect, classify it (see "Classifying findings"), and say whether it must be deleted, rewritten or moved.
@@ -66,7 +65,7 @@ Work only from what is actually written in the skill under audit, never from wha
 
 ---
 
-## 1. Examples and output templates
+## 1. Examples
 
 ### 1.1 When an example earns its place
 
@@ -95,9 +94,9 @@ When you audit:
 
 - Flag an example that covers one narrow case while the instruction around it stays vague. Recommend fixing the ambiguous instruction instead, so the fix generalizes.
 
-### 1.3 Where an example or template lives
+### 1.3 Where an example lives
 
-A short example or template used every single time the skill runs belongs inline in the body. Anything long, or only needed in some cases — a full reference document, a large example collection, an API spec — belongs in a separate file. Such a file costs nothing until Claude opens it, so there's effectively no limit on what can be bundled there; the limit applies only to what loads with every invocation.
+A short example used every single time the skill runs belongs inline in the body. Anything long, or only needed in some cases — a full reference document, a large example collection, an API spec — belongs in a separate file. Such a file costs nothing until Claude opens it, so there's effectively no limit on what can be bundled there; the limit applies only to what loads with every invocation.
 
 The folder matters too. `references/` (or a root-level file such as `examples.md`) is for material Claude reads as guidance. `assets/` is for static resources consumed in producing the output itself — a document template, a logo, a data file. A reading-only example collection in `assets/` costs nothing in Claude Code, but on another Agent-Skills-compliant host the file can be copied or filled in, never read.
 
@@ -131,38 +130,7 @@ Recognize the difference:
 
 When you audit, flag every example with no rule line that says what to imitate, and every example that is abstract instead of concrete.
 
-### 1.5 Output templates
-
-When Claude must produce output in a specific format, the skill must give it a template, never a prose description of the format. A concrete structure is far more reliable to pattern-match against than a described one. How strict the template reads must match how much deviation is actually acceptable:
-
-- A format that must not vary opens with language like "ALWAYS use this exact structure."
-- A format that can flex opens with language like "here's a sensible default — use your judgment."
-
-For a format that must not vary:
-
-> ALWAYS use this exact structure:
-> ```markdown
-> ## Summary
-> ## Findings
-> ## Recommendation
-> ```
-
-For a format that can flex:
-
-> Here's a sensible default — use your judgment:
-> ```markdown
-> ## Summary
-> ## Notes
-> ```
-
-Short templates stay inline in the body. Long ones, or ones only needed in certain cases, go in a separate file referenced from the step that needs them.
-
-When you audit:
-
-- Flag every required output format described in prose, and recommend the template that replaces it.
-- Compare each template's opening words with how much deviation the skill can accept, and flag a mismatch in either direction.
-
-### 1.6 How a skill teaches a "don't"
+### 1.5 How a skill teaches a "don't"
 
 A working skill doesn't teach with paired do/don't examples in its body. Pairing good and bad samples is how documentation *about* skills teaches authors — as this file does — not how a skill talks to Claude. Inside an actual skill, a prohibition is one plain sentence right next to the instruction it limits: "Default the category from the merchant type; ask only if it's ambiguous. Don't paste the full API response." A mistake Claude would otherwise make by default is stated once, concretely, near the top — the pattern a skill's own Gotchas section uses.
 
@@ -274,7 +242,6 @@ No format is restricted in a skill's body. What matters is that the shape matche
 - **A fixed, ordered procedure** (a deployment, a commit flow, any operation where sequence matters) → numbered steps.
 - **Standing knowledge applied across many requests** (conventions, domain facts, style rules) → a bullet list under a heading.
 - **A short, simple procedure** → plain prose is enough; headings and lists belong only where there's enough structure to need them.
-- **A specific output format Claude must match** → a template (see 1.5), never a prose description of the format.
 
 When you audit, name what each block of content is, compare it with the shape it has, and flag every mismatch. Never flag a shape for not following a house style.
 
@@ -396,7 +363,7 @@ When you audit, flag every time-sensitive claim in the main instructions, and re
 
 Some skills enforce a discipline Claude knows and is tempted to skip under pressure, such as writing the test before the code. In those skills, stating the rule isn't enough: Claude finds the workaround the rule didn't close. Each known workaround is closed explicitly, next to the rule, and the thoughts that signal a rationalization are listed so Claude can catch itself. This pattern comes from third-party skill-writing practice, not from official guidance.
 
-The same tool backfires elsewhere. For output that comes out in the wrong shape, or with elements missing, a pile of prohibitions doesn't help; a template (§1.5) or a positive instruction does.
+The same tool backfires elsewhere. For output that comes out in the wrong shape, or with elements missing, a pile of prohibitions doesn't help; a positive instruction that states what the output contains does.
 
 **Open loophole:** "Write code before the test? Delete it."
 
@@ -411,7 +378,7 @@ The same tool backfires elsewhere. For output that comes out in the wrong shape,
 When you audit:
 
 - In a skill that enforces a discipline, check that each known workaround is closed next to its rule and that the rationalizing thoughts are listed. Where they're missing, propose them as an improvement.
-- Flag a list of prohibitions used to fix wrong-shaped output or omitted elements, and recommend the template or positive instruction that replaces it.
+- Flag a list of prohibitions used to fix wrong-shaped output or omitted elements, and recommend the positive instruction that replaces it.
 - Rate findings under this section Medium at most.
 
 ---
@@ -423,8 +390,8 @@ Give every finding four things: the exact file and line(s) in the skill under au
 Classify each defect into one of four levels by its actual consequence. The examples below anchor each level; a finding that doesn't match one verbatim still gets the level its own consequence earns.
 
 - **Critical.** Breaks the skill mechanically, or produces wrong behavior every time, not just suboptimal behavior. For example: an inline `` !`command` `` placed where `!` isn't at the start of a line or after whitespace, so it never fires; an injected command that can exit non-zero with no `|| true`, which aborts the whole skill; an unescaped literal `$` before a digit or an argument name; a plugin path variable read from a script's own shell environment instead of written in the Markdown body, where it never resolves; a zero-exception rule written only as skill text instead of a hook; a task-long instruction worded as a one-time step; a skill meant to run forked or preloaded that assumes conversation history it will never have.
-- **High.** Doesn't break syntax, but produces a silent, inconsistent failure, or defeats what the skill is trying to do. For example: a script with no stated run-or-read instruction, left for Claude to guess; a required exact output format described in prose instead of given as a template; several options presented as equally valid instead of one default with an escape hatch; vague catch-all wording standing in for the skill's specific guidance; a file reference phrased as a generic pointer instead of a conditional trigger; reliance on a skill the user may not have; an example that contradicts the rule it illustrates; a path variable in a reference file, where it never resolves.
-- **Medium.** Costs efficiency, maintainability, or adherence to the pattern, without making the skill wrong. For example: inconsistent terminology for the same concept; a shown command with no pinned version or no stated prerequisite; an example that's abstract instead of concrete; a long example or template left inline instead of moved to a separate file; a directive's strength mismatched, in either direction, to how non-negotiable the rule is; an `@` reference to a file only some runs need; an example longer than it needs to be, or a second example of the same pattern; misapplied discipline hardening.
+- **High.** Doesn't break syntax, but produces a silent, inconsistent failure, or defeats what the skill is trying to do. For example: a script with no stated run-or-read instruction, left for Claude to guess; several options presented as equally valid instead of one default with an escape hatch; vague catch-all wording standing in for the skill's specific guidance; a file reference phrased as a generic pointer instead of a conditional trigger; reliance on a skill the user may not have; an example that contradicts the rule it illustrates; a path variable in a reference file, where it never resolves.
+- **Medium.** Costs efficiency, maintainability, or adherence to the pattern, without making the skill wrong. For example: inconsistent terminology for the same concept; a shown command with no pinned version or no stated prerequisite; an example that's abstract instead of concrete; a long example left inline instead of moved to a separate file; a directive's strength mismatched, in either direction, to how non-negotiable the rule is; an `@` reference to a file only some runs need; an example longer than it needs to be, or a second example of the same pattern; misapplied discipline hardening.
 - **Low.** Cosmetic, or a minor staleness risk, with no real behavior consequence. For example: wording that will go stale left in the main instructions instead of isolated; heading order that could be tightened but doesn't bury anything load-bearing; a tone or grammatical-person inconsistency, which no official source rules on.
 
 ## Improvement opportunities
