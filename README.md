@@ -11,7 +11,7 @@ _Skills · Agents · Hooks · Mods · MCP servers · LSP servers — packaged, v
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-23-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-24-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=for-the-badge&logo=biome)](https://biomejs.dev)
@@ -110,7 +110,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | [⚡ Productivity](#-productivity) | 3 |
 | [🤖 Automation](#-automation) | 1 |
 | [📈 Monitoring](#-monitoring) | 3 |
-| [🧪 Testing & Quality](#-testing--quality) | 3 |
+| [🧪 Testing & Quality](#-testing--quality) | 4 |
 | [🛡️ Security](#️-security) | 1 |
 | [📚 Documentation & Writing](#-documentation--writing) | 2 |
 | [🧠 Language Support](#-language-support) | 4 |
@@ -170,6 +170,7 @@ _Tests, audits, linting and quality gates._
 | [**Plugin Evals**](./plugins/plugin-evals#readme)<br>`plugin-evals@the-claude-factory` | Makes Claude an expert in Claude Code plugin evals: designs eval suites and benchmarks that prove what a plugin or its skills add, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today. Testing and quality for plugins. | 💻 Code · 🖥️ Claude | `0.1.7` | 🎯 Skills |
 | [**Plugin Test Bench**](./plugins/plugin-test-bench#readme)<br>`plugin-test-bench@the-claude-factory` | Testing for Claude Code plugins before release: installs a copy the way your users receive it in a throwaway config, checks it loads, runs your plugin eval suite against that copy, and reviews your evals so they measure what the plugin adds. Quality you can prove. | 💻 Code only | `0.1.4` | 🎯 Skills |
 | [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills against the official best practices and gates them: five validation scripts, four independent reviewers, a cold executor and an adversarial verifier give one report with file-and-line evidence and one verdict, and a gate has Claude audit every skill it creates or changes before it finishes. | 💻 Code · 🖥️ Claude | `0.4.2` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+| [**Skills Engineering**](./plugins/skills-engineering#readme)<br>`skills-engineering@the-claude-factory` | Audits Claude skills wherever they live, from plugins, personal and project folders to claude.ai accounts and URLs: three specialized reviewer agents run in parallel on content patterns, the runtime contract and size limits, check every point against the current official docs, and each returns a report with quoted file-and-line evidence, severity, an exact fix and a verdict. | 💻 Code · 🖥️ Claude | `0.1.0` | 🎯 Skills · 🤖 Agents |
 
 ### 🛡️ Security
 

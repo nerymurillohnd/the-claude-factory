@@ -34,6 +34,7 @@ body:
         - prompt-writer
         - python-lsp-intelligence
         - skill-diagnostics
+        - skills-engineering
         - svelte-development
         - tailwind-development
         - tool-ledger
