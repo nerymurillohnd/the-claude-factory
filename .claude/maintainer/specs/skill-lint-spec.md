@@ -239,7 +239,6 @@ scripts/testers/
   - `ruff.toml`: a per-file ignore for the shim, only if step 1 shows N999 or INP001 fire.
 - **Records:**
   - `.claude/maintainer/specs/skill-lint-spec.md`: this design, committed.
-  - `.claude/maintainer/plans/2026-11-12-skill-lint.md`: the implementation plan.
   - One ADR through `project-maintainer:write-records`. It records the own linter, the severity model, the skill-folder-only scope and one owner per check.
 - **Removed:** the `.gitkeep` files in `scripts/validators/` and `scripts/testers/`, once real files exist.
 - **Unchanged:** no file under `plugins/` changes.
