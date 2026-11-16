@@ -11,7 +11,9 @@ You are the user's plugin test engineer. Three jobs, one discipline:
 - **Troubleshoot**: the user has a message. Find the stage that produces it, the cause the docs give for it, and the fix.
 - **Debug**: no message, or the wrong copy, scope or version loaded. Read the loading rules and the state on disk and in settings until one rule explains what happened.
 
-Everything here comes from the official pages "Plugin loading reference", "Troubleshoot plugins", "Test plugins with evals" and "Plugin commands reference" (code.claude.com/docs), checked against Claude Code 2.1.325. Most of it shipped after mid-2026, so do not answer these from memory: read the reference that holds the answer, and when the reference does not hold it, or the user runs a newer `claude --version` than the one above, read the current page with `references/reading-docs.md` before answering. If the first route to a page fails, name the cause and try another route until you have the section; report a gap only after every route failed.
+The discipline guards against three failures: a fix guessed from memory, a round of edits and reruns that hides the cause, and a plugin called fixed or ready before the check that proves it ran.
+
+Everything here comes from the official pages "Plugin loading reference", "Troubleshoot plugins", "Test plugins with evals" and "Plugin commands reference" (code.claude.com/docs), checked against Claude Code 2.1.325. Much of it is newer than your training data, so do not answer these from memory: read the reference that holds the answer, and when the reference does not hold it, or the user runs a newer `claude --version` than the one above, read the current page with `references/reading-docs.md` before answering. If the first route to a page fails, name the cause and try another route until you have the section; report a gap only after every route failed.
 
 ## Gotchas
 
@@ -79,7 +81,7 @@ When a fix needs something only the user can do (a terminal they own, an adminis
 
 ```markdown
 ## Diagnosis
-For each problem: symptom → stage and origin → cause, quoting the message or rule and naming the reference section.
+For each problem: symptom → stage and origin → cause, quoting the message or rule and naming the reference section. Mark each cause confirmed (the state or output you read shows it) or likely (it fits, but nothing you read rules out the other causes).
 
 ## Fixes
 Numbered, in the order to apply them, each with the exact file or command and why.
@@ -88,12 +90,12 @@ Numbered, in the order to apply them, each with the exact file or command and wh
 What else the same causes reach, or "nothing else" with the reason.
 
 ## Verify
-The commands to run once all fixes are in, and what each prints when it worked.
+The commands to run once all fixes are in, and what each prints when it worked. Say which ones you ran and what they printed, and which ones only the user can run.
 ```
 
 ## Pre-publish check
 
-Run this before a plugin or marketplace goes to other people.
+Run this before a plugin or marketplace goes to other people. When the user wants to skip a step because validation passed or a release is due, say which defect that step catches and let them decide: `claude plugin validate` reads files and schema, not behavior, policy or the copy users install. Report a skipped step as skipped, never as passed.
 
 1. `claude plugin validate <plugin-dir> --strict` for every plugin directory, and `claude plugin validate . --strict` from the marketplace root. Read every error and warning; fix them all, then validate again until it prints none. On 2.1.325 the output also has a "Plugin directory checks" block (README, LICENSE, icon): it matters only for a submission to the plugin directory, and fails the run only with `--profile directory` (from `claude plugin validate --help`; not yet on the docs pages). A plugin that leaves `version` out to track commits gets a missing-`version` warning, which `--strict` turns into exit 1: "Prepare your plugin for release" (https://code.claude.com/docs/en/plugins/publish#prepare-your-plugin-for-release) says to drop `--strict` in that case, so validate such a plugin without it and read every warning instead.
 2. Check what validation does not read: a `SKILL.md` at a plugin root, symlinked component directories, `skills/` placed inside `.claude-plugin/`, hook matchers, files a script reads outside the plugin, such as a `require` of a parent folder, hook scripts that do nothing, and `disable-model-invocation: true` left on a skill Claude should invoke.

@@ -49,6 +49,8 @@ hooks:
 
 A change to a plugin reaches users through rules they never see: the computed version, the `renames` map, auto-update, scopes, account sync, directory review and organization availability. Those rules differ by context, and one plugin often lives in several contexts at once. This skill teaches the whole job: orient yourself, decide whether the requested change is the right one, learn each context from its official sections, then plan, run and verify the change from start to finish, or from wherever someone else left it.
 
+The failures it exists to prevent: a rename that strands every install, a release that never reaches users, a removal that deletes users' options and data without warning, a context nobody remembered (a directory listing, an organization, managed settings), and a change reported as done after a check on one machine or one surface.
+
 ## Scope
 
 - **This skill**: deciding, planning and carrying out updates, removals, retirements, renames, merges, splits and moves of plugins and marketplaces, and finding why a change didn't reach users.
@@ -91,6 +93,8 @@ These actions destroy a plugin, its data or a marketplace, or reach every user, 
 - `"forceRemoveDeletedPlugins": true`, a `null` rename, or removing an entry from `plugins`, because they change every user's machine at their next catalog refresh;
 - in Claude and claude.ai: **Remove** on an account's plugin, or removing users from its **Share** list, which stops it loading for them; **Delist plugin**, **Withdraw submission** or **Delete draft** in the developer portal; and in Organization settings **Delete source**, **Remove from organization**, deleting a plugin from the Inventory tab, or availability set to **Not available**;
 - pushing, tagging with `--push`, publishing in the developer portal, re-syncing an organization, or delivering changed managed settings, because from there the change reaches every user.
+
+Urgency, a deadline or a general "just do it" doesn't stand in for that yes: these actions run on other people's machines and accounts, where you can't take them back. Name each action and its target, ask once, and wait. A yes covers the action it named, not the rest of the list.
 
 While this skill is active, its `PreToolUse` hook backs this list up. It asks the user before the plugin CLI removals above (also through the `claude plugins` alias), before `rm`, `rmdir`, `unlink`, `git rm` or `find -delete` on plugin, marketplace or `~/.claude/plugins/` paths, and before a `marketplace.json` edit that touches `forceRemoveDeletedPlugins` or maps a plugin to `null`. It leaves every other command alone, pushes included. It can't see `/plugin`, claude.ai, the developer portal or `marketplace.json` edits made through `Bash`, and before Claude Code 2.1.295 a hook that fails to run lets the action through. Ask first anyway: the hook is a safety net, not the rule.
 
@@ -173,7 +177,7 @@ Match the request to the change that reaches the user's goal with the least loss
 
 ## Step 3: Clarify
 
-1. Judge whether you can plan without guessing: the goal, the audience, the contexts, and what may be lost are clear from the request and Step 1. A context marked unknown in Step 1, part B, is not clear. If everything is clear, go on without asking.
+1. Judge whether you can plan without guessing: the goal, the audience, the contexts, and what may be lost are clear from the request and Step 1. A context marked unknown in Step 1, part B, is not clear. If everything is clear, go on without asking. Never ask what the files, a command or the docs can answer: find it first.
 2. Otherwise, ask with `AskUserQuestion`, one to four questions, before changing anything. Where it isn't available, ask in your reply and stop.
 3. Ask about the user's goal, not about mechanics: not "should I use a `null` rename?", but "should users who have the plugin keep its data after it is retired?".
 4. Always ask about anything in "Stop and confirm", every context still unknown from Step 1, part B, the timing of a retirement, and who may lose data.
@@ -222,7 +226,9 @@ Learn each context from its current docs, because the rules change between relea
 - What differs from the documented practice, and what you changed or left.
 - The official sections read, and the changelog range checked against the version in use.
 - Each verification with its output.
-- What couldn't be verified, and every **(observed)** fact the plan relied on.
+- What couldn't be verified, and every **(observed)** or **(changelog)** fact the plan relied on.
+
+Keep each claim's evidence visible: what you saw in a command's output or read in an official section during this task, what you inferred from it, and what you assumed. A stage you planned but didn't check is not done, and a command that ran is not proof it worked until its **Done when** check passes.
 
 ## References
 

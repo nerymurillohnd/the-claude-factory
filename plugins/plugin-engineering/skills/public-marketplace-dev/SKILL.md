@@ -7,7 +7,7 @@ description: Builds and maintains a public Claude Code plugin marketplace hosted
 
 The files in `references/` are copies of official pages from the Claude Code docs, the Claude plugin docs on claude.com, the Claude Platform docs and the Claude Help Center, pruned to what matters for plugins that a public GitHub marketplace serves to third parties, who install them on their own machines. These files are not copies: `official-source-validation.md` is the procedure this skill uses to check facts against the release notes, and `reading-docs.md` is how to read a source page's live section. Answer and build from these files instead of from memory.
 
-The work is done when every fact you state or write comes from one of these files or from its live source page, and every version-sensitive fact has passed the validation loop below.
+The work is done when every fact you state or write comes from one of these files or from its live source page, and every version-sensitive fact has passed the validation loop below. The bar is that high because third parties install what this marketplace ships on their own machines: a field a release removed, a setting that no longer loads or a fact taken from memory reaches every one of them at once.
 
 ## Standing rules
 
@@ -26,7 +26,7 @@ The work is done when every fact you state or write comes from one of these file
 - The hooks page is split in two. [references/03-feature-references/hooks.md](references/03-feature-references/hooks.md) holds configuration, handlers, exit codes, JSON output, security and debugging, and opens with the things to know about hooks in plugins. [references/03-feature-references/hooks-events.md](references/03-feature-references/hooks-events.md) holds each event's matcher, input and decision control. Both are trimmed: a line marked **Key facts** replaces a removed example or section and keeps only what it held that is new.
 - Links to other docs pages are absolute URLs to the live site, and some point at sections these copies removed. Follow them when the task needs that section.
 - A line that starts with `> **View the image**` or `> **Read the example**` points to a file in `assets/`. Open it when the section needs what it shows. The index below names each asset with its page.
-- Seven files keep little after pruning, and the index marks each one. For more on their topics, read the source page.
+- Some files keep little after pruning, and the index marks each one. For more on their topics, read the source page.
 - The docs lag the releases, and the copies lag both. A manifest field, a `claude plugin validate` check or a mods API rule can exist only in the changelog for days, and a copy can still describe a setting a release removed. Before writing a new plugin, adding a manifest key, or relying on what `claude plugin validate --strict` accepts, run the validation loop from the copies' baseline release to the newest, then read the live section of the manifest field or component involved. A `> **Live page**` note in a copy names a section that is known to be out of date or missing.
 
 ## Workflow
@@ -61,9 +61,11 @@ The result is a draft with each fact traced to its file and section.
 
 **Step 6: Validate the files.** Only when Step 4 changed plugin or marketplace files: run `claude plugin validate --strict <directory>` on each changed plugin directory and on the marketplace root. It passes when it exits `0` and prints `Validation passed`. On exit `1`, read each error and warning with its path, fix the file, and run it again. Exit `2` means the validator itself failed, such as on an unreadable path. Where the `claude` CLI isn't available, as in claude.ai chat, say that this step was skipped. For the flags and the `--json` report, read `plugin validate` in the `cli-commands-guide` skill, which the standing rules load before this run.
 
-**Step 7: Deliver.** Give the result with the source page URL of each fact, and say which facts the release notes changed.
+**Step 7: Deliver.** Give the result with the source page URL of each fact, and say which facts the release notes changed. Mark each fact by where it came from: the live page, a dated copy, or the changelog only. List every fact you couldn't confirm, and every step you skipped, with the reason.
 
 If Step 5 finds a fact that changed, was removed or can't be confirmed, return to Step 4. If Step 6 fails, return to Step 4.
+
+When the user asks to skip Step 5 or Step 6 to go faster, say which defects that leaves unchecked and let them decide. Deliver the result marked as not validated, never as validated.
 
 ### Validation loop
 

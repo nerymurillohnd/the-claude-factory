@@ -28,6 +28,7 @@ Claude Code ships every few days, and the references can lag the user's version.
 2. Run `claude plugin <subcommand> --help` (or `claude plugin marketplace <subcommand> --help`) for each flag you will pass. A flag missing from `--help` is gone on that version.
 3. For a fact marked "Requires Claude Code vX", "(binary X)" or "(changelog X)", or one the user's output contradicts, download the section its `Official page:` line names, as `<page>.md`, and read it whole (`references/reading-docs.md`). If the download fails, don't stop: name the cause and use another route that file lists, and report a gap only after every route failed.
 4. Tell the user what differs from these references before acting on it. The installed binary wins over the docs, and the newest official source wins over an older one.
+5. In the answer, say where each command fact came from: this build's `--help` or output, a docs section, the changelog, or these references alone. Name what you couldn't check, such as a `/plugin` behavior on a version you can't run. A plausible flag from memory is how a script breaks on the user's machine.
 
 Never write version checks or fallback paths into a script for the user. When a command fails, report its message and exit code, and look the message up on the troubleshooting page.
 
