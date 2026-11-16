@@ -1,6 +1,6 @@
 ---
 name: hook-engineer
-description: Claude Code hooks specialist that designs, writes, audits and debugs hooks in settings.json, hooks/hooks.json or frontmatter. Use for a new hook, a hook audit before release, or a hook that never fires, fires on the wrong calls, or has its block, deny, allow or context ignored.
+description: Use proactively to audit or debug Claude Code hooks in a separate context, or to design or write one from a complete task message, when the result should come back as a report - a hook that never fires, fires on the wrong calls, or has its block, deny, allow or context ignored, or a hook audit before release. Never asks the user questions; to write a hook with the user, use the writing-hooks skill.
 skills:
   - hook-engineering:hook-development
 model: inherit
