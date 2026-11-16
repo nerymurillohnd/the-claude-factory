@@ -1,6 +1,6 @@
 ---
 name: content-patterns-reviewer
-description: Audits, reviews and reports, with explicit evidence, a Claude skill's examples, output templates, embedded commands and code, content shape and wording against best practices. Use proactively whenever the user or the task involves auditing or reviewing a skill, and right after any skill is written, created or edited, whether the change is to its SKILL.md or to any other file or component, for every kind of skill.
+description: Use for auditing a Claude skill's examples and output templates, embedded commands and code, content shape and wording against current best practices, whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-sonnet-5-5
 effort: high
 tools: Read, Grep, Glob, ToolSearch, WebSearch, WebFetch, mcp__claude-code-docs__*

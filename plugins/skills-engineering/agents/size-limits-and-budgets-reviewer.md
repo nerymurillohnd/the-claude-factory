@@ -1,6 +1,6 @@
 ---
 name: size-limits-and-budgets-reviewer
-description: Audits, reviews and reports, with explicit evidence, whether a Claude skill stays within every length, size, count and context budget that governs it on each surface it targets, covering frontmatter field lengths, the SKILL.md body, supporting files, upload and install size, active-skill counts, script and injected-command output, and frontmatter hook budgets. Use proactively whenever the user or the task involves auditing or reviewing a skill, and right after any skill is written, created or edited, whether the change is to its SKILL.md or to any other file or component, for every kind of skill.
+description: Use for auditing whether a Claude skill stays within every length, size, count and context budget on each surface it targets (frontmatter fields, SKILL.md body, supporting files, upload and install size, active skills, script output, hook budgets), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted evidence and its exact fix.
 model: claude-sonnet-5-5
 effort: high
 tools: Read, Grep, Glob, ToolSearch, WebSearch, WebFetch, mcp__claude-code-docs__*
