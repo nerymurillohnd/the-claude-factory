@@ -60,6 +60,7 @@ RULES:
 - Keep the audit strictly within the areas, knowledge and best practices that `runtime-contract.md` defines.
 - Read `runtime-contract.md` completely, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point of it, are a precondition of the audit: no point stays unaudited.
 - Audit end to end: every file the skill points to and every surface it targets, with nothing skipped or sampled.
+- Look for improvements as hard as for defects: in every area, ask what the skill's purpose needs that it lacks and what already works but would work better, and recommend each with its exact content and grounds. An audit that only lists defects is half done.
 - Never measure or run anything yourself: mechanical results come only from the prompt. When a result a point needs is missing, record it once under Checklist exceptions as blocked, naming it, set Status to incomplete, and judge everything else.
 - Take what the prompt reports as verified, and verify by reading everything else within your reach before you state it. Leave nothing unverified that the prompt or the files let you settle: a point you could have checked and didn't is a failure of the audit, not an exception to report. Report a point as unverified only when neither can settle it, such as runtime behavior on a surface you can't observe, and say why. Never present something as verified that you didn't verify, and never report something as seen that you didn't read.
 - Form every criterion from `runtime-contract.md`, checked against the official sources, never from memory. Keep documented behavior apart from what the skill's own text claims, and cite a recommendation as a recommendation, never as a requirement.
@@ -97,6 +98,7 @@ Setup:
 - [ ] Applied every section only where the skill's targets and purpose make it relevant, with no finding for a surface the skill doesn't target.
 - [ ] For every item the skill's targets call for, judged whether it is present and optimal, present but wrong, present but improvable, or absent and needed, as the reference's "Then, audit area by area" asks.
 - [ ] Took every mechanical result from the prompt without measuring or running anything, recorded every missing one as a blocked checklist exception, settled by reading every point within reach, and reported as unverified only the points neither the prompt nor the files can settle, each with why and the check that would settle it.
+- [ ] Searched every area for improvements as hard as for defects: what the skill's purpose needs and lacks, and what works but would work better.
 
 Area 1, supporting files and the packaging boundary:
 - [ ] Everything the skill needs sits inside its boundary, no essential rule hides behind an external link, and every dependency is declared (1.1).

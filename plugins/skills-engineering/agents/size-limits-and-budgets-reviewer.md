@@ -62,6 +62,7 @@ RULES:
 - Keep the audit strictly within the areas, knowledge and best practices that `size-limits-and-budgets.md` defines.
 - Read `size-limits-and-budgets.md` completely, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point of it, are a precondition of the audit: no point stays unaudited.
 - Audit end to end: every file the skill points to and every surface it targets, with nothing skipped or sampled.
+- Look for improvements as hard as for defects: in every area, ask what the skill's purpose needs that it lacks and what already works but would work better, and recommend each with its exact content and grounds. An audit that only lists defects is half done.
 - Never measure or run anything yourself: mechanical results come only from the prompt. When a result a point needs is missing, record it once under Checklist exceptions as blocked, naming it, set Status to incomplete, and judge everything else. Never count characters, lines, tokens or bytes.
 - Take the measurements the prompt reports as measured, and verify by reading everything else within your reach before you state it. Leave nothing unverified that the prompt or the files let you settle: a point you could have checked and didn't is a failure of the audit, not an exception to report. Report a point as unverified only when neither can settle it, and say why. Never present something as verified that you didn't verify, and never report something as seen that you didn't read.
 - Form every criterion from `size-limits-and-budgets.md`, checked against the official sources, never from memory, and cite a recommendation as a recommendation, never as a validation rule.
@@ -99,6 +100,7 @@ Setup:
 - [ ] Applied every section only where the skill's targets and purpose make it relevant, with no finding for a surface the skill doesn't target.
 - [ ] For every item the skill's targets call for, judged whether it is present and optimal, present but wrong, present but improvable, or absent and needed, as the reference's "Then, audit area by area" asks.
 - [ ] Took the measurements from the prompt without counting any myself, recorded every missing measurement as a blocked checklist exception, settled by reading every point within reach, and reported as unverified only the points neither the prompt nor the files can settle, each with why and the check that would settle it.
+- [ ] Searched every area for improvements as hard as for defects: what the skill's purpose needs and lacks, and what works but would work better.
 
 Area 1, frontmatter field lengths:
 - [ ] Every measured field is judged against the gates of the targets that enforce it, and no gate is applied to a target that doesn't (1.1).

@@ -10,6 +10,7 @@ This file teaches you how to audit whether every passage of a skill gives Claude
 - 1. What a skill is for
   - 1.1 The one test every passage answers
   - 1.2 What Claude lacks without the skill
+  - 1.3 What the skill should add
 - 2. Passages that add nothing
   - 2.1 General knowledge
   - 2.2 Behavior Claude already has
@@ -49,7 +50,7 @@ What Claude lacks depends on the skill in front of you, so settle these five poi
 
 ### Then, audit passage by passage
 
-Audit what the skill has and what it should have. Go through every passage of `SKILL.md` and of every file it points to that Claude reads, and give each exactly one of these outcomes:
+Audit what the skill has and what it should have: cutting what adds nothing is half the audit, and finding what Claude lacks and the skill doesn't say is the other half. Go through every passage of `SKILL.md` and of every file it points to that Claude reads, then walk the task the skill covers for what it should add (§1.3), and give each item exactly one of these outcomes:
 
 - **Present and optimal.** It gives Claude something it lacks, and only that. Record no finding.
 - **Present but wrong.** It restates what Claude already knows or does, repeats itself, or misleads Claude where its own default was right. Record it as a defect, classify it (see "Classifying findings"), and say whether it must be deleted or rewritten.
@@ -57,7 +58,7 @@ Audit what the skill has and what it should have. Go through every passage of `S
 - **Absent, and the skill's purpose needs it.** Claude would fail at a point of the task the skill covers, and the skill is silent. Record it as an improvement opportunity: say where it belongs, what it should contain, and the point of this file it rests on.
 - **Absent, and the skill's purpose doesn't need it.** Record no finding.
 
-Work only from what is written in the skill. If you have no passage to point to, you have no finding.
+Work only from what is written in the skill. If you have no passage to point to, you have no finding; for a gap, point to the step where it belongs.
 
 ---
 
@@ -90,13 +91,30 @@ The content that earns its place is what Claude can't know or infer without the 
 When you audit:
 
 - Confirm that each passage you keep falls in one of these, and name which one when it is not obvious.
-- Flag a skill that should carry one of these for its purpose and doesn't, such as a skill about this repository's release process that never names the release command or its order.
 
 Recognize the difference:
 
 **Adds nothing:** "PDF (Portable Document Format) files are a common file format that contains text, images and other content. To extract text, you'll need a library."
 
 **What Claude lacks:** "Use pdfplumber for text extraction. For scanned documents, fall back to pdf2image with pytesseract."
+
+### 1.3 What the skill should add
+
+A skill is written to close the gap between what Claude knows and what the task needs. A skill that only avoids waste can still leave Claude failing where it is silent, so look for those gaps as hard as for waste: each one is knowledge Claude lacks, at a step where it acts on it.
+
+When you audit:
+
+- Walk the task the skill covers step by step, and at each step ask what Claude needs there that it can't know or infer on its own, by the categories of §1.2.
+- Look first where Claude is most likely to be wrong: tools and platforms whose versions, limits, fields and defaults change; choices of this project or organization; facts about the environment that defy a reasonable assumption; and points where several tools or approaches would work and only one is right here.
+- Recommend each addition at the step that needs it, with its content written out and its grounds in the skill's purpose. Verify every fact you propose against its current official source.
+- When reading can't confirm that Claude would fail without the addition, recommend it as unverified, with the baseline comparison that would settle it (§4.1).
+- Never propose an addition the skill's purpose doesn't call for, and never one that is general knowledge or default behavior (§2).
+
+Recognize the difference:
+
+**Silent where Claude would fail:** "Bump the version, then tag the release."
+
+**What Claude lacks, at the step:** "Bump the version only in `plugin.json`; the catalog carries none. Tags take the form `<plugin>--v<version>`."
 
 ## 2. Passages that add nothing
 
