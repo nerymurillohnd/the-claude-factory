@@ -103,7 +103,7 @@ Setup:
 - [ ] Searched every area for improvements as hard as for defects: what the skill's purpose needs and lacks, and what works but would work better.
 
 Area 1, frontmatter field lengths:
-- [ ] Every measured field is judged against the gates of the targets that enforce it, and no gate is applied to a target that doesn't (1.1).
+- [ ] Every measured field is judged against the gates of the targets that enforce it, no gate is applied to a target that doesn't, and a `description` past the recommended size but within its gate is reported as an improvement, not a defect (1.1).
 - [ ] The description's key use case sits before the measured listing cut, and a plugin's many long descriptions are judged as a risk to the shared listing budget, with no `skillOverrides` fix offered to the author (1.2).
 
 Area 2, body size:

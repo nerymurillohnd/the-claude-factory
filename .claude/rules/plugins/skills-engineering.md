@@ -89,5 +89,4 @@ Follow the docs-maintenance skill's New plugin event, in its order:
 ## Open decisions
 
 - `SKILL.md` uses `argument-hint`, a Claude Code-only field. Confirm with a test upload to Claude that a plugin skill keeps it.
-- The help center gives `description` a 200-character maximum for a claude.ai skill upload while the platform docs give 1,024; the size-limits reference reports it as unverified until a test upload settles it.
 - With the docs MCP server added under another name, or as a Claude connector (`mcp__claude_ai_<connector>__*`), the reviewers' `tools` list doesn't reach it, and they fall back to WebSearch and WebFetch.

@@ -63,7 +63,7 @@ Work only from what the skill and the measurements actually show, never from an 
 The Agent Skills spec and every upload surface validate the frontmatter; a field over its length rejects the whole upload:
 
 - **`name`:** 1–64 characters.
-- **`description`:** 1–1,024 characters. The help center's article on creating custom skills gives a 200-character maximum for a claude.ai upload, while the Claude Code docs say claude.ai uploads follow the spec; for a claude.ai target, report a description between 201 and 1,024 characters as unverified, with a test upload as the check that settles it.
+- **`description`:** 1–1,024 characters. Recommended: keep `name` and `description` together within about 100 tokens, the figure the Skills overview gives for a skill's metadata, which is roughly 400 characters (the conversion is inferred, not stated by the source).
 - **`compatibility`:** 1–500 characters when present.
 - **`display_name`:** a Skills API field, not a frontmatter field. It may be up to 255 characters and needn't be unique; when omitted, it derives from `name`. The older `display_title` was capped at 64 characters and unique, so its rules don't apply to `display_name`.
 
@@ -71,6 +71,7 @@ When you audit:
 
 - For each measured field, name the targets whose gate it crosses, and flag every crossing on a target the skill is or will be uploaded to.
 - Claude Code enforces none of these lengths. Flag a skill, or its documentation, that cites one against a skill that only runs in Claude Code.
+- Report a `description` past the recommended size, but within 1,024 characters, as an improvement, never as a defect: recommend the cut that keeps the key use case first and the scope boundaries, and drops only what doesn't help decide when to use the skill.
 
 ### 1.2 The Claude Code skill listing
 
