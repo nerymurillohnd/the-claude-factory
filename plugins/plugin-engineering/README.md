@@ -46,15 +46,15 @@ Plugin Engineering gives Claude four skills for the whole life of a plugin that 
 
 ## 📋 Prerequisites
 
-| Tool                                                | Minimum version | Check                    |
-| :-------------------------------------------------- | :-------------- | :----------------------- |
-| Claude Code                                         | 2.1.295         | `claude --version`       |
-| Bash                                                | 3.2             | `bash --version`         |
-| git (optional)                                      | 2.31            | `git --version`          |
-| jq (optional)                                       | —               | `jq --version`           |
-| GitHub CLI, `gh` (optional)                         | —               | `gh --version`           |
-| bubblewrap and socat (optional, Linux)              | —               | `command -v bwrap socat` |
-| Claude Code docs MCP server (optional, recommended) | —               | `claude mcp list`        |
+| Tool                                                | Minimum version | Check                             |
+| :-------------------------------------------------- | :-------------- | :-------------------------------- |
+| Claude Code                                         | 2.1.295         | `claude --version`                |
+| Bash                                                | 3.2             | `bash --version`                  |
+| git (optional)                                      | 2.31            | `git --version`                   |
+| jq (optional)                                       | —               | `jq --version`                    |
+| GitHub CLI, `gh` (optional)                         | —               | `gh --version`                    |
+| bubblewrap and socat (optional, Linux)              | —               | `command -v bwrap socat`          |
+| Claude Code docs MCP server (optional, recommended) | —               | `claude mcp get claude-code-docs` |
 
 The plugin also uses `awk`, `cat`, `curl`, `grep`, `mktemp`, `printf`, `rm` and `sh`, which come with macOS and most Linux distributions.
 
@@ -245,19 +245,43 @@ command -v bwrap socat
 
 ### 📚 Claude Code docs MCP server
 
+The docs server lets Claude search the official Claude Code docs while it works on your plugins. The `migrating-plugins` skill searches it whenever it is in the session. Add it at user scope, so Claude has it in every project on your computer.
+
 <details>
-<summary>💻 <b>claude mcp add</b> — macOS, Linux</summary>
+<summary>💻 <b>User scope (recommended)</b> — every project on your computer</summary>
 
 ```bash
-claude mcp add --transport http claude-code-docs https://code.claude.com/docs/mcp
+claude mcp add --scope user --transport http claude-code-docs https://code.claude.com/docs/mcp
 ```
 
 </details>
 
-Then check it:
+<details>
+<summary>💻 <b>Project scope</b> — shared with your team through the repository</summary>
+
+Run it at the project's root. It writes the server to `.mcp.json`, which you commit, and each teammate approves the server the first time Claude Code loads it.
 
 ```bash
-claude mcp list
+claude mcp add --scope project --transport http claude-code-docs https://code.claude.com/docs/mcp
+```
+
+</details>
+
+<details>
+<summary>💻 <b>Local scope</b> — only you, only the current project</summary>
+
+Local is the default when you leave out `--scope`.
+
+```bash
+claude mcp add --scope local --transport http claude-code-docs https://code.claude.com/docs/mcp
+```
+
+</details>
+
+Then check it, and see which scope it was added at:
+
+```bash
+claude mcp get claude-code-docs
 ```
 
 ## 📥 Installation
@@ -417,8 +441,10 @@ In Claude: **Customize** → **Plugins** → **Plugin Engineering** → its menu
 Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Files Claude wrote into your projects while you worked stay where they are, and so do the tools you installed for it (Bash, git, jq, `gh`, bubblewrap, socat). Remove the docs server, if you added it, with this command:
 
 ```bash
-claude mcp remove claude-code-docs
+claude mcp remove claude-code-docs --scope user
 ```
+
+Use the scope you added it at; without `--scope`, the command removes it from whichever scope holds it.
 
 ## 🧭 Compatibility
 
