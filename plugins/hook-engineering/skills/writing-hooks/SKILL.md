@@ -10,6 +10,18 @@ This skill owns the order of work. For a specific part of it, use the session's 
 - the hook's evals, tests and plugin debugging: `plugin-engineering:plugin-testing-and-debugging`;
 - a mod's hooks module (JavaScript that Claude Code runs in its own process, listed under `modules` in `hooks/hooks.json`): the built-in `plugin-authoring` skill.
 
+## What you are responsible for
+
+You answer for a hook that does what the user needs on their Claude Code version and platform, fails the way its role requires, and coexists with the hooks already there. This skill exists to prevent these failures:
+
+- An event picked by its name that fires at the wrong moment or cadence.
+- The first design that works, when another event, field or handler type does the job more directly.
+- A gate that fails open on a crash, a timeout or input it can't read.
+- A hook that runs on the author's machine and breaks on Windows, an older version or another location.
+- A hook handed over without being run against real inputs.
+
+The work is done when every item of step 7's report has its evidence. A hook lands in a file other people share (project or managed settings, a published plugin) only when the request names that file; otherwise give the merged block and where it goes, and let the user apply it.
+
 ## Workflow
 
 Copy this checklist into your task list. The work is not finished while any item is unchecked; tick each one only with its evidence.
@@ -137,7 +149,7 @@ The goal of every step is the result it names (the full section, the version che
    ```
 
    For exec form, run `command` with its `args` directly. Check that JSON output parses (`jq -e .`) and that each field sits where `hooks#json-output` puts it.
-4. Compare stdout, stderr and the exit code with the expected outcome. Collect every mismatch, in the script and in the configuration, find each cause in the docs, apply all fixes at once, check what else they touch, then rerun only the affected inputs.
+4. Compare stdout, stderr and the exit code with the expected outcome. The hook passes only when every input's actual outcome equals the outcome you wrote in item 1. Collect every mismatch, in the script and in the configuration, find each cause in the docs, apply all fixes at once, check what else they touch, then rerun only the affected inputs.
 5. Confirm in a live session that the hook fires, as `hooks#debug-hooks` describes: `/hooks` lists it under its event, and `claude --debug-file <path>` records a `Hooks:` line for its run. A skill's hooks appear in `/hooks` only after the skill is invoked. Where `/hooks` isn't available, as in a subagent or a `-p` run, use `claude -p --debug-file <path>` with a prompt that triggers the event, and remember that a `-p` run treats the folder as trusted except for a project subagent's frontmatter hooks.
 6. Delete any folder of downloaded docs you created inside the working directory.
 7. Report, with explicit evidence for each claim: the raw output, the file and line, or the docs section as a link with its anchor. Verify everything within reach instead of assuming it.

@@ -9,6 +9,23 @@ A hook runs only when three levels line up: the **event** fires, a **matcher gro
 
 A hook's effect is decided by three things together: its **exit code**, the **shape of its stdout**, and the **event** it runs on. This file holds the workflows, the routing and the rules that cut across them; the references hold the detail.
 
+## What you are responsible for
+
+You answer for whether a hook does what its owner believes it does: it fires on the calls they mean, decides what they intend, and fails the way they need. Hooks fail silently. A matcher that misses, a stray `echo` before the JSON, or a gate that passes on input it can't read all look like working hooks, so a plausible answer without evidence leaves the owner exposed. This skill exists to prevent these failures:
+
+- Choosing or judging an event by its name instead of by when and how often it fires.
+- Trusting the condensed references over the official section and the changelog for the user's version.
+- Reading a hook's output as a decision when Claude Code reads it as plain text, or the reverse.
+- Accepting a gate that passes when it can't read its input, crashes or times out.
+- Naming a cause before the symptom is reproduced or a log line shows it.
+- Calling a hook fixed or clean from reading it, without the linter, the probe and a live trigger.
+
+The work is done when every claim rests on a cited doc section, a file and line, a probe result or a log line, and every claim you couldn't check is labeled unverified, with what it affects. When the user asks to skip a check ("just give me the config"), give the result and name what is unverified: a hook that looks right and fails silently costs them more than the check.
+
+## When a check fails
+
+The goal of each check is the evidence it produces, not the command that was planned. When the linter, the probe, the changelog script or a live trigger fails, first find out why: a missing tool, a hook that is unsafe to run, no network, no interactive session. Then reach the same evidence another way: check the configuration by hand against the same rules, pipe the sample straight to the script, read the changelog page instead of the script's output, or trigger the event in a `claude -p --debug-file <path>` run. Repeat a failing command at most once, and only after a timeout. Report the route you used and why the first one failed; report a gap only when no route remains, with the conclusions it leaves unverified.
+
 ## Sources and freshness
 
 Source of truth: the official pages, starting at [Hook lifecycle](https://code.claude.com/docs/en/hooks#hook-lifecycle), [Configuration](https://code.claude.com/docs/en/hooks#configuration) and [Hook input and output](https://code.claude.com/docs/en/hooks#hook-input-and-output). The references here **condense** those pages; they are not complete. Every section that states hook facts carries a `Docs:` line with the exact official URL, and [docs-map.md](references/docs-map.md) lists every official heading in scope with its URL and how to open it.
@@ -103,6 +120,8 @@ Anything else (block, deny, allow, rewrite, add context, log) is a command or HT
 
 ### Design or write a hook
 
+In the main session, a new hook belongs to the `writing-hooks` skill, which owns that order of work. Use this workflow when an audit or a debug ends in a redesign, and when the `hook-engineer` agent designs or writes a hook from its task message.
+
 Copy this checklist into your task list and tick each step as you finish it; step 8 is a gate, not a formality.
 
 - [ ] **Step 1.** Restate the goal as one sentence: the event, what is judged or run, and what must happen on failure.
@@ -148,6 +167,8 @@ Probe at least two inputs: one that must trigger the block, deny or context, and
 
 ### Audit a hook
 
+An audit tells the owner which hooks will misbehave, under which condition, and what to change, ranked by consequence. An item marked pass without evidence is not a pass: it hides the defect the audit exists to find. The audit is done when every hook in scope has each applicable checklist item marked with its evidence and every finding has a fix. When a check can't run on a hook (unsafe to probe, a missing tool), mark the items it would have proved unverified and say why; never mark them pass.
+
 Copy this checklist into your task list and tick each step as you finish it.
 
 - [ ] **Step 1.** Inventory every hook in scope with its source: settings file (user, project, local, managed), plugin `hooks/hooks.json`, skill frontmatter or subagent frontmatter. `/hooks` lists them with their origin. Note the mods the session loads (`/plugin`).
@@ -157,10 +178,13 @@ Copy this checklist into your task list and tick each step as you finish it.
 
 ### Debug a hook
 
+Debugging finds the one cause that explains the symptom, from evidence, so the fix changes the behavior instead of moving it. A cause named before the symptom is reproduced is a guess, and a guess fixed is a second defect. The debug is done when the same trigger shows the expected log line and outcome; when no live run is possible, give the exact command and the log line to look for, and mark the fix untested.
+
 1. Get the symptom in one line and the Claude Code version.
 2. Reproduce with logging on: `claude --debug-file <path>` (or `/debug` mid-session), then trigger the event once.
 3. Follow [debugging.md](references/debugging.md): collect the configured command and a real input sample, probe it, locate the hook's log lines, classify the symptom, and confirm the cause from the log before proposing a fix.
-4. Fix one cause at a time and re-run the same trigger to show the log line changed.
+4. If the symptom doesn't reproduce, the difference between your run and the user's session is the lead: compare the version, the file the hook loads from, workspace trust, policies, the mods loaded and the input. Don't change a hook you couldn't make fail.
+5. Fix one cause at a time and re-run the same trigger to show the log line changed.
 
 ## Rules that break hooks
 
@@ -245,6 +269,7 @@ For `rm -rf build` it prints one JSON object (`permissionDecision: "deny"` with 
 - Configuration as complete JSON (or YAML frontmatter) the user can paste, never fragments with `...`.
 - Report each finding with the file and line or key path, the rule it breaks, its official URL with anchor, and the fix.
 - One line per decision that is not obvious: what, why, the alternative.
+- Keep what you verified (a doc section, a probe result, a log line) apart from what you infer and what you couldn't check, so the user knows which parts to trust.
 - A **Verified against** line: the docs sections fetched (with date), the changelog range read, and the user's version.
 - A **Sources** list with the doc sections used, each as the URL with its anchor from the docs map.
 - A **Not covered** line naming any out-of-scope part the request touched.

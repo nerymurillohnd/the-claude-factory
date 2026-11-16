@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Fixed
 
-- **hook-engineering** 0.3.1 — the skills and the `hook-engineer` agent find the docs MCP tools by their own names, whatever you named the server, read the docs page's Markdown first and try another way when one fails; the skill and agent descriptions no longer compete for the same requests.
+- **hook-engineering** 0.3.1 — the skills and the `hook-engineer` agent find the docs MCP tools by their own names, whatever you named the server, read the docs page's Markdown first and try another way when one fails; the skill and agent descriptions no longer compete for the same requests; and each now states what it is responsible for, when its work is done, and how it recovers when a check fails.
 
 ## 2026-11-15
 

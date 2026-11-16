@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [0.3.1] - 2026-11-16
 
+### Changed
+
+- `hook-development`, `writing-hooks` and the `hook-engineer` agent now say what they are responsible for, which failures they prevent and when the work counts as done. When a check such as the linter, the probe or the changelog script fails, they find out why and reach the same evidence another way instead of stopping. Audits never mark an unchecked item as passed, debugging doesn't change a hook it couldn't make fail, and a hook goes into a shared settings file or plugin only when you name that file.
+
 ### Fixed
 
 - The skills and the `hook-engineer` agent find the Claude Code docs MCP tools by their own names through tool search, whatever name you gave the server. Before, they looked for the server under the name this README suggests or the name a claude.ai connector gets, so a server you named differently could be missed. They now read each docs section from the page's Markdown first, use the docs server next and WebFetch last, and try another way when one fails before saying the docs could not be read.
