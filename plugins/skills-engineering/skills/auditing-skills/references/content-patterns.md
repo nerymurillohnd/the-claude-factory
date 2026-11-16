@@ -1,6 +1,6 @@
 # Content patterns
 
-This file teaches you how to audit a skill's examples and output templates, its embedded commands and code, the shape of its content (prose, lists, steps, tables), and its wording. Each section gives you the principle, why it matters, and what to do when you audit. Frontmatter and descriptions, file-reference structure, scripts and hooks, evals, and size limits are outside this file: other reviewers own them, so leave them out of your findings.
+This file teaches you how to audit a skill's examples and output templates, its embedded commands and code, the shape of its content (prose, lists, steps, tables), and its wording. Each section gives you the principle, why it matters, and what to do when you audit. Frontmatter and descriptions, file-reference structure, scripts and hooks, evals, size limits, and whether a passage gives Claude anything it lacks are outside this file: other reviewers own them, so leave them out of your findings.
 
 ## Contents
 
@@ -9,7 +9,7 @@ This file teaches you how to audit a skill's examples and output templates, its 
   - Then, audit area by area
 - 1. Examples and output templates
   - 1.1 When an example earns its place
-  - 1.2 When an example shouldn't be there, and how drift is really fixed
+  - 1.2 How drift is really fixed
   - 1.3 Where an example or template lives
   - 1.4 How a good example is written
   - 1.5 Output templates
@@ -24,14 +24,13 @@ This file teaches you how to audit a skill's examples and output templates, its 
   - 3.2 Order and headings
   - 3.3 Tables and tone
 - 4. Wording and semantics
-  - 4.1 Only what Claude lacks
-  - 4.2 When a step explains why, and when it just says what
-  - 4.3 How strong a directive should be
-  - 4.4 Standing instructions
-  - 4.5 Forked and preloaded skills start blind
-  - 4.6 Terminology, clarity, file references
-  - 4.7 Time-sensitive wording
-  - 4.8 Discipline skills: closing loopholes
+  - 4.1 When a step explains why, and when it just says what
+  - 4.2 How strong a directive should be
+  - 4.3 Standing instructions
+  - 4.4 Forked and preloaded skills start blind
+  - 4.5 Terminology, clarity, file references
+  - 4.6 Time-sensitive wording
+  - 4.7 Discipline skills: closing loopholes
 - Classifying findings
 - Improvement opportunities
 - Delivering the report
@@ -49,7 +48,7 @@ Audit from the seat of a Claude that loads the skill with no prior context and h
 A judgment that's correct for one skill can be wrong for another, so settle these four points before you apply any rule. They decide what "correct" means for the skill in front of you.
 
 1. **Where the skill lives.** Identify whether it is a personal skill (`~/.claude/skills/`), a project skill (`.claude/skills/`, at any nested level), a skill from an added directory (`--add-dir`), a skill inside a plugin's `skills/` subdirectory, a plugin that packages a single skill at its own root (`SKILL.md` directly at the plugin root, no `skills/` folder), a skill synced from a claude.ai account (which may be synced but not enabled), or a skill delivered through managed or enterprise settings. These differ in real ways — a plugin-root skill's command-name rules aren't a `skills/`-subdirectory skill's, for instance — so don't judge one by the other's rules.
-2. **How the skill gets invoked.** Determine whether it runs directly in a normal session, where it can see the conversation so far, or is forced into a forked subagent (`context: fork`), or is preloaded into a custom subagent's startup context. The last two start with zero conversation history (see §4.5), so hold such a skill to a stricter bar for self-containment.
+2. **How the skill gets invoked.** Determine whether it runs directly in a normal session, where it can see the conversation so far, or is forced into a forked subagent (`context: fork`), or is preloaded into a custom subagent's startup context. The last two start with zero conversation history (see §4.4), so hold such a skill to a stricter bar for self-containment.
 3. **Which surface will load it.** Determine whether Claude Code loads it — terminal, IDE, desktop app or a cloud session, including the Claude app's tasks on an account where chat and Cowork are unified — or Cowork on the desktop app of an account not yet unified, or claude.ai chat or the API. Claude-Code-only body syntax (§2.4) is dead weight, or literal garbage text, on a surface that doesn't support it, so judge every such line against the surfaces you found here.
 4. **What the skill is actually trying to do**, from its own description and body. Use this to decide which sections apply. A skill that never embeds a command has nothing to check against §2. A skill with no fixed output format needs no template under §1.5. Apply each section only where the skill's own stated purpose makes it relevant, and never flag an absence the skill never had a reason to fill.
 
@@ -75,7 +74,7 @@ An example earns its place when the output's quality depends on seeing one — a
 
 When you audit:
 
-- For each example, ask whether the output would change without it. If it wouldn't, the example doesn't earn its place.
+- Flag a style, level of detail or format the skill describes only in words where the output's quality depends on seeing it, and recommend one example.
 - For any handoff that matters, look for three things together: the format named, the tone set (who the output is for, how it should read), and one real example the author was actually happy with. That one example teaches more about the quality bar than any amount of description, so flag a handoff that lacks it.
 - Flag an example longer than it needs to be to teach, and a second example of a pattern another example already teaches. Every line of an example is paid on every run.
 
@@ -88,15 +87,12 @@ Recognize the difference:
 > You: Searching…
 > [Dispatch subagent → synthesis]
 
-### 1.2 When an example shouldn't be there, and how drift is really fixed
+### 1.2 How drift is really fixed
 
-Comprehensiveness is not a virtue in a skill. A skill that tries to cover every edge case usually hurts more than it helps, because most of those cases are better left to Claude's judgment than written out. The test for every piece of content is one question: would Claude get this specific thing wrong without it? If not, it should be cut.
-
-The test matters most where output varies across runs. The usual mistake is to add an example for the case that just failed. That patch fixes one instance and leaves the underlying ambiguity untouched, and the skill is used across many requests, not just the ones already seen.
+Where output varies across runs, the usual mistake is to add an example for the case that just failed. That patch fixes one instance and leaves the underlying ambiguity untouched, and the skill is used across many requests, not just the ones already seen.
 
 When you audit:
 
-- Flag content that covers edge cases Claude would handle correctly on its own.
 - Flag an example that covers one narrow case while the instruction around it stays vague. Recommend fixing the ambiguous instruction instead, so the fix generalizes.
 
 ### 1.3 Where an example or template lives
@@ -105,7 +101,7 @@ A short example or template used every single time the skill runs belongs inline
 
 The folder matters too. `references/` (or a root-level file such as `examples.md`) is for material Claude reads as guidance. `assets/` is for static resources consumed in producing the output itself — a document template, a logo, a data file. A reading-only example collection in `assets/` costs nothing in Claude Code, but on another Agent-Skills-compliant host the file can be copied or filled in, never read.
 
-Point to these files as §4.6 describes. Name a file that only some runs need as a plain path with its condition, never as an `@` reference: an `@path` in a local skill's body is attached when the skill loads, so the file costs context on every run even when the task never needs it. The docs show this behavior indirectly — they state that a skill synced from claude.ai, in a terminal session, does not attach the files its `@` references name — so treat it as the expected behavior for local skills.
+Point to these files as §4.5 describes. Name a file that only some runs need as a plain path with its condition, never as an `@` reference: an `@path` in a local skill's body is attached when the skill loads, so the file costs context on every run even when the task never needs it. The docs show this behavior indirectly — they state that a skill synced from claude.ai, in a terminal session, does not attach the files its `@` references name — so treat it as the expected behavior for local skills.
 
 Recognize the difference:
 
@@ -204,19 +200,12 @@ A command Claude runs must work as written, every time:
 - **Every placeholder is explained** on the next line (what `<sides>` means, what values are valid).
 - **Every script says whether to run it or read it:** "Run `analyze_form.py` to extract fields" when Claude only needs the result; "See `analyze_form.py` for the field-extraction algorithm" when Claude needs the logic itself.
 - **Every bundled script is listed** in the body with a one-line purpose, and its output format if structured, so Claude never has to discover a script by browsing the folder.
-- **A tool's own help replaces a flag dump.** When a tool has built-in help and the skill doesn't rely on every flag, the skill points to `<tool> --help` and documents only the flags it uses. This applies only to a tool the environment is guaranteed to have; otherwise the install-command point above governs.
 
 Run versus read — the first line needs only the script's output, the second needs its logic:
 
 > Run `analyze_form.py` to extract fields.
 >
 > See `validate_boxes.py` for the field-matching algorithm.
-
-A flag dump versus the tool's own help:
-
-**Lists every flag:** "search-conversations supports --text, --both, --after DATE, --before DATE, --limit N"
-
-**Points to help:** "search-conversations supports several modes and filters; run `search-conversations --help` for them."
 
 For a skill with several scripts, the commands sit directly beneath each script, not scattered through prose. This one runs inside Claude Code, so it uses the skill's directory variable (§2.3):
 
@@ -320,19 +309,7 @@ When you audit:
 
 ## 4. Wording and semantics
 
-### 4.1 Only what Claude lacks
-
-Start from the assumption that Claude is already capable. Every line must earn its place against one test: would Claude get this wrong without it? The lines that remain belong to what's genuinely unknown without the skill — this project's specific conventions, a non-obvious edge case, the exact tool or API to use — not to a restatement of something Claude already reasons about correctly. Once a skill loads, its content stays in the conversation for the rest of the session, so every line is a cost paid repeatedly, not once.
-
-Recognize the difference:
-
-**Bad (redundant — Claude already does this):** "Remember to write clean, readable code with meaningful variable names."
-
-**Good (genuinely unknown without the skill):** "This repo's lint config forbids default exports — use named exports only."
-
-When you audit, apply the test to every passage, and flag each one that restates what Claude already does correctly.
-
-### 4.2 When a step explains why, and when it just says what
+### 4.1 When a step explains why, and when it just says what
 
 Whether a step explains its reasoning or just states the action depends on how much judgment it leaves open:
 
@@ -348,7 +325,7 @@ When you audit:
 - Flag a judgment step that gives Claude no reasoning to decide an unnamed case.
 - Flag a fixed step that spends lines explaining itself.
 
-### 4.3 How strong a directive should be
+### 4.2 How strong a directive should be
 
 The strength of the wording must match how non-negotiable the rule actually is:
 
@@ -365,13 +342,13 @@ When you audit:
 - Compare every directive's strength with the cost of one deviation, and flag a mismatch in either direction.
 - Flag every zero-exception rule that lives only in wording, and recommend the hook.
 
-### 4.4 Standing instructions
+### 4.3 Standing instructions
 
 Because a loaded skill is never re-read (§3.2), an instruction meant to apply throughout the task must say so explicitly — "Run the tests after every edit," never "Run the tests," which reads as a one-time step and gets followed exactly once.
 
 When you audit, find every instruction meant to hold for the whole task, and flag each one worded as a one-time step.
 
-### 4.5 Forked and preloaded skills start blind
+### 4.4 Forked and preloaded skills start blind
 
 A skill run with `context: fork`, or preloaded into a subagent, hands that subagent the skill's full text with zero conversation history — no memory of what's been discussed, no files already read in the main conversation, nothing. Everything the subagent needs has to be written in the skill itself. A reference to "what we discussed earlier," or any reliance on the main conversation, produces nothing there, because the subagent never had it.
 
@@ -381,7 +358,7 @@ A skill run with `context: fork`, or preloaded into a subagent, hands that subag
 
 When you audit a skill that runs forked or preloaded, flag every passage that relies on conversation history or on files read earlier.
 
-### 4.6 Terminology, clarity, file references
+### 4.5 Terminology, clarity, file references
 
 - **Terminology:** one term per concept, used the same way every time it appears. Switching between synonyms for the same thing ("API endpoint," "URL," "route," "path") makes the instructions harder to parse and follow, even where a human reader would find the variation natural.
 - **Clarity:** vague catch-all phrasing — "handle errors appropriately," "follow best practices" — gives Claude nothing concrete to execute, so it falls back to generic behavior. The fix is the specific pattern, edge case or convention that actually applies. When Claude ignores an instruction, treat that as a sign the wording is ambiguous, not that Claude failed to try.
@@ -405,7 +382,7 @@ When you audit:
 - Flag every file reference with no condition.
 - Flag every reference to another skill that doesn't say whether it's required and when, every passage that repeats what that skill already says, and, in a skill distributed to third parties, every reliance on a skill outside its plugin and declared dependencies.
 
-### 4.7 Time-sensitive wording
+### 4.6 Time-sensitive wording
 
 Nothing that will go stale belongs in the main instructions — a current version number, a UI detail that will get redesigned, "the latest" anything. Historical context worth keeping belongs in its own clearly labeled section (for example, "Old patterns"), so it doesn't contaminate the main instructions once it's outdated.
 
@@ -415,7 +392,7 @@ Nothing that will go stale belongs in the main instructions — a current versio
 
 When you audit, flag every time-sensitive claim in the main instructions, and recommend isolating or removing it.
 
-### 4.8 Discipline skills: closing loopholes
+### 4.7 Discipline skills: closing loopholes
 
 Some skills enforce a discipline Claude knows and is tempted to skip under pressure, such as writing the test before the code. In those skills, stating the rule isn't enough: Claude finds the workaround the rule didn't close. Each known workaround is closed explicitly, next to the rule, and the thoughts that signal a rationalization are listed so Claude can catch itself. This pattern comes from third-party skill-writing practice, not from official guidance.
 
@@ -447,7 +424,7 @@ Classify each defect into one of four levels by its actual consequence. The exam
 
 - **Critical.** Breaks the skill mechanically, or produces wrong behavior every time, not just suboptimal behavior. For example: an inline `` !`command` `` placed where `!` isn't at the start of a line or after whitespace, so it never fires; an injected command that can exit non-zero with no `|| true`, which aborts the whole skill; an unescaped literal `$` before a digit or an argument name; a plugin path variable read from a script's own shell environment instead of written in the Markdown body, where it never resolves; a zero-exception rule written only as skill text instead of a hook; a task-long instruction worded as a one-time step; a skill meant to run forked or preloaded that assumes conversation history it will never have.
 - **High.** Doesn't break syntax, but produces a silent, inconsistent failure, or defeats what the skill is trying to do. For example: a script with no stated run-or-read instruction, left for Claude to guess; a required exact output format described in prose instead of given as a template; several options presented as equally valid instead of one default with an escape hatch; vague catch-all wording standing in for the skill's specific guidance; a file reference phrased as a generic pointer instead of a conditional trigger; reliance on a skill the user may not have; an example that contradicts the rule it illustrates; a path variable in a reference file, where it never resolves.
-- **Medium.** Costs efficiency, maintainability, or adherence to the pattern, without making the skill wrong. For example: inconsistent terminology for the same concept; a shown command with no pinned version or no stated prerequisite; an example that's abstract instead of concrete; a long example or template left inline instead of moved to a separate file; a directive's strength mismatched, in either direction, to how non-negotiable the rule is; content restating something Claude already does correctly; an `@` reference to a file only some runs need; a full flag listing where the tool's help would do; an example longer than it needs to be, or a second example of the same pattern; misapplied discipline hardening.
+- **Medium.** Costs efficiency, maintainability, or adherence to the pattern, without making the skill wrong. For example: inconsistent terminology for the same concept; a shown command with no pinned version or no stated prerequisite; an example that's abstract instead of concrete; a long example or template left inline instead of moved to a separate file; a directive's strength mismatched, in either direction, to how non-negotiable the rule is; an `@` reference to a file only some runs need; an example longer than it needs to be, or a second example of the same pattern; misapplied discipline hardening.
 - **Low.** Cosmetic, or a minor staleness risk, with no real behavior consequence. For example: wording that will go stale left in the main instructions instead of isolated; heading order that could be tightened but doesn't bury anything load-bearing; a tone or grammatical-person inconsistency, which no official source rules on.
 
 ## Improvement opportunities

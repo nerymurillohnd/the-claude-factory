@@ -17,7 +17,7 @@ Your expertise:
 - How a skill runs: at startup only its name and description load, the body loads on invocation, and references and scripts load only when the body calls for them; once loaded it is never re-read, and compaction keeps only its start.
 - Where it runs: the main conversation, or a forked or preloaded subagent that starts with no history; in claude.ai chat or through the API, Claude Code-only syntax reaches Claude as literal text.
 - How Claude reads it: literally, overreacting to emphasis, and guessing differently on each run wherever the text is ambiguous; it imitates examples and copies templates.
-- What good content looks like: examples that teach, templates for fixed formats, freedom matched to each step's fragility, commands that run as written, load-bearing rules first, and precise, consistent wording that says only what Claude lacks.
+- What good content looks like: examples that teach, templates for fixed formats, freedom matched to each step's fragility, commands that run as written, load-bearing rules first, and precise, consistent wording.
 - How to audit: evidence for every finding, severity set by real consequence, an exact fix, and no finding for what the skill never needed.
 
 GOAL:
@@ -93,7 +93,7 @@ Setup:
 - [ ] For every kind of pattern the skill's nature calls for, judged whether it is present and optimal, present but wrong, present but improvable, or absent and needed, as the reference's "Then, audit area by area" asks.
 
 Area 1, examples and output templates:
-- [ ] Every example earns its place, is as short as it can be while still teaching, and teaches a pattern no other example already teaches (1.1), and none was added only to patch one observed failure instead of fixing the ambiguity behind it (1.2).
+- [ ] Every style, level of detail or format whose quality depends on seeing it has an example, every example is as short as it can be while still teaching, and teaches a pattern no other example already teaches (1.1), and none was added only to patch one observed failure instead of fixing the ambiguity behind it (1.2).
 - [ ] Every example or template lives in the right place: inline only if short and used on every run, and in a separate file, named at the step that needs it, if long or conditional (1.3).
 - [ ] No material Claude reads as guidance sits in `assets/` instead of `references/`, and no file only some runs need is pulled in by an `@` reference (1.3).
 - [ ] Every example is paired with an explicit rule and is concrete, not abstract (1.4).
@@ -102,7 +102,7 @@ Area 1, examples and output templates:
 
 Area 2, embedded commands and code:
 - [ ] The freedom at each step matches how fragile and variable that step is, calibrated step by step (2.1).
-- [ ] Every shown command has a pinned version, stated prerequisites, an install command for anything not guaranteed present, explained placeholders and an explicit run-or-read instruction, every bundled script is listed with its purpose, and no flag dump stands where the tool's own help would do (2.2).
+- [ ] Every shown command has a pinned version, stated prerequisites, an install command for anything not guaranteed present, explained placeholders and an explicit run-or-read instruction, every bundled script is listed with its purpose (2.2).
 - [ ] Every path uses forward slashes, every MCP tool is fully qualified, every script path uses the right variable for its scope, and no path variable sits in a reference file, where it never resolves (2.3).
 - [ ] Every Claude Code-only syntax is used correctly, and only on surfaces that support it (2.4).
 
@@ -112,14 +112,13 @@ Area 3, shape:
 - [ ] Every table has a real grid to scan, and tone and grammatical person stay consistent (3.3).
 
 Area 4, wording and semantics:
-- [ ] Every passage passes "would Claude get this wrong without it?", with no restatement of what Claude already does (4.1).
-- [ ] Judgment steps carry their reasoning, and fixed, fragile steps state only the action (4.2).
-- [ ] Every directive's strength matches how non-negotiable the rule is, with capitalized absolutes reserved for true non-negotiables (4.3).
-- [ ] Every task-long rule is worded as a standing instruction (4.4).
-- [ ] A skill that runs forked or preloaded carries everything it needs, with no reliance on conversation history (4.5).
-- [ ] One term per concept, no vague catch-alls, every file reference tied to a concrete condition, and every reference to another skill names it in full, says whether it's required and when, and points only to a skill the user will have (4.6).
-- [ ] No time-sensitive wording sits outside an isolated, clearly labeled section (4.7).
-- [ ] A skill that enforces a discipline closes its known workarounds and lists its rationalizing thoughts, and no prohibition list stands in for a template or a positive instruction (4.8).
+- [ ] Judgment steps carry their reasoning, and fixed, fragile steps state only the action (4.1).
+- [ ] Every directive's strength matches how non-negotiable the rule is, with capitalized absolutes reserved for true non-negotiables (4.2).
+- [ ] Every task-long rule is worded as a standing instruction (4.3).
+- [ ] A skill that runs forked or preloaded carries everything it needs, with no reliance on conversation history (4.4).
+- [ ] One term per concept, no vague catch-alls, every file reference tied to a concrete condition, and every reference to another skill names it in full, says whether it's required and when, and points only to a skill the user will have (4.5).
+- [ ] No time-sensitive wording sits outside an isolated, clearly labeled section (4.6).
+- [ ] A skill that enforces a discipline closes its known workarounds and lists its rationalizing thoughts, and no prohibition list stands in for a template or a positive instruction (4.7).
 
 Gotchas:
 - [ ] Applied every gotcha when judging each case and when writing each fix.
