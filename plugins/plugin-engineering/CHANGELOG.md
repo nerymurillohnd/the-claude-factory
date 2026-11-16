@@ -13,6 +13,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `migrating-plugins`, a new skill that plans and carries out renames, merges, splits, updates, retirements, deprecations, delistings and removals of plugins and marketplaces from start to finish, or resumes one already under way. It covers each place a plugin lives (a machine, a Claude account and its synced plugins, a marketplace you maintain, Anthropic's directory, a claude.ai organization and managed settings), decides whether the requested change is the right one, finds where the work stands, and verifies the result where users get it. It also explains the messages users see when a change didn't reach them, and writes the notes for users who have the plugin.
 - While `migrating-plugins` is active, a `PreToolUse` hook asks you before a plugin CLI removal, before deleting plugin, marketplace or `~/.claude/plugins/` files, and before a `marketplace.json` edit that turns on `forceRemoveDeletedPlugins` or maps a plugin to `null`. It needs Claude Code 2.1.295 or later, for `onFailure`, and Bash 3.2 or later, and it never blocks a command on its own.
 
+### Changed
+
+- Each skill's description now says what the skill does first, lists the requests that should load it in the words users type, and names the sibling skill for the nearest request it doesn't handle, so Claude picks the right one: `public-marketplace-dev` for building and releasing, `plugin-testing-and-debugging` for a plugin that fails, `migrating-plugins` for a change people who already have the plugin must receive, and `cli-commands-guide` alongside any of them for the exact command.
+
 ## [0.3.1] - 2026-11-15
 
 ### Removed

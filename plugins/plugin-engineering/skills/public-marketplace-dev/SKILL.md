@@ -1,6 +1,6 @@
 ---
 name: public-marketplace-dev
-description: Current knowledge, CLI commands and references from the official sources that teach Claude how to create, build, develop, structure, publish and maintain a public Claude Code plugin marketplace hosted on GitHub. Use when the user asks about or requests, or the task involves, designing or planning, creating, developing, structuring, versioning, tagging, auditing, troubleshooting and debugging, adding components or dependencies, releasing or distributing, and maintaining or answering questions about plugins in a Claude Code plugin marketplace served to third parties from a public GitHub repository. Use only for plugins that belong to such a marketplace or repository.
+description: Builds and maintains a public Claude Code plugin marketplace hosted on GitHub from dated copies of the official docs, checked against the latest release notes - marketplace.json and plugin.json, the skills, agents, hooks, mods, MCP and LSP servers, settings and dependencies a plugin ships, and its versions, tags and releases. Use when designing, creating, structuring, extending, versioning, releasing or auditing against the docs a plugin or marketplace that third parties install from a public GitHub repository, or when answering how such a plugin should be built. Use only for plugins in such a marketplace or repository. Not for a plugin that fails to install or load (plugin-testing-and-debugging) or for renaming, retiring or removing a published plugin (migrating-plugins).
 ---
 
 # Public marketplace development
