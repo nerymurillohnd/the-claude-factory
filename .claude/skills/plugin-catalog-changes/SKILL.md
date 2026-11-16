@@ -37,8 +37,9 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
      ```
    - symlinks into `plugins/<old>/` (`find plugins -type l`)
    Tell the owner that plugins in other repositories may depend on `<old>` and can't be checked from here.
-4. Make the change for the case (sections below).
+4. Make the change for the case (sections below), and make every "plugin" dropdown in `.github/ISSUE_TEMPLATE/*.yml` and `.github/VULNERABILITY_REPORT.yml` list exactly the plugins of `marketplace.json`, in catalog order.
 5. Check the map, and show the raw output:
+   - `npm run check:pr` exits 0: its `lint` step fails on a dropdown left behind, and its `biome-changed` step on a changed file Biome would reformat
    - `claude plugin validate --strict .` exits 0
    - `npm run check:consistency` exits 0. Its `PC-02` finding is a `renames` key still listed in `plugins`, which the validator doesn't catch; `PC-01` and `PC-08` catch a name, source or catalog row left behind.
 6. Never reuse a retired name, and never delete the old tags or GitHub Releases: they are the history users and dependents resolve against.
