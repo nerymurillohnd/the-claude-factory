@@ -1,191 +1,139 @@
 ---
 name: public-marketplace-dev
-description: Builds and maintains a public Claude Code plugin marketplace hosted on GitHub from dated copies of the official docs, checked against the latest release notes - marketplace.json and plugin.json, the skills, agents, hooks, mods, MCP and LSP servers, settings and dependencies a plugin ships, and its versions, tags and releases. Use when designing, creating, structuring, extending, versioning, releasing or auditing against the docs a plugin or marketplace that third parties install from a public GitHub repository, or when answering how such a plugin should be built. Use only for plugins in such a marketplace or repository. Not for a plugin that fails to install or load (plugin-testing-and-debugging) or for renaming, retiring or removing a published plugin (migrating-plugins).
+description: Sets up, completes and audits the base architecture of a public Claude Code plugin marketplace hosted on GitHub - the repository layout, marketplace.json, each plugin folder and plugin.json, the version and release model, validation, the install instructions users follow, the CI workflows that validate and release, and the repository files (issue forms, labels, pull request template, CODEOWNERS, Dependabot, branch rules) - from the official docs, checked against the latest release notes. Use when someone wants to start a public plugin marketplace, turn a repository of plugins into one, add a plugin to the catalog, choose how plugins are versioned, tagged and released, write install and update instructions, set up its CI or GitHub files, or audit an existing marketplace against it. Not for writing a plugin's skills, agents, hooks, mods or MCP servers, for a plugin that fails to install or load (plugin-testing-and-debugging), or for renaming, retiring or removing a published plugin (migrating-plugins).
 ---
 
-# Public marketplace development
+# Set up a public plugin marketplace on GitHub
 
-The files in `references/` are copies of official pages from the Claude Code docs, the Claude plugin docs on claude.com, the Claude Platform docs and the Claude Help Center, pruned to what matters for plugins that a public GitHub marketplace serves to third parties, who install them on their own machines. These files are not copies: `official-source-validation.md` is the procedure this skill uses to check facts against the release notes, and `reading-docs.md` is how to read a source page's live section. Answer and build from these files instead of from memory.
+You build, for the user, the base architecture of a public plugin marketplace: the repository people add with `claude plugin marketplace add owner/repo`. You decide its structure with the user, build it, and prove it works the way users receive it.
 
-The work is done when every fact you state or write comes from one of these files or from its live source page, and every version-sensitive fact has passed the validation loop below. The bar is that high because third parties install what this marketplace ships on their own machines: a field a release removed, a setting that no longer loads or a fact taken from memory reaches every one of them at once.
-
-## Standing rules
-
-- These copies are a dated snapshot: the pages were downloaded on 2026-11-07, and the hooks files were checked against the release notes up to Claude Code 2.1.319 on 2026-11-09. When the live page or the release notes differ from a copy, follow the live source.
-- At the start of every task, invoke this plugin's `cli-commands-guide` skill with the Skill tool and follow it, whether or not a plugin command runs: it holds how plugins install, load and update and the exact form of every plugin command (`claude plugin …`, `/plugin`, `/reload-plugins`, `--plugin-dir`, `--plugin-url`) you run, write or explain, Step 6 included. Once it is loaded, don't invoke it again unless the conversation was compacted. If the skill is not available, read `https://code.claude.com/docs/en/plugins/cli-reference.md` instead.
-- Start every reference file at its `## Contents` list, then read only the sections the task needs.
-- The first entry of each file's `## Documentation References` section is its source page. Read the live section from it, as [references/reading-docs.md](references/reading-docs.md) shows, whenever that file's `When to read the live page` list matches, and always before writing a manifest, marketplace, hooks, mod or skill field into a plugin that ships. Start with `curl -sS -f -o <dir>/<page>.md <source page>.md`. If that fails, name the cause and try the file's other routes (`query_docs_filesystem_claude_code_docs`, `search_claude_code_docs`, WebFetch last) before you rely on the copy. Follow the live page when it differs from the copy, and tell the user.
-- A topic missing from these copies is not proof that it is undocumented: read the source page before you say so.
-- This skill authorizes no change by itself. Reading the files and drafting change nothing; pushing, tagging, releasing or publishing a plugin still needs the user's request.
+A marketplace is a contract with people you never see: once added, its name, its plugins' names, its version model and its release route live on their machines, and changing them means migrating every install. So decisions come first, each with its reason, and the repository is built to enforce them. The failures this prevents: a name that collides or must change, a version model that silently stops updates, a marketplace that validates locally but won't install from GitHub, CI that is missing or green while broken, install instructions that don't match what users must type, and a field written from memory that a release removed.
 
 ## Gotchas
 
-- The pruning removed these topics on purpose: Anthropic's official directory and its submission flow (the manifest reference keeps the directory listing fields), private repositories and their credentials, hosts other than GitHub, self-hosted and GitHub Enterprise Server marketplaces, the `url`, `npm`, `archive` and `command` plugin sources, local-folder or zip distribution, and administrator deployment procedures. For any of them, read the source page.
-- Two files are named `cli-reference.md`: the one in `01-plugins-core/` covers the plugin commands, the one in `05-cli-diagnostics/` the general `claude` command line.
-- The exact flags, defaults, outputs and exit codes of the plugin commands are in this plugin's `cli-commands-guide` skill; the standing rules say when to load it. The plugin commands file points to it section by section, and names the official page to read when that skill is not available.
-- The hooks page is split in two. [references/03-feature-references/hooks.md](references/03-feature-references/hooks.md) holds configuration, handlers, exit codes, JSON output, security and debugging, and opens with the things to know about hooks in plugins. [references/03-feature-references/hooks-events.md](references/03-feature-references/hooks-events.md) holds each event's matcher, input and decision control. Both are trimmed: a line marked **Key facts** replaces a removed example or section and keeps only what it held that is new.
-- Links to other docs pages are absolute URLs to the live site, and some point at sections these copies removed. Follow them when the task needs that section.
-- A line that starts with `> **View the image**` or `> **Read the example**` points to a file in `assets/`. Open it when the section needs what it shows. The index below names each asset with its page.
-- Some files keep little after pruning, and the index marks each one. For more on their topics, read the source page.
-- The docs lag the releases, and the copies lag both. A manifest field, a `claude plugin validate` check or a mods API rule can exist only in the changelog for days, and a copy can still describe a setting a release removed. Before writing a new plugin, adding a manifest key, or relying on what `claude plugin validate --strict` accepts, run the validation loop from the copies' baseline release to the newest, then read the live section of the manifest field or component involved. A `> **Live page**` note in a copy names a section that is known to be out of date or missing.
+Each gotcha gives the sign that it is in play.
 
-## Workflow
+- **The plugin installs from a local path but not from GitHub.** A local-path marketplace loads a relative-path plugin in place, like `--plugin-dir`, so it doesn't prove the copy users get ("In-place and copied plugins" in `loading.md`). The cause is usually a path that escapes the plugin directory, a symlink out of it, or a file left out of the commit.
+- **Users never receive a new release.** Users get a new copy only when the computed version changes: `plugin.json` first, then the marketplace entry, then the commit SHA. A pinned `version` that wasn't bumped keeps everyone on the cached copy. Check that the version changed, and that it is set in one place only ("Release a new version" in `host-marketplace.md`).
+- **Validation passes but a plugin's components are broken.** `claude plugin validate .` at the root reads the catalog. It doesn't open the listed plugins' skill, agent, command, hook or MCP files. Validate every plugin directory as well.
+- **Users must update by hand.** Auto-update is off by default for third-party marketplaces, and no `marketplace.json` field turns it on. Say so in the install instructions, with the command to turn it on ("Keep plugins updated" in `install.md`).
+- **A relative `source` fails to resolve.** It resolves only when Claude Code has the marketplace's files. A marketplace added as a `marketplace.json` URL fetches only that file ("Relative path plugin source" in `marketplace-reference.md`).
+- **The copies here are a dated snapshot.** The pages were downloaded on 2026-11-07, and the GitHub references were read on 2026-11-16. Before you write a manifest or catalog field, read its live section with `references/reading-docs.md`. When the live page differs from a copy, follow the live page and tell the user.
 
-Copy this checklist and tick each item as you complete it:
+## The target architecture
 
-```
-Task Progress:
-- [ ] Step 1: Pick the files for the task (the file index in this `SKILL.md`)
-- [ ] Step 2: Read each file's `## Contents`, then the sections the task needs
-- [ ] Step 3: Open every asset those sections point to
-- [ ] Step 4: Draft the answer or the change from those sections
-- [ ] Step 5: Validate each version-sensitive fact (`references/05-cli-diagnostics/official-source-validation.md`)
-- [ ] Step 6: Validate the changed plugin or marketplace (run `claude plugin validate --strict <directory>`)
-- [ ] Step 7: Deliver, citing the source page of each fact
-```
+A complete public marketplace has these layers; each exists because a later layer, or a user, depends on it.
 
-**Step 1: Pick the files.** Find the task's topic in the file index and take every file whose condition matches. A task that touches several components needs the file for each side: a plugin hook needs the hooks files, the manifest reference and the platform support tables. The result is the list of files to read.
+1. **Identity.** A marketplace `name` that is kebab-case, not reserved and unlikely to collide, plus `owner` and the GitHub `owner/repo` users add. Users key every plugin as `name@marketplace`, and two marketplaces with the same name can't coexist on a machine. Read "Reserved names" in `marketplace-reference.md`.
+2. **Catalog.** `.claude-plugin/marketplace.json` at the repository root. It lists every plugin, with an entry `name` equal to the plugin's manifest `name`. Read `create-marketplace.md` and `marketplace-reference.md`.
+3. **Plugins.** One self-contained folder per plugin, usually `plugins/<name>/`, holding `.claude-plugin/plugin.json`, components at their default locations, a `README.md` and a license. Nothing in it may reach outside the folder, because users receive only that folder. Read "Explore the plugin directory" in `components.md`, and `manifest-reference.md`. Writing the components themselves is outside this skill.
+4. **Versions and releases.** One model per plugin, declared in one place. Either bump `version` in `plugin.json` on each release and tag it as `<name>--v<version>` with `claude plugin tag`, or leave `version` out and ship every commit. Add a `CHANGELOG.md` for each plugin. Read `host-marketplace.md` and `publish.md`.
+5. **Validation.** `claude plugin validate --strict` passes on the root and on every plugin directory, and each plugin installs from the published GitHub source. Read `publish.md`, "Prepare your plugin for release".
+6. **User instructions.** A root `README.md` with the add, install, update, auto-update and uninstall commands, using the real names. Read `install.md`, and `publish.md` "Tell users how to install".
+7. **CI/CD.** A validate workflow on every pull request and every push, and a release workflow that tags only after validation passes. Both are hardened. Read `references/08-github-repository/ci-cd.md`.
+8. **Repository files.** Issue forms with a template chooser, labels, a pull request template, CODEOWNERS, Dependabot, `SECURITY.md`, and branch rules that make CI a gate. Read `references/08-github-repository/repository-files.md`.
 
-**Step 2: Read the sections.** Read each file's `## Contents` list, then the matching sections in full. The result is the passages the task rests on, each with its file and heading. When a section is missing, marked **Key facts**, or named in a `> **Live page**` note, read it from the live page with [references/reading-docs.md](references/reading-docs.md) before Step 4.
+Add these only when the user's case calls for them: dependencies between plugins (`dependencies.md`), `relevance` suggestions (`relevance.md`), release channels ("Run release channels" in `host-marketplace.md`), and evals in CI (`plugin-evals.md`).
 
-**Step 3: Open the assets.** Open each `assets/` file that a section you read points to. The result is the layout or example the draft follows.
+## How to work
 
-**Step 4: Draft.** Choose the branch that fits the task:
-- Answering a question: write the answer from the passages.
-- Creating or changing plugin or marketplace files: write the change from the passages and the examples.
-- Auditing existing files: skip to the validation loop below and follow its audit rule.
+### 1. Understand the user's situation
 
-The result is a draft with each fact traced to its file and section.
+Establish these points before deciding anything, because each one changes the architecture:
 
-**Step 5: Validate the facts.** Run the validation loop below on every version-sensitive fact in the draft.
+- **New or existing repository?** For an existing one, Step 2 finds what is there.
+- **Which plugins, now and later?** A repository that will only ever hold one plugin can be its own marketplace, with `"source": "./"` ("Add the marketplace file to your repository" in `publish.md`). Several plugins, or plans for more, need `plugins/<name>/` entries.
+- **Who installs, and on which surfaces?** Only Claude Code, or also Claude and Cowork? Some components and install paths don't work everywhere (`platform-support.md`, `build.md`).
+- **Who maintains it?** One person or several decides CODEOWNERS, whether pull requests are required, and how strict the branch rules are.
+- **How should releases reach users?** A controlled release with a version, a tag and a changelog, or every merged commit?
 
-**Step 6: Validate the files.** Only when Step 4 changed plugin or marketplace files: run `claude plugin validate --strict <directory>` on each changed plugin directory and on the marketplace root. It passes when it exits `0` and prints `Validation passed`. On exit `1`, read each error and warning with its path, fix the file, and run it again. Exit `2` means the validator itself failed, such as on an unreadable path. Where the `claude` CLI isn't available, as in claude.ai chat, say that this step was skipped. For the flags and the `--json` report, read `plugin validate` in the `cli-commands-guide` skill, which the standing rules load before this run.
+Find what the repository, `git remote -v` or the files can answer before asking. Ask the user only what is left, with your recommended answer and its reason.
 
-**Step 7: Deliver.** Give the result with the source page URL of each fact, and say which facts the release notes changed. Mark each fact by where it came from: the live page, a dated copy, or the changelog only. List every fact you couldn't confirm, and every step you skipped, with the reason.
+### 2. Inspect what exists
 
-If Step 5 finds a fact that changed, was removed or can't be confirmed, return to Step 4. If Step 6 fails, return to Step 4.
+Read the files and run `claude plugin validate` on what exists. Record each layer as present and correct, present but divergent (say what differs and which section shows it), or missing. Never overwrite a user's file to match the target. A divergence that changes what users receive, such as the version model, a name or a plugin's `source`, is the user's decision. Present it with its consequence and wait for their answer.
 
-When the user asks to skip Step 5 or Step 6 to go faster, say which defects that leaves unchecked and let them decide. Deliver the result marked as not validated, never as validated.
+### 3. Decide, with the criteria
 
-### Validation loop
+- **Version model.** Explicit `version` when users should get deliberate, documented releases: it gives tags, a changelog and holding users on a version. The commit SHA only when every push should ship: each merge then reaches users at their next update, and those plugins can't use `--strict`. Never set `version` in both `plugin.json` and the entry.
+- **Plugin source.** Use a relative path (`./plugins/<name>`) for plugins in this repository: one clone, one history, one release route. Use `github` or `git-subdir` only for a plugin that lives in another repository, and accept that it is released from there.
+- **Release automation.** Tag in CI after validation passes when more than one person merges, or when releases are frequent. Tag by hand with `claude plugin tag --dry-run`, then without `--dry-run`, when one maintainer releases rarely.
+- **Branch rules.** Require pull requests and the validate check whenever anyone other than the owner can push, and also for a solo owner who wants CI to block a broken catalog before users read it.
+- **Evals in CI.** Only for plugins that have suites, and only with the owner's agreement on cost, because each run bills their account.
 
-[references/05-cli-diagnostics/official-source-validation.md](references/05-cli-diagnostics/official-source-validation.md) is the validator. It sets which facts count as version-sensitive, the sources to read, which source wins, and how to read only the releases newer than these copies.
+When the docs don't settle a choice, it is the user's. Give the options with what each costs, recommend one, and record their answer in the report.
 
-1. Draft the answer or the change (Step 4).
-2. Check each version-sensitive fact against the sources in that file, following its `When to validate`, `Source precedence` and `Read a range of Claude Code releases` sections.
-3. If a fact fails:
-   - Note the fact, the status the file's `Procedure` gives it, and the release entry that shows it
-   - Correct the draft from the newer source
-   - Check every fact again
-4. Only proceed when the sources that file names confirm every fact as current.
+### 4. Build, layer by layer
 
-When you audit existing files instead of drafting, follow that file's `Procedure` and `Report format`, and change no file until the user decides.
+Build in the order of the target architecture: each layer is checked or documented by the ones after it, so a layer built on an unchecked one hides its defect.
 
-## File index
+- Read a field's live section before writing it into `marketplace.json` or `plugin.json`, and follow the example manifests in `assets/`.
+- Create each plugin's folder and manifest, not the skills or hooks inside: leave those to the user or to the skill for that component.
+- Write the CI workflows and the repository files from the two `08-github-repository` references. Pin every action to a full commit SHA that you look up from the action's own repository. Never invent one.
 
-Each file is listed with when to read it. Assets are listed under the page that points to them.
+### 5. Verify each layer
 
-### Plugins
+A layer is done only when its check passes. A file that exists is not proof.
 
-- [overview.md](references/01-plugins-core/overview.md): what a plugin is and when a plugin is needed instead of a standalone skill or MCP server.
-  - [plugin-directory.png](assets/plugin-directory.png): how each file of a plugin directory maps to what it adds.
-  - [plugins-model.png](assets/plugins-model.png): the path from a marketplace to a plugin to Claude Code loading its components.
-- [create.md](references/01-plugins-core/create.md): to build a first plugin, test it without a marketplace, or convert a `.claude/` setup.
-- [components.md](references/01-plugins-core/components.md): to add any component type to a plugin, with an example that validates for each.
-  - [components-channel-example.json](assets/components-channel-example.json): the `plugin.json` that binds a channel.
-- [manifest-reference.md](references/01-plugins-core/manifest-reference.md): every `plugin.json` field, path forms, and the `userConfig` and environment variable schemas.
-  - [manifest-full-example.json](assets/manifest-full-example.json): a `plugin.json` that sets most fields.
-  - [manifest-channel-example.json](assets/manifest-channel-example.json): a manifest that binds a channel to an MCP server.
-- [dependencies.md](references/01-plugins-core/dependencies.md): to declare plugin dependencies with version ranges, and how they install, resolve and prune.
-- [code-intelligence.md](references/01-plugins-core/code-intelligence.md): language server plugins and the LSP recommendation dialog.
-- [create-marketplace.md](references/01-plugins-core/create-marketplace.md): to build a `marketplace.json` and test the marketplace locally.
-- [marketplace-reference.md](references/01-plugins-core/marketplace-reference.md): every `marketplace.json` field, plugin entries, and the plugin and marketplace source objects.
-- [host-marketplace.md](references/01-plugins-core/host-marketplace.md): to host a marketplace and release updates and renames without breaking installs.
-- [publish.md](references/01-plugins-core/publish.md): to publish a plugin, the pre-release checklist, and how users get updates.
-- [install.md](references/01-plugins-core/install.md): to write a marketplace's install, update and uninstall instructions and predict what users see.
-- [cli-reference.md](references/01-plugins-core/cli-reference.md): the plugin commands, with pointers to the `cli-commands-guide` skill.
-- [loading.md](references/01-plugins-core/loading.md): where a plugin loads from, which settings file decides it, and why an update changed nothing.
-- [plugin-evals.md](references/01-plugins-core/plugin-evals.md): to write and run `claude plugin eval` cases, grade them, and gate CI on the score.
-  - [plugin-eval-report.png](assets/plugin-eval-report.png): the layout of an eval report.
-- [measure.md](references/01-plugins-core/measure.md): a plugin's token cost, how to lower it, and whether people still use it.
-- [troubleshooting.md](references/01-plugins-core/troubleshooting.md): to diagnose a plugin or marketplace error from its exact message.
-- [security.md](references/01-plugins-core/security.md): what a plugin can do on a user's machine and how users review and remove one.
-- [org.md](references/01-plugins-core/org.md): how organizations allowlist, block or require plugins through managed settings.
-- [relevance.md](references/01-plugins-core/relevance.md): the `relevance` block that makes Claude Code suggest a plugin.
-- [anthropic-marketplaces.md](references/01-plugins-core/anthropic-marketplaces.md): Anthropic's marketplaces and how a public GitHub one differs.
-- [cli-hints.md](references/01-plugins-core/cli-hints.md): the `claude-code-hint` tag; title and source only.
+- **Catalog and plugins**: `claude plugin validate --strict .` and `claude plugin validate --strict <plugin-dir>` for every plugin exit `0`. For a plugin on the commit-SHA model, run it without `--strict` and read every warning.
+- **What users receive**: once the repository is pushed, run in an empty configuration:
 
-### Mods
+  ```bash
+  export CLAUDE_CONFIG_DIR="$(mktemp -d)"
+  claude plugin marketplace add <owner>/<repo>
+  claude plugin install <plugin>@<marketplace>
+  claude plugin list --json
+  ```
 
-- [mod-overview.md](references/02-mods/mod-overview.md): what a mod is and how it compares with settings hooks, skills and MCP servers.
-- [mod-create.md](references/02-mods/mod-create.md): to write a mod, with the reload and validate loop and type definitions.
-- [mod-reference.md](references/02-mods/mod-reference.md): the complete reference for the hooks module, events, API methods, render sites, limits and commands.
-- [mod-events.md](references/02-mods/mod-events.md): to observe, rewrite or answer tool calls, prompts, turns and settings reads.
-- [mod-api.md](references/02-mods/mod-api.md): to add commands and tools, call a model, run timers, message sessions, and reach files and the network.
-- [mod-interface.md](references/02-mods/mod-interface.md): to draw panes, bands, buttons and fields, and keep state between redraws.
-  - [mods-screen-map.png](assets/mods-screen-map.png): where on the screen a mod can draw each surface.
-  - [mods-heat-map.png](assets/mods-heat-map.png): the grid the example pane draws.
-- [mod-gallery.md](references/02-mods/mod-gallery.md): each interface element with sample code.
-  - Screenshots, one per element or state: [text](assets/mods-el-text-light.png), [markdown](assets/mods-el-markdown-light.png), [link](assets/mods-el-link-light.png), [code](assets/mods-el-code-light.png), [diff](assets/mods-el-diff-light.png), [box](assets/mods-el-box-light.png), [button](assets/mods-el-button-light.png), [focused plain button](assets/mods-el-button-plain-focused-light.png), [input](assets/mods-el-input-light.png), [focused input](assets/mods-el-input-focused-light.png), [input while typing](assets/mods-el-input-typed-light.png), [select](assets/mods-el-select-light.png), [open select](assets/mods-el-select-moved-light.png), [picked select](assets/mods-el-select-picked-light.png), [raster](assets/mods-el-raster-light.png).
-- [mod-test.md](references/02-mods/mod-test.md): to write automated tests for a mod.
-- [mod-troubleshoot.md](references/02-mods/mod-troubleshoot.md): why a mod does nothing, refusal messages and the debug log.
-- [mod-admin.md](references/02-mods/mod-admin.md): what an organization's managed settings allow a published mod to do.
+  The `installPath` must sit under the plugin cache, and `claude plugin details <plugin>` must list every component. Before the push, this check can't run: report it as waiting.
+- **Versions**: `claude plugin tag <plugin-dir> --dry-run` names the expected tag, and `plugin.json` and the entry don't both set `version`.
+- **Instructions**: every command in the README uses the real marketplace and plugin names. Run the add and install commands as written.
+- **CI and repository files**: the "Done when" lists in `ci-cd.md` and `repository-files.md`.
 
-### Components a plugin ships
+When a check fails, fix the cause it names, then run every check again: a fix in one layer can break another.
 
-- [skills.md](references/03-feature-references/skills.md): to write, configure, invoke and ship skills and commands.
-- [sub-agents.md](references/03-feature-references/sub-agents.md): to define subagents, including the rules for a plugin's `agents/` directory.
-- [hooks.md](references/03-feature-references/hooks.md): to configure, write and debug hooks, above all plugin hooks.
-  - [hooks-lifecycle.png](assets/hooks-lifecycle.png): the order in which every hook event fires in a session and inside the agentic loop.
-  - [hook-resolution.png](assets/hook-resolution.png): how a matcher and an `if` condition decide whether a hook runs.
-- [hooks-events.md](references/03-feature-references/hooks-events.md): when each hook event fires, its matcher, its input and its decision control.
-- [hooks-guide.md](references/03-feature-references/hooks-guide.md): worked hooks for formatting, notifications, command checks and project rules.
-- [mcp.md](references/03-feature-references/mcp.md): MCP servers, including plugin-provided ones, their scopes, authentication and limits.
-- [channels.md](references/03-feature-references/channels.md): how channel plugins are installed, enabled, secured and tested.
-- [channels-reference.md](references/03-feature-references/channels-reference.md): the channel contract an MCP server must follow.
-  - [channel-architecture.png](assets/channel-architecture.png): how external systems, the channel server and Claude Code connect.
-  - [channel-permission-relay.png](assets/channel-permission-relay.png): the message sequence of a permission relay.
-- [output-styles.md](references/03-feature-references/output-styles.md): custom output styles, including the plugin-only `force-for-plugin` field.
-- [statusline.md](references/03-feature-references/statusline.md): troubleshooting for status line scripts, and the removed `subagentStatusLine` setting under Old patterns, so it can be taken out of a plugin.
-- [model-config.md](references/03-feature-references/model-config.md): when a skill, command or subagent sets `model` or `effort`.
-- [workflows.md](references/03-feature-references/workflows.md): dynamic workflows, including how a plugin distributes one.
+### 6. Report
 
-### Settings and permissions
+Give each layer's state before and after with the evidence (command and output), each decision with its reason, where each fact came from (live page, dated copy or changelog only), every check you couldn't run and why, and what waits on the user: the push, the first CI run, rulesets, labels created on GitHub.
 
-- [settings.md](references/04-settings-admin/settings.md): settings scopes and which value wins.
-- [settings-reference.md](references/04-settings-admin/settings-reference.md): the `settings.json` keys that bear on plugins.
-- [permissions.md](references/04-settings-admin/permissions.md): permission rules and modes, and how hooks and mods interact with them.
-- [env-vars.md](references/04-settings-admin/env-vars.md): the environment variables relevant to building and distributing plugins.
-- [managed-settings.md](references/04-settings-admin/managed-settings.md): the managed-only keys that control permissions, plugins and delivery.
-- [server-managed-settings.md](references/04-settings-admin/server-managed-settings.md): when a `claude plugin` command can't show the approval dialog.
-- [github-enterprise-server.md](references/04-settings-admin/github-enterprise-server.md): GitHub Enterprise Server; title and source only.
+## Stop and confirm
 
-### CLI, diagnostics and validation
+Creating the repository, pushing, creating tags or releases, creating labels or rulesets through the API, and changing a published name, `source` or version model reach GitHub or users, so each needs the user's explicit yes to that named action. A deadline or a general go-ahead doesn't replace that yes, because these steps can't be taken back from users' machines. Name the action and its target, ask once, and wait. Everything else in this skill (reading, drafting files, running `claude plugin validate`) changes nothing outside the working tree.
 
-- [official-source-validation.md](references/05-cli-diagnostics/official-source-validation.md): the validator for Step 5, and for any audit of version-sensitive claims.
-- [reading-docs.md](references/reading-docs.md): when and how to read the current version of a source page's section, and what to do when a download fails. Read it before the first live-page read of a task.
-- [cli-reference.md](references/05-cli-diagnostics/cli-reference.md): the general `claude` commands and flags.
-- [debug-your-config.md](references/05-cli-diagnostics/debug-your-config.md): why settings, hooks, MCP servers or skills aren't taking effect.
-- [errors.md](references/05-cli-diagnostics/errors.md): to look up a runtime error message and its fix.
-- [headless.md](references/05-cli-diagnostics/headless.md): to run Claude Code programmatically from the CLI, Python or TypeScript.
-- [troubleshoot-install.md](references/05-cli-diagnostics/troubleshoot-install.md): removing stored plugin sensitive values and MCP server logins; a few lines only.
+## Keep the facts current
 
-### Agent SDK
+- At the start of every task, invoke this plugin's `cli-commands-guide` skill with the Skill tool and follow it: it holds the exact form of every plugin command this skill runs or writes into instructions and workflows. If it isn't available, read `https://code.claude.com/docs/en/plugins/cli-reference.md`.
+- After the conversation is compacted, invoke this skill and `cli-commands-guide` again: compaction keeps only the start of each.
+- Before writing a new plugin, adding a manifest or catalog key, or relying on what `claude plugin validate --strict` accepts, run the procedure in `references/05-cli-diagnostics/official-source-validation.md`, from the copies' baseline release to the newest one. A `> **Live page**` note in a copy names a section that is known to be out of date.
+- A topic missing from these copies isn't proof that it is undocumented: read the source page before you say so.
 
-- [sdk-skills.md](references/06-agent-sdk/sdk-skills.md): which skills an Agent SDK session can invoke, and how sessions discover skills.
-- [sdk-plugins.md](references/06-agent-sdk/sdk-plugins.md): the plugin directory layout and the fix for plugin skills that don't appear in the SDK; little else.
-- [sdk-mcp.md](references/06-agent-sdk/sdk-mcp.md): how SDK sessions allow and name MCP tools; a few lines only.
-- [sdk-hooks.md](references/06-agent-sdk/sdk-hooks.md): hooks in the Agent SDK; title and source only.
+## References
 
-### Claude app, Cowork and Agent Skills
+Each reference opens with `## Contents`; its `## Documentation References` names its source page first.
 
-- [platform-support.md](references/07-cross-platform-external/platform-support.md): which components and install paths work in claude.ai chat, Cowork and Claude Code.
-- [build.md](references/07-cross-platform-external/build.md): the plugin folder as every Claude app reads it, and testing on each app.
-- [platform-skills-overview.md](references/07-cross-platform-external/platform-skills-overview.md): how Agent Skills load across Claude products.
-  - [agent-skills-architecture.png](assets/agent-skills-architecture.png): where skills live in the agent's file system, next to its configuration.
-  - [agent-skills-context-window.png](assets/agent-skills-context-window.png): how skill metadata and content load into the context window in stages.
-- [platform-skills-best-practices.md](references/07-cross-platform-external/platform-skills-best-practices.md): how to write a skill Claude finds and uses well.
-  - [agent-skills-simple-file.png](assets/agent-skills-simple-file.png): the structure of a basic `SKILL.md` file.
-  - [agent-skills-bundling-content.png](assets/agent-skills-bundling-content.png): how a skill bundles reference files that Claude loads only when needed.
-  - [agent-skills-executable-scripts.png](assets/agent-skills-executable-scripts.png): how a skill bundles scripts that Claude runs without loading them.
-- [support-chat-and-cowork.md](references/07-cross-platform-external/support-chat-and-cowork.md): Cowork and chat as one Claude; title and source only.
+- `references/01-plugins-core/overview.md`: plugins and marketplaces; images `assets/plugin-directory.png` and `assets/plugins-model.png`.
+- `references/01-plugins-core/create.md`: a first plugin, tested without a marketplace.
+- `references/01-plugins-core/create-marketplace.md`: `marketplace.json`, entry rules, plugin sources, local tests.
+- `references/01-plugins-core/marketplace-reference.md`: every catalog field, reserved names, sources.
+- `references/01-plugins-core/manifest-reference.md`: every `plugin.json` field and path rule; examples `assets/manifest-full-example.json` and `assets/manifest-channel-example.json`.
+- `references/01-plugins-core/components.md`: the plugin layout, in "Explore the plugin directory" only; example `assets/components-channel-example.json`.
+- `references/01-plugins-core/dependencies.md`: dependencies between plugins.
+- `references/01-plugins-core/host-marketplace.md`: hosting, auto-update, releases, holding a version, release channels.
+- `references/01-plugins-core/publish.md`: the pre-release checklist and the install instructions for users.
+- `references/01-plugins-core/install.md`: what users run and see.
+- `references/01-plugins-core/loading.md`: where installs load from, versions and updates.
+- `references/01-plugins-core/cli-reference.md`: plugin commands, pointing to `cli-commands-guide`.
+- `references/01-plugins-core/troubleshooting.md`: the errors users report, by stage.
+- `references/01-plugins-core/security.md`: what an installed plugin can do, and how users review it.
+- `references/01-plugins-core/anthropic-marketplaces.md`: how a public marketplace differs from Anthropic's.
+- `references/01-plugins-core/org.md`: how organizations allow or block marketplaces.
+- `references/01-plugins-core/relevance.md`: optional `relevance` suggestions.
+- `references/01-plugins-core/plugin-evals.md`: evals and CI; image `assets/plugin-eval-report.png`.
+- `references/04-settings-admin/settings.md` and `references/04-settings-admin/settings-reference.md`: scopes, and `extraKnownMarketplaces` for a repository.
+- `references/04-settings-admin/managed-settings.md`: managed keys that restrict which marketplaces users add.
+- `references/04-settings-admin/env-vars.md`: environment variables, including `CLAUDE_CONFIG_DIR`.
+- `references/07-cross-platform-external/platform-support.md` and `references/07-cross-platform-external/build.md`: what works in Claude Code, Claude and Cowork.
+- `references/08-github-repository/ci-cd.md`: Claude Code in CI, the validate and release workflows, hardening, gating the merge.
+- `references/08-github-repository/repository-files.md`: issue forms, labels, pull request template, CODEOWNERS, Dependabot, `SECURITY.md`, licenses.
+- `references/05-cli-diagnostics/official-source-validation.md`: sources, precedence, reading only the newer releases.
+- `references/reading-docs.md`: reading a live section, and what to do when a download fails.
