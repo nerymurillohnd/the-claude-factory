@@ -61,12 +61,13 @@ The main session runs every mechanical check and passes each reviewer only the r
 - **runtime-contract:** `claude plugin validate --json` output; frontmatter parse errors; every referenced file and link, whether it exists and stays inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs, its interpreter, shebang and executable bit; archive listings. Sources: skill-lint CO-01, CO-07 to CO-09, CO-12, PO-01, CA-02, CA-03, SC-01 to SC-03; frontmatter-lint FM-01; plugin-consistency PC-01.
 - **size-limits-and-budgets:** character counts of `name`, `description`, `when_to_use` and `compatibility`, and where the 1,536th character of `description` plus `when_to_use` falls; the body's line and approximate token counts; line counts of supporting files and which references over 100 lines lack a table of contents; bundle size and file count; the source's frontmatter hook count and total matcher characters; the length of any preload list shipped with the skill. Sources: skill-lint CO-02 to CO-06, CO-10, and the CA hook inventory.
 - **knowledge-delta:** none; it judges every passage by reading, and only receives the `/doctor prompt-audit` leads.
+- **task-mechanisms:** none; it judges the task and its mechanisms by reading, and only receives the `/doctor prompt-audit` leads.
 - **Live-session checks:** `/doctor`, the Skills row of `/context`, `/skill-doctor` and `claude plugin details` only run in a live Claude Code session; when the main session can't run one, a reviewer names it as the check that would settle a point.
 - Checks with no reviewer yet (frontmatter field validity and fields per surface: skill-lint CO-02 format, PO-03, PO-06, PO-07, frontmatter-lint FM-02, FM-03; script dependencies and network: SC-04 to SC-06, CA-04) wait for the reviewer that will own them.
 
 ## Components
 
-- Built: `skills/auditing-skills/SKILL.md`; the reviewers `content-patterns`, `runtime-contract`, `size-limits-and-budgets` and `knowledge-delta`, each with its agent, its reference in `references/` and the shared `assets/audit-report.md`.
+- Built: `skills/auditing-skills/SKILL.md`; the reviewers `content-patterns`, `runtime-contract`, `size-limits-and-budgets`, `knowledge-delta` and `task-mechanisms`, each with its agent, its reference in `references/` and the shared `assets/audit-report.md`.
 - Not built: the scripts of the mechanical checks, `.claude-plugin/plugin.json`, `LICENSE`, `CHANGELOG.md`, `README.md`, the plugin's row in the root `README.md` catalog, and its entry in `PRIVACY.md`.
 - Content moved out of a reviewer's scope, the verified-facts ledgers and the runtime-contract traceability map are in `.claude/maintainer/skills-engineering/`. Build the future frontmatter-and-description, security and scripts reviewers from the parked content there.
 
