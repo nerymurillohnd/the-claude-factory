@@ -6,14 +6,14 @@ paths:
 
 ## Architecture
 
-- The main session loads `skills/auditing-skills/SKILL.md`. It runs the skill's scripts for every mechanical check (counts, positions, whether a pattern appears, parsing, the validator), studies the audited skill completely, briefs each reviewer, launches the selected reviewers in parallel, holds each report to its checklist, and presents every report verbatim.
+- The main session loads `skills/auditing-skills/SKILL.md`. It runs the skill's scripts for every mechanical check (counts, positions, whether a pattern appears, parsing, the validator), studies the audited skill completely, briefs each reviewer, launches the selected reviewers in parallel, holds each report to its checklist, presents every report complete and verbatim, and then recommends where to start.
 - Each reviewer is a subagent at `agents/<area>-reviewer.md`. It never loads the skill, its `SKILL.md` or its scripts, and judges only what needs judgment. It reads exactly two files, by explicit `${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/...` paths: its reference at `references/<area>.md` and the shared template at `assets/audit-report.md`.
 - Each reviewer audits only the areas its reference defines. Give every rule one owner: when two references would judge the same thing, state in one of them that the other owns it.
 - Add each new reviewer to the Reviewers list in `SKILL.md`, with its argument name and its scoped id `skills-engineering:<area>-reviewer`.
 
 ## Reviewer agent files
 
-- Frontmatter: `name`; `description` (what it does, then "Use proactively whenever…" and when; it never names the plugin); `model`; `effort`; `tools: Read, Grep, Glob, ToolSearch, WebSearch, WebFetch, mcp__claude-code-docs__*`; `disallowedTools: Agent`; `omitClaudeMd: true`; `maxTurns`; `color`.
+- Frontmatter: `name`; `description` (it starts with "Use for", then what the reviewer audits and when, and it never names the plugin); `model`; `effort`; `tools: Read, Grep, Glob, ToolSearch, WebSearch, WebFetch, mcp__claude-code-docs__*`; `disallowedTools: Agent`; `omitClaudeMd: true`; `maxTurns`; `color`.
 - Write the body without Markdown syntax: headings in capitals followed by a colon, bullets and numbered lists for hierarchy, backticks only for paths, commands and literal text, checklist items as `- [ ]`.
 - Keep this section order: a role paragraph with no heading (principal engineer and senior auditor of Claude's Agent Skills, the reviewer's specialty, and the seat of a Claude that loads the skill with no prior context and has to use it); `Your expertise:`; `GOAL:`, stating only what to achieve; `GOTCHAS:`, each a problem, a colon and its fix in one or two sentences, applied as criteria; `WORKFLOW:`; `RULES:`; `REPORT:`; `VERIFICATION CHECKLIST:`, citing the reference by section number.
 - Write `${CLAUDE_*}` in an agent body only in the two read paths: Claude Code substitutes these variables in plugin agent content.
@@ -85,7 +85,6 @@ Follow the docs-maintenance skill's New plugin event, in its order:
 
 ## Open decisions
 
-- The reviewers' descriptions say "Use proactively whenever…", so Claude can delegate to a reviewer without `auditing-skills`, and that reviewer then gets no mechanical results. The owner decides whether to keep that wording or say the skill launches them.
 - `SKILL.md` uses `argument-hint`, a Claude Code-only field. Confirm with a test upload to Claude that a plugin skill keeps it.
 - The help center gives `description` a 200-character maximum for a claude.ai skill upload while the platform docs give 1,024; the size-limits reference reports it as unverified until a test upload settles it.
 - With the docs MCP server added under another name, or as a Claude connector (`mcp__claude_ai_<connector>__*`), the reviewers' `tools` list doesn't reach it, and they fall back to WebSearch and WebFetch.
