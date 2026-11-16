@@ -2,6 +2,8 @@
 
 How users install Claude Code plugins from a marketplace on each surface, choose an install scope, and update or remove them later. Use it to write accurate install, update and uninstall instructions for a marketplace's users and to predict what they see.
 
+> **Live page**: for plugins that reach users through their claude.ai account, read `#plugins-from-your-claudeai-account` and `#manage-plugins-synced-from-claudeai` from https://code.claude.com/docs/en/plugins/install.md as [../reading-docs.md](../reading-docs.md) shows; this copy lacks them.
+
 ## Contents
 
 - [Overview](#overview)

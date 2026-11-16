@@ -2,6 +2,8 @@
 
 How a Claude Code mod is made: have Claude write one from a description, or write one by hand that counts tool calls and adds a command. Covers the reload and validate loop, type definitions, tests, and sharing.
 
+> **Live page**: mods change with almost every release. This copy lacks `#sessions-that-load-a-mod-without-asking`; read it, and any section you rely on, from https://code.claude.com/docs/en/plugins/mods/create.md as [../reading-docs.md](../reading-docs.md) shows. `claude plugin validate` also type-checks a plugin's TypeScript hooks module: "each finding is a warning, and `--strict` fails on it" (changelog 2.1.323).
+
 ## Contents
 
 - [Ask Claude for a mod](#ask-claude-for-a-mod)

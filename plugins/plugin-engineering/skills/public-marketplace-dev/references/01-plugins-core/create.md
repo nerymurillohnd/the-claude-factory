@@ -2,6 +2,8 @@
 
 Build a first Claude Code plugin from an empty directory, test it without a marketplace, and convert an existing `.claude/` setup.
 
+> **Live page**: this copy lacks `#share-the-plugin-through-a-repository`; read it from https://code.claude.com/docs/en/plugins/create.md as [../reading-docs.md](../reading-docs.md) shows. Run the validation loop on `--plugin-dir` and nested `.claude/skills` loading too: "`.claude/skills` folders in `--plugin-dir` plugins no longer load from a session started above them; start Claude Code in the plugin folder instead" (changelog 2.1.325).
+
 ## Contents
 
 - [Overview](#overview)

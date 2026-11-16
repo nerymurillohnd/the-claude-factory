@@ -2,6 +2,8 @@
 
 Declare the plugins a plugin depends on, with version ranges such as `^1.2`, and understand how Claude Code installs, resolves, and prunes them.
 
+> **Live page**: the source page has sections this copy lacks: `#dependencies-when-your-plugin-loads-from-claudeai` (when a dependency counts as met for a plugin that a user turns on in claude.ai, which loads as `<name>@synced`) and `#constrain-a-dependency-that-has-a-non-git-source`. When the plugin has dependencies and may load from claude.ai, read them from https://code.claude.com/docs/en/plugins/dependencies.md as [../reading-docs.md](../reading-docs.md) shows.
+
 ## Contents
 
 - [Overview](#overview)

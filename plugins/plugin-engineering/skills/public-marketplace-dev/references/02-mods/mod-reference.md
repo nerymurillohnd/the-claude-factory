@@ -2,6 +2,8 @@
 
 > Complete reference for Claude Code mods: hooks module layout, the hook function, events, mods API methods, render sites, elements by surface, limits, settings, and commands.
 
+> **Live page**: mods change with almost every release, and the source page has sections this copy lacks, such as `#send-a-changed-system-prompt-section-or-tool-description-with-breakpromptcache` and `#fields-on-claude-codes-own-httpfetch-requests`. Before writing a mods API call or hook, read its live section as [../reading-docs.md](../reading-docs.md) shows and run the validation loop for the names involved. The changelog changed `engine.create` before the page did: "a `*`, namespace or negated hook on `engine.create` now only observes. To add or withhold a `$` noun, hook `engine.create` by name", and `claude plugin validate` now fails a mod whose `engine.create` hook isn't in the accepted form (changelog 2.1.323).
+
 ## Contents
 
 - [Files](#files)

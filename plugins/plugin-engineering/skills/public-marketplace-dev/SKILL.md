@@ -5,7 +5,7 @@ description: Builds and maintains a public Claude Code plugin marketplace hosted
 
 # Public marketplace development
 
-The files in `references/` are copies of official pages from the Claude Code docs, the Claude plugin docs on claude.com, the Claude Platform docs and the Claude Help Center, pruned to what matters for plugins that a public GitHub marketplace serves to third parties, who install them on their own machines. One file, `official-source-validation.md`, is not a copy: it is the procedure this skill uses to check facts against the release notes. Answer and build from these files instead of from memory.
+The files in `references/` are copies of official pages from the Claude Code docs, the Claude plugin docs on claude.com, the Claude Platform docs and the Claude Help Center, pruned to what matters for plugins that a public GitHub marketplace serves to third parties, who install them on their own machines. These files are not copies: `official-source-validation.md` is the procedure this skill uses to check facts against the release notes, and `reading-docs.md` is how to read a source page's live section. Answer and build from these files instead of from memory.
 
 The work is done when every fact you state or write comes from one of these files or from its live source page, and every version-sensitive fact has passed the validation loop below.
 
@@ -14,7 +14,7 @@ The work is done when every fact you state or write comes from one of these file
 - These copies are a dated snapshot: the pages were downloaded on 2026-11-07, and the hooks files were checked against the release notes up to Claude Code 2.1.319 on 2026-11-09. When the live page or the release notes differ from a copy, follow the live source.
 - At the start of every task, invoke this plugin's `cli-commands-guide` skill with the Skill tool and follow it, whether or not a plugin command runs: it holds how plugins install, load and update and the exact form of every plugin command (`claude plugin …`, `/plugin`, `/reload-plugins`, `--plugin-dir`, `--plugin-url`) you run, write or explain, Step 6 included. Once it is loaded, don't invoke it again unless the conversation was compacted. If the skill is not available, read `https://code.claude.com/docs/en/plugins/cli-reference.md` instead.
 - Start every reference file at its `## Contents` list, then read only the sections the task needs.
-- The first entry of each file's `## Documentation References` section is its source page. Fetch it when a section is missing, thin or possibly outdated.
+- The first entry of each file's `## Documentation References` section is its source page. Read the live section from it, as [references/reading-docs.md](references/reading-docs.md) shows, whenever that file's `When to read the live page` list matches, and always before writing a manifest, marketplace, hooks, mod or skill field into a plugin that ships. Start with `curl -sS -f -o <dir>/<page>.md <source page>.md`. If that fails, name the cause and try the file's other routes (`query_docs_filesystem_claude_code_docs`, `search_claude_code_docs`, WebFetch last) before you rely on the copy. Follow the live page when it differs from the copy, and tell the user.
 - A topic missing from these copies is not proof that it is undocumented: read the source page before you say so.
 - This skill authorizes no change by itself. Reading the files and drafting change nothing; pushing, tagging, releasing or publishing a plugin still needs the user's request.
 
@@ -27,6 +27,7 @@ The work is done when every fact you state or write comes from one of these file
 - Links to other docs pages are absolute URLs to the live site, and some point at sections these copies removed. Follow them when the task needs that section.
 - A line that starts with `> **View the image**` or `> **Read the example**` points to a file in `assets/`. Open it when the section needs what it shows. The index below names each asset with its page.
 - Seven files keep little after pruning, and the index marks each one. For more on their topics, read the source page.
+- The docs lag the releases, and the copies lag both. A manifest field, a `claude plugin validate` check or a mods API rule can exist only in the changelog for days, and a copy can still describe a setting a release removed. Before writing a new plugin, adding a manifest key, or relying on what `claude plugin validate --strict` accepts, run the validation loop from the copies' baseline release to the newest, then read the live section of the manifest field or component involved. A `> **Live page**` note in a copy names a section that is known to be out of date or missing.
 
 ## Workflow
 
@@ -45,7 +46,7 @@ Task Progress:
 
 **Step 1: Pick the files.** Find the task's topic in the file index and take every file whose condition matches. A task that touches several components needs the file for each side: a plugin hook needs the hooks files, the manifest reference and the platform support tables. The result is the list of files to read.
 
-**Step 2: Read the sections.** Read each file's `## Contents` list, then the matching sections in full. The result is the passages the task rests on, each with its file and heading.
+**Step 2: Read the sections.** Read each file's `## Contents` list, then the matching sections in full. The result is the passages the task rests on, each with its file and heading. When a section is missing, marked **Key facts**, or named in a `> **Live page**` note, read it from the live page with [references/reading-docs.md](references/reading-docs.md) before Step 4.
 
 **Step 3: Open the assets.** Open each `assets/` file that a section you read points to. The result is the layout or example the draft follows.
 
@@ -143,7 +144,7 @@ Each file is listed with when to read it. Assets are listed under the page that 
   - [channel-architecture.png](assets/channel-architecture.png): how external systems, the channel server and Claude Code connect.
   - [channel-permission-relay.png](assets/channel-permission-relay.png): the message sequence of a permission relay.
 - [output-styles.md](references/03-feature-references/output-styles.md): custom output styles, including the plugin-only `force-for-plugin` field.
-- [statusline.md](references/03-feature-references/statusline.md): the `subagentStatusLine` setting a plugin can ship a default for.
+- [statusline.md](references/03-feature-references/statusline.md): troubleshooting for status line scripts, and the removed `subagentStatusLine` setting under Old patterns, so it can be taken out of a plugin.
 - [model-config.md](references/03-feature-references/model-config.md): when a skill, command or subagent sets `model` or `effort`.
 - [workflows.md](references/03-feature-references/workflows.md): dynamic workflows, including how a plugin distributes one.
 
@@ -160,6 +161,7 @@ Each file is listed with when to read it. Assets are listed under the page that 
 ### CLI, diagnostics and validation
 
 - [official-source-validation.md](references/05-cli-diagnostics/official-source-validation.md): the validator for Step 5, and for any audit of version-sensitive claims.
+- [reading-docs.md](references/reading-docs.md): when and how to read the current version of a source page's section, and what to do when a download fails. Read it before the first live-page read of a task.
 - [cli-reference.md](references/05-cli-diagnostics/cli-reference.md): the general `claude` commands and flags.
 - [debug-your-config.md](references/05-cli-diagnostics/debug-your-config.md): why settings, hooks, MCP servers or skills aren't taking effect.
 - [errors.md](references/05-cli-diagnostics/errors.md): to look up a runtime error message and its fix.

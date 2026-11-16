@@ -2,6 +2,8 @@
 
 > Complete reference for `plugin.json`: every field with its type and default, the accepted path forms, and the `userConfig` and environment variable schemas.
 
+> **Live page**: fields are added and retired faster than this copy changes. Before you write a field into a plugin that ships, read its section on https://code.claude.com/docs/en/plugins/manifest-reference.md as [../reading-docs.md](../reading-docs.md) shows, and run the validation loop for it. The changelog can name a field before the page does, such as `engines["claude-code"]`: "plugins outside their stated Claude Code version range are not installed, updated or loaded, and install and update pick the newest version that fits" (changelog 2.1.323).
+
 ## Contents
 
 - [Manifest file](#manifest-file)
@@ -124,7 +126,7 @@ For component keys such as `commands` and `hooks`, [Component path forms](#compo
 | [`termsOfServiceUrl`](#directory-listing-fields) | String | Terms of service link for the plugin's listing in Anthropic's directory. Claude Code doesn't read it |
 | [`defaultEnabled`](#defaultenabled) | Boolean | Whether the plugin starts enabled when the user hasn't set it. Defaults to `true` |
 | [`dependencies`](#dependencies) | Array of strings or objects | Plugins that must be enabled for this one to work |
-| [`settings`](#settings) | Object | Settings Claude Code applies while the plugin is enabled. Only `agent` and `subagentStatusLine` take effect |
+| [`settings`](#settings) | Object | Deprecated: the live manifest reference no longer lists it. Only `agent` still applies, with a warning |
 | [`userConfig`](#user-configuration) | Object | Values Claude Code prompts the user for when the plugin is enabled |
 | `types` | Path | A `.d.ts` file that declares the `$.state` values and `$` nouns of a [mod](https://code.claude.com/docs/en/plugins/mods/reference.md#files) |
 | [`channels`](#channels) | Array of objects | Message channels the plugin provides, each bound to one of its MCP servers |
@@ -202,7 +204,12 @@ Plugins that must be enabled for this one to work. Each entry is `"name"`, `"nam
 
 ### `settings`
 
-Settings Claude Code applies while the plugin is enabled. Only `agent` and `subagentStatusLine` take effect; Claude Code drops other keys at load. A `settings.json` at the plugin root takes precedence over this key. See [Default settings](https://code.claude.com/docs/en/plugins/components.md#default-settings).
+> **Live page**: the current [manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference) and [Plugin components](https://code.claude.com/docs/en/plugins/components) no longer document this key or a plugin's root `settings.json`. Read both live pages as [../reading-docs.md](../reading-docs.md) shows, and run the validation loop for `settings`, `agent` and `engines`, before writing any of them into a plugin.
+
+Settings Claude Code applies while the plugin is enabled. A `settings.json` at the plugin root takes precedence over this key. Of the two keys that used to take effect:
+
+* `subagentStatusLine` is removed: "Removed the `subagentStatusLine` setting: subagent rows always use the default look, and settings files that still hold the key load as before" (changelog 2.1.323).
+* `agent` is deprecated: "Deprecated a plugin's `agent` setting: it still applies, and now warns at startup, in `claude plugin list` and in `claude plugin validate`" (changelog 2.1.323). Don't add it to a new plugin; a `--strict` validation may fail on the warning.
 
 ## Component path forms
 
@@ -309,8 +316,8 @@ An `mcpServers` value takes one of these shapes:
 | Shape | Example value | What Claude Code does |
 | :- | :- | :- |
 | `.json` file path | `"./mcp/servers.json"` | Reads the file as an `mcpServers` map |
-| MCP bundle path | `"./bundle.mcpb"` | Extracts the `.mcpb` or `.dxt` bundle into `.mcpb-cache/` under the plugin root and reads its server config |
-| MCP bundle URL | `"https://example.com/server.mcpb"` | Downloads the bundle into `.mcpb-cache/`, then reads it |
+| MCP bundle path | `"./bundle.mcpb"` | Extracts the `.mcpb` or `.dxt` bundle into `mcpb/` under the [plugins root](https://code.claude.com/docs/en/plugins/loading.md#find-plugins-on-disk), not in the plugin's folder, and reads its server config |
+| MCP bundle URL | `"https://example.com/server.mcpb"` | Downloads the bundle, then extracts and reads it the same way |
 | Inline map | `{ "deploy-api": { "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/server.js"] } }` | Uses the map as server configs keyed by name |
 
 A bundle path or URL must end in `.mcpb` or `.dxt`. Any other extension fails validation.
@@ -604,7 +611,7 @@ Each component type has a default location under the plugin root. Claude Code us
 | Themes | `themes/` | Theme JSON files |
 | Monitors | `monitors/monitors.json` | The monitors array |
 | Executables | `bin/` | Files here are on the Bash tool's `PATH` while the plugin is enabled, so Claude runs them as bare commands. claude.ai and Cowork don't install a plugin that has this directory, including one you [distribute through claude.ai organization settings](https://claude.com/docs/plugins/org-sync#keep-executables-out-of-the-top-level-bin-directory) |
-| Settings | `settings.json` | `agent` and `subagentStatusLine` defaults applied while the plugin is enabled |
+| Settings | `settings.json` | Deprecated: only `agent` still applies, with a warning. See [`settings`](#settings) |
 
 A plugin that uses every default location, plus a `scripts/` folder that its hooks call, is laid out like this:
 

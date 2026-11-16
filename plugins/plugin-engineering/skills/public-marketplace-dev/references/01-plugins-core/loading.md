@@ -2,6 +2,8 @@
 
 How to trace where Claude Code loads each plugin from, which settings file decides whether it loads, and why an update changed nothing.
 
+> **Live page**: the source page has sections this copy lacks: `#synced-plugins` (plugins that load as `<name>@synced` from a claude.ai account, with their sync timing and `#control-which-synced-plugins-load`), `#trust-check-and-component-limits-for-repository-plugins` and `#check-why-a-repository-plugin-didnt-load`. Read them from https://code.claude.com/docs/en/plugins/loading.md as [../reading-docs.md](../reading-docs.md) shows. `#synced-plugins` is an explicit id: find its heading with `query_docs_filesystem_claude_code_docs`.
+
 ## Contents
 
 - [Check which stage a plugin reached](#check-which-stage-a-plugin-reached)

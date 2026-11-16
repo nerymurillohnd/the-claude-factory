@@ -26,7 +26,7 @@ Use only these seven sources. Read each one directly at its URL.
 1. Claude Code changelog (docs): https://code.claude.com/docs/en/changelog. The Markdown copy, https://code.claude.com/docs/en/changelog.md, gives each release with its date.
 2. Claude Code CHANGELOG.md (GitHub, the source of the docs changelog): https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
    Plain text: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md. It has one `## X.Y.Z` heading per release and no dates.
-3. Claude Code changelog RSS feed: https://code.claude.com/docs/en/changelog/rss.xml. It holds only the most recent releases (15 items on 2026-11-09).
+3. Claude Code changelog RSS feed: https://code.claude.com/docs/en/changelog/rss.xml. It holds only the most recent releases.
 
 ### Claude apps and platform
 
@@ -108,7 +108,7 @@ Source: the plain-text CHANGELOG.md, https://raw.githubusercontent.com/anthropic
    rm -f "$cl" "$cl.range"
    ```
 
-These commands use only `curl`, `awk` and `grep`, which ship with macOS, Linux and Git Bash on Windows. They were tested on 2026-11-09 with Claude Code 2.1.319 and mawk 1.3.4: the range 2.1.316 to 2.1.319 gave 3 releases and 326 lines.
+These commands use only `curl`, `awk` and `grep`, which ship with macOS, Linux and Git Bash on Windows. They were tested on 2026-11-09 with Claude Code 2.1.319 and mawk 1.3.4.
 
 Other ways to reach the same text, in order of preference, when the commands above cannot run:
 
@@ -126,7 +126,7 @@ Other ways to reach the same text, in order of preference, when the commands abo
    - Claude apps, plans, Cowork, desktop, mobile and connectors: source 4.
    - App system prompt behavior: source 6.
    - Launches and announcements: source 7, then confirm in sources 1 to 6.
-4. Read every entry newer than the baseline in each mapped source. Read the full range, not only the first entry that matches. For Claude Code, follow [Read a range of Claude Code releases](#read-a-range-of-claude-code-releases): start with the filtered range, then read the full range for any claim the filter does not cover.
+4. Read every entry newer than the baseline in each mapped source. Read the full range, not only the first entry that matches. For Claude Code, follow [Read a range of Claude Code releases](#read-a-range-of-claude-code-releases): start with the filtered range, then read the full range for any claim the filter does not cover. For each claim that a release touches, also read the claim's current section on its docs page as [../reading-docs.md](../reading-docs.md) shows: the page states the current form, and the release note only says it changed. When no page states it yet, mark the fact as taken from the changelog, such as "(changelog 2.1.323)".
 5. Classify each claim with exactly one status:
    - Current: the sources confirm it as written.
    - Changed: its behavior, name, default or syntax changed.
@@ -159,7 +159,7 @@ Close the report with the claims confirmed as Current, grouped by artifact, so t
 
 ## When a command or source fails
 
-The commands and URLs in this file are the expected way, not the only one. When a command fails, is not available where you run (another shell, a sandbox, no network for that host, a missing tool), or returns something other than what this file says to expect, do not stop and do not skip the validation. Find another way that works in the environment you are running in: another tool you have, another accepted source from the list above, or the same source through a different route. Keep the goal: read every release after the baseline from an official source. Tell the user which way you used and why, and mark anything you still could not verify as Unverifiable.
+The commands and URLs in this file are the expected way, not the only one. When a command fails, is not available where you run (another shell, a sandbox, no network for that host, a missing tool), or returns something other than what this file says to expect, do not stop and do not skip the validation. Find another way that works in the environment you are running in: another tool you have, another accepted source from the list above, or the same source through a different route. Keep the goal: read every release after the baseline from an official source. Tell the user which way you used and why, and mark anything you still could not verify as Unverifiable. For the docs pages themselves, the routes are in [../reading-docs.md](../reading-docs.md#when-a-step-fails).
 
 ## Documentation References
 

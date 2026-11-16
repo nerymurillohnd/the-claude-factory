@@ -256,7 +256,7 @@ Hooks from settings files, managed policy settings, and plugins also run inside 
 Administrators can use [`allowManagedHooksOnly`](https://code.claude.com/docs/en/settings-reference#allowmanagedhooksonly) in [managed settings](https://code.claude.com/docs/en/managed-settings.md) to restrict which hooks run:
 
 * Your user, project, local, and plugin hooks are blocked. Hooks from plugins force-enabled in managed settings `enabledPlugins` are exempt
-* Claude Code also narrows your [`statusLine`](https://code.claude.com/docs/en/statusline), [`fileSuggestion`](https://code.claude.com/docs/en/settings-reference#filesuggestion), and [`subagentStatusLine`](https://code.claude.com/docs/en/statusline#subagent-status-lines) settings to managed settings
+* Claude Code also narrows your [`statusLine`](https://code.claude.com/docs/en/statusline) and [`fileSuggestion`](https://code.claude.com/docs/en/settings-reference#filesuggestion) settings to managed settings
 
 See [what runs under `allowManagedHooksOnly`](https://code.claude.com/docs/en/settings-reference#what-runs-under-allowmanagedhooksonly).
 
@@ -1338,7 +1338,7 @@ For troubleshooting common issues like hooks not firing, Stop hooks that keep bl
 - [Cloud environments](https://code.claude.com/docs/en/cloud-environments): what carries over from your setup into a cloud session.
 - [Settings](https://code.claude.com/docs/en/settings): settings files, settings precedence, and the `Setting sources` line.
 - [Settings reference](https://code.claude.com/docs/en/settings-reference): `allowManagedHooksOnly` and what runs under it, HTTP hook allowlists, `strictPluginOnlyCustomization` and `fileSuggestion`.
-- [Status line](https://code.claude.com/docs/en/statusline): `statusLine` and `subagentStatusLine`.
+- [Status line](https://code.claude.com/docs/en/statusline): `statusLine`.
 - [MCP](https://code.claude.com/docs/en/mcp): MCP servers, plugin-provided MCP servers, the `cached` status, authenticating a server from `/mcp`, and stdio servers.
 - [Worktrees](https://code.claude.com/docs/en/worktrees): worktrees and what they share with the main checkout.
 - [Environment variables](https://code.claude.com/docs/en/env-vars): `MCP_TIMEOUT`, `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`, `CLAUDE_CODE_GIT_BASH_PATH` and `$CLAUDE_CODE_BRIDGE_SESSION_ID`.

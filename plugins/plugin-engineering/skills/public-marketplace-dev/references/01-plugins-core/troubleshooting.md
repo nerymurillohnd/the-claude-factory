@@ -2,6 +2,8 @@
 
 Use this file to diagnose a Claude Code plugin or marketplace error from its exact message, grouped by the stage that produces it, from where `/plugin` runs through install, loading, building, hosting and organization policy.
 
+> **Live page**: the source page holds entries this copy lacks, such as `Marketplace "claude-plugins-official" not found` and `No plugins available` or `No marketplaces configured`. When a message isn't in this file, download https://code.claude.com/docs/en/plugins/troubleshooting.md, map its headings and search them for the message, as [../reading-docs.md](../reading-docs.md) shows, before saying it is undocumented.
+
 ## Contents
 
 - [How to use this file](#how-to-use-this-file)

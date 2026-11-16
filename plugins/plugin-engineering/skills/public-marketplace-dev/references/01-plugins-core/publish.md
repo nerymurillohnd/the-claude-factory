@@ -2,6 +2,8 @@
 
 How to publish a Claude Code plugin through the publisher's own marketplace or Anthropic's directory, with a pre-release checklist and how users get updates.
 
+> **Live page**: this copy lacks `#ship-a-plugin-with-your-own-tool` and `#share-a-plugin-without-a-marketplace`, which covers `--plugin-url` pointed at a `.zip` attached to a release. Read them from https://code.claude.com/docs/en/plugins/publish.md as [../reading-docs.md](../reading-docs.md) shows when writing release or install instructions.
+
 ## Contents
 
 - [Choose how to distribute](#choose-how-to-distribute)

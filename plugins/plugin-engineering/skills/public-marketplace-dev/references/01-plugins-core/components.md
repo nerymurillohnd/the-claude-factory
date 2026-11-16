@@ -191,7 +191,7 @@ echo "hello from my-plugin"
 npx prettier --write .
 ```
 
-**Default settings (`settings.json`).** A `settings.json` at the plugin root holds [settings](https://code.claude.com/docs/en/settings-reference.md) that apply while the plugin is enabled, so a plugin can change how the session behaves, not only add components. Only two keys take effect from a plugin, [`agent`](https://code.claude.com/docs/en/settings-reference#agent) and [`subagentStatusLine`](https://code.claude.com/docs/en/settings-reference#subagentstatusline); every other key is dropped. See [Default settings](#default-settings).
+**Default settings (`settings.json`).** A `settings.json` at the plugin root holds [settings](https://code.claude.com/docs/en/settings-reference.md) that apply while the plugin is enabled, so a plugin can change how the session behaves, not only add components. Deprecated: only [`agent`](https://code.claude.com/docs/en/settings-reference#agent) still applies, with a warning, and the live page no longer documents this file. See [Default settings](#default-settings).
 
 This one sets `agent`, which runs the session's main thread as the plugin's own `security-reviewer` agent, so that agent's system prompt, tool restrictions, and model apply to the whole session:
 
@@ -497,7 +497,9 @@ claude.ai and Cowork don't install a plugin that has a top-level `bin/` director
 
 ### Default settings
 
-To set defaults that apply while the plugin is enabled, add a `settings.json` at the plugin root, or put the same object inline in the `settings` manifest key. Two keys take effect, `agent` and `subagentStatusLine`; every other key is dropped.
+> **Live page**: the current [Plugin components](https://code.claude.com/docs/en/plugins/components) page has no Default settings section. Read it as [../reading-docs.md](../reading-docs.md) shows, and run the validation loop for `settings` and `agent`, before writing a plugin `settings.json`. Changelog 2.1.323: "Removed the `subagentStatusLine` setting" and "Deprecated a plugin's `agent` setting: it still applies, and now warns at startup, in `claude plugin list` and in `claude plugin validate`". Don't add either key to a new plugin.
+
+To set defaults that apply while the plugin is enabled, add a `settings.json` at the plugin root, or put the same object inline in the `settings` manifest key. Only `agent` still takes effect, and it warns; every other key is dropped.
 
 Set `agent` to run one of the plugin's own agents as the main thread:
 
@@ -516,8 +518,6 @@ When the same key is set in more than one place, these rules decide which value 
 * **File over manifest**: when both exist and `settings.json` sets at least one supported key, `settings.json` applies and the manifest's `settings` is ignored
 * **User settings over plugin defaults**: across settings sources, plugin defaults are the lowest layer, so a user's own `agent` in `~/.claude/settings.json` overrides the plugin's
 * **Two plugins set the same key**: the value from the plugin loaded last applies, and `claude --debug` logs `overrides setting`
-
-For the `subagentStatusLine` shape, read [subagent status lines](https://code.claude.com/docs/en/statusline.md#subagent-status-lines).
 
 ### Themes and output styles
 
@@ -683,7 +683,7 @@ After the first session, `~/.claude/plugins/data/<id>/node_modules` exists. An M
 - https://code.claude.com/docs/en/output-styles.md — custom output styles.
 - https://code.claude.com/docs/en/terminal-config.md — custom color themes.
 - https://code.claude.com/docs/en/workflows.md — workflow scripts.
-- https://code.claude.com/docs/en/settings-reference.md — settings, including `agent` and `subagentStatusLine`.
+- https://code.claude.com/docs/en/settings-reference.md — settings, including `agent`.
 - https://code.claude.com/docs/en/statusline.md — subagent status lines.
 - https://code.claude.com/docs/en/channels.md — channels overview.
 - https://code.claude.com/docs/en/channels-reference.md — packaging a channel as a plugin.

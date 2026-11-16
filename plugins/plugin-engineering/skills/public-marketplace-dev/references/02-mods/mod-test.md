@@ -2,6 +2,8 @@
 
 > How to write automated tests for a Claude Code mod that fire events, stub Claude Code's answers, and press buttons, with no session, sign-in, or network.
 
+> **Live page**: mods change with almost every release. This copy lacks `#check-a-result-with-expect` and `#test-a-policy-mod`; read them, and any section you rely on, from https://code.claude.com/docs/en/plugins/mods/test.md as [../reading-docs.md](../reading-docs.md) shows.
+
 ## Contents
 
 - [Write a test](#write-a-test)

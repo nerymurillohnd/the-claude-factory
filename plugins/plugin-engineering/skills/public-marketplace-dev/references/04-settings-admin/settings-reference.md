@@ -96,7 +96,7 @@ Every key below links to its entry. The Scope column lists the [files](https://c
 | [`strictPluginOnlyCustomization.hooks`](#strictpluginonlycustomizationhooks) | Lock [hooks](https://code.claude.com/docs/en/hooks.md) to plugin and managed sources | Plugins and skills | Managed |
 | [`strictPluginOnlyCustomization.mcp`](#strictpluginonlycustomizationmcp) | Lock [MCP servers](https://code.claude.com/docs/en/mcp.md) to plugin and managed sources | Plugins and skills | Managed |
 | [`strictPluginOnlyCustomization.skills`](#strictpluginonlycustomizationskills) | Lock [skills](https://code.claude.com/docs/en/skills.md) to plugin and managed sources | Plugins and skills | Managed |
-| [`subagentStatusLine`](#subagentstatusline) | Rewrite rows in the [subagent](https://code.claude.com/docs/en/sub-agents.md) task display with your own command | Interface and terminal | Any file |
+| [`subagentStatusLine`](#subagentstatusline) | Removed (changelog 2.1.323); has no effect | Interface and terminal | Any file |
 
 ## Model and responses
 
@@ -206,24 +206,7 @@ These keys change how Claude Code looks and behaves in the terminal: theme, edit
 
 ### `subagentStatusLine`
 
-When Claude runs [subagents](https://code.claude.com/docs/en/sub-agents.md), Claude Code lists them in a task display below the prompt, one row per subagent showing `name · description · token count`. This key runs a custom command that rewrites those rows, for example to show each subagent's context usage as a percentage.
-
-On each refresh, Claude Code sends the visible rows to the command as one JSON object on stdin, with a `tasks` array carrying each subagent's `id`, `name`, `status`, `model`, `tokenCount`, and more. It replaces the row for each `id` the command writes back as a `{"id", "content"}` line. Rows the command doesn't write back keep the default rendering.
-
-* **Scope**: [`Any file`](#settings-index-and-scopes). When [`allowManagedHooksOnly`](#allowmanagedhooksonly) is on, or [`disableAllHooks`](#disableallhooks) is set outside managed settings, only the managed settings value runs.
-* **Type**: object with `type` set to `"command"` and a `command` string
-* **Default**: unset, so Claude Code renders the default rows
-
-```json settings.json theme={null}
-{
-  "subagentStatusLine": {
-    "type": "command",
-    "command": "jq -c '.tasks[] | {id, content: \"\\(.name): \\(.tokenCount) tokens\"}'"
-  }
-}
-```
-
-Read [Subagent status lines](https://code.claude.com/docs/en/statusline.md#subagent-status-lines).
+Removed: "Removed the `subagentStatusLine` setting: subagent rows always use the default look, and settings files that still hold the key load as before" (changelog 2.1.323). The live settings reference no longer lists it. Don't write it into a plugin or a settings file.
 
 ### `theme`
 
@@ -314,7 +297,7 @@ When the key is `true`, Claude Code changes which hooks and hook-like commands l
 * **Force-enabled plugin hooks run**: hooks from plugins the managed settings force-enable through [`enabledPlugins`](#enabledplugins). Claude Code matches on the full `plugin@marketplace` ID, so a plugin with the same name from a different marketplace stays blocked. This lets an organization distribute vetted hooks through an organization marketplace while blocking everything else. A [mod](https://code.claude.com/docs/en/plugins/mods/overview.md) in such a plugin loads only when it [counts as the organization's](https://code.claude.com/docs/en/plugins/mods/admin.md#install-your-organizations-mods)
 * **Monitors from other plugins are blocked**: a plugin's [monitors](https://code.claude.com/docs/en/plugins/components.md#monitors) don't start unless the plugin is force-enabled. Requires Claude Code v2.1.310 or later
 * **Everything else is blocked**: user, project, and local hooks, hooks and mods from other installed plugins, and hooks declared in agent frontmatter. [Mods built into Claude Code](https://code.claude.com/docs/en/plugins/mods/overview.md#mods-built-into-claude-code) keep running. To block only users' mods, set [`allowManagedModsOnly`](https://code.claude.com/docs/en/plugins/mods/admin#set-options-on-the-built-in-guard) instead.
-* **Status line and file suggestion narrow to managed settings**: Claude Code reads [`statusLine`](https://code.claude.com/docs/en/statusline), [`fileSuggestion`](https://code.claude.com/docs/en/settings-reference#filesuggestion), and [`subagentStatusLine`](https://code.claude.com/docs/en/statusline#subagent-status-lines) from managed settings only, following the [status line and file suggestion gates](#status-line-and-file-suggestion-gates)
+* **Status line and file suggestion narrow to managed settings**: Claude Code reads [`statusLine`](https://code.claude.com/docs/en/statusline) and [`fileSuggestion`](https://code.claude.com/docs/en/settings-reference#filesuggestion) from managed settings only, following the [status line and file suggestion gates](#status-line-and-file-suggestion-gates)
 
 The [`/goal`](https://code.claude.com/docs/en/goal) command can't run while this key is set, because it depends on hooks.
 
@@ -350,7 +333,7 @@ While hooks are disabled, the [`/goal`](https://code.claude.com/docs/en/goal) co
 
 #### Status line and file suggestion gates
 
-Claude Code makes two decisions for `statusLine`, `fileSuggestion`, and `subagentStatusLine`, in this order:
+Claude Code makes two decisions for `statusLine` and `fileSuggestion`, in this order:
 
 * **Off entirely**: when managed settings set `disableAllHooks`, or when the folder isn't trusted under the same [workspace trust rule as hooks in settings files](https://code.claude.com/docs/en/permissions.md#what-runs-before-you-trust-a-folder)
 * **Narrowed to managed settings**: when [`allowManagedHooksOnly`](#allowmanagedhooksonly) is set, when `disableAllHooks` is `true` outside managed settings after [settings precedence](https://code.claude.com/docs/en/hooks.md#disable-or-remove-hooks) applies, or when Claude Code starts with `--safe-mode`
@@ -890,7 +873,7 @@ Runs the main thread as a named [subagent](https://code.claude.com/docs/en/sub-a
 }
 ```
 
-A plugin's own `settings.json` can also supply this key; read [Ship default settings with your plugin](https://code.claude.com/docs/en/plugins/components.md#default-settings).
+A plugin's own `settings.json` can also supply this key, but that use is deprecated: it still applies and warns at startup, in `claude plugin list` and in `claude plugin validate` (changelog 2.1.323). Read [Default settings](../01-plugins-core/components.md#default-settings).
 
 ## Enterprise and managed settings
 

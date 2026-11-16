@@ -2,6 +2,8 @@
 
 This file covers how a mod handles Claude Code events: observing, rewriting, or answering tool calls, prompts, turns, and settings reads; filtering which events a hook handles; and planning for other mods that handle the same events.
 
+> **Live page**: mods change with almost every release. This copy lacks `#hook-other-mods-drawings-and-controls` (a hook on another mod's controls needs a `plugin` matcher); read it, and any section you rely on, from https://code.claude.com/docs/en/plugins/mods/events.md as [../reading-docs.md](../reading-docs.md) shows.
+
 ## Contents
 
 - [How a hook handles an event](#how-a-hook-handles-an-event)

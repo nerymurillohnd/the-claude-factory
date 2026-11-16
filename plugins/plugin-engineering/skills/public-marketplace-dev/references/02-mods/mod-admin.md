@@ -2,6 +2,8 @@
 
 How an organization controls Claude Code mods with managed settings: stop user-installed mods, allow only its own, review what a mod can do, and enforce policy with its own mod. Read it to know which controls an administrator can apply to a mod this marketplace publishes, and what a published mod can and cannot do on a managed machine.
 
+> **Live page**: this copy lacks `#enforce-a-policy-with-a-mod-of-your-own` and the sections on installing the organization's mods; read them from https://code.claude.com/docs/en/plugins/mods/admin.md as [../reading-docs.md](../reading-docs.md) shows.
+
 ## Contents
 
 - [Stop user-installed mods from loading](#stop-user-installed-mods-from-loading)

@@ -2,6 +2,8 @@
 
 How a Claude Code mod draws panes, a band above the prompt, buttons, and text fields, handles presses and input, and keeps state between redraws and sessions.
 
+> **Live page**: mods change with almost every release. This copy lacks `#place-a-row-in-the-transcript`, `#put-a-backdrop-behind-the-conversation` and `#change-the-colors-of-the-desktop-app`; read them, and any section you rely on, from https://code.claude.com/docs/en/plugins/mods/interface.md as [../reading-docs.md](../reading-docs.md) shows.
+
 ## Contents
 
 - [Build a pane with tabs](#build-a-pane-with-tabs)
