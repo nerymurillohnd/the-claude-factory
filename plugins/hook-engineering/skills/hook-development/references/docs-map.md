@@ -26,10 +26,13 @@ Use it before citing, checking or re-verifying any fact about prompt, agent or b
 
 ## How to open a section
 
-- **The Claude Code docs server** (preferred): the official Claude Code docs MCP server (<https://code.claude.com/docs/mcp>), which the user adds; this plugin doesn't bundle it. Added in Claude Code under the name the plugin's README gives, its tools are `mcp__claude-code-docs__<tool>`. Added as a Claude app connector, they reach Claude Code as `mcp__claude_ai_<connector name>__<tool>`; when both point at that URL, Claude Code connects the one added in Claude Code and hides the connector. Find the tools with ToolSearch, query `claude_code_docs`, which matches them under any server name, and load them if they are deferred. If none is connected, tell the user once that `claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp` adds it, and use the raw page below. Its filesystem tool serves each page as a file. Find the heading, then read from it:
+Try the routes in this order. When one fails, or a command in it fails, try another command or the next route before concluding; report a gap only after every route has failed.
+
+- **Raw page** (first): fetch the page's raw Markdown and read the section by its heading, as in [Retrieve a section's exact text](#retrieve-a-sections-exact-text) item 1.
+- **The Claude Code docs server**: the official Claude Code docs MCP server (<https://code.claude.com/docs/mcp>), which the user adds; this plugin doesn't bundle it. Its tools are `search_claude_code_docs` and `query_docs_filesystem_claude_code_docs`, behind a server prefix the user chose when adding it, so never assume one: find them with ToolSearch, query `claude_code_docs`, or in your tool list, and load them if they are deferred. Use the search tool to locate a page or anchor, and the filesystem tool to read the `.mdx` when the download fails. If none is connected, tell the user once that `claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp` adds it. The filesystem tool serves each page as a file. Find the heading, then read from it:
   `rg -n '^#+ PreToolUse decision control$' /en/hooks.mdx`, then `sed -n '<line>,<line+80>p' /en/hooks.mdx`. Search a topic across pages with `rg -n -i '<words>' /en/`.
   Configuration example: `rg -n '^#+ Matcher patterns$' /en/hooks.mdx`, then `sed -n '<line>,<line+80>p' /en/hooks.mdx`.
-- **Raw page**: when a heading from this map is missing in the server's copy, or a decision rests on the exact text, fetch the page's raw Markdown as below. When the two differ, trust the raw page: the server's copy can lack a heading the raw page has, such as `## Limitations and troubleshooting` in `/en/hooks-guide.mdx`.
+  When the server's copy and the raw page differ, trust the raw page: the server's copy can lack a heading the raw page has, such as `## Limitations and troubleshooting` in `/en/hooks-guide.mdx`.
 - **WebFetch** (last resort): it returns a model's summary, not the source. Use it only to locate a section, never to quote a field, default or version, and mark anything that rests on it `unverified against live docs`.
 - **Search**: if a heading is missing from both the server's copy and the raw page, the page moved. Search the docs for the heading text and use what you find. Never edit this plugin's files; say in your answer that the map is out of date so the user can report it.
 
@@ -39,9 +42,9 @@ Leading `/` in a heading: an anchor keeps it URL-encoded as `%2F` (the rule the 
 
 ## Retrieve a section's exact text
 
-Order: the docs server to search and read (item 2), the raw page whenever a decision rests on the wording or the server lacks a heading (item 1), WebFetch last (item 3). Prefer raw Markdown over summaries. Each page serves raw Markdown at its URL plus `.md`, such as <https://code.claude.com/docs/en/hooks.md>.
+Order: the raw page (item 1), then the docs server (item 2), WebFetch last (item 3). When one fails, try another command or the next item before concluding. Prefer raw Markdown over summaries. Each page serves raw Markdown at its URL plus `.md`, such as <https://code.claude.com/docs/en/hooks.md>.
 
-1. **Shell (exact text; use it whenever a decision rests on the wording or the server lacks a heading):** fetch the page once and cut the section by its exact header. The section ends at the next header of the same or a higher level:
+1. **Shell (exact text, first):** fetch the page once and cut the section by its exact header. The section ends at the next header of the same or a higher level:
 
    ```bash
    curl -sS https://code.claude.com/docs/en/hooks.md |
@@ -51,7 +54,7 @@ Order: the docs server to search and read (item 2), the raw page whenever a deci
        p'
    ```
 
-2. **Claude Code Docs MCP (main session, when connected):** read `/en/hooks.mdx` with the filesystem tool, for example `rg -n -F '### Response schema' /en/hooks.mdx` and then `sed -n '<line>,<line+60>p' /en/hooks.mdx`. Its index can be incomplete: if a header from this map is missing there, fetch the raw page (item 1); if it is missing there too, use the search tool, whose `Link` field gives the live anchor.
+2. **Claude Code Docs MCP (when connected, and when the download fails):** find its tools with ToolSearch, query `claude_code_docs`, and read `/en/hooks.mdx` with the filesystem tool, for example `rg -n -F '### Response schema' /en/hooks.mdx` and then `sed -n '<line>,<line+60>p' /en/hooks.mdx`. Its index can be incomplete: if a header from this map is missing there, fetch the raw page (item 1); if it is missing there too, use the search tool, whose `Link` field gives the live anchor.
 3. **WebFetch (last resort):** it returns a model's summary, not the source. Use it only to locate a section, never to quote a field, default or version. Mark anything that rests on it `unverified against live docs`.
 
 If none of the three reaches the docs, say so and mark every version-sensitive claim `unverified against live docs`.

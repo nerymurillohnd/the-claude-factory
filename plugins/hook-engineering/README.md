@@ -229,7 +229,7 @@ Check it; `claude-code-docs` should show `✔ Connected`. It needs no sign-in an
 claude mcp list
 ```
 
-Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses: the skill and the `hook-engineer` agent look for `mcp__claude-code-docs__*` first. Another name works too, because they find the docs tools by the tools' own names.
+Any server name works. The commands here use `claude-code-docs`, the name the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses, and the skills and the `hook-engineer` agent find the docs tools by their own names through tool search, whatever you call the server.
 
 In Claude, add it as a custom connector instead:
 
@@ -240,7 +240,7 @@ In Claude, add it as a custom connector instead:
 On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
 > [!NOTE]
-> A connector you add in Claude also reaches Claude Code when you sign in there with the same claude.ai account, with tools named `mcp__claude_ai_<connector name>__*`. The skill and the `hook-engineer` agent find and use it under that name. If you also add `claude-code-docs` in Claude Code, Claude Code connects that one and hides the connector, because both point at the same URL.
+> A connector you add in Claude also reaches Claude Code when you sign in there with the same claude.ai account, and the skills and the `hook-engineer` agent find and use its tools by their own names. If you also add `claude-code-docs` in Claude Code, Claude Code connects that one and hides the connector, because both point at the same URL.
 
 ## 📥 Installation
 
@@ -314,7 +314,7 @@ My SessionEnd hook uploads the session log to S3. It works by hand, but when I e
 - **MCP servers:** none of its own. The Claude Code docs server is one you add yourself (see [Claude Code docs server](#-claude-code-docs-server)).
 - **Network:** these calls and no others; the linter and the probe make none:
   - `https://code.claude.com/docs/mcp`, the docs server once you add it, whenever Claude reads the official docs for a hook question. It gets the search terms and page paths Claude asks for, with no credentials. From Claude, the call goes through Anthropic's servers.
-  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` or WebFetch when the docs server is not connected or a heading is missing from its copy, and `https://code.claude.com/docs/en/changelog` for a version-gated rule. `writing-hooks` downloads every page it reads this way, `https://code.claude.com/docs/en/changelog.md` included. For a plugin hook it also reads `https://claude.com/docs/plugins/platform-support.md`, which says where plugin components load.
+  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` for each section Claude reads, or WebFetch when `curl` fails, and `https://code.claude.com/docs/en/changelog` for a version-gated rule. `writing-hooks` downloads every page it reads this way, `https://code.claude.com/docs/en/changelog.md` included. For a plugin hook it also reads `https://claude.com/docs/plugins/platform-support.md`, which says where plugin components load.
   - `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`, a plain `GET` when the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog.
   - `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`, a plain `GET` with WebFetch when the docs changelog doesn't list your installed version yet.
 - **Files written:** none by the plugin; `hook-changes.sh` keeps nothing and prints only the hook-related entries. `writing-hooks` saves the docs pages it downloads in a new temporary folder. Claude writes hooks only at your request, as [Will it change my hooks or my settings?](#-faq--troubleshooting) explains.
@@ -418,7 +418,7 @@ Before it answers, the agent compares your installed version with the changelog 
 <details>
 <summary><b>I added the docs server as a connector in Claude. Do I need it in Claude Code too?</b></summary>
 
-No. Signed in to Claude Code with the same claude.ai account, the connector reaches Claude Code with tools named `mcp__claude_ai_<connector name>__*`, and both the skill and the `hook-engineer` agent use it. Connectors don't load when Claude Code signs in another way, such as an API key or a cloud provider; add `claude-code-docs` there with the command in [Claude Code docs server](#-claude-code-docs-server). With both, Claude Code connects the one you added in Claude Code and hides the connector.
+No. Signed in to Claude Code with the same claude.ai account, the connector reaches Claude Code, and the skills and the `hook-engineer` agent find and use its tools by their own names. Connectors don't load when Claude Code signs in another way, such as an API key or a cloud provider; add `claude-code-docs` there with the command in [Claude Code docs server](#-claude-code-docs-server). With both, Claude Code connects the one you added in Claude Code and hides the connector.
 
 </details>
 
