@@ -19,7 +19,7 @@ Write it for the user who has the plugin, not for the maintainer.
 ## What each kind of change adds
 
 - **Update**: how the release reaches them, by where they got it:
-  - a marketplace without auto-update (the default for every third-party marketplace): `claude plugin update <plugin>@<marketplace>` in the shell, **Update now** on the plugin in `/plugin` > Installed, or **Update marketplace** in `/plugin` > Marketplaces for all its plugins, then `/reload-plugins` in an open session; and that `claude plugin marketplace update` alone leaves installed plugins at their version;
+  - a marketplace without auto-update (the default for every third-party marketplace): `claude plugin update <plugin>@<marketplace>` in the shell, **Update now** on the plugin in `/plugin` > Installed, or **Update marketplace** in `/plugin` > Marketplaces for all its plugins, then `/reload-plugins` in an open session; and that `claude plugin marketplace update` in the shell alone leaves installed plugins at their version. Don't name `/plugin marketplace update <name>` as the route until the conflict in the second gotcha of `references/context-own-marketplace.md` is settled;
   - how to get later releases on their own: `/plugin` > Marketplaces > the marketplace > **Enable auto-update**;
   - a marketplace added from a local path: nothing to run, the next session or `/reload-plugins` loads it;
   - a private repository: what users whose credentials can't answer in the background must do (see "Hosted in a private git repository" in `references/context-own-marketplace.md`);
@@ -34,7 +34,7 @@ Write it for the user who has the plugin, not for the maintainer.
   - that disabled installs aren't migrated **(observed)**: uninstall the old id and install the new one if they want it;
   - the options to set again with `/plugin configure <new>@<marketplace>`; after a merge only one old plugin's options survive **(observed)**;
   - where the old data stays: `~/.claude/plugins/data/<old-id>/` **(observed)**;
-  - that Claude Code rewrites the key in a project's `.claude/settings.json`, so collaborators commit that change;
+  - that Claude Code rewrites the key in a project's `.claude/settings.json`, so one collaborator commits that change, and every collaborator then runs `claude plugin install <new>@<marketplace> --scope project` once per clone, because committing the key doesn't download the plugin (https://code.claude.com/docs/en/plugins/install#choose-an-install-scope). Until they do, `/plugin` > Errors shows `Plugin "<new>" is enabled in project settings but isn't installed here`, or `not cached at <path>` before 2.1.323 (changelog 2.1.323). Before writing this, read https://code.claude.com/docs/en/plugins/loading#enabled-in-project-settings-but-not-installed in full;
   - for users who have it on a Claude account from the directory or a marketplace: install the new one from **Customize > Plugins** once the old one stops updating, then remove the old one (see "Rename, merge or split" in `references/context-claude-account.md`);
   - for a directory listing: a machine where they set `"<old>@synced": false` needs `"<new>@synced": false` instead (see "Rename" in `references/context-directory.md`);
   - for admins: the managed `enabledPlugins` key to change, and that the rename notice repeats until they do.

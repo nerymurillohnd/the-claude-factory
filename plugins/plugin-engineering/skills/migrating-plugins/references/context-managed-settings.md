@@ -48,7 +48,7 @@ You act for the admin who deploys managed settings to a fleet: server-managed se
 - https://code.claude.com/docs/en/plugins/org#troubleshoot-policy
 - https://code.claude.com/docs/en/plugins/org#seed-containers-and-ci
 - https://code.claude.com/docs/en/plugins/loading#when-a-command-source-re-runs
-- https://code.claude.com/docs/en/plugins/host-marketplace#installs-and-updates-that-refuse-a-command-instead-of-asking
+- https://code.claude.com/docs/en/plugins/host-marketplace#installs-and-updates-that-refuse-the-command-instead-of-asking
 
 ## Choose the fleet's update policy
 

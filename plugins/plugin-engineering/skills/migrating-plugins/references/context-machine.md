@@ -20,7 +20,7 @@ You act for the user on the computer where Claude Code runs: in the terminal, th
 
 ## Gotchas
 
-- `claude plugin marketplace update` refreshes catalogs and leaves every installed plugin at its version (documented without a name, **(observed)** with one), so a user who ran it still has the old plugin. Updating takes `claude plugin update` per plugin, or **Update marketplace** in `/plugin`.
+- `claude plugin marketplace update` refreshes catalogs and leaves every installed plugin at its version (documented without a name, **(observed)** with one), so a user who ran it still has the old plugin. Updating takes `claude plugin update` per plugin, or **Update marketplace** in `/plugin`. The docs also say `/plugin marketplace update <name>` in a session delivers changes; that conflict is the second gotcha of `references/context-own-marketplace.md`, so check it there before relying on either form.
 - `claude plugin marketplace remove` uninstalls every plugin installed from that marketplace, with their options, secrets and data, once no scope declares it. Use it only to remove a marketplace, never to refresh one.
 - `claude plugin uninstall` from the last scope deletes the plugin's options, secrets and `~/.claude/plugins/data/<id>/` unless `--keep-data` is passed. Turning a plugin off keeps all of it and can be undone, so offer that first.
 - `install` and `uninstall` default to `user` scope, while `update`, `enable` and `disable` detect the scope. An uninstall without `--scope` fails for a plugin installed only at project or local scope, so always read the scope from `claude plugin list` and pass it.
@@ -78,7 +78,7 @@ Three exceptions:
 **Read in full**:
 
 - https://code.claude.com/docs/en/plugins/host-marketplace#change-the-command-of-a-command-source
-- https://code.claude.com/docs/en/plugins/host-marketplace#installs-and-updates-that-refuse-a-command-instead-of-asking
+- https://code.claude.com/docs/en/plugins/host-marketplace#installs-and-updates-that-refuse-the-command-instead-of-asking
 - https://code.claude.com/docs/en/plugins/host-marketplace#what-background-auto-update-does-with-credentials
 - https://code.claude.com/docs/en/plugins/install#add-a-private-marketplace
 - https://code.claude.com/docs/en/plugins/troubleshooting#ssh-authentication-failed-or-https-authentication-failed
@@ -398,9 +398,11 @@ What the docs say happens once the catalog refreshes and a session loads the old
 **Read in full**:
 
 - https://code.claude.com/docs/en/plugins/host-marketplace#migrate-users-with-a-renames-map
-- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-name-not-cached-at-path
-- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-name-not-found-in-marketplace-marketplace
+- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-cached-at
+- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-found-in-marketplace
 - https://code.claude.com/docs/en/plugins/cli-reference#plugin-configure
+- https://code.claude.com/docs/en/plugins/loading#enabled-in-project-settings-but-not-installed, for a renamed plugin the project's `.claude/settings.json` enables
+- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-is-enabled-in-project-settings-but-isnt-installed-here
 
 ## Finish a publisher's split
 
@@ -507,7 +509,7 @@ What happens on the machine depends on the catalog:
 **Read in full**:
 
 - https://code.claude.com/docs/en/plugins/loading#plugins-and-marketplaces-that-arent-on-disk-at-session-start
-- https://code.claude.com/docs/en/plugins/troubleshooting#cannot-add-marketplace-name-its-source-doesnt-match-its-extraknownmarketplaces-entry-in-user-or-managed-settings
+- https://code.claude.com/docs/en/plugins/troubleshooting#cannot-add-marketplace-source-doesnt-match
 - https://code.claude.com/docs/en/plugins/loading#hooks-when-two-enabled-plugins-share-a-name
 - https://code.claude.com/docs/en/plugins/install#add-a-marketplace
 

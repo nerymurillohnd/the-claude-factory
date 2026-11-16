@@ -20,7 +20,7 @@ You act as the publisher. You can edit the catalog (`.claude-plugin/marketplace.
 ## Gotchas
 
 - Auto-update is off by default for every third-party marketplace, and no `marketplace.json` field turns it on. Users get your change only when they update, when they turn auto-update on, or when an admin sets it in managed settings.
-- `claude plugin marketplace update` refreshes the catalog and leaves installed plugins at their version: the docs say so for the form without a name, and it does the same with a name **(observed)**. It never delivers a release on its own, so the notes give the update route from `assets/migration-notes.md`.
+- The docs state two ways what a catalog refresh delivers. Shell `claude plugin marketplace update` with no name "leaves your installed plugins at their current versions" (https://code.claude.com/docs/en/plugins/install#update-plugins-now), and it does the same with a name **(observed)**. But https://code.claude.com/docs/en/plugins/host-marketplace#turn-on-auto-update says users "receive your changes when they run `/plugin marketplace update <name>` in a session". Before writing the update notes, download both pages again and read both sections in full. If they still differ, tell the user about the conflict and test the in-session form on one machine. Until a test settles it, the notes give the update route from `assets/migration-notes.md`, which doesn't rely on either form.
 - Removing an entry from `plugins` without a `renames` mapping leaves the plugin installed on users' machines, reporting `Plugin "<name>" not found in marketplace`. Map the old name in `renames`, to the new name or to `null`, in the same commit.
 - A retirement takes effect as soon as a user's catalog has it: the key leaves their user, project and local settings and they see `Removed from the "<marketplace>" marketplace`. The plugin stops loading and its data stays until they uninstall it **(observed)**. Anything users must still do with the plugin has to happen before the push.
 - `"forceRemoveDeletedPlugins": true` makes each session start uninstall every installed plugin from this marketplace that is neither listed nor renamed, from user, project and local scopes, and list it under **Flagged** as `Removed from marketplace`. Plugins that only managed settings installed stay. A `null` entry counts as removed, and the uninstall deletes the data directory with no way to keep it **(observed)**. The field covers every plugin missing from `plugins`, not only the one you retire.
@@ -271,7 +271,8 @@ To retire a whole marketplace, retire every plugin this way, then have the notes
 - https://code.claude.com/docs/en/plugins/host-marketplace#rename-or-remove-a-plugin
 - https://code.claude.com/docs/en/plugins/host-marketplace#uninstall-removed-plugins-from-users-machines
 - https://code.claude.com/docs/en/plugins/host-marketplace#work-around-what-a-marketplace-cant-do
-- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-name-not-found-in-marketplace-marketplace
+- https://code.claude.com/docs/en/plugins/manifest-reference#defaultenabled, for why a last release can't turn the plugin off for users who already have it
+- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-found-in-marketplace
 
 ## Relabel or rename a plugin
 
@@ -330,7 +331,7 @@ To retire a whole marketplace, retire every plugin this way, then have the notes
 - https://code.claude.com/docs/en/plugins/host-marketplace#migrate-users-with-a-renames-map
 - https://code.claude.com/docs/en/plugins/publish#rename-or-remove-a-plugin
 - https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields
-- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-name-not-cached-at-path
+- https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-cached-at
 
 ## Merge plugins
 
@@ -386,6 +387,8 @@ The docs have no merge procedure; these stages are derived from the rename rules
 
 - https://code.claude.com/docs/en/plugins/dependencies#bundle-plugins-for-a-team
 - https://code.claude.com/docs/en/plugins/dependencies#how-dependencies-behave-for-your-users
+- https://code.claude.com/docs/en/plugins/manifest-reference#where-values-are-stored
+- https://code.claude.com/docs/en/settings-reference#pluginconfigs, for which settings files hold the options a rename or merge rewrites; sensitive options live in the credential store, not in `pluginConfigs`
 
 ## Split a plugin
 
@@ -426,6 +429,7 @@ The docs have no merge procedure; these stages are derived from the rename rules
 - https://code.claude.com/docs/en/plugins/measure
 - https://code.claude.com/docs/en/plugins/dependencies#bundle-plugins-for-a-team
 - https://code.claude.com/docs/en/plugins/dependencies#declare-dependencies
+- https://code.claude.com/docs/en/plugins/manifest-reference#defaultenabled, for whether a new part starts on
 
 ## Move a plugin or a marketplace
 
@@ -511,8 +515,8 @@ These procedures are derived from the documented rules: a plugin's id is `<plugi
 - https://code.claude.com/docs/en/plugins/marketplace-reference#marketplace-sources
 - https://code.claude.com/docs/en/plugins/install#manage-marketplaces
 - https://code.claude.com/docs/en/plugins/loading#plugins-and-marketplaces-that-arent-on-disk-at-session-start
-- https://code.claude.com/docs/en/plugins/troubleshooting#marketplace-name-is-already-added-from-a-different-source
-- https://code.claude.com/docs/en/plugins/troubleshooting#cannot-add-marketplace-name-its-source-doesnt-match-its-extraknownmarketplaces-entry-in-user-or-managed-settings
+- https://code.claude.com/docs/en/plugins/troubleshooting#marketplace-is-already-added-from-a-different-source
+- https://code.claude.com/docs/en/plugins/troubleshooting#cannot-add-marketplace-source-doesnt-match
 - https://code.claude.com/docs/en/errors#claude-code-refuses-the-marketplace-name
 
 ## Verify

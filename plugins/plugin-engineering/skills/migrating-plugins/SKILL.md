@@ -101,7 +101,7 @@ The goal of every step is its result (an answer found, a section read in full, a
 1. Keep the exact message and exit code.
 2. Look the message up in `references/diagnose-changes.md`, then in `plugin-engineering:plugin-testing-and-debugging` if it isn't there.
 3. Read the official section the entry links, then apply its fix once. Changing things and rerunning to see what happens hides the cause and leaves its other effects in place.
-4. When a source or a tool fails (a download, the docs MCP, a command), reach the same result another way: the other form of the page, the other docs site, the command's other form. Repeat a failing command at most once, and only after a timeout.
+4. When a source or a tool fails (a download, `search_claude_code_docs` or `query_docs_filesystem_claude_code_docs`, a command), don't stop there: name the cause and reach the same result another way, the other form of the page, the other docs site, the docs MCP or the command's other form, in the order "When a route fails" in `references/reading-docs.md` gives. Repeat a failing command at most once, and only after a timeout. Report a gap only after every route has failed.
 5. If nothing explains it, stop and report the command, the message, the exit code and what you checked.
 
 ## Step 1: Orient yourself
@@ -185,7 +185,7 @@ Learn each context from its current docs, because the rules change between relea
 1. Read `references/reading-docs.md` once: it shows how to find a page, download it and read whole sections.
 2. In each loaded context reference, read its gotchas and the entry for this kind of change, then every official section it lists under **Read in full**, from top to bottom.
 3. Follow the links inside those sections that touch the change, and read the troubleshooting entries they name: those messages are what users will see.
-4. Look up what the reference doesn't cover: search both docs indexes (`llms.txt`), the docs MCP when it is in the session, and the help center.
+4. Look up what the reference doesn't cover: search both docs indexes (`llms.txt`), `search_claude_code_docs` (find it with ToolSearch, query `claude_code_docs`), and the help center, as `references/reading-docs.md` shows.
 5. Check the changelog for every field and command the plan relies on, against the version from Step 1.
 6. For each difference you listed in Step 1, question 15, apply the documented practice in what this change touches, and tell the user what you found and why. When correcting a practice would itself change what users receive (switching the versioning model, removing a duplicated `version`), present it and wait for the user's yes. Report differences the change doesn't touch without fixing them.
 
@@ -226,7 +226,7 @@ Learn each context from its current docs, because the rules change between relea
 
 ## References
 
-- `references/reading-docs.md`: find, download and read official sections in full, follow their links and check the changelog.
+- `references/reading-docs.md`: find, download and read official sections in full, follow their links, check the changelog, and the routes to try when one fails. Read it in Step 4, before the first docs read.
 - `references/context-machine.md`: a plugin installed on a machine, by origin and surface.
 - `references/context-claude-account.md`: a plugin on a Claude account, and its synced copy in Claude Code.
 - `references/context-own-marketplace.md`: a marketplace the user maintains, with every kind of change and each way to host it.

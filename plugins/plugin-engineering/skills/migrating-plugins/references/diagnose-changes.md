@@ -105,7 +105,7 @@ claude plugin details <name>
   - the publisher changed a `command` source's `command` or `mode`; once the user's catalog copy has the change, the once-per-session run stops until the user accepts the new command;
   - the entry sets a `headersHelper`, and background auto-update, or a session start for a plugin whose archive was never downloaded, reached it. Bulk installs, plugin suggestions and dependency installs refuse it the same way.
 - Fix: the user runs the `claude plugin update` command the entry shows in their own terminal and accepts the command Claude Code shows. `-y` is ignored and `--accept-command` has no effect inside a Claude Code session, so Claude can't accept it for them.
-- Read in full: https://code.claude.com/docs/en/plugins/host-marketplace#change-the-command-of-a-command-source and https://code.claude.com/docs/en/plugins/host-marketplace#installs-and-updates-that-refuse-a-command-instead-of-asking
+- Read in full: https://code.claude.com/docs/en/plugins/host-marketplace#change-the-command-of-a-command-source and https://code.claude.com/docs/en/plugins/host-marketplace#installs-and-updates-that-refuse-the-command-instead-of-asking
 
 **`Version: unknown` in `claude plugin list`**
 
@@ -202,7 +202,7 @@ claude plugin details <name>
   ```
 
 - Fix (publisher): add `"<old>": "<new>"`, or `"<old>": null` for a removed plugin, to `renames` and push **(confirm first)**.
-- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#plugin-name-not-found-in-marketplace-marketplace and https://code.claude.com/docs/en/plugins/host-marketplace#migrate-users-with-a-renames-map
+- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-found-in-marketplace and https://code.claude.com/docs/en/plugins/host-marketplace#migrate-users-with-a-renames-map
 
 **`Plugin "<name>" not cached at <path>` after a rename**
 
@@ -213,7 +213,7 @@ claude plugin details <name>
   claude plugin install <new>@<marketplace>
   ```
 
-- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#plugin-name-not-cached-at-path
+- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-cached-at
 
 **After a rename, `claude plugin list` shows no install of the new name**
 
@@ -288,7 +288,7 @@ claude plugin details <name>
   claude plugin marketplace add <source>
   ```
 
-- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#cannot-add-marketplace-name-its-source-doesnt-match-its-extraknownmarketplaces-entry-in-user-or-managed-settings
+- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#cannot-add-marketplace-source-doesnt-match
 
 ## Removals and uninstalls
 
@@ -321,7 +321,7 @@ claude plugin details <name>
 
   2. If it can't be updated, uninstall the plugin with the version of Claude Code that wrote the record.
   3. If neither helps, delete the record from `installed_plugins.json` by hand **(confirm first)**, then ask the user to restart Claude Code or run `/reload-plugins`.
-- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#installed_pluginsjson-holds-a-record-under-id-that-this-version-of-claude-code-cannot-read
+- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#installed-plugins-json-holds-a-record-this-version-cannot-read
 
 **Uninstall reports success on Windows, but the plugin is still listed**
 
@@ -344,7 +344,7 @@ claude plugin details <name>
 
 - Cause: a `true` in a higher-precedence source overrides the user setting. The rest of the message names it: `project`, `project, gitignored` (`.claude/settings.local.json`), `cli flag` (`--settings`) or `managed`. When `claude plugin list` instead marks the plugin `required by your org`, no settings file is involved: see `Plugin "<name>@synced" is required by your organization` below.
 - Fix: for a project-enabled plugin, set its id to `false` in `.claude/settings.local.json`. For `cli flag`, take the plugin out of the `--settings` value. For `managed`, ask the admin.
-- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#disabled-in-claudesettingsjson-but-still-loads
+- Read in full: https://code.claude.com/docs/en/plugins/troubleshooting#a-plugin-you-disabled-still-loads
 
 **An uninstalled or disabled plugin's skills or hooks still run**
 
