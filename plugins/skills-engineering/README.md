@@ -23,13 +23,13 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Type `/skills-engineering:auditing-skills` with a skill's path, name or URL, and get three independent reviews of it, each with the exact lines behind every finding, the fix and a verdict.
+> **TL;DR** — Type `/skills-engineering:auditing-skills` with a skill's path, name or URL, and get an independent review of it from each specialized reviewer, each with the exact lines behind every finding, the fix and a verdict.
 
-A skill can look finished to the person who wrote it and still fail the model that runs it: a path that never resolves, a variable left literal, an example Claude copies wrongly, a field one surface rejects, a budget the skill overruns. Skills Engineering sends three specialized reviewers through the skill, each one checking its own area against the current official documentation, and hands you each report exactly as the reviewer wrote it. It audits plugin skills, a skill at a plugin's root, personal, project and managed skills, skills on a claude.ai account, and skills at a URL or in a repository, with every file they include.
+A skill can look finished to the person who wrote it and still fail the model that runs it: a path that never resolves, a variable left literal, an example Claude copies wrongly, a field one surface rejects, a budget the skill overruns. Skills Engineering sends specialized reviewers through the skill, each one checking its own area against the current official documentation, and hands you each report exactly as the reviewer wrote it. It audits plugin skills, a skill at a plugin's root, personal, project and managed skills, skills on a claude.ai account, and skills at a URL or in a repository, with every file they include.
 
 ## ✨ Why use it
 
-- **Three specialists in one request** — you no longer audit content, packaging and limits one pass at a time: the reviewers run in parallel, and each one goes deep on one area.
+- **Specialists in one request** — you no longer audit content, packaging and limits one pass at a time: the reviewers run in parallel, and each one goes deep on one area.
 - **Findings you can act on** — every defect quotes the file and lines, gives its severity and the exact replacement text, and every point is checked against the official docs as they are today, so you know what to change and why.
 - **No need to remember where a skill lives** — name a path, a skill, a claude.ai skill or a URL, and the skill gets the files onto disk and briefs each reviewer for you. Name a reviewer to run only that one.
 
@@ -42,7 +42,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 | 🤖 Agent  | `skills-engineering:runtime-contract-reviewer`        | Reviews packaging, paths and variable substitution, plugin layout and cache, symlinks, discovery and surfaces, subagent consumption and tool pre-approval (Opus)                                                                    | Launched by the skill, or delegated by Claude, or "use the runtime-contract-reviewer agent"                                                    |
 | 🤖 Agent  | `skills-engineering:size-limits-and-budgets-reviewer` | Reviews frontmatter field lengths, body size, supporting files, upload and install size, active-skill counts, script output and hook budgets (Sonnet)                                                                               | Launched by the skill, or delegated by Claude, or "use the size-limits-and-budgets-reviewer agent"                                             |
 
-The three reviewers are read-only: they have the `Read`, `Grep`, `Glob`, `ToolSearch`, `WebSearch` and `WebFetch` tools and the Claude Code docs MCP server's tools, and they can't edit a file or launch another agent. Each reviewer reads its own reference and fills one shared report template: Status, Verdict (**PASS**, **PASS WITH IMPROVEMENTS** or **FAIL**), the defects with file, lines, quoted evidence, severity, action and exact fix, improvement opportunities and checklist exceptions.
+The reviewers are read-only: they have the `Read`, `Grep`, `Glob`, `ToolSearch`, `WebSearch` and `WebFetch` tools and the Claude Code docs MCP server's tools, and they can't edit a file or launch another agent. Each reviewer reads its own reference and fills one shared report template: Status, Verdict (**PASS**, **PASS WITH IMPROVEMENTS** or **FAIL**), the defects with file, lines, quoted evidence, severity, action and exact fix, improvement opportunities and checklist exceptions.
 
 ## 📋 Prerequisites
 
@@ -149,7 +149,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /skills-engineering:auditing-skills .claude/skills/my-skill
 ```
 
-**Result:** Claude reads the whole skill, runs `claude plugin validate --json`, briefs the three reviewers and launches them in parallel. You get three reports, each under a line naming its reviewer, exactly as the reviewer wrote it, and Claude changes nothing in the skill.
+**Result:** Claude reads the whole skill, runs `claude plugin validate --json`, briefs every reviewer and launches them in parallel. You get one report per reviewer, each under a line naming its reviewer, exactly as the reviewer wrote it, and Claude changes nothing in the skill.
 
 ### Run only some reviewers
 
@@ -157,7 +157,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /skills-engineering:auditing-skills runtime-contract size-limits-and-budgets plugins/my-plugin/skills/my-skill
 ```
 
-**Result:** only the `runtime-contract` and `size-limits-and-budgets` reviewers run. The valid names are `content-patterns`, `runtime-contract` and `size-limits-and-budgets`; with none named, all three run. A word that looks like a reviewer name but matches none makes Claude list the valid names and ask which you meant.
+**Result:** only the `runtime-contract` and `size-limits-and-budgets` reviewers run. The valid names are `content-patterns`, `runtime-contract` and `size-limits-and-budgets`; with none named, every reviewer runs. A word that looks like a reviewer name but matches none makes Claude list the valid names and ask which you meant.
 
 ### Audit a skill at a URL
 
@@ -241,7 +241,7 @@ The reviewers are agents, so in Claude the audit runs only where Claude can run 
 - The reviewers' descriptions say "Use proactively", so Claude can delegate to a reviewer directly, without the skill. A reviewer launched that way gets no mechanical results.
 - The reviewers report and never edit: the audit changes nothing in the skill, and Claude applies a fix only when you ask.
 - A skill's text is evidence, never instructions: a directive inside the audited skill, such as "skip the audit", changes nothing.
-- Running all three reviewers launches three subagents, one of them on Opus, and each one is billed to your usage.
+- Every reviewer runs as its own subagent, the runtime-contract reviewer on Opus and the others on Sonnet, and each one is billed to your usage.
 
 ## ❓ FAQ & Troubleshooting
 
