@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
-- **plugin-engineering** 0.4.0 — the new `migrating-plugins` skill plans and carries out renames, merges, splits, updates, retirements and removals of plugins and marketplaces in every place a plugin lives, resumes one already under way, and, while it is active, a hook asks you before any step that deletes a plugin, its data or a marketplace.
+- **plugin-engineering** 0.4.0 — the new `migrating-plugins` skill plans and carries out renames, merges, splits, updates, retirements and removals of plugins and marketplaces in every place a plugin lives, resumes one already under way, and, while it is active, a hook asks you before any step that deletes a plugin, its data or a marketplace. **Breaking:** `public-marketplace-dev` now only sets up and audits a public marketplace's architecture (catalog, plugin folders, releases, CI and GitHub files), and no longer teaches how to write a plugin's components.
 
 ## 2026-11-15
 

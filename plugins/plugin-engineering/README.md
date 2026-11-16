@@ -26,7 +26,7 @@
 > [!TIP]
 > **TL;DR** — Ask Claude to build, test, debug, release, rename or remove a Claude Code plugin or marketplace, and it works from the current official docs and the exact plugin commands instead of from memory.
 
-Plugin Engineering gives Claude four skills for the whole life of a plugin that other people install from a public GitHub marketplace. One holds the official docs, pruned to what such a marketplace needs. One holds the complete reference of the `claude plugin` command line. One tests and debugs plugins and their evals. One plans and carries out renames, merges, splits, updates and removals, and asks you before any step that deletes a plugin, its data or a marketplace.
+Plugin Engineering gives Claude four skills for the whole life of a plugin that other people install from a public GitHub marketplace. One sets up the marketplace itself: its catalog, plugin folders, releases, CI and GitHub files. One holds the complete reference of the `claude plugin` command line. One tests and debugs plugins and their evals. One plans and carries out renames, merges, splits, updates and removals, and asks you before any step that deletes a plugin, its data or a marketplace.
 
 ## ✨ Why use it
 
@@ -36,13 +36,13 @@ Plugin Engineering gives Claude four skills for the whole life of a plugin that 
 
 ## 🧩 What's inside
 
-| Component | Name                                              | What it does                                                                                                                                                                                                                                              | How it runs                                                                       |
-| :-------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
-| 🎯 Skill  | `plugin-engineering:public-marketplace-dev`       | Teaches Claude to design, build, version, release and maintain a public GitHub plugin marketplace from the official docs, and to check version-sensitive facts against the latest release notes and run `claude plugin validate --strict` after a change. | `/plugin-engineering:public-marketplace-dev` or automatically when relevant       |
-| 🎯 Skill  | `plugin-engineering:cli-commands-guide`           | Gives Claude the complete plugin command reference, with flags, defaults, aliases, messages, JSON fields, exit codes, scopes and minimum versions.                                                                                                        | `/plugin-engineering:cli-commands-guide` or automatically when relevant           |
-| 🎯 Skill  | `plugin-engineering:plugin-testing-and-debugging` | Tests, troubleshoots and debugs plugins, reviews them before you publish, and writes, runs and gates plugin evals.                                                                                                                                        | `/plugin-engineering:plugin-testing-and-debugging` or automatically when relevant |
-| 🎯 Skill  | `plugin-engineering:migrating-plugins`            | Plans and carries out renames, merges, splits, updates, retirements, delistings and removals of plugins and marketplaces, and writes the notes for the users who have them.                                                                               | `/plugin-engineering:migrating-plugins` or automatically when relevant            |
-| 🪝 Hook   | `PreToolUse` on `Bash` and `Edit\|Write`          | Asks you before a plugin removal, a deletion of plugin or marketplace files, or a `marketplace.json` edit that uninstalls plugins for your users.                                                                                                         | Automatically on matching tool calls, once `migrating-plugins` is invoked         |
+| Component | Name                                              | What it does                                                                                                                                                                                                                                                                                | How it runs                                                                       |
+| :-------- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------- |
+| 🎯 Skill  | `plugin-engineering:public-marketplace-dev`       | Sets up, completes and audits a public GitHub plugin marketplace's base architecture: the catalog, plugin folders and manifests, versions and releases, validation, install instructions, CI workflows and repository files, verified with an install from GitHub in a clean configuration. | `/plugin-engineering:public-marketplace-dev` or automatically when relevant       |
+| 🎯 Skill  | `plugin-engineering:cli-commands-guide`           | Gives Claude the complete plugin command reference, with flags, defaults, aliases, messages, JSON fields, exit codes, scopes and minimum versions.                                                                                                                                          | `/plugin-engineering:cli-commands-guide` or automatically when relevant           |
+| 🎯 Skill  | `plugin-engineering:plugin-testing-and-debugging` | Tests, troubleshoots and debugs plugins, reviews them before you publish, and writes, runs and gates plugin evals.                                                                                                                                                                          | `/plugin-engineering:plugin-testing-and-debugging` or automatically when relevant |
+| 🎯 Skill  | `plugin-engineering:migrating-plugins`            | Plans and carries out renames, merges, splits, updates, retirements, delistings and removals of plugins and marketplaces, and writes the notes for the users who have them.                                                                                                                 | `/plugin-engineering:migrating-plugins` or automatically when relevant            |
+| 🪝 Hook   | `PreToolUse` on `Bash` and `Edit\|Write`          | Asks you before a plugin removal, a deletion of plugin or marketplace files, or a `marketplace.json` edit that uninstalls plugins for your users.                                                                                                                                           | Automatically on matching tool calls, once `migrating-plugins` is invoked         |
 
 ## 📋 Prerequisites
 
@@ -352,13 +352,13 @@ The four skills load on their own when your request matches them, and you can ca
 
 **Result:** Claude answers from the command reference: the `--scope project` form, the minimum version each flag needs, and that uninstalling from the last scope deletes the plugin's options and data unless you pass `--keep-data`.
 
-### Add a component to your plugin
+### Set up a public marketplace
 
 ```text
-/plugin-engineering:public-marketplace-dev add a PreToolUse hook to my plugin that blocks edits to .env files
+/plugin-engineering:public-marketplace-dev turn this repository of three plugins into a public marketplace people can install from
 ```
 
-**Result:** Claude reads the hooks and manifest references, writes the hook, checks every version-sensitive fact against the release notes, runs `claude plugin validate --strict` on the plugin, and fixes what the validator reports.
+**Result:** Claude asks only what the repository can't answer, records which layers exist, recommends a version and release model with its reasons, then writes `marketplace.json`, the plugin manifests, the install instructions, the validate and release workflows and the GitHub files. It validates every plugin and lists what waits on you: the push, the first CI run and the branch rules.
 
 ## ⚙️ Configuration
 
@@ -467,7 +467,7 @@ In Claude, the skills teach Claude the docs and the command reference in every c
 - The hook can't see `/plugin`, Claude, claude.ai or the developer portal, a `marketplace.json` edit made through `Bash`, or a push, so it never asks about those. The skill asks you before them anyway.
 - Claude can't run `/plugin` or `/reload-plugins` from the shell. It tells you to run them in the open session, and a running session keeps the version it loaded until you do.
 - The bundled docs are pruned copies. They leave out Anthropic's directory submission flow, private repositories and their credentials, hosts other than GitHub, GitHub Enterprise Server, and the `url`, `npm`, `archive` and `command` plugin sources, so for those topics Claude reads the live page.
-- `public-marketplace-dev` is for plugins in a public GitHub marketplace. `migrating-plugins` doesn't create a plugin from nothing: it works on an existing one, or on the target of a merge or a split.
+- `public-marketplace-dev` builds a public GitHub marketplace's structure, not the skills, agents, hooks, mods or MCP servers inside a plugin. `migrating-plugins` doesn't create a plugin from nothing: it works on an existing one, or on the target of a merge or a split.
 - When a bundled page and the live docs or the release notes disagree, Claude follows the live source and tells you which part is out of date.
 - Evals run real model calls on your account. A suite that grants Claude Bash on Linux needs bubblewrap and socat, and native Windows has no sandbox backend for it.
 
@@ -483,7 +483,7 @@ Run `/reload-plugins`, then type `/plugin-engineering:` to list its skills. If i
 <details>
 <summary><b>Which skill do I call?</b></summary>
 
-You rarely need to choose. Describe the job and Claude loads the skill that fits: building and releasing (`public-marketplace-dev`), command syntax (`cli-commands-guide`), errors, checks and evals (`plugin-testing-and-debugging`), or renames, updates and removals (`migrating-plugins`). To force one, type its name after `/plugin-engineering:`.
+You rarely need to choose. Describe the job and Claude loads the skill that fits: setting up a marketplace and its releases (`public-marketplace-dev`), command syntax (`cli-commands-guide`), errors, checks and evals (`plugin-testing-and-debugging`), or renames, updates and removals (`migrating-plugins`). To force one, type its name after `/plugin-engineering:`.
 
 </details>
 
@@ -533,7 +533,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 🙏 Credits
 
-The reference files of `public-marketplace-dev` are pruned copies of Anthropic's official documentation: the [Claude Code docs](https://code.claude.com/docs/en/overview), the [Claude plugin docs](https://claude.com/docs/plugins/overview), the [Claude Platform docs](https://platform.claude.com/docs) and the [Claude Help Center](https://support.claude.com). The `cli-commands-guide`, `plugin-testing-and-debugging` and `migrating-plugins` references are written from those same pages and from the `claude` command's own help.
+The reference files of `public-marketplace-dev` are pruned copies of Anthropic's official documentation, the [Claude Code docs](https://code.claude.com/docs/en/overview) and the [Claude plugin docs](https://claude.com/docs/plugins/overview), plus references written from [GitHub Docs](https://docs.github.com). The `cli-commands-guide`, `plugin-testing-and-debugging` and `migrating-plugins` references are written from those same pages and from the `claude` command's own help.
 
 ## 📄 License
 
