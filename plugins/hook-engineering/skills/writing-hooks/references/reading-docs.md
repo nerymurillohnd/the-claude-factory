@@ -1,6 +1,6 @@
 # Reading the official docs
 
-Read this in step 3, before the first docs read. It holds how to find, download and read the docs sections the hook depends on, and how to check the changelog. The MCP locates and maps; the downloaded page is where sections are read; only the extracted blocks enter the context.
+Read this in step 3, before the first docs read. It holds how to find, download and read the docs sections the hook depends on, and how to check the changelog. The downloaded page is where sections are read, first; the MCP locates pages and reads the `.mdx` when a download fails; WebFetch is last; only the extracted blocks enter the context.
 
 ## Contents
 
@@ -23,12 +23,12 @@ Read this in step 3, before the first docs read. It holds how to find, download 
 
 ## Find the docs tools
 
-Find the Claude Code docs MCP tools with ToolSearch, query `claude_code_docs`, or in your tool list when ToolSearch isn't there. Their names change with the installation:
+Find the Claude Code docs MCP tools with ToolSearch, query `claude_code_docs`, or in your tool list when ToolSearch isn't there. Their full names start with a server prefix that depends on the installation, but the tool names are fixed:
 
 - `search_claude_code_docs`: semantic search that returns chunks with page and anchor;
 - `query_docs_filesystem_claude_code_docs`: one read-only command over the `.mdx` pages, at `/en/<path>.mdx`.
 
-If neither is found, use the downloads below alone: they hold the same pages.
+If neither is found, use the downloads below: they hold the same pages. If a download fails and no docs tool is found, use WebFetch on the page URL last, only to locate a section, and mark anything that rests on it unverified against live docs; report a gap only after every route has failed.
 
 ## Locate a page
 

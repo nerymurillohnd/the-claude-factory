@@ -41,7 +41,7 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 | Component | Name                                | What it does                                                                                                                                                                                                                                                          | How it runs                                                                              |
 | :-------- | :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
 | 🎯 Skill  | `hook-engineering:writing-hooks`    | Writes a new hook of any type and in any location step by step: reads your project, asks about your goal when it is unclear, reads the official docs and the changelog for your version, then builds the configuration and the script and tests them with real inputs | `/hook-engineering:writing-hooks <request>` or automatically when you ask for a new hook |
-| 🎯 Skill  | `hook-engineering:hook-development` | Workflows to design, write, audit and debug hooks, with condensed references for every event and handler type, a config linter, a hook probe and a changelog script                                                                                                   | `/hook-engineering:hook-development <request>` or automatically when you audit, debug or ask about a hook |
+| 🎯 Skill  | `hook-engineering:hook-development` | Audits and debugs hooks and answers how they behave, with condensed references for every event and handler type, a config linter, a hook probe and a changelog script                                                                                                   | `/hook-engineering:hook-development <request>` or automatically when you audit, debug or ask about a hook |
 | 🤖 Agent  | `hook-engineering:hook-engineer`    | A hooks specialist that works from your task message in one of four modes (design, write, audit, debug) and reports what it changed, checked and could not verify                                                                                                     | Delegated by Claude, or "use the hook-engineer agent to audit my hooks"                  |
 
 ## 📋 Prerequisites
@@ -57,7 +57,7 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 
 The plugin also uses `awk`, which comes with macOS and Linux.
 
-Python runs the config linter and the hook probe; Bash, `curl` and `awk` run the changelog script; all must be on your `PATH`. `jq` is what the hooks the plugin writes use to read their input. The docs server is Anthropic's official docs MCP server, so Claude reads the current hooks pages instead of recalling them; you add it once, the plugin doesn't install it.
+Python runs the config linter and the hook probe; Bash, `curl` and `awk` run the changelog script; all must be on your `PATH`. `jq` is what the hooks the plugin writes use to read their input. Claude reads the current hooks pages instead of recalling them. The docs server, Anthropic's official docs MCP server, helps it find a page and reads the page when a download fails; you add it once, the plugin doesn't install it.
 
 ### 🤖 Claude Code
 
@@ -313,8 +313,8 @@ My SessionEnd hook uploads the session log to S3. It works by hand, but when I e
 - **Hooks:** none of its own. The hook probe runs the hook script you point it at, with the input you give it and nothing else; the agent runs it only on scripts that read no secrets and change nothing outside a temporary directory.
 - **MCP servers:** none of its own. The Claude Code docs server is one you add yourself (see [Claude Code docs server](#-claude-code-docs-server)).
 - **Network:** these calls and no others; the linter and the probe make none:
-  - `https://code.claude.com/docs/mcp`, the docs server once you add it, whenever Claude reads the official docs for a hook question. It gets the search terms and page paths Claude asks for, with no credentials. From Claude, the call goes through Anthropic's servers.
-  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` for each section Claude reads, or WebFetch when `curl` fails, and `https://code.claude.com/docs/en/changelog` for a version-gated rule. `writing-hooks` downloads every page it reads this way, `https://code.claude.com/docs/en/changelog.md` included. For a plugin hook it also reads `https://claude.com/docs/plugins/platform-support.md`, which says where plugin components load.
+  - `https://code.claude.com/docs/mcp`, the docs server once you add it, to find the page for a hook question and to read it when the download fails. It gets the search terms and page paths Claude asks for, with no credentials. From Claude, the call goes through Anthropic's servers.
+  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl`, the first route for each section Claude reads; WebFetch on the same URL comes last, only to locate a section when both other routes fail; and `https://code.claude.com/docs/en/changelog` for a version-gated rule. `writing-hooks` downloads every page it reads this way, `https://code.claude.com/docs/en/changelog.md` included. For a plugin hook it also reads `https://claude.com/docs/plugins/platform-support.md`, which says where plugin components load.
   - `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`, a plain `GET` when the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog.
   - `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`, a plain `GET` with WebFetch when the docs changelog doesn't list your installed version yet.
 - **Files written:** none by the plugin; `hook-changes.sh` keeps nothing and prints only the hook-related entries. `writing-hooks` saves the docs pages it downloads in a new temporary folder. Claude writes hooks only at your request, as [Will it change my hooks or my settings?](#-faq--troubleshooting) explains.
@@ -432,7 +432,7 @@ Claude runs agents only in conversations where it can run tasks. In other conver
 <details>
 <summary><b>Does it work without the docs server or one of the tools?</b></summary>
 
-Yes. Without the docs server, the plugin tells you the command in [Claude Code docs server](#-claude-code-docs-server) once, then reads the raw docs pages (see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)). If a tool is missing, the plugin tells you which check it could not run and marks the affected conclusions as unverified.
+Yes. Claude reads the raw docs pages first either way. Without the docs server, the plugin tells you the command in [Claude Code docs server](#-claude-code-docs-server) once, and if a download fails it has only WebFetch left, to locate a section (see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)). If a tool is missing, the plugin tells you which check it could not run and marks the affected conclusions as unverified.
 
 </details>
 

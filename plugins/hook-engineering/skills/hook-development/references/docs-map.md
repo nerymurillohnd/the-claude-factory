@@ -235,7 +235,7 @@ Page: <https://code.claude.com/docs/en/hooks> · MCP path: `/en/hooks.mdx`
 
 ## Hooks guide
 
-Page: <https://code.claude.com/docs/en/hooks-guide> · MCP path: `/en/hooks-guide.mdx`. Worked examples, configuration and troubleshooting. The site links `#limitations-and-troubleshooting`; that heading is in the raw page but not in the docs server's copy, so on the server search for `### Limitations` there.
+Page: <https://code.claude.com/docs/en/hooks-guide> · MCP path: `/en/hooks-guide.mdx`. Worked examples, configuration and troubleshooting. The site links `#limitations-and-troubleshooting`; that heading is in the raw page but not in the docs server's copy: read it from the raw page, and on the server search for `### Limitations`.
 
 - [How hooks work](https://code.claude.com/docs/en/hooks-guide#how-hooks-work) — `## How hooks work`
   - [Filter hooks with matchers](https://code.claude.com/docs/en/hooks-guide#filter-hooks-with-matchers) — `### Filter hooks with matchers`
