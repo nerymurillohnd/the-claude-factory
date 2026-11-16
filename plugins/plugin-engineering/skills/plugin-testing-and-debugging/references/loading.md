@@ -187,11 +187,12 @@ A plugin with an external source is fetched only when user settings, an untracke
 
 ## A4. Find plugins on disk
 
-The plugins root is `~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` is set. Relative to it:
+The plugins root is `~/.claude/plugins` unless `CLAUDE_CODE_PLUGIN_CACHE_DIR` is set. New folders appear under it as releases add them. Before telling the user what a path under the root is, compare this list with the current "Find plugins on disk" section (https://code.claude.com/docs/en/plugins/loading#find-plugins-on-disk) as `reading-docs.md` shows; if the download fails, use another route. Relative to the root:
 
 - `cache/<marketplace>/<plugin>/<version>/`: one directory per installed version; `<plugin>` is the entry name, `<version>` the resolved version (A5). `${CLAUDE_PLUGIN_ROOT}` points here.
 - `data/<plugin-id>/`: the persistent directory, `${CLAUDE_PLUGIN_DATA}`. Created on first use, kept across updates, deleted by default when the plugin is uninstalled from its last scope.
 - `marketplaces/<name>/`: the clone or download of a marketplace added from GitHub, another git host or a URL. A marketplace added from a local `file` or `directory` has no copy here; its `installLocation` is the given path.
+- `mcpb/`: the files extracted from the MCP bundles (`.mcpb`, `.dxt`) that plugins declare (v2.1.324 or later). Before, they were extracted to `.mcpb-cache` inside the plugin's folder (changelog 2.1.325).
 - `synced/`: plugins synced from claude.ai. `.trash/`: plugins the sync removed.
 - `installed_plugins.json` and `known_marketplaces.json`: the records (A1). A marketplace hosted on claude.ai is recorded in `known_marketplaces_claudeai.json`.
 - `flagged-plugins.json`: plugins uninstalled because their marketplace delisted them; shown in the Flagged section of `/plugin`.

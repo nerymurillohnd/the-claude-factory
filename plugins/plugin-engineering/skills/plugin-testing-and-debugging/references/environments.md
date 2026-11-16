@@ -20,6 +20,7 @@ Read this file before testing or debugging a plugin when the session may not be 
 3. Everything Claude runs with Bash in a cloud session, including `claude plugin ...`, acts on the session's own VM and its own `~/.claude`, never on the user's machine. A `claude plugin install` there changes nothing the user will see in their terminal, and the user's own installs are not there to inspect.
 4. The person uses Claude in a browser, the desktop app or the mobile app, not Claude Code: plugins come from their claude.ai account, not from a machine. Use section 7.
 5. The plugin is loaded by an application built on the Agent SDK: use section 8.
+6. The user works in the desktop app's Code tab: a local or SSH session there installs plugins from **+** next to the prompt box, **Add plugins** (or **Plugins**), and loads them as the CLI does, except plugins the app withholds under `disableSideloadFlags`. Plugins installed there are not available in cloud sessions, and plugins are not available in WSL sessions ("Install plugins", https://code.claude.com/docs/en/desktop#install-plugins). For a cloud session that runs in a self-hosted environment, read "Customize sessions in self-hosted environments" (https://code.claude.com/docs/en/self-hosted-environments-configuration). Read both current pages with `reading-docs.md` before debugging there; if the first route fails, find another.
 
 Tell the user which environment you found before giving fixes, because the same symptom has different causes in each.
 
@@ -86,6 +87,8 @@ Start from "is it supposed to load here at all?" before the terminal causes in `
 
 Sources: "Plugin structure and testing" (https://claude.com/docs/plugins/build), "Plugin feature support across platforms" (https://claude.com/docs/plugins/platform-support), "Install plugins" (https://claude.com/docs/cowork/guide/plugins), and the help center articles "Claude Cowork and chat are one Claude" (support.claude.com 16761823), "Use plugins in Claude" (13837440) and "Manage plugins, skills, and connectors from one Plugins page" (17740565), read 2026-11-14.
 
+The rollout dates, plan names, page names and limits below change often. Before telling the user any of them, download the current "Plugin feature support across platforms" (`curl -sS -f -o <dir>/platform-support.md https://claude.com/docs/plugins/platform-support.md`, section `#compare-component-support-by-app`) and "Plugin structure and testing" (`https://claude.com/docs/plugins/build.md`, section `#test-the-plugin-on-each-surface`) as `reading-docs.md` shows, and read the help center articles with WebFetch. If a route fails, try another; where the pages and this section disagree, tell the user both and rely on what the account shows. For a directory submission, read "Plugin pre-submission checklist" (https://claude.com/docs/plugins/pre-submission-checklist#review-what-validation-and-the-scan-check) the same way.
+
 ### Which experience the account has
 
 - Since the announcement of 2026-09-16 ("Claude Cowork and chat are now one Claude", https://claude.com/blog/cowork-is-now-claude), chat and Cowork are merging into one Claude. It rolls out gradually to Pro, Max and Ultra on web, desktop and mobile; on Team and Enterprise it is available where "Chat and Cowork unified" is turned on.
@@ -94,7 +97,7 @@ Sources: "Plugin structure and testing" (https://claude.com/docs/plugins/build),
 
 ### Install and requirements
 
-- Add plugins from the sidebar's **Plugins** page in a browser or the desktop app, not with `/plugin`. That page was **Customize > Plugins**: the rename rolls out to Free, Pro, Max, Ultra and Team from 2026-10-29, generally available 2026-11-09, and reaches Enterprise on 2026-11-30.
+- Add plugins from the sidebar's **Plugins** page in a browser or the desktop app, not with `/plugin`. That page was **Customize > Plugins**: the rename rolls out to Free, Pro, Max, Ultra and Team from 2026-10-29, generally available 2026-11-09, and reaches Enterprise on 2026-11-30 (help center). "Plugin feature support across platforms" still names it **Customize > Plugins** (https://claude.com/docs/plugins/platform-support#compare-installation-sync-and-admin-controls), so give the user both names.
 - From there: browse, add a marketplace from a Git repository, or upload a plugin file.
 - On Team and Enterprise, an owner must turn on "Cloud code execution and file creation" in Organization settings, because plugins require it. From 2026-11-30, if Skills are turned off for a Team or Enterprise organization, plugins are also blocked in the desktop app.
 - Plugins are saved to the account and sync to Claude Code (v2.1.273 or later) once at each start, as `<name>@synced` (see `loading.md`, "Plugins synced from claude.ai"). They do not sync when Claude Code is signed in with an API key or runs on a cloud provider such as Amazon Bedrock.
