@@ -12,10 +12,14 @@ block() {
   exit 2
 }
 
-# The `if` filter is best effort: it also runs the hook for any command holding $VAR, $() or
-# backticks, so the command itself decides whether this is a push.
-command -v jq > /dev/null || block "pre-push checks: jq is not installed, so the hook can't read the command; the push is blocked."
+# The handler's `if` runs it for every git command (and, being best effort, for any command holding
+# $VAR, $() or backticks), so the command itself decides whether this is a push. Input that never
+# mentions push passes first, so a missing jq blocks only what may be a push.
 input="$(cat)"
+if [[ ${input} != *push* ]]; then
+  exit 0
+fi
+command -v jq > /dev/null || block "pre-push checks: jq is not installed, so the hook can't read the command; the push is blocked."
 cmd="$(jq -r '.tool_input.command // empty' <<< "${input}" 2> /dev/null)" \
   || block "pre-push checks: the hook input is not JSON; the push is blocked."
 # A push is `git`, any global options (each with an optional value, such as -C <dir>), then `push`

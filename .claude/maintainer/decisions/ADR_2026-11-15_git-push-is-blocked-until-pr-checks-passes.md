@@ -26,7 +26,7 @@ The rules already said to keep the plugin dropdowns in step with the catalog and
 
 ## Considered options
 
-- **A `PreToolUse` command hook on Bash, `if: Bash(git push*)`, that runs `pr-checks.sh`**: chosen.
+- **A `PreToolUse` command hook on Bash, `if: Bash(git *)`, that runs `pr-checks.sh`**: chosen. `Bash(git push*)` was narrower but misses a push with global options such as `git -C <dir> push`.
 - **A Git `pre-push` hook**: rejected, because the repository installs no Git hooks and they don't reach cloud sessions (refactor blueprint: husky and `.githooks/` were dropped).
 - **Instructions only**: rejected, because they already existed and failed.
 
@@ -37,15 +37,15 @@ Chosen option: **a `PreToolUse` hook on Bash**, because it fires on every push C
 ### Consequences
 
 - Good, because a push that would fail `Checks` is blocked before it leaves, with the failed steps' output.
-- Good, because it fails closed: missing `jq`, unreadable input or a missing script blocks, and `onFailure: "block"` covers a crash or a timeout of 900 s.
+- Good, because it fails closed on what may be a push: input that mentions `push` blocks when `jq` is missing, the input is not JSON or the script is missing, and `onFailure: "block"` covers a crash or a timeout of 900 s.
 - Bad, because each push waits for the full run (about 73 s on a clean branch).
-- Bad, because the `if` filter also fires on any Bash command holding `$VAR`, `$()` or backticks ([hooks#bash-if-matching](https://code.claude.com/docs/en/hooks)). The script parses the command and exits 0 at once unless it is `git`, any global options, then `push`.
+- Bad, because the hook starts for every git command, and the `if` filter also fires on any Bash command holding `$VAR`, `$()` or backticks ([hooks#bash-if-matching](https://code.claude.com/docs/en/hooks)). The script exits 0 at once when the input never mentions `push`, and otherwise unless the command is `git`, any global options, then `push`.
 
 ### Confirmation
 
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
-| A push is detected; `git status`, `git stash push` and a `grep` are not | Piped inputs with an empty project folder | 3 pushes exit 2, 3 non-pushes exit 0, non-JSON input exits 2 | After a change to the pattern |
+| A push is detected; `git status`, `git stash push` and a `grep` are not | Piped inputs with an empty project folder | 3 pushes exit 2; `git status`, `git stash push`, `git -C /x log`, a `grep` and non-JSON input without `push` exit 0; without `jq`, a push exits 2 and `git -C /x log` exits 0 | After a change to the pattern |
 | A failing branch is blocked with its error, a passing one goes through | The exact handler command, with one form broken, then restored | Exit 2 with `plugin dropdown lacks work-lifecycle`; exit 0 | After a change to the script |
 | It fires in a live session | `claude -p --debug-file` asking for a dry-run push, with one form broken | Claude reported the push blocked with the hook's reason | After a Claude Code upgrade that touches hooks |
 
