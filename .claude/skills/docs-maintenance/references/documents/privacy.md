@@ -16,7 +16,7 @@ How to create `PRIVACY.md` from `assets/PRIVACY-template.md`.
 Read 2026-11-10:
 
 - No official template exists: GitHub defines no privacy file among community health files.
-- Anthropic Software Directory Policy, section 3.A (quoted in `ADR_2026-11-05_plugins-share-one-root-privacy-policy`): "Developers of Software that collects user data or connects to a remote service must provide a clear, accessible privacy policy link explaining data collection, usage, and retention."
+- Anthropic Software Directory Policy, section 3.A: "Developers of Software that collects user data or connects to a remote service must provide a clear, accessible privacy policy link explaining data collection, usage, and retention."
 - Claude Code docs `plugins/manifest-reference`: `privacyPolicyUrl` is a directory listing field, an `https://` URL.
 
 ## Placeholders
@@ -52,7 +52,7 @@ Official:
 
 This repository:
 
-- One root policy for all plugins (`ADR_2026-11-05_plugins-share-one-root-privacy-policy`); each README keeps its own list of destinations.
+- One root policy for all plugins; each README keeps its own list of destinations.
 - The effective date changes with each update.
 - Build the inventory from the plugins' files, not from their READMEs:
   - destinations: remote MCP servers (`url` in `.mcp.json` or `mcpServers`); local MCP servers and package launchers (`npx`, `uvx`) that reach a registry; hook scripts (search for `curl`, `wget`, `fetch`, `http`, `urllib`, `requests`, `git clone`, `npm`, `npx`, `pip`, `gh`); HTTP hooks (their `url`) and prompt or agent hooks (the model); skills, agents and commands that use `WebFetch`, `WebSearch`, `gh`, `curl` or fixed URLs; dependencies installed from a registry

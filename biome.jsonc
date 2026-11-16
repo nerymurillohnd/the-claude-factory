@@ -391,7 +391,7 @@
     },
     {
       // A plugin's package.json holds only its runtime dependencies, which Claude Code installs
-      // for users (ADR_2026-10-27_plugins-ship-runtime-npm-dependencies-through-claude-code-install);
+      // for users;
       // the maintenance scripts live in the root package.json alone.
       "includes": [
         "plugins/*/package.json"
@@ -419,8 +419,7 @@
     },
     {
       // No script writes a tsconfig, so "always" has no reason here, and "auto" checks every
-      // tsconfig: ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand. The one Claude Code
-      // writes at a mod's root is git-ignored, so Biome skips it (ADR_2026-10-29_mods-commit-no-tsconfig).
+      // tsconfig. The one Claude Code writes at a mod's root is git-ignored, so Biome skips it.
       "includes": [
         "**/tsconfig.json",
         "**/tsconfig.*.json"

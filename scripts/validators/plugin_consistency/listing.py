@@ -3,7 +3,7 @@
 
 `claude plugin validate --profile directory` only reports an icon path that is not a file in the
 plugin: it accepts a plugin with no icon and a PNG of any shape or size. These checks keep every
-plugin on the project's icon convention (ADR_2026-11-13_restore-plugin-icon-sources-and-checks).
+plugin on the project's icon convention.
 They read files only and never render the SVG sources.
 """
 

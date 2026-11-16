@@ -35,8 +35,7 @@ def date_release(text: str, plugin: str, new: str, day: str, repo_url: str) -> s
     section = f"## [Unreleased]\n\n## [{new}] - {day}\n\n{notes}\n\n"
     text = text[: match.start()] + section + text[match.end() :]
     tag = f"{plugin}--v{new}"
-    # Each version links to its own release page, as every plugin CHANGELOG does
-    # (ADR_2026-11-13_changelog-versions-link-to-release-pages).
+    # Each version links to its own release page, as every plugin CHANGELOG does.
     link = f"{repo_url}/releases/tag/{tag}"
     unreleased = f"[Unreleased]: {repo_url}/compare/{tag}...HEAD\n[{new}]: {link}"
     if _UNRELEASED_LINK.search(text) is None:

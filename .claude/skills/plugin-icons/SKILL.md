@@ -5,7 +5,7 @@ description: Designs, draws, renders, reviews and checks the directory listing i
 
 # Plugin icons
 
-Each plugin ships one icon, `plugins/<plugin>/.claude-plugin/icon.png`, which Anthropic's directory shows on the plugin's listing. All 22 icons share one frame and one style, so a new icon has to look like part of the family, and nothing about it can be generated in a way that can't be reproduced. The decision and its evidence are in `.claude/maintainer/decisions/ADR_2026-11-13_restore-plugin-icon-sources-and-checks.md`.
+Each plugin ships one icon, `plugins/<plugin>/.claude-plugin/icon.png`, which Anthropic's directory shows on the plugin's listing. All 22 icons share one frame and one style, so a new icon has to look like part of the family, and nothing about it can be generated in a way that can't be reproduced.
 
 ## The pieces
 

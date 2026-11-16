@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // @ts-check
-// Renders each plugin's directory listing icon from its SVG source
-// (ADR_2026-11-13_restore-plugin-icon-sources-and-checks).
+// Renders each plugin's directory listing icon from its SVG source.
 //   npm run icons:render                    → render every plugin
 //   npm run icons:render -- <plugin>...     → render only those plugins
 //

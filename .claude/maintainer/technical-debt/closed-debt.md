@@ -51,8 +51,8 @@ The image ships its own ShellCheck 0.11.0 in `/nix/var/nix/profiles/default/bin`
 #### 🔗 Follow-up
 
 - **Residual risk:** the `~/.bashrc` step was not run against this session's own `~/.bashrc` (a write there was blocked by the permission classifier), so its effect on `PATH` is confirmed only at the first fresh session; the setup script's ShellCheck warning shows it if it fails. Version bumps for these tools are manual, since Dependabot does not read the setup script.
-- **Closed by:** the setup script replacement of 2026-11-13, under ADR_2026-11-13_cloud-dependencies-through-setup-script-and-npm-run-setup.
-- **Related records:** ADR_2026-11-13_cloud-dependencies-through-setup-script-and-npm-run-setup, ADR_2026-11-13_python-3-15-default-and-pinned-in-cloud-setup.
+- **Closed by:** the setup script replacement of 2026-11-13.
+- **Related records:** none.
 - **Superseded by:** none
 
 ### DEBT-004 — Changelog versions link to their release pages in the files, the procedure and the script
@@ -70,7 +70,7 @@ Step 5 of `.claude/skills/docs-maintenance/references/documents/changelog.md` an
 
 #### 🔧 The closure
 
-The owner kept the release-page format on 2026-11-13 (ADR_2026-11-13_changelog-versions-link-to-release-pages). Commit d3aef8e changed four places to link the new version to `{repositoryUrl}/releases/tag/<plugin>--v<version>`:
+The owner kept the release-page format on 2026-11-13. Commit d3aef8e changed four places to link the new version to `{repositoryUrl}/releases/tag/<plugin>--v<version>`:
 - the procedure's step 5
 - `plugin-releases` step 4
 - `scripts/release/release_tools/changelog.py`
@@ -88,8 +88,8 @@ The owner kept the release-page format on 2026-11-13 (ADR_2026-11-13_changelog-v
 #### 🔗 Follow-up
 
 - **Residual risk:** none.
-- **Closed by:** commit d3aef8e, under ADR_2026-11-13_changelog-versions-link-to-release-pages.
-- **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
+- **Closed by:** commit d3aef8e.
+- **Related records:** none.
 - **Superseded by:** none
 
 <!--
