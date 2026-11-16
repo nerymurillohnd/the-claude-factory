@@ -1,7 +1,7 @@
 ---
 name: auditing-skills
 description: Use every time the user or the task involves auditing, reviewing, checking, diagnosing, improving or refining a Claude Agent Skill, recommending changes to one, judging whether one is worth installing or finding why one misbehaves, and right after a skill or any of its files is created or edited, for every kind of skill, whether in a plugin, a personal, project or managed folder, a claude.ai account, a URL or a repository. Not for writing a new skill. Runs specialized reviewer agents in parallel, each bound to its own domain, against a curated collection of current best practices from the Claude Platform and Claude Code docs, Anthropic and the Agent Skills specification, and returns each one's complete report with explicit evidence for every finding, the corrections it needs and suggested improvements.
-argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [skill path, name or URL]"
+argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [skill path, name or URL]"
 ---
 
 # Auditing skills
@@ -31,13 +31,15 @@ Once you have read the skill (Workflow, step 2), answer them again with evidence
 
 Each reviewer carries its own expertise, reference, verification checklist and report template, so its prompt needs only what this skill tells you to give it. Each one receives the mechanical results listed under its name.
 
-- `content-patterns` → `skills-engineering:content-patterns-reviewer`: examples and output templates, embedded commands and code, the shape of the content, and its wording.
+- `content-patterns` → `skills-engineering:content-patterns-reviewer`: examples, embedded commands and code, the shape of the content, and its wording.
   - Receives: where the body's first 5,000 tokens end; misplaced inline `!` commands; every injected command; unescaped `$` before a digit, `ARGUMENTS` or a declared argument name; path variables written in reference files; backslash paths; unqualified MCP tool names; `@` references; capitalized absolutes; time-sensitive wording.
 - `runtime-contract` → `skills-engineering:runtime-contract-reviewer`: packaging boundary and archive layout, paths and variable substitution, plugin layout and cache, symlinks, discovery, precedence and surfaces, subagent consumption, and tool pre-approval.
   - Receives: the `claude plugin validate --json` output; the component inventory from `claude plugin details`; the name each skill registers under and its source, from `/context` and `/skill-doctor`; frontmatter parse errors; which referenced files and links exist and stay inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs, with its interpreter, shebang and executable bit; archive listings.
 - `size-limits-and-budgets` → `skills-engineering:size-limits-and-budgets-reviewer`: frontmatter field lengths, the `SKILL.md` body, supporting files, upload and install size, active-skill counts, script and injected-command output, and frontmatter hook budgets.
   - Receives: where the body's first 5,000 tokens end; the always-on and on-invoke token estimates from `claude plugin details`; the skill's listing cost after the budget from `/skill-doctor`, and the Skills total from `/context`; character counts of `name`, `description`, `when_to_use` and `compatibility`, and where the 1,536th character of `description` plus `when_to_use` falls; the body's line and approximate token counts; line counts of supporting files and which references over 100 lines lack a table of contents; bundle size and file count; the source's frontmatter hook count and total matcher characters; the length of any preload list shipped with the skill.
 - `knowledge-delta` → `skills-engineering:knowledge-delta-reviewer`: whether every passage gives Claude something it lacks without the skill, and which passages only spend context or make Claude worse.
+  - Receives: no mechanical result of its own; only the `/doctor prompt-audit` leads every reviewer gets.
+- `task-mechanisms` → `skills-engineering:task-mechanisms-reviewer`: whether the skill controls its task with the right workflows, checklists, validation loops, output templates, and planning or progress tracking, and how well each is built.
   - Receives: no mechanical result of its own; only the `/doctor prompt-audit` leads every reviewer gets.
 
 ## Choose the reviewers
@@ -71,7 +73,7 @@ This invocation's arguments: $ARGUMENTS
 6. Check each report before you accept it:
    - against the report template, [assets/audit-report.md](assets/audit-report.md), for its structure;
    - against its reviewer's verification checklist, in `${CLAUDE_PLUGIN_ROOT}/agents/<reviewer name>-reviewer.md`: Status is filled, every defect gives file, lines, quoted evidence or the measured figure, and its fix, and every checklist exception names a blocker;
-   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md) or [references/knowledge-delta.md](references/knowledge-delta.md), only when you need a section a finding cites to judge whether the report is complete.
+   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md) or [references/task-mechanisms.md](references/task-mechanisms.md), only when you need a section a finding cites to judge whether the report is complete.
 
    If a report falls short, resume that reviewer with `SendMessage`, name what is missing, and wait for the corrected report.
 7. Present the reports in this exact structure, with nothing added between them:
