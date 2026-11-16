@@ -5,7 +5,7 @@ description: Gives the exact syntax and behavior of every Claude Code plugin com
 
 # Claude Code plugin commands
 
-The reference files in `references/` hold every flag, message, JSON field, exit code and minimum version, checked against Claude Code 2.1.321, its docs and its changelog. Read the gotchas, pick the command, then load only the reference file the task needs.
+The reference files in `references/` hold every flag, message, JSON field, exit code and minimum version, checked against Claude Code 2.1.325 (every subcommand's `--help`), its docs and its changelog; the `/plugin` session runs in `references/session-commands.md` date from 2.1.321. Read the gotchas, pick the command, then load only the reference file the task needs.
 
 ## When this skill applies
 
@@ -20,13 +20,14 @@ This skill covers commands and their behavior. For a plugin's files, read the of
 - Where a plugin loads from and which setting wins: `https://code.claude.com/docs/en/plugins/loading.md`
 - An error message from any plugin command: `https://code.claude.com/docs/en/plugins/troubleshooting.md`, grouped by stage
 
-## Before you rely on a version-gated flag or behavior
+## Before you rely on a flag, a message or a behavior
 
-Claude Code ships often, and the user's version may differ from 2.1.321.
+Claude Code ships every few days, and the references can lag the user's version.
 
-1. Run `claude --version`, then `claude plugin <subcommand> --help` (or `claude plugin marketplace <subcommand> --help`) on the user's machine.
-2. For a flag or behavior marked "Requires Claude Code vX" or "(changelog X)", check the live page `https://code.claude.com/docs/en/plugins/cli-reference.md` or the changelog (`https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`). Each reference section names its official section on an `Official page:` line.
-3. Tell the user what differs from these references before acting on it. The installed binary wins over the docs, and the newest official source wins over an older one.
+1. Run `claude --version` on the user's machine. When it is newer than the version the references were checked on (top of this file), download `https://code.claude.com/docs/en/changelog.md` and read every plugin entry from that version up, as `references/reading-docs.md` shows, before you answer.
+2. Run `claude plugin <subcommand> --help` (or `claude plugin marketplace <subcommand> --help`) for each flag you will pass. A flag missing from `--help` is gone on that version.
+3. For a fact marked "Requires Claude Code vX", "(binary X)" or "(changelog X)", or one the user's output contradicts, download the section its `Official page:` line names, as `<page>.md`, and read it whole (`references/reading-docs.md`). If the download fails, don't stop: name the cause and use another route that file lists, and report a gap only after every route failed.
+4. Tell the user what differs from these references before acting on it. The installed binary wins over the docs, and the newest official source wins over an older one.
 
 Never write version checks or fallback paths into a script for the user. When a command fails, report its message and exit code, and look the message up on the troubleshooting page.
 
@@ -62,6 +63,9 @@ Never write version checks or fallback paths into a script for the user. When a 
 - A `--plugin-dir` plugin silently replaces a same-named installed plugin for that session, and `claude plugin list` still shows the installed row as enabled.
 - `--plugin-dir` at a marketplace root loads nothing and shows no error. Point it at the plugin directory.
 - `--plugin-dir` and `--plugin-url` go before the subcommand: `claude --plugin-dir <path> plugin details <name>`. `claude plugin details <name> --plugin-dir <path>` fails with `error: unknown option '--plugin-dir'`.
+- A flag or message these references list can be gone on a newer Claude Code: `claude plugin install --registry` fails with `error: unknown option '--registry'` on 2.1.325. Check `--help` before passing a flag the docs page doesn't list.
+- `claude plugin install <name>` without `@marketplace` reads the cached catalogs and refreshes nothing, so it can install an old version or miss a plugin published minutes ago. Name the marketplace, or run `claude plugin marketplace update <name>` first (`https://code.claude.com/docs/en/plugins/loading#when-claude-code-refreshes-a-marketplace-before-an-install`).
+- A plugin whose `plugin.json` sets `engines["claude-code"]` isn't installed, updated or loaded outside that version range, and install and update pick the newest version that fits (changelog 2.1.323).
 
 ## Which command fits the task
 
@@ -89,5 +93,6 @@ Never write version checks or fallback paths into a script for the user. When a 
 - `references/marketplace-commands.md`: `claude plugin marketplace add|list|remove|update`, every source form, private marketplace credentials and claude.ai marketplaces.
 - `references/session-commands.md`: every `/plugin` form, where `/plugin` runs on each surface, the panel tabs, and `/reload-plugins`.
 - `references/session-flags.md`: `--plugin-dir`, `--plugin-url`, `CLAUDE_CODE_PLUGIN_DIRS`, `@inline` plugins and their precedence.
+- `references/reading-docs.md`: how to download and read an official section and its explicit ids, check the changelog against the user's version, and what to do when a route fails. Read it before the first docs read of a task.
 
-Each reference opens with a contents list, and each section names its official section on an `Official page:` line. Search a reference with grep for the flag or message you need instead of reading it whole.
+Each reference opens with a contents list, and each section names its official section on an `Official page:` line: download it as `references/reading-docs.md` shows, never as the bare URL, which serves HTML. Search a reference with grep for the flag or message you need instead of reading it whole.

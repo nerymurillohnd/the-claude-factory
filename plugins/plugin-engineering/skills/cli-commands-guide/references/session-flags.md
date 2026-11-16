@@ -1,6 +1,6 @@
 # Flags that load a plugin for one session
 
-`--plugin-dir` and `--plugin-url` load a plugin for one session only, without installing it. Facts come from the CLI reference page, the plugin loading reference (`https://code.claude.com/docs/en/plugins/loading.md`), the troubleshooting page, `claude --help` on 2.1.319 (checked again on 2.1.321), runs on 2.1.319 and the changelog through 2.1.321. Under each heading that has an official section, `Official page:` links it: read it when a fact here looks outdated.
+`--plugin-dir` and `--plugin-url` load a plugin for one session only, without installing it. Facts come from the CLI reference page, the plugin loading reference (`https://code.claude.com/docs/en/plugins/loading.md`), the troubleshooting page, `claude --help` on 2.1.319 (checked again on 2.1.325), runs on 2.1.319 and the changelog through 2.1.325. Under each heading that has an official section, `Official page:` links it: download it as `references/reading-docs.md` shows and read the whole section when the user's Claude Code is newer than the version above, when output or `--help` differs from this file, and for anything this file doesn't cover.
 
 ## Contents
 
@@ -51,6 +51,7 @@ Official page: <https://code.claude.com/docs/en/plugins/loading#keep-a-session-o
 
 - A `--plugin-dir` directory loads in place and is never copied. Edits on disk apply after `/reload-plugins`.
 - A `--plugin-url` archive or a `--plugin-dir` `.zip` is extracted into a session temp directory first.
+- A `--plugin-dir` plugin's nested `.claude/skills` folders don't load in a session started in a folder above the plugin: start Claude Code in the plugin folder (changelog 2.1.325; not on the docs page). When a session-only plugin loads differently from this file, read `https://code.claude.com/docs/en/plugins/loading#name-conflicts` and search the changelog for `plugin-dir`, as `references/reading-docs.md` shows.
 
 ## Managed settings and the Agent SDK
 

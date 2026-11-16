@@ -1,6 +1,6 @@
 # `claude plugin` commands
 
-Every `claude plugin <subcommand>` you run from a shell or a script, outside a Claude Code session. Facts come from the CLI reference page (`https://code.claude.com/docs/en/plugins/cli-reference.md`), the `--help` of Claude Code 2.1.319 (every subcommand's `--help` checked again on 2.1.321), and the Claude Code changelog through 2.1.321. A line marked "(binary X)" or "(changelog X)" is newer than the docs page or absent from it. Under each heading, `Official page:` links the matching section of the official docs: read it when a fact here looks outdated, and for anything this file doesn't cover.
+Every `claude plugin <subcommand>` you run from a shell or a script, outside a Claude Code session. Facts come from the CLI reference page (`https://code.claude.com/docs/en/plugins/cli-reference.md`), the `--help` of Claude Code 2.1.319 (every subcommand's `--help` checked again on 2.1.325), and the Claude Code changelog through 2.1.325. A line marked "(binary X)" or "(changelog X)" is newer than the docs page or absent from it. Under each heading, `Official page:` links the matching section of the official docs: download it as `references/reading-docs.md` shows and read the whole section when the user's Claude Code is newer than the version above, when output or `--help` differs from this file, and for anything this file doesn't cover.
 
 ## Contents
 
@@ -49,6 +49,7 @@ Applies to `--json` on `install`, `uninstall`, `update`, `enable` and `disable`.
 - The last line of stdout is one JSON object. Parse only that line: Claude Code prints any command the marketplace declares ahead of it.
 - Always present: `command` (the subcommand that ran, such as `install`), `outcome` (`ok` or `failed`), `message` (human-readable).
 - Present only when they apply: `pluginId`, `scope`, `failureCode`, and the subcommand's own fields (for example `keptData`, `savedKept`, `alreadyInGoalState`, `shownCommand`).
+- `install` also reports `unsetOptionCount`, the number of `userConfig` options not yet set (changelog 2.1.323; not on the docs page). Fields are added often: before a script depends on one, check the section and the changelog from the user's version up, as `references/reading-docs.md` shows.
 - Same exit codes as without `--json`.
 - A marketplace-declared command is still shown and must be confirmed: pass `-y` when not interactive (binary 2.1.319 help).
 
@@ -99,7 +100,7 @@ Flags:
 - `--accept-command <sha256>`: accept the displayed command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. Has no effect inside a Claude Code session. Requires Claude Code v2.1.271 or later.
 - `--json`: print the result as one JSON object on the last line of stdout instead of the human message. Requires Claude Code v2.1.268 or later.
 - `--marketplace <source>`: install `<plugin>`, given by its bare name, from the marketplace at `<source>` (`owner/repo`, a git or https URL, or a path), adding the marketplace first if not added yet. A new marketplace is added under the same organization policy checks as `claude plugin marketplace add` and is declared in user settings even when you pass `--scope project`. Requires Claude Code v2.1.292 or later.
-- `--registry <url>`: for a `<package>@npm` install, resolve and download from this npm registry instead of the one your npm configuration selects (binary 2.1.319; not on the docs page).
+- `--registry <url>` was in the `--help` of 2.1.319 and is gone on 2.1.325 (`error: unknown option '--registry'`), with no changelog entry. Never pass it without first seeing it in `claude plugin install --help` on the user's machine (binary 2.1.325).
 
 Prompts and TTY:
 - Most plugins install without a prompt. A plugin whose marketplace entry runs a command to install it, or sets a `headersHelper` for its download, first prints the command and asks `Run this command now? [y/N]`.
@@ -112,10 +113,15 @@ Output:
 - Already installed at that scope: `Plugin "formatter@my-marketplace" is already installed (scope: project)`, exit `0`.
 - You decline a command-source prompt: `Aborted.`, exit `1`.
 - You decline a `headersHelper` prompt, or it can't be confirmed without a TTY: `Aborted — the command was not run.`, exit `1`.
+- An install command that writes to stderr ends in a warning instead of the success line, and a marketplace or plugin whose git submodule isn't on the commit its repository records fails to install (changelog 2.1.323).
 
 Dependencies: Claude Code also installs and enables the plugin's declared dependencies at the same scope, and the success message lists them (install guide, Plugins with dependencies).
 
 When it loads: the next time Claude Code starts, or after `/reload-plugins` in a running session.
+
+Which catalog it reads: with `name@marketplace`, Claude Code refreshes that marketplace first; with a bare name, `claude plugin install` reads the cached catalogs without refreshing. A failed refresh installs from the cache and reports `marketplace not refreshed`. For the cases that skip the refresh, read `https://code.claude.com/docs/en/plugins/loading#when-claude-code-refreshes-a-marketplace-before-an-install` (download it as `references/reading-docs.md` shows).
+
+Version range (changelog 2.1.323): a plugin whose `plugin.json` sets `engines["claude-code"]` isn't installed, updated or loaded outside that range, and install and update pick the newest version that fits. No docs page describes the field yet: before explaining a version a user got, or a plugin that doesn't load, search the changelog for `engines` and the manifest reference for the field, as `references/reading-docs.md` shows.
 
 On a new machine where no interactive session has run yet, the official marketplace isn't registered: a script runs `claude plugin marketplace add anthropics/claude-plugins-official` before installing from it.
 
@@ -224,6 +230,7 @@ Output:
 - Dependency retry: when the plugin is already at its latest version, the command can retry an unfinished dependency install in its cached copy. If the retry fails: `Failed to update plugin "formatter@my-marketplace"` with the reason, exit `1`. Before v2.1.287, it reported the plugin at its latest version without retrying.
 - A plugin loaded from a directory: prints just its reason, without the `Failed to update plugin` prefix (changelog 2.1.290).
 - Since 2.1.319, `update` installs dependencies added by the new plugin version (changelog 2.1.319).
+- Since 2.1.323, `update` picks the newest version whose `engines["claude-code"]` range fits the running Claude Code, which can be older than the newest the marketplace offers (changelog 2.1.323; see plugin install, Version range).
 
 There is no command that updates every plugin at once. `claude plugin marketplace update` with no name refreshes every marketplace's listing but leaves installed plugins at their current versions. To update all plugins from one marketplace, use the Marketplaces tab of `/plugin` → Update marketplace (it skips command-source and `headersHelper` plugins, which are updated one by one).
 
@@ -501,7 +508,9 @@ Output and exit codes: the file validated, errors and warnings with their paths,
   - `gatingHooks`: for each mod hook that can refuse an action (such as a `tool.call` hook), whether it has a `.catch` handler: `module`, `pattern`, `hook`, `hasCatch`. Requires v2.1.290 or later.
 - `advice`: each entry names the README as `file`, with a `message` and the `installLine` to paste. Empty when none. Requires v2.1.295 or later.
 
-Notes on mods (changelog): 2.1.299 added a note naming a mod's hooks that are skipped where an organization manages Claude Code; 2.1.304 removed the notes that predicted where a mod's hooks would run.
+Findings added by the changelog and not on the docs page: 2.1.299 added a note naming a mod's hooks that are skipped where an organization manages Claude Code; 2.1.304 removed the notes that predicted where a mod's hooks would run; 2.1.323 added type checking of a TypeScript hooks module (warnings, so `--strict` fails on them), fails a mod whose `engine.create` hook isn't in the accepted form, and warns about a plugin's deprecated `agent` setting; 2.1.325 reports some unsafe paths and links in a plugin's folder (`https://code.claude.com/docs/en/plugins/loading#paths-that-escape-the-plugin-directory`).
+
+Before gating CI on `--strict`, or explaining a finding this file doesn't list, search the changelog for `validate` from the user's version up and read the troubleshooting entry for the message, as `references/reading-docs.md` shows: new checks turn a passing `--strict` run into a failing one.
 
 Advice on the README (requires v2.1.295 or later):
 - An `ℹ Advice (does not change the verdict):` block means a plugin's README has no line that installs the plugin from a marketplace, with a suggested line. It changes neither the verdict nor the exit code, with or without `--strict`.

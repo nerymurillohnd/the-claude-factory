@@ -1,6 +1,6 @@
 # `claude plugin marketplace` commands
 
-Every `claude plugin marketplace <subcommand>` you run from a shell to add, list, refresh and remove the marketplaces plugins install from. Facts come from the CLI reference page, the install guide, the `--help` of Claude Code 2.1.319 (checked again on 2.1.321), runs of these commands on 2.1.319 and the changelog through 2.1.321. A line marked "(binary X)" or "(changelog X)" is newer than the docs page or absent from it. Under each heading, `Official page:` links the matching section of the official docs: read it when a fact here looks outdated, and for anything this file doesn't cover.
+Every `claude plugin marketplace <subcommand>` you run from a shell to add, list, refresh and remove the marketplaces plugins install from. Facts come from the CLI reference page, the install guide, the `--help` of Claude Code 2.1.319 (checked again on 2.1.325), runs of these commands on 2.1.319 and the changelog through 2.1.325. A line marked "(binary X)" or "(changelog X)" is newer than the docs page or absent from it. Under each heading, `Official page:` links the matching section of the official docs: download it as `references/reading-docs.md` shows and read the whole section when the user's Claude Code is newer than the version above, when output or `--help` differs from this file, and for anything this file doesn't cover.
 
 ## Contents
 
@@ -51,7 +51,7 @@ Flags:
 - `--json`: JSON result line. Has no effect with `--claudeai`. Requires Claude Code v2.1.287 or later.
 
 Source forms and the source type each becomes:
-- `owner/repo`, `owner/repo#ref` or `owner/repo@ref`: `github`. Clones the GitHub repository, pinned to `ref` when given. Owner and repo must follow GitHub naming rules.
+- `owner/repo`, `owner/repo#ref` or `owner/repo@ref`: `github`. Clones the GitHub repository, pinned to `ref` when given: a branch, a tag, or the full lowercase SHA of a commit on a branch or tag. A SHA requires Claude Code 2.1.325 or later (the marketplace reference says v2.1.324, the changelog lists the change under 2.1.325) and is refused for a reserved marketplace name; clients before that version can't clone such a pin and stop loading the marketplace. Read `https://code.claude.com/docs/en/plugins/marketplace-reference#fields-by-type` before pinning a SHA. Owner and repo must follow GitHub naming rules.
 - `user@host:path[.git][#ref]`: `git`. Clones over SSH.
 - An `http://` or `https://` URL that ends in `.git[#ref]` or contains `/_git/`, such as `https://example.com/repo.git`: `git`. Clones the URL, Azure DevOps URLs included.
 - `https://github.com/owner/repo` or `https://gitlab.com/namespace/project`, or the same over `http://`: `git`. Clones the URL after appending `.git`. A `gitlab.com` URL with nested subgroups, such as `https://gitlab.com/group/subgroup/project`, is cloned too.
@@ -98,7 +98,7 @@ Output:
 - `repo`: `owner/repo`. `github` sources only.
 - `url`: the clone or fetch URL. `git` and `url` sources only.
 - `path`: the local path. `directory` and `file` sources only.
-- `ref`: the pinned branch or tag. `github` and `git` sources, only when pinned.
+- `ref`: the pinned branch, tag or commit SHA. `github` and `git` sources, only when pinned.
 - `installLocation`: where Claude Code cached the marketplace.
 - An added claude.ai marketplace has no local clone: it carries `marketplaceId` and `organizationUuid` in place of `installLocation`, plus `scope` when one is recorded, and `status`.
 
@@ -125,7 +125,7 @@ Example: `claude plugin marketplace remove your-marketplace`
 
 Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-update>
 
-`claude plugin marketplace update [name] [options]`. Refreshes one marketplace, or every marketplace, from its source to fetch new plugins and versions. A marketplace added with a branch or tag `ref` updates to the latest commit of that ref, not the repository's default branch.
+`claude plugin marketplace update [name] [options]`. Refreshes one marketplace, or every marketplace, from its source to fetch new plugins and versions. A marketplace added with a branch or tag `ref` updates to the latest commit of that ref, not the repository's default branch. A marketplace pinned to a commit SHA stays on that commit.
 
 Flags:
 - `--json`: JSON result line. Only with a name: without one, the command refuses `--json` and exits `1` (2.1.319 prints `--json needs a marketplace name, for example: claude plugin marketplace update <name> --json`). Requires Claude Code v2.1.287 or later.
@@ -149,6 +149,7 @@ The same `add` command adds a private marketplace. Claude Code clones it with th
 - GitHub `owner/repo` shorthand: Claude Code checks whether the SSH key authenticates to `github.com`, then clones over SSH if it does and HTTPS if not. `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` skips the check and always clones over HTTPS.
 - The same credentials apply to `/plugin install`, `/plugin marketplace update` and `claude plugin update`.
 - A GitHub Enterprise Server host has its own credential rules for each operation: `https://code.claude.com/docs/en/github-enterprise-server#plugin-marketplaces-on-ghes`.
+- Proxy and authentication messages change between versions (changelog 2.1.325 changed how downloads use `ALL_PROXY` and reworded `HTTPS authentication failed`). For any clone or credential error not listed here, search the changelog for the message and read its entry on `https://code.claude.com/docs/en/plugins/troubleshooting.md`, as `references/reading-docs.md` shows.
 
 ## Marketplaces from claude.ai
 
