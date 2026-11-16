@@ -10,6 +10,10 @@ hooks:
           command: bash "${CLAUDE_PLUGIN_ROOT}/skills/migrating-plugins/scripts/ask-before-destructive.sh"
           onFailure: block
         - type: command
+          if: Bash(claude plugins *)
+          command: bash "${CLAUDE_PLUGIN_ROOT}/skills/migrating-plugins/scripts/ask-before-destructive.sh"
+          onFailure: block
+        - type: command
           if: Bash(rm *)
           command: bash "${CLAUDE_PLUGIN_ROOT}/skills/migrating-plugins/scripts/ask-before-destructive.sh"
           onFailure: block
@@ -88,7 +92,7 @@ These actions destroy a plugin, its data or a marketplace, or reach every user, 
 - in Claude and claude.ai: **Remove** on an account's plugin, or removing users from its **Share** list, which stops it loading for them; **Delist plugin**, **Withdraw submission** or **Delete draft** in the developer portal; and in Organization settings **Delete source**, **Remove from organization**, deleting a plugin from the Inventory tab, or availability set to **Not available**;
 - pushing, tagging with `--push`, publishing in the developer portal, re-syncing an organization, or delivering changed managed settings, because from there the change reaches every user.
 
-While this skill is active, its `PreToolUse` hook backs this list up. It asks the user before the plugin CLI removals above, before `rm`, `rmdir`, `unlink`, `git rm` or `find -delete` on plugin, marketplace or `~/.claude/plugins/` paths, and before a `marketplace.json` edit that touches `forceRemoveDeletedPlugins` or maps a plugin to `null`. It leaves every other command alone, pushes included. It can't see `/plugin`, claude.ai, the developer portal or `marketplace.json` edits made through `Bash`, and before Claude Code 2.1.295 a hook that fails to run lets the action through. Ask first anyway: the hook is a safety net, not the rule.
+While this skill is active, its `PreToolUse` hook backs this list up. It asks the user before the plugin CLI removals above (also through the `claude plugins` alias), before `rm`, `rmdir`, `unlink`, `git rm` or `find -delete` on plugin, marketplace or `~/.claude/plugins/` paths, and before a `marketplace.json` edit that touches `forceRemoveDeletedPlugins` or maps a plugin to `null`. It leaves every other command alone, pushes included. It can't see `/plugin`, claude.ai, the developer portal or `marketplace.json` edits made through `Bash`, and before Claude Code 2.1.295 a hook that fails to run lets the action through. Ask first anyway: the hook is a safety net, not the rule.
 
 ## When a step fails
 
