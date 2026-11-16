@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-16
+
+### Added
+
+- **plugin-engineering** 0.4.0 — the new `migrating-plugins` skill plans and carries out renames, merges, splits, updates, retirements and removals of plugins and marketplaces in every place a plugin lives, resumes one already under way, and, while it is active, a hook asks you before any step that deletes a plugin, its data or a marketplace.
+
 ## 2026-11-15
 
 ### Added

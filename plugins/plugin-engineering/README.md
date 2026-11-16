@@ -2,7 +2,7 @@
 
 # 🔧 Plugin Engineering
 
-<p><strong>Builds and maintains a public Claude Code plugin marketplace on GitHub from the official docs, distilled for plugins that third parties install: marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings, validation and releases, checked against the latest release notes. Includes the complete plugin CLI reference: every claude plugin and claude plugin marketplace subcommand, /plugin form and session flag, with exact flags, messages, JSON fields, exit codes and minimum versions. Tests, troubleshoots and debugs plugins: why one won't install, load or run, a check before publishing, and plugin evals with CI gates.</strong></p>
+<p><strong>Builds and maintains a public Claude Code plugin marketplace on GitHub from the official docs, distilled for plugins that third parties install: marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings, validation and releases, checked against the latest release notes. Includes the complete plugin CLI reference: every claude plugin and claude plugin marketplace subcommand, /plugin form and session flag, with exact flags, messages, JSON fields, exit codes and minimum versions. Tests, troubleshoots and debugs plugins: why one won't install, load or run, a check before publishing, and plugin evals with CI gates. Plans and carries out renames, merges, splits, updates, retirements and removals of plugins and marketplaces in every context a plugin lives in, and asks before any step that deletes a plugin, its data or a marketplace.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fplugin-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
@@ -23,7 +23,7 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Ask Claude to design, build, fix or release a plugin for your public GitHub marketplace, and it works from the official docs instead of memory, checks what changed in newer Claude Code releases, and validates the result. Ask it to install, update, validate, tag or remove a plugin or marketplace, and it runs the right command with the right flags and reads the exact message and exit code. Ask it why a plugin won't load, or to test one before you publish it, and it finds the documented cause and checks the fix.
+> **TL;DR** — Ask Claude to design, build, fix or release a plugin for your public GitHub marketplace, and it works from the official docs instead of memory, checks what changed in newer Claude Code releases, and validates the result. Ask it to install, update, validate, tag or remove a plugin or marketplace, and it runs the right command with the right flags and reads the exact message and exit code. Ask it why a plugin won't load, or to test one before you publish it, and it finds the documented cause and checks the fix. Ask it to rename, merge, split, retire or remove a plugin, and it plans every stage in every place the plugin lives and asks before anything that deletes data.
 
 Plugin Engineering gives Claude the official documentation for running a public Claude Code plugin marketplace on GitHub, distilled for plugins that other people install. It covers marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings, validation and releases, plus the complete plugin CLI reference. Claude works from these pages instead of memory and checks newer Claude Code release notes before it relies on a version-sensitive fact.
 
@@ -35,17 +35,20 @@ Plugin Engineering gives Claude the official documentation for running a public 
 - **No more guessing flags** — every `claude plugin` and `claude plugin marketplace` subcommand, every `/plugin` form, `/reload-plugins`, `--plugin-dir` and `--plugin-url`, with their flags, defaults and aliases, is at hand in every session.
 - **Scripts that read results correctly** — exact output and error messages, `--json` fields and exit codes, so a CI job or setup script acts on what the command really reported.
 - **Fewer destructive surprises** — Claude knows that removing a marketplace uninstalls its plugins, that uninstalling deletes saved data, and that `/plugin install` with a path installs nothing, and it warns you before it acts.
+- **Renames and removals that don't break installs** — Claude plans a rename, merge, split, update, retirement or removal stage by stage for every place the plugin lives (a machine, a Claude account, your marketplace, Anthropic's directory, an organization, managed settings), finds where a change already started stands, and checks the result where users get it.
 - **Debugging that finds the cause** — when a plugin won't install, load or run, Claude places the failure at its loading stage, matches the exact message to its documented cause, and checks every place the same cause reaches before it fixes anything.
 - **Evals that mean something** — Claude writes and runs `claude plugin eval` suites, compares the plugin against no plugin, and gates a CI job on whether the plugin still helps.
 - **Version-aware** — each version-gated flag carries its minimum Claude Code version, and Claude checks `--help` on your version before relying on one.
 
 ## 🧩 What's inside
 
-| Component | Name                                              | What it does                                                                                                                                                                                                                                                                                 | How it runs                                                                                                                                                                          |
-| :-------- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🎯 Skill  | `plugin-engineering:public-marketplace-dev`       | The official docs for building and maintaining plugins in a public GitHub marketplace: 65 references, with the official images and example manifests, and a procedure for checking facts against the latest release notes                                                                    | Automatically when you design, build, release or maintain plugins in a public GitHub marketplace, or `/plugin-engineering:public-marketplace-dev`                                    |
-| 🎯 Skill  | `plugin-engineering:plugin-testing-and-debugging` | Tests, troubleshoots and debugs plugins with the official CLI: every documented message by the stage that produces it, the loading rules, a check before publishing, how plugins load in cloud sessions, Claude and the Agent SDK, and plugin evals with case templates and a CI gate script | Automatically when a plugin won't install, load or run, when you review one before publishing, or when you write or run evals, or `/plugin-engineering:plugin-testing-and-debugging` |
-| 🎯 Skill  | `plugin-engineering:cli-commands-guide`           | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags                                                                                                                                            | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:cli-commands-guide`                                                                                |
+| Component | Name                                                   | What it does                                                                                                                                                                                                                                                                                                           | How it runs                                                                                                                                                                          |
+| :-------- | :----------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🎯 Skill  | `plugin-engineering:public-marketplace-dev`            | The official docs for building and maintaining plugins in a public GitHub marketplace: 65 references, with the official images and example manifests, and a procedure for checking facts against the latest release notes                                                                                              | Automatically when you design, build, release or maintain plugins in a public GitHub marketplace, or `/plugin-engineering:public-marketplace-dev`                                    |
+| 🎯 Skill  | `plugin-engineering:plugin-testing-and-debugging`      | Tests, troubleshoots and debugs plugins with the official CLI: every documented message by the stage that produces it, the loading rules, a check before publishing, how plugins load in cloud sessions, Claude and the Agent SDK, and plugin evals with case templates and a CI gate script                           | Automatically when a plugin won't install, load or run, when you review one before publishing, or when you write or run evals, or `/plugin-engineering:plugin-testing-and-debugging` |
+| 🎯 Skill  | `plugin-engineering:cli-commands-guide`                | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags                                                                                                                                                                      | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:cli-commands-guide`                                                                                |
+| 🎯 Skill  | `plugin-engineering:migrating-plugins`                 | Plans and carries out renames, merges, splits, updates, retirements, deprecations and removals of plugins and marketplaces, or resumes one already under way: the official procedure for each context a plugin lives in, a guide to the messages users see after a change, and notes for the users who have the plugin | Automatically when you rename, update, retire, remove, merge, split or move a plugin or marketplace, or when an update doesn't arrive, or `/plugin-engineering:migrating-plugins`    |
+| 🪝 Hook   | `PreToolUse` in `plugin-engineering:migrating-plugins` | Asks you before a plugin CLI removal, before deleting plugin, marketplace or `~/.claude/plugins/` files, and before a `marketplace.json` edit that turns on `forceRemoveDeletedPlugins` or maps a plugin to `null`. It never blocks on its own and lets every other command through                                    | From the moment the skill loads until the session ends                                                                                                                               |
 
 ## 📋 Prerequisites
 
@@ -57,9 +60,10 @@ Plugin Engineering gives Claude the official documentation for running a public 
 | git (optional; if installed, eval runs need this version) | 2.31            | `git --version`     |
 | bubblewrap (Linux, for eval suites that grant Bash)       | —               | `bwrap --version`   |
 | socat (Linux, for eval suites that grant Bash)            | —               | `socat -V`          |
+| Bash (for the `migrating-plugins` hook)                   | 3.2             | `bash --version`    |
 | Claude Code docs MCP server (recommended)                 | —               | `claude mcp list`   |
 
-The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux. Python 3 is needed only for the eval gate script, when you gate a CI job on eval results.
+The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux. The `migrating-plugins` hook runs with Bash and `grep`, which come with macOS and Linux too. Python 3 is needed only for the eval gate script, when you gate a CI job on eval results.
 
 git matters only when you run `claude plugin eval`: with a git older than 2.31 on your `PATH`, the command stops before running any case; without git, it runs normally. Eval suites that grant Bash run every command in Claude Code's OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`. The docs server is Anthropic's official docs MCP server: the skills carry dated copies of the official pages and send Claude to the live page when a copy is missing a section or may be outdated, and the server lets Claude search and read that page instead of recalling it. You add it once; the plugin doesn't install it.
 
@@ -329,6 +333,7 @@ You don't need to call the skills: Claude loads them when a task involves plugin
 /plugin-engineering:public-marketplace-dev
 /plugin-engineering:cli-commands-guide
 /plugin-engineering:plugin-testing-and-debugging
+/plugin-engineering:migrating-plugins
 ```
 
 ### Add a hook to a plugin you publish
@@ -387,6 +392,14 @@ My formatter plugin works with --plugin-dir, but after I install it from our mar
 
 **Result:** Claude reads `claude plugin list --json` and the plugin's details, places the failure in the installed copy, explains that an installed plugin is copied without the files outside its folder, and gives you the fix and the check that shows it worked.
 
+### Rename a plugin without breaking installs
+
+```text
+Rename my formatter plugin to code-formatter in my marketplace without breaking anyone's install.
+```
+
+**Result:** Claude reads where the plugin lives and how it is versioned, checks whether only the label needs to change, then plans the rename stage by stage: the new entry, the `renames` map, the version, the notes that tell users to install the new name once, and the check that an existing install migrates. It asks before every push and before any step that deletes data.
+
 ### Gate a CI job on plugin evals
 
 ```text
@@ -397,7 +410,7 @@ Our eval job passes even when the plugin stopped helping. Make it fail then.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** none. The plugin ships skills and their reference files, plus the eval templates the `plugin-testing-and-debugging` skill gives you, such as `fixture.sh` (an eval case's workspace setup), which runs only when you pass `--scaffold`.
+- **Hooks:** `PreToolUse` on `Bash`, `Edit` and `Write` runs `skills/migrating-plugins/scripts/ask-before-destructive.sh`, registered only once the `migrating-plugins` skill loads and kept until the session ends. It reads each `claude plugin`, `rm`, `rmdir`, `unlink`, `git rm` or `find` command and each `marketplace.json` edit as text, and returns `ask` for a removal that deletes plugins, their data or a marketplace, so Claude Code asks you first; it sends nothing, writes nothing and changes no command, and if it fails to run, the call is blocked rather than let through. Hooks run on their own, with your access and without a permission prompt. The plugin also ships skills and their reference files, plus the eval templates the `plugin-testing-and-debugging` skill gives you, such as `fixture.sh` (an eval case's workspace setup), which runs only when you pass `--scaffold`.
 - **MCP servers:** none.
 - **Network:** none from the plugin itself. When Claude checks whether something changed in a newer Claude Code release, the skill tells it to download the public Claude Code changelog (`raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`) with `curl` to a temporary file, read only the releases it needs, and delete the file; or to read the live Claude Code docs (`code.claude.com`) and release notes with Claude's own web tools, or through the Claude Code docs server when you added it. Nothing about you is sent there.
 - **Commands run:** only the `claude plugin` commands your task needs, such as `claude plugin validate --strict` after Claude changes plugin files through Claude's Bash tool and its usual permission prompts. The skill tells Claude to confirm before a command that deletes data, such as `claude plugin marketplace remove` or `claude plugin uninstall`.
@@ -448,11 +461,12 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-------- | :---------: | :----: |
-| 🎯 Skills |     ✅      |   ✅   |
+| Component | Claude Code |                  Claude                   |
+| :-------- | :---------: | :---------------------------------------: |
+| 🎯 Skills |     ✅      |                    ✅                     |
+| 🪝 Hooks  |     ✅      | ⚠️ not documented for a skill's own hooks |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
+<sub>The `migrating-plugins` hook is declared in the skill's frontmatter, which the docs don't cover for Claude; there the skill still tells Claude to ask before every step that deletes data. ✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
 **Platforms:** macOS and Linux.
 

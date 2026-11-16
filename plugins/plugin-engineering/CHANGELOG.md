@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-16
+
+### Added
+
+- `migrating-plugins`, a new skill that plans and carries out renames, merges, splits, updates, retirements, deprecations, delistings and removals of plugins and marketplaces from start to finish, or resumes one already under way. It covers each place a plugin lives (a machine, a Claude account and its synced plugins, a marketplace you maintain, Anthropic's directory, a claude.ai organization and managed settings), decides whether the requested change is the right one, finds where the work stands, and verifies the result where users get it. It also explains the messages users see when a change didn't reach them, and writes the notes for users who have the plugin.
+- While `migrating-plugins` is active, a `PreToolUse` hook asks you before a plugin CLI removal, before deleting plugin, marketplace or `~/.claude/plugins/` files, and before a `marketplace.json` edit that turns on `forceRemoveDeletedPlugins` or maps a plugin to `null`. It needs Bash 3.2 or later, and it never blocks a command on its own.
+
 ## [0.3.1] - 2026-11-15
 
 ### Removed
@@ -76,7 +83,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.0
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.3
