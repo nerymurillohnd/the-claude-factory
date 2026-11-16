@@ -461,12 +461,12 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code |                  Claude                   |
-| :-------- | :---------: | :---------------------------------------: |
-| 🎯 Skills |     ✅      |                    ✅                     |
-| 🪝 Hooks  |     ✅      | ⚠️ not documented for a skill's own hooks |
+| Component | Claude Code |                       Claude                        |
+| :-------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills |     ✅      |                         ✅                          |
+| 🪝 Hooks  |     ✅      | ⚠️ only in conversations where Claude can run tasks |
 
-<sub>The `migrating-plugins` hook is declared in the skill's frontmatter, which the docs don't cover for Claude; there the skill still tells Claude to ask before every step that deletes data. ✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
 **Platforms:** macOS and Linux.
 
