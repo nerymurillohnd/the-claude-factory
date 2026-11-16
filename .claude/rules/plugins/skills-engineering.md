@@ -8,7 +8,7 @@ paths:
 
 - The main session loads `skills/auditing-skills/SKILL.md`. It runs the skill's scripts for every mechanical check (counts, positions, whether a pattern appears, parsing, the validator), studies the audited skill completely, briefs each reviewer, launches the selected reviewers in parallel, holds each report to its checklist, presents every report complete and verbatim, and then recommends where to start.
 - Each reviewer is a subagent at `agents/<area>-reviewer.md`. It never loads the skill, its `SKILL.md` or its scripts, and judges only what needs judgment. It reads exactly two files, by explicit `${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/...` paths: its reference at `references/<area>.md` and the shared template at `assets/audit-report.md`.
-- Each reviewer audits only the areas its reference defines. Give every rule one owner: when two references would judge the same thing, state in one of them that the other owns it.
+- Each reviewer audits only the areas its reference defines. Give every rule one owner: a rule two references would judge stays in one and leaves the other. No agent or reference names another reviewer or what another covers; `SKILL.md` sets each reviewer's bounds when it briefs it, by naming only that reviewer's own areas.
 - Add each new reviewer to the Reviewers list in `SKILL.md`, with its argument name and its scoped id `skills-engineering:<area>-reviewer`.
 
 ## Reviewer agent files
