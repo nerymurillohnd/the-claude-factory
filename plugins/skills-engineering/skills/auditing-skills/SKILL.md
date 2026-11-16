@@ -1,7 +1,7 @@
 ---
 name: auditing-skills
 description: Use every time the user or the task involves auditing, reviewing, checking, diagnosing, improving or refining a Claude Agent Skill, recommending changes to one, judging whether one is worth installing or finding why one misbehaves, and right after a skill or any of its files is created or edited, for every kind of skill, whether in a plugin, a personal, project or managed folder, a claude.ai account, a URL or a repository. Not for writing a new skill. Runs specialized reviewer agents in parallel, each bound to its own domain, against a curated collection of current best practices from the Claude Platform and Claude Code docs, Anthropic and the Agent Skills specification, and returns each one's complete report with explicit evidence for every finding, the corrections it needs and suggested improvements.
-argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [skill path, name or URL]"
+argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [skill path, name or URL]"
 ---
 
 # Auditing skills
@@ -41,6 +41,8 @@ Each reviewer carries its own expertise, reference, verification checklist and r
   - Receives: no mechanical result of its own; only the `/doctor prompt-audit` leads every reviewer gets.
 - `task-mechanisms` → `skills-engineering:task-mechanisms-reviewer`: whether the skill controls its task with the right workflows, checklists, validation loops, output templates, and planning or progress tracking, and how well each is built.
   - Receives: no mechanical result of its own; only the `/doctor prompt-audit` leads every reviewer gets.
+- `frontmatter-description` → `skills-engineering:frontmatter-description-reviewer`: frontmatter structure and parsing, each field's validity and fit on every target surface, the name, the description as the text Claude chooses the skill by, and activation and trigger tests.
+  - Receives: the `claude plugin validate --json` output; frontmatter parse errors; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
 
 ## Choose the reviewers
 
@@ -73,7 +75,7 @@ This invocation's arguments: $ARGUMENTS
 6. Check each report before you accept it:
    - against the report template, [assets/audit-report.md](assets/audit-report.md), for its structure;
    - against its reviewer's verification checklist, in `${CLAUDE_PLUGIN_ROOT}/agents/<reviewer name>-reviewer.md`: Status is filled, every defect gives file, lines, quoted evidence or the measured figure, and its fix, and every checklist exception names a blocker;
-   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md) or [references/task-mechanisms.md](references/task-mechanisms.md), only when you need a section a finding cites to judge whether the report is complete.
+   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md), [references/task-mechanisms.md](references/task-mechanisms.md) or [references/frontmatter-description.md](references/frontmatter-description.md), only when you need a section a finding cites to judge whether the report is complete.
 
    If a report falls short, resume that reviewer with `SendMessage`, name what is missing, and wait for the corrected report.
 7. Present the reports in this exact structure, with nothing added between them:
