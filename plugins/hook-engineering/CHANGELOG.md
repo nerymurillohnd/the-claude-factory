@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-16
+
+### Fixed
+
+- The skills and the `hook-engineer` agent find the Claude Code docs MCP tools by their own names through tool search, whatever name you gave the server. Before, they looked for the server under the name this README suggests or the name a claude.ai connector gets, so a server you named differently could be missed. They now read each docs section from the page's Markdown first, use the docs server next and WebFetch last, and try another way when one fails before saying the docs could not be read.
+- The descriptions of `hook-development`, `writing-hooks` and `hook-engineer` no longer compete for the same requests: `writing-hooks` is for writing a new hook, `hook-development` for auditing, debugging and questions about how hooks behave, and the agent for that work in its own context, returned as a report.
+
 ## [0.3.0] - 2026-11-15
 
 ### Added
@@ -70,7 +77,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Helper scripts: a linter for hooks configuration files, a probe that predicts how Claude Code reads a command hook's result, and a changelog script that lists the hook-related entries newer than your installed version.
 - The `claude-code-docs` MCP server (`https://code.claude.com/docs/mcp`), so Claude reads the official hooks pages instead of recalling them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.1...HEAD
+[0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.0
 [0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.6
 [0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.5
