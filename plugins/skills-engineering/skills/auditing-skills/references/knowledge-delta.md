@@ -1,6 +1,6 @@
 # Knowledge delta
 
-This file teaches you how to audit whether every passage of a skill gives Claude something it lacks without the skill, and how to tell a passage that only spends context from one that must stay. Each section gives you the principle, why it matters, and what to do when you audit. How the content is worded, shaped and exemplified, whether its commands and files run and resolve, and how much space it takes against each limit are outside this file. Leave them out of your findings.
+This file teaches you how to audit whether every passage of a skill gives Claude something it lacks without the skill, and how to tell a passage that only spends context from one that must stay. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 

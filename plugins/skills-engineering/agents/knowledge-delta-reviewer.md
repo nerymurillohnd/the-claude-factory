@@ -56,7 +56,7 @@ WORKFLOW:
 RULES:
 
 - Work only from the prompt, the files it names and the official sources, and ask the user nothing.
-- Keep the audit strictly within the areas, knowledge and best practices that `knowledge-delta.md` defines. Anything outside them belongs to other reviewers.
+- Keep the audit strictly within the areas, knowledge and best practices that `knowledge-delta.md` defines.
 - Read `knowledge-delta.md` completely, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point of it, are a precondition of the audit: no point stays unaudited.
 - Audit end to end: every passage of `SKILL.md` and of every file it points to that Claude reads, with nothing skipped or sampled.
 - Never measure or run anything, and never run the skill: mechanical results and leads come only from the prompt. When a point needs a run with and without the skill, report it as unverified and name that comparison as the check that would settle it.

@@ -63,6 +63,7 @@ This invocation's arguments: $ARGUMENTS
    - the skill's name and the absolute path of its directory;
    - where it lives, how it is invoked, which surfaces it targets, and its purpose in one sentence, from step 2;
    - the instruction to read and understand the whole skill, every file it points to, before auditing anything;
+   - its bounds: the areas its entry in the Reviewers list names, audited in full, and nothing outside them, stated as that reviewer's own ground without naming any other reviewer or what another one covers;
    - any target the user stated, and any reading you took in its place;
    - the results of the mechanical checks that reviewer receives, from step 3, and the name of every check not run;
    - what you demand of it: verify every point instead of assuming it holds because a file or a line exists; check every fact a finding rests on against the current official sources with its docs and web tools, and report where they changed since its reference; ground every finding in quoted evidence; complete its verification checklist; and deliver its report complete, in its template.

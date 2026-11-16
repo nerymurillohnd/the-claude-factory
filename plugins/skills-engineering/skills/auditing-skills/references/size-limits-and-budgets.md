@@ -1,6 +1,6 @@
 # Size limits and budgets
 
-This file teaches you how to audit every length, line, token, byte and count ceiling that applies to a skill on the surfaces it targets, and what happens when the skill crosses one: rejected, truncated, dropped or silently disabled. It covers its frontmatter field lengths, its `SKILL.md` body, its supporting files, its upload and install size, how many skills can be active at once, the output of its scripts and injected commands, and the budget of its frontmatter hooks. Each section gives you the principle, why it matters, and what to do when you audit. How a skill's files are discovered, resolved and loaded is runtime-contract.md's; the order of the skill's instructions and how its commands are written are content-patterns.md's; eval and test design are outside this file. Leave them out of your findings.
+This file teaches you how to audit every length, line, token, byte and count ceiling that applies to a skill on the surfaces it targets, and what happens when the skill crosses one: rejected, truncated, dropped or silently disabled. It covers its frontmatter field lengths, its `SKILL.md` body, its supporting files, its upload and install size, how many skills can be active at once, the output of its scripts and injected commands, and the budget of its frontmatter hooks. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 
@@ -85,7 +85,7 @@ When you audit:
 
 ## 2. `SKILL.md` body size
 
-Keep the `SKILL.md` body under 500 lines: the platform's best practices give it as practical guidance "for optimal performance", with splitting into separate files as the remedy when content approaches it, and no surface rejects a longer body. The skill-content table of the Skills overview puts the instructions level at under 5,000 tokens; that figure is a size guideline, separate from the 5,000 tokens compaction keeps (§4), and that they share a number is a coincidence (inferred: no source links them). Both guidelines are recommendations, never validation rules. They exist because the body stays in context once loaded (§4), so every line is a recurring cost. Whether an oversized body holds an example or template that belongs in a separate file is content-patterns.md's judgment.
+Keep the `SKILL.md` body under 500 lines: the platform's best practices give it as practical guidance "for optimal performance", with splitting into separate files as the remedy when content approaches it, and no surface rejects a longer body. The skill-content table of the Skills overview puts the instructions level at under 5,000 tokens; that figure is a size guideline, separate from the 5,000 tokens compaction keeps (§4), and that they share a number is a coincidence (inferred: no source links them). Both guidelines are recommendations, never validation rules. They exist because the body stays in context once loaded (§4), so every line is a recurring cost.
 
 Recognize the difference:
 
@@ -106,7 +106,7 @@ At session start, every installed skill a model can invoke costs its name and de
 
 When you audit:
 
-- Flag a skill that only runs when the user types its command yet stays model-invocable, paying the per-turn cost for nothing, and recommend `disable-model-invocation: true`; the preload consequence of that field is runtime-contract.md's.
+- Flag a skill that only runs when the user types its command yet stays model-invocable, paying the per-turn cost for nothing, and recommend `disable-model-invocation: true`.
 - Flag a plugin that splits one purpose across many small skills whose combined catalog cost a single skill with references would avoid.
 
 ---
@@ -117,7 +117,7 @@ An invoked skill's rendered body enters the conversation as one message and stay
 
 When auto-compaction summarizes the conversation, Claude Code re-attaches the most recent invocation of each skill, keeping the first 5,000 tokens of each, within a combined budget of 25,000 tokens filled from the most recently invoked skill backwards. Whatever lies past a skill's first 5,000 tokens is gone after compaction, and a skill invoked early in a session with many invoked after it can be dropped entirely.
 
-Which instructions are load-bearing, and whether content past the measured cut must move up, is content-patterns.md's judgment: it receives the same measurement. Here, judge the re-invocation cost and the shared budget.
+Judge the re-invocation cost and the shared budget.
 
 When you audit:
 

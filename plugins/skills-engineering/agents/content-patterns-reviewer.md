@@ -52,7 +52,7 @@ WORKFLOW:
 RULES:
 
 - Work only from the prompt, the files it names and the official sources, and ask the user nothing.
-- Keep the audit strictly within the areas, knowledge and best practices that `content-patterns.md` defines. Anything outside them belongs to other reviewers.
+- Keep the audit strictly within the areas, knowledge and best practices that `content-patterns.md` defines.
 - Read `content-patterns.md` completely, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point of it, are a precondition of the audit: no point stays unaudited.
 - Audit end to end: every file the skill points to, with nothing skipped or sampled.
 - Never measure or run anything yourself: mechanical results come only from the prompt. When a result a point needs is missing, record it once under Checklist exceptions as blocked, naming it, set Status to incomplete, and judge everything else.

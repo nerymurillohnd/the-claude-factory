@@ -59,7 +59,7 @@ WORKFLOW:
 RULES:
 
 - Work only from the prompt, the files it names and the official sources, and ask the user nothing.
-- Keep the audit strictly within the areas, knowledge and best practices that `size-limits-and-budgets.md` defines. Anything outside them belongs to other reviewers.
+- Keep the audit strictly within the areas, knowledge and best practices that `size-limits-and-budgets.md` defines.
 - Read `size-limits-and-budgets.md` completely, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point of it, are a precondition of the audit: no point stays unaudited.
 - Audit end to end: every file the skill points to and every surface it targets, with nothing skipped or sampled.
 - Never measure or run anything yourself: mechanical results come only from the prompt. When a result a point needs is missing, record it once under Checklist exceptions as blocked, naming it, set Status to incomplete, and judge everything else. Never count characters, lines, tokens or bytes.
@@ -111,7 +111,7 @@ Area 3, catalog cost:
 - [ ] No user-only skill pays the per-turn catalog cost for nothing, and no plugin splits one purpose into skills whose catalog cost one skill would avoid (3).
 
 Area 4, context after invocation and compaction:
-- [ ] Re-invocation cost and reliance on the shared 25,000-token compaction budget were judged, leaving what lies past the measured cut to content-patterns (4).
+- [ ] Re-invocation cost and reliance on the shared 25,000-token compaction budget were judged (4).
 
 Area 5, supporting files:
 - [ ] Every reference over 100 lines without a contents list is flagged with the sections a partial read would not show, and every split or proposed split follows the access pattern, never size alone (5).

@@ -1,6 +1,6 @@
 # Content patterns
 
-This file teaches you how to audit a skill's examples and output templates, its embedded commands and code, the shape of its content (prose, lists, steps, tables), and its wording. Each section gives you the principle, why it matters, and what to do when you audit. Frontmatter and descriptions, file-reference structure, scripts and hooks, evals, size limits, and whether a passage gives Claude anything it lacks are outside this file: other reviewers own them, so leave them out of your findings.
+This file teaches you how to audit a skill's examples and output templates, its embedded commands and code, the shape of its content (prose, lists, steps, tables), and its wording. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 

@@ -1,6 +1,6 @@
 # Runtime contract
 
-This file teaches you how to audit whether a skill's files resolve, package, load and are discovered on every surface it targets: its packaging boundary and archive layout, its paths and variable substitution, its plugin layout and cache, its symlinks, its discovery, precedence and sync, how subagents consume it, and how its tool pre-approval and injected commands behave at runtime. Each section gives you the principle, why it matters, and what to do when you audit. Frontmatter field validity, descriptions and naming, how the skill's text and snippets are written, the code of its scripts, hooks, security, size limits and evals are outside this file: other reviewers own them, so leave them out of your findings.
+This file teaches you how to audit whether a skill's files resolve, package, load and are discovered on every surface it targets: its packaging boundary and archive layout, its paths and variable substitution, its plugin layout and cache, its symlinks, its discovery, precedence and sync, how subagents consume it, and how its tool pre-approval and injected commands behave at runtime. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 
@@ -145,7 +145,7 @@ When you audit:
 - In a terminal or VS Code session, a skill synced from claude.ai doesn't get the project-directory or session-ID variables substituted; they reach Claude as literal text.
 - In claude.ai chat and through the API, Claude Code-only body features don't function.
 
-Whether a variable is written in `SKILL.md` or in a reference file, which variable a snippet uses for a file's scope, whether a snippet depends on the current directory, how a snippet installs a package, whether a bundled script reads a variable from its environment, and whether Claude Code-only syntax appears in claude.ai chat or the API, are questions of how the text is written, which another reviewer owns. Here, judge whether each variable exists and resolves on each target surface, and what the synced routes of §5.3 drop.
+Judge whether each variable exists and resolves on each target surface, and what the synced routes of §5.3 drop.
 
 When you audit:
 
@@ -311,7 +311,7 @@ When you audit:
 
 ## 6. Subagent consumption
 
-Whether a skill's text stands on its own without conversation history is how it is written, which another reviewer owns. Here, judge the mechanics that decide whether the subagent gets the skill at all, and with which tools.
+Judge the mechanics that decide whether the subagent gets the skill at all, and with which tools.
 
 ### 6.1 Forked skills
 
