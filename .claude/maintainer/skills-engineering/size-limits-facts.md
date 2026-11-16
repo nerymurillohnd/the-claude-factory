@@ -1,0 +1,26 @@
+# size-limits-and-budgets fact ledger (verified 2026-11-14/15, Claude Code 2.1.325)
+- Listing: 1,536 chars per entry (skillListingMaxDescChars); budget 1% of context (skillListingBudgetFraction, SLASH_COMMAND_TOOL_CHAR_BUDGET); drops least-invoked descriptions; debug-log warning | skills.md "Skill descriptions are cut short" | verified
+- 500-line body guidance "for optimal performance", split when approaching | platform best-practices | verified (not called "recommendation"; not a hard limit)
+- Level 2 instructions under 5k tokens; ~100 tokens per skill metadata | platform agent-skills overview | verified
+- Compaction 5,000 / 25,000 | skills.md "Skill content lifecycle" | verified
+- ToC >100 lines; partial reads (head -100) | platform best-practices | verified
+- API: 20 skills per request; 30 MB upload uncompressed; display_name ≤255 not unique; display_title 64 unique (old) | platform skills-guide | verified
+- Managed Agents: 500 skills per session deduplicated; more skills slow sandbox startup | platform managed-agents/skills | verified
+- Claude app plugins: 5,000 files, 200 MB, 200 MB largest upload | claude.com/docs/plugins/platform-support | verified
+- archive: 256 MiB, 120 s, 5 redirects; 100,000 entries, 512 MiB file, 1 GiB total, 50x | plugins/host-marketplace.md | verified
+- url marketplace.json: 5 MiB, 10 s | same | verified
+- command copy mode: >256 MiB or >20,000 entries fails | plugins/marketplace-reference.md | verified
+- Preload first 32 distinct names | sub-agents.md | verified ("no warning" claim removed: not stated)
+- Stacked skills: first + up to five more | skills.md "Stack several skills" | verified
+- Injected commands: Bash/PowerShell tool, 2-min default timeout, background move or kill (kill aborts), output past inline ceiling → file path + preview | skills.md "How injected commands run" | verified
+- Bash valid output inline ~30,000 chars, then file + 2,000-char preview; failure ~10,000 head-and-tail | tools-reference.md "Output limits" | verified
+- Hooks: per source per session 1,024 hooks / 16,384 matcher chars (v2.1.304+), counts per hook, builds up skill by skill, skill past limit "registers none of its hooks" (debug log) | hooks.md | verified (corrected: per skill that crosses, not whole source)
+- Hook output caps 10,000 chars → file + 2,000 preview, not raisable; classifier notes 2,000 shared | hooks.md | verified
+- /skill-doctor added in 2.1.261 (original said 2.1.252) | changelog.md | verified; live-session tools removed from reference (reviewer can't run them)
+- Help center: description max 200, optional `dependencies` field | support.claude.com/en/articles/12512198 | verified as stated there; disagrees with platform 1,024
+- Removed: 10–30K truncation range (no official source found); "scan bounds 4–6 levels / 2,000 dirs" (client-implementer advice, no audit action); Managed Agents discovery path (runtime-contract §5.4 owns it)
+- After review: command link mode — size limits don't apply | plugins/marketplace-reference.md | verified
+- skillOverrides doesn't affect plugin skills | skills.md | verified
+- Bash tool: Claude passes a timeout for its own commands, 10-min ceiling by default; bashOutputMaxChars up to 128,000 | tools-reference.md | verified
+- /hooks lists none of a skill's hooks when not registered | hooks.md "Limits on skill hooks" | verified
+- Hook output file: PreCompact stdout exception; Claude Code doesn't ask Claude to read the file | hooks.md | verified
