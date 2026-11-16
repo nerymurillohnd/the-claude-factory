@@ -2,7 +2,7 @@
 
 # 🔧 Plugin Engineering
 
-<p><strong>Builds and maintains a public Claude Code plugin marketplace on GitHub from the official docs, distilled for plugins that third parties install: marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings, validation and releases, checked against the latest release notes. Includes the complete plugin CLI reference: every claude plugin and claude plugin marketplace subcommand, /plugin form and session flag, with exact flags, messages, JSON fields, exit codes and minimum versions. Tests, troubleshoots and debugs plugins: why one won't install, load or run, a check before publishing, and plugin evals with CI gates. Plans and carries out renames, merges, splits, updates, retirements and removals of plugins and marketplaces in every context a plugin lives in, and asks before any step that deletes a plugin, its data or a marketplace.</strong></p>
+<p><strong>Builds and maintains a public Claude Code plugin marketplace on GitHub from the official docs, with the complete plugin CLI reference, plugin testing, debugging and evals, and guided renames, merges, splits, updates and removals that ask before they delete anything.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fplugin-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
@@ -15,6 +15,7 @@
 [Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -23,49 +24,41 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Ask Claude to design, build, fix or release a plugin for your public GitHub marketplace, and it works from the official docs instead of memory, checks what changed in newer Claude Code releases, and validates the result. Ask it to install, update, validate, tag or remove a plugin or marketplace, and it runs the right command with the right flags and reads the exact message and exit code. Ask it why a plugin won't load, or to test one before you publish it, and it finds the documented cause and checks the fix. Ask it to rename, merge, split, retire or remove a plugin, and it plans every stage in every place the plugin lives and asks before anything that deletes data.
+> **TL;DR** — Ask Claude to build, test, debug, release, rename or remove a Claude Code plugin or marketplace, and it works from the current official docs and the exact plugin commands instead of from memory.
 
-Plugin Engineering gives Claude the official documentation for running a public Claude Code plugin marketplace on GitHub, distilled for plugins that other people install. It covers marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings, validation and releases, plus the complete plugin CLI reference. Claude works from these pages instead of memory and checks newer Claude Code release notes before it relies on a version-sensitive fact.
+Plugin Engineering gives Claude four skills for the whole life of a plugin that other people install from a public GitHub marketplace. One holds the official docs, pruned to what such a marketplace needs. One holds the complete reference of the `claude plugin` command line. One tests and debugs plugins and their evals. One plans and carries out renames, merges, splits, updates and removals, and asks you before any step that deletes a plugin, its data or a marketplace.
 
 ## ✨ Why use it
 
-- **Built from the official docs, not from memory** — the Claude Code, plugin, platform and Help Center pages on marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings and releases, kept to what a public marketplace and the people who install its plugins need, so Claude follows the documented behavior.
-- **Checked against new releases** — before it relies on a version-sensitive fact, Claude reads the Claude Code release notes published after the references were checked and the live page, and tells you what differs.
-- **Validated before you publish** — after Claude changes plugin or marketplace files, it runs `claude plugin validate --strict` and fixes what the validator reports.
-- **No more guessing flags** — every `claude plugin` and `claude plugin marketplace` subcommand, every `/plugin` form, `/reload-plugins`, `--plugin-dir` and `--plugin-url`, with their flags, defaults and aliases, is at hand in every session.
-- **Scripts that read results correctly** — exact output and error messages, `--json` fields and exit codes, so a CI job or setup script acts on what the command really reported.
-- **Fewer destructive surprises** — Claude knows that removing a marketplace uninstalls its plugins, that uninstalling deletes saved data, and that `/plugin install` with a path installs nothing, and it warns you before it acts.
-- **Renames and removals that don't break installs** — Claude plans a rename, merge, split, update, retirement or removal stage by stage for every place the plugin lives (a machine, a Claude account, your marketplace, Anthropic's directory, an organization, managed settings), finds where a change already started stands, and checks the result where users get it.
-- **Debugging that finds the cause** — when a plugin won't install, load or run, Claude places the failure at its loading stage, matches the exact message to its documented cause, and checks every place the same cause reaches before it fixes anything.
-- **Evals that mean something** — Claude writes and runs `claude plugin eval` suites, compares the plugin against no plugin, and gates a CI job on whether the plugin still helps.
-- **Version-aware** — each version-gated flag carries its minimum Claude Code version, and Claude checks `--help` on your version before relying on one.
+- **The right command on the first try** — Claude reads every `claude plugin` and `claude plugin marketplace` subcommand, `/plugin` form and session flag, with its exact flags, messages, exit codes and minimum version, so it stops guessing a flag that doesn't exist.
+- **Failures traced to a documented cause** — when a plugin won't install, load or run, Claude finds the stage that produced the message, names the cause the docs give, checks every other place that cause reaches, and verifies the fix before it calls it done.
+- **Changes that don't strand your users** — a rename, merge or removal gets a plan with an owner and a "done when" check for each stage, and the plugin asks you before an action that deletes data or reaches every user.
 
 ## 🧩 What's inside
 
-| Component | Name                                                   | What it does                                                                                                                                                                                                                                                                                                           | How it runs                                                                                                                                                                          |
-| :-------- | :----------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🎯 Skill  | `plugin-engineering:public-marketplace-dev`            | The official docs for building and maintaining plugins in a public GitHub marketplace: 65 references, with the official images and example manifests, and a procedure for checking facts against the latest release notes                                                                                              | Automatically when you design, build, release or maintain plugins in a public GitHub marketplace, or `/plugin-engineering:public-marketplace-dev`                                    |
-| 🎯 Skill  | `plugin-engineering:plugin-testing-and-debugging`      | Tests, troubleshoots and debugs plugins with the official CLI: every documented message by the stage that produces it, the loading rules, a check before publishing, how plugins load in cloud sessions, Claude and the Agent SDK, and plugin evals with case templates and a CI gate script                           | Automatically when a plugin won't install, load or run, when you review one before publishing, or when you write or run evals, or `/plugin-engineering:plugin-testing-and-debugging` |
-| 🎯 Skill  | `plugin-engineering:cli-commands-guide`                | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags                                                                                                                                                                      | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:cli-commands-guide`                                                                                |
-| 🎯 Skill  | `plugin-engineering:migrating-plugins`                 | Plans and carries out renames, merges, splits, updates, retirements, deprecations and removals of plugins and marketplaces, or resumes one already under way: the official procedure for each context a plugin lives in, a guide to the messages users see after a change, and notes for the users who have the plugin | Automatically when you rename, update, retire, remove, merge, split or move a plugin or marketplace, or when an update doesn't arrive, or `/plugin-engineering:migrating-plugins`    |
-| 🪝 Hook   | `PreToolUse` in `plugin-engineering:migrating-plugins` | Asks you before a plugin CLI removal, before deleting plugin, marketplace or `~/.claude/plugins/` files, and before a `marketplace.json` edit that turns on `forceRemoveDeletedPlugins` or maps a plugin to `null`. It never blocks on its own and lets every other command through                                    | From the moment the skill loads until the session ends                                                                                                                               |
+| Component | Name                                              | What it does                                                                                                                                                                                                                                              | How it runs                                                                       |
+| :-------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| 🎯 Skill  | `plugin-engineering:public-marketplace-dev`       | Teaches Claude to design, build, version, release and maintain a public GitHub plugin marketplace from the official docs, and to check version-sensitive facts against the latest release notes and run `claude plugin validate --strict` after a change. | `/plugin-engineering:public-marketplace-dev` or automatically when relevant       |
+| 🎯 Skill  | `plugin-engineering:cli-commands-guide`           | Gives Claude the complete plugin command reference, with flags, defaults, aliases, messages, JSON fields, exit codes, scopes and minimum versions.                                                                                                        | `/plugin-engineering:cli-commands-guide` or automatically when relevant           |
+| 🎯 Skill  | `plugin-engineering:plugin-testing-and-debugging` | Tests, troubleshoots and debugs plugins, reviews them before you publish, and writes, runs and gates plugin evals.                                                                                                                                        | `/plugin-engineering:plugin-testing-and-debugging` or automatically when relevant |
+| 🎯 Skill  | `plugin-engineering:migrating-plugins`            | Plans and carries out renames, merges, splits, updates, retirements, delistings and removals of plugins and marketplaces, and writes the notes for the users who have them.                                                                               | `/plugin-engineering:migrating-plugins` or automatically when relevant            |
+| 🪝 Hook   | `PreToolUse` on `Bash` and `Edit\|Write`          | Asks you before a plugin removal, a deletion of plugin or marketplace files, or a `marketplace.json` edit that uninstalls plugins for your users.                                                                                                         | Automatically on matching tool calls, once `migrating-plugins` is invoked         |
 
 ## 📋 Prerequisites
 
-| Tool                                                      | Minimum version | Check               |
-| :-------------------------------------------------------- | :-------------- | :------------------ |
-| Claude Code                                               | 2.1.295         | `claude --version`  |
-| curl                                                      | any             | `curl --version`    |
-| Python 3                                                  | any             | `python3 --version` |
-| git (optional; if installed, eval runs need this version) | 2.31            | `git --version`     |
-| bubblewrap (Linux, for eval suites that grant Bash)       | —               | `bwrap --version`   |
-| socat (Linux, for eval suites that grant Bash)            | —               | `socat -V`          |
-| Bash (for the `migrating-plugins` hook)                   | 3.2             | `bash --version`    |
-| Claude Code docs MCP server (recommended)                 | —               | `claude mcp list`   |
+| Tool                                                | Minimum version | Check                    |
+| :-------------------------------------------------- | :-------------- | :----------------------- |
+| Claude Code                                         | 2.1.295         | `claude --version`       |
+| Bash                                                | 3.2             | `bash --version`         |
+| git (optional)                                      | 2.31            | `git --version`          |
+| jq (optional)                                       | —               | `jq --version`           |
+| GitHub CLI, `gh` (optional)                         | —               | `gh --version`           |
+| bubblewrap and socat (optional, Linux)              | —               | `command -v bwrap socat` |
+| Claude Code docs MCP server (optional, recommended) | —               | `claude mcp list`        |
 
-The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux. The `migrating-plugins` hook runs with Bash and `grep`, which come with macOS and Linux too. Python 3 is needed only for the eval gate script, when you gate a CI job on eval results.
+The plugin also uses `awk`, `cat`, `curl`, `grep`, `mktemp`, `printf`, `rm` and `sh`, which come with macOS and most Linux distributions.
 
-git matters only when you run `claude plugin eval`: with a git older than 2.31 on your `PATH`, the command stops before running any case; without git, it runs normally. Eval suites that grant Bash run every command in Claude Code's OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`. The docs server is Anthropic's official docs MCP server: the skills carry dated copies of the official pages and send Claude to the live page when a copy is missing a section or may be outdated, and the server lets Claude search and read that page instead of recalling it. You add it once; the plugin doesn't install it.
+The optional tools matter only for the work that uses them. git runs your release tags and the evals (`claude plugin eval` stops before it runs a case when git is older than 2.31). jq reads `plugin.json` and `marketplace.json` in the checks `migrating-plugins` gives. `gh` signs in to a private marketplace. bubblewrap and socat sandbox the eval runs that grant Claude Bash on Linux. The docs server lets Claude search the Claude Code docs.
 
 ### 🤖 Claude Code
 
@@ -96,95 +89,21 @@ npm install -g @anthropic-ai/claude-code@latest
 
 </details>
 
-### 🌐 curl
+### 🐚 Bash
 
-macOS and most Linux distributions include curl.
-
-<details>
-<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+Bash comes with macOS (version 3.2) and with Linux, and the plugin's hook runs on it. Check it:
 
 ```bash
-brew install curl
-```
-
-</details>
-<details>
-<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
-
-```bash
-sudo apt install curl
-```
-
-</details>
-<details>
-<summary>📦 <b>dnf</b> — Fedora, RHEL</summary>
-
-```bash
-sudo dnf install curl
-```
-
-</details>
-
-```bash
-curl --version
-```
-
-### 🐍 Python 3
-
-Needed only to run the eval gate script. Most Linux distributions include it; on macOS, install it if `python3 --version` asks you to.
-
-<details>
-<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
-
-```bash
-brew install python
-```
-
-</details>
-<details>
-<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
-
-```bash
-sudo apt install python3
-```
-
-</details>
-<details>
-<summary>📦 <b>dnf</b> — Fedora, RHEL</summary>
-
-```bash
-sudo dnf install python3
-```
-
-</details>
-
-```bash
-python3 --version
+bash --version
 ```
 
 ### 🌿 git
 
 <details>
-<summary>🍏 <b>Xcode Command Line Tools</b> — macOS</summary>
+<summary>🍎 <b>Xcode Command Line Tools</b> — macOS</summary>
 
 ```bash
-xcode-select --install
-```
-
-</details>
-<details>
-<summary>🍺 <b>Homebrew</b> — macOS</summary>
-
-```bash
-brew install git
-```
-
-</details>
-<details>
-<summary>🚢 <b>MacPorts</b> — macOS</summary>
-
-```bash
-sudo port install git
+git --version  # offers to install the tools when git is missing
 ```
 
 </details>
@@ -192,17 +111,40 @@ sudo port install git
 <summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
 
 ```bash
-sudo apt-get install git
+sudo apt install git-all
 ```
 
 </details>
 <details>
-<summary>🐧 <b>Git PPA (latest stable)</b> — Ubuntu</summary>
+<summary>🎩 <b>dnf</b> — Fedora, RHEL</summary>
 
 ```bash
-sudo add-apt-repository ppa:git-core/ppa
-sudo apt update
-sudo apt install git
+sudo dnf install git-all
+```
+
+</details>
+
+Then check it:
+
+```bash
+git --version
+```
+
+### 🔎 jq
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install jq
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install jq
 ```
 
 </details>
@@ -210,37 +152,76 @@ sudo apt install git
 <summary>🎩 <b>dnf</b> — Fedora</summary>
 
 ```bash
-sudo dnf install git
-```
-
-</details>
-<details>
-<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
-
-```bash
-sudo pacman -S git
-```
-
-</details>
-<details>
-<summary>🦎 <b>zypper</b> — openSUSE</summary>
-
-```bash
-sudo zypper install git
+sudo dnf install jq
 ```
 
 </details>
 
+Then check it:
+
 ```bash
-git --version
+jq --version
 ```
 
-### 📦 bubblewrap and socat
-
-Needed on Linux only, and only for eval suites that grant Bash.
+### 🐙 GitHub CLI
 
 <details>
-<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install gh
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Raspberry Pi, Ubuntu</summary>
+
+```bash
+(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
+	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+	&& cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+	&& sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+	&& sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+	&& sudo apt update \
+	&& sudo apt install gh -y
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf5</b> — Fedora, RHEL, CentOS, Amazon Linux</summary>
+
+```bash
+sudo dnf install dnf5-plugins
+sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf4</b> — Fedora, RHEL, CentOS, Amazon Linux</summary>
+
+```bash
+sudo dnf install 'dnf-command(config-manager)'
+sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
+```
+
+</details>
+
+Then check it:
+
+```bash
+gh --version
+```
+
+### 🧱 bubblewrap and socat
+
+You need them only on Linux, and only for evals whose cases grant Claude Bash. macOS has its own sandbox.
+
+<details>
+<summary>🐧 <b>apt</b> — Ubuntu, Debian</summary>
 
 ```bash
 sudo apt-get install bubblewrap socat
@@ -256,34 +237,28 @@ sudo dnf install bubblewrap socat
 
 </details>
 
-### 📖 Claude Code docs server
-
-Run this once in your terminal, not inside a session. `--scope user` makes it available in every project:
-
-<details>
-<summary>💻 <b>Claude Code</b> — any platform</summary>
+Then check them:
 
 ```bash
-claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp
+command -v bwrap socat
+```
+
+### 📚 Claude Code docs MCP server
+
+<details>
+<summary>💻 <b>claude mcp add</b> — macOS, Linux</summary>
+
+```bash
+claude mcp add --transport http claude-code-docs https://code.claude.com/docs/mcp
 ```
 
 </details>
 
-Check it; `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
+Then check it:
 
 ```bash
 claude mcp list
 ```
-
-Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses. Without the server, Claude reads the live pages with its own web tools instead.
-
-In Claude, add it as a custom connector instead:
-
-1. On a Pro or Max plan: **Customize** → **Connectors** → **+ Add** → **Add custom connector**.
-2. Enter a name such as `Claude Code Docs` and the URL `https://code.claude.com/docs/mcp`, select **Continue**, check the detected settings and select **Continue** again.
-3. Choose **No sign in** under **Authentication**, then select **Add**.
-
-On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
 ## 📥 Installation
 
@@ -327,95 +302,68 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 
 ## 🚀 Usage
 
-You don't need to call the skills: Claude loads them when a task involves plugins or marketplaces. To load one yourself:
+The four skills load on their own when your request matches them, and you can call each one by name. The hook needs no command: it acts by itself once `migrating-plugins` is invoked.
+
+### Rename a plugin without breaking its users
 
 ```text
-/plugin-engineering:public-marketplace-dev
-/plugin-engineering:cli-commands-guide
-/plugin-engineering:plugin-testing-and-debugging
-/plugin-engineering:migrating-plugins
+/plugin-engineering:migrating-plugins rename my-plugin to my-new-plugin in my GitHub marketplace
 ```
 
-### Add a hook to a plugin you publish
+**Result:** Claude reads your marketplace and manifests, asks where the plugin lives (your machine, a Claude account, an organization, Anthropic's directory), checks whether relabeling with `displayName` would do instead, and plans each stage with its owner and a "done when" check. It stops for your yes before any step that deletes data or reaches every user, then writes the notes for the people who have the plugin.
+
+### Debug a plugin that won't load
 
 ```text
-Add a PreToolUse hook to my formatter plugin that blocks edits to generated files.
+/plugin-engineering:plugin-testing-and-debugging my plugin installs but its skills never show up
 ```
 
-**Result:** Claude reads the plugin hook rules and the hooks reference, writes `hooks/hooks.json` with `${CLAUDE_PLUGIN_ROOT}` paths and the script it calls, checks the hook behavior against the Claude Code releases newer than the references, and runs `claude plugin validate --strict` on the plugin and the marketplace.
+**Result:** Claude reads the state on disk (`claude plugin list --json`, `claude plugin details`, the `/plugin` Errors tab), places the problem at the stage that produced it, names the documented cause, applies the fixes in one pass, and verifies with the output the docs say a working install shows.
 
-### Audit a plugin before a release
+### Look up an exact command
 
 ```text
-Audit my plugin against the current docs before I release it.
+/plugin-engineering:cli-commands-guide how do I install a plugin for everyone in my repository, and what does uninstall delete?
 ```
 
-**Result:** Claude compares the plugin's manifest and components with the references and the live pages, reads the release notes since the references were checked, and reports each finding with its source, without changing a file until you decide.
+**Result:** Claude answers from the command reference: the `--scope project` form, the minimum version each flag needs, and that uninstalling from the last scope deletes the plugin's options and data unless you pass `--keep-data`.
 
-### Install a plugin for the whole team
+### Add a component to your plugin
 
 ```text
-Install formatter from my-marketplace for everyone who clones this repository.
+/plugin-engineering:public-marketplace-dev add a PreToolUse hook to my plugin that blocks edits to .env files
 ```
 
-**Result:** Claude runs `claude plugin install` with the plugin's `name@marketplace` and `--scope project`, reads the `Successfully installed plugin` line, and reminds you that each collaborator still runs the install once, because committing the setting doesn't download the plugin.
+**Result:** Claude reads the hooks and manifest references, writes the hook, checks every version-sensitive fact against the release notes, runs `claude plugin validate --strict` on the plugin, and fixes what the validator reports.
 
-### Check a plugin before you publish it
+## ⚙️ Configuration
 
-```text
-Validate my plugin and marketplace strictly and tell me what to fix.
-```
+This plugin has no options to set. What it does depends on your project, which it reads only when you ask for plugin work:
 
-**Result:** Claude runs `claude plugin validate <plugin-dir> --strict` and `claude plugin validate . --strict`, explains each error, warning and README advice, and reminds you that a marketplace run doesn't read each plugin's component files.
-
-### Script plugin updates in CI
-
-```text
-Write a CI step that updates our plugin and fails only on a real error.
-```
-
-**Result:** Claude runs `claude plugin update` with the plugin's `name@marketplace` and `--json`, parses only the last stdout line, checks `outcome` and the exit code, and, for a plugin whose marketplace declares an install command, passes `--accept-command` with the `sha256` a person reviewed instead of a blanket `-y`.
-
-### Find out why a command did nothing
-
-```text
-I ran /plugin install ./my-plugin and nothing happened.
-```
-
-**Result:** Claude explains that `/plugin install` with a path reports `Marketplace "./my-plugin" not found` and installs nothing, then gives you the commands that add the marketplace and install the plugin, or `claude --plugin-dir ./my-plugin` to try it for one session.
-
-### Fix a plugin that breaks only after you install it
-
-```text
-My formatter plugin works with --plugin-dir, but after I install it from our marketplace every edit shows a PostToolUse hook error.
-```
-
-**Result:** Claude reads `claude plugin list --json` and the plugin's details, places the failure in the installed copy, explains that an installed plugin is copied without the files outside its folder, and gives you the fix and the check that shows it worked.
-
-### Rename a plugin without breaking installs
-
-```text
-Rename my formatter plugin to code-formatter in my marketplace without breaking anyone's install.
-```
-
-**Result:** Claude reads where the plugin lives and how it is versioned, checks whether only the label needs to change, then plans the rename stage by stage: the new entry, the `renames` map, the version, the notes that tell users to install the new name once, and the check that an existing install migrates. It asks before every push and before any step that deletes data.
-
-### Gate a CI job on plugin evals
-
-```text
-Our eval job passes even when the plugin stopped helping. Make it fail then.
-```
-
-**Result:** Claude runs the suite with both arms, reads the mean delta from the JSON result with the skill's gate script, and sets the job to fail below the minimum you choose, and on a partial run.
+| What it reads                                                                    | What it does then                                                                                                                                                                    |
+| :------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude-plugin/marketplace.json` and each plugin's `.claude-plugin/plugin.json` | Learns the marketplace and plugin names, versions and sources. Before a `marketplace.json` edit that sets `forceRemoveDeletedPlugins` or maps a plugin to `null`, the hook asks you. |
+| Your README, `CLAUDE.md` and git remotes                                         | Learns how the project is hosted, released and versioned.                                                                                                                            |
+| A plugin's `evals/` folder                                                       | Reads and writes eval cases and graders there when you ask for evals.                                                                                                                |
+| The command Claude is about to run, when `migrating-plugins` is active           | Asks you before a plugin removal, or an `rm`, `rmdir`, `unlink`, `git rm` or `find -delete` on plugin, marketplace or `~/.claude/plugins/` paths.                                    |
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** `PreToolUse` on `Bash`, `Edit` and `Write` runs `skills/migrating-plugins/scripts/ask-before-destructive.sh`, registered only once the `migrating-plugins` skill loads and kept until the session ends. It reads each `claude plugin`, `rm`, `rmdir`, `unlink`, `git rm` or `find` command and each `marketplace.json` edit as text, and returns `ask` for a removal that deletes plugins, their data or a marketplace, so Claude Code asks you first; it sends nothing, writes nothing and changes no command, and if it fails to run, the call is blocked rather than let through. Hooks run on their own, with your access and without a permission prompt. The plugin also ships skills and their reference files, plus the eval templates the `plugin-testing-and-debugging` skill gives you, such as `fixture.sh` (an eval case's workspace setup), which runs only when you pass `--scaffold`.
+- **Hooks:** `migrating-plugins` declares its hooks in its own frontmatter. Claude Code registers them when you invoke that skill and keeps them for the rest of the session. Each entry is a `PreToolUse` hook that runs `bash "${CLAUDE_PLUGIN_ROOT}/skills/migrating-plugins/scripts/ask-before-destructive.sh"` with `onFailure: block`:
+  - on `Bash`, when the command matches `claude plugin *`;
+  - on `Bash`, when it matches `claude plugins *`;
+  - on `Bash`, when it matches `rm *`;
+  - on `Bash`, when it matches `rmdir *`;
+  - on `Bash`, when it matches `unlink *`;
+  - on `Bash`, when it matches `git rm *`;
+  - on `Bash`, when it matches `find *`;
+  - on `Edit`, when the file matches `**/marketplace.json`;
+  - on `Write`, when the file matches `**/marketplace.json`.
+
+  The script reads the hook input from standard input, matches it as text with `grep`, and prints fixed JSON that asks you to confirm. It asks before `claude plugin uninstall`, `remove` or `rm`, `claude plugin marketplace remove`, `claude plugin prune` without `--dry-run`, `claude plugin restore-set-aside --discard`, a deletion on plugin, marketplace or `~/.claude/plugins/` paths, and a `marketplace.json` edit that touches `forceRemoveDeletedPlugins` or sets a value to `null`. It never denies a command on its own, calls no program but `bash`, `cat`, `grep` and `printf`, reads no file, uses no network and writes nothing. If the script itself fails, `onFailure: block` stops that one action. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
-- **Network:** none from the plugin itself. When Claude checks whether something changed in a newer Claude Code release, the skill tells it to download the public Claude Code changelog (`raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`) with `curl` to a temporary file, read only the releases it needs, and delete the file; or to read the live Claude Code docs (`code.claude.com`) and release notes with Claude's own web tools, or through the Claude Code docs server when you added it. Nothing about you is sent there.
-- **Commands run:** only the `claude plugin` commands your task needs, such as `claude plugin validate --strict` after Claude changes plugin files through Claude's Bash tool and its usual permission prompts. The skill tells Claude to confirm before a command that deletes data, such as `claude plugin marketplace remove` or `claude plugin uninstall`.
-- **Evals:** `claude plugin eval` makes real model calls on your account, billed to your plan or API usage. The skill tells Claude to agree the scope and the cost with you before the first run.
-- **Files written:** none by the plugin itself. Claude creates or changes plugin and marketplace files only when your task asks for it, through its usual edit permission prompts.
+- **Network:** the plugin ships no program that connects to a network. The skills tell Claude to check the live official docs, so when you ask for plugin work Claude can download pages with `curl`, or read them through WebFetch or the docs MCP server you added, from `code.claude.com`, `claude.com`, `support.claude.com` and the Claude Code changelog on GitHub. Those requests carry only the page address. The plugin commands Claude runs for you contact the marketplace's git host, for example GitHub, as they would if you ran them. `claude plugin eval` makes real model calls on your Claude account, and the skill agrees the scope and cost with you before the first run.
+- **Files written:** none by the plugin itself, and nothing under `${CLAUDE_PLUGIN_DATA}`. While Claude reads the docs, it saves pages in a temporary folder from `mktemp -d` and deletes it at the end. Files Claude creates or changes because you asked, such as plugin manifests, `marketplace.json`, eval cases under a plugin's `evals/` folder and release notes, go where you tell it.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -435,11 +383,22 @@ Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-Update curl the way you installed it, for example with Homebrew:
+Update the GitHub CLI the way you installed it:
 
 ```bash
-brew upgrade curl
+brew upgrade gh
 ```
+
+```bash
+sudo apt update
+sudo apt install gh
+```
+
+```bash
+sudo dnf update gh
+```
+
+Update git, jq, bubblewrap and socat with the package manager that installed them.
 
 ## 🗑️ Uninstalling
 
@@ -455,7 +414,11 @@ claude plugin uninstall plugin-engineering@the-claude-factory --scope project
 
 In Claude: **Customize** → **Plugins** → **Plugin Engineering** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory and writes no files of its own, so nothing is left behind.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Files Claude wrote into your projects while you worked stay where they are, and so do the tools you installed for it (Bash, git, jq, `gh`, bubblewrap, socat). Remove the docs server, if you added it, with this command:
+
+```bash
+claude mcp remove claude-code-docs
+```
 
 ## 🧭 Compatibility
 
@@ -468,7 +431,19 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
+In Claude, the skills teach Claude the docs and the command reference in every conversation. The `claude` commands they describe run only where Claude can run tasks on a computer that has Claude Code installed. Elsewhere Claude gives you the exact command to run yourself. The hook calls `bash`, `cat`, `grep` and `printf`, so it works only where those exist.
+
 **Platforms:** macOS and Linux.
+
+## 🚧 Limitations
+
+- The hook is a safety net, not the rule: it exists only after `migrating-plugins` is invoked, and `disableAllHooks` in your settings turns it off. Claude still asks you first.
+- The hook can't see `/plugin`, Claude, claude.ai or the developer portal, a `marketplace.json` edit made through `Bash`, or a push, so it never asks about those. The skill asks you before them anyway.
+- Claude can't run `/plugin` or `/reload-plugins` from the shell. It tells you to run them in the open session, and a running session keeps the version it loaded until you do.
+- The bundled docs are pruned copies. They leave out Anthropic's directory submission flow, private repositories and their credentials, hosts other than GitHub, GitHub Enterprise Server, and the `url`, `npm`, `archive` and `command` plugin sources, so for those topics Claude reads the live page.
+- `public-marketplace-dev` is for plugins in a public GitHub marketplace. `migrating-plugins` doesn't create a plugin from nothing: it works on an existing one, or on the target of a merge or a split.
+- When a bundled page and the live docs or the release notes disagree, Claude follows the live source and tells you which part is out of date.
+- Evals run real model calls on your account. A suite that grants Claude Bash on Linux needs bubblewrap and socat, and native Windows has no sandbox backend for it.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -480,16 +455,35 @@ Run `/reload-plugins`, then type `/plugin-engineering:` to list its skills. If i
 </details>
 
 <details>
-<summary><b>My Claude Code version is older or newer than the one the references describe.</b></summary>
+<summary><b>Which skill do I call?</b></summary>
 
-Each version-gated flag lists its minimum version. Claude checks `claude plugin <subcommand> --help` on your machine and the live docs before relying on one, and tells you when your version behaves differently.
+You rarely need to choose. Describe the job and Claude loads the skill that fits: building and releasing (`public-marketplace-dev`), command syntax (`cli-commands-guide`), errors, checks and evals (`plugin-testing-and-debugging`), or renames, updates and removals (`migrating-plugins`). To force one, type its name after `/plugin-engineering:`.
 
 </details>
 
 <details>
-<summary><b>I use Claude. Can Claude run these commands there?</b></summary>
+<summary><b>Claude asked me to confirm a command I didn't expect.</b></summary>
 
-Plugins you add in Claude live on your claude.ai account and are managed in **Customize** → **Plugins**. `claude plugin` commands change the machine Claude Code runs on, so the skill gives you the exact command or **Customize** path when the current shell isn't the installation you want to change.
+The `migrating-plugins` hook asks before an action that deletes a plugin, its options, its data or a marketplace. Approve it only when that is what you want, and read the reason it shows. The hook asks and never denies, so declining stops that one action.
+
+</details>
+
+<details>
+<summary><b>An action was blocked and I wasn't asked.</b></summary>
+
+When the hook script can't run, `onFailure: block` stops that action. Check that Bash and `grep` are on your `PATH`:
+
+```bash
+bash --version
+command -v grep
+```
+
+</details>
+
+<details>
+<summary><b>Does the plugin change anything on its own?</b></summary>
+
+No. The skills only change your plugin or marketplace files when you ask, and `claude plugin eval` spends usage only after you agree the scope and cost.
 
 </details>
 
@@ -497,8 +491,9 @@ Plugins you add in Claude live on your claude.ai account and are managed in **Cu
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
-- 📖 [Plugin commands reference](https://code.claude.com/docs/en/plugins/cli-reference)
-- 📖 [Skills](https://code.claude.com/docs/en/skills)
+- 🧪 [Plugin Evals](../plugin-evals/README.md) and [Plugin Test Bench](../plugin-test-bench/README.md): deeper work on plugin evals and on testing a plugin before release
+- 🪝 [Hook Engineering](../hook-engineering/README.md) and 🧩 [Mods Engineering](../mods-engineering/README.md): hooks and mods for your plugins
+- 📖 [Skills docs](https://code.claude.com/docs/en/skills) and [Hooks docs](https://code.claude.com/docs/en/hooks)
 
 ## 🐞 Found a problem?
 
@@ -510,6 +505,10 @@ Plugins you add in Claude live on your claude.ai account and are managed in **Cu
 
 See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
+## 🙏 Credits
+
+The reference files of `public-marketplace-dev` are pruned copies of Anthropic's official documentation: the [Claude Code docs](https://code.claude.com/docs/en/overview), the [Claude plugin docs](https://claude.com/docs/plugins/overview), the [Claude Platform docs](https://platform.claude.com/docs) and the [Claude Help Center](https://support.claude.com). The `cli-commands-guide`, `plugin-testing-and-debugging` and `migrating-plugins` references are written from those same pages and from the `claude` command's own help.
+
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by GitHub, Inc. or Anthropic. _GitHub_ is a trademark of GitHub, Inc.; _Claude_ and _Claude Code_ are trademarks of Anthropic.
