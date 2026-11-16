@@ -145,7 +145,7 @@ When Claude must produce output in a specific format, the skill must give it a t
 For a format that must not vary:
 
 > ALWAYS use this exact structure:
-> ```
+> ```markdown
 > ## Summary
 > ## Findings
 > ## Recommendation
@@ -154,7 +154,7 @@ For a format that must not vary:
 For a format that can flex:
 
 > Here's a sensible default — use your judgment:
-> ```
+> ```markdown
 > ## Summary
 > ## Notes
 > ```

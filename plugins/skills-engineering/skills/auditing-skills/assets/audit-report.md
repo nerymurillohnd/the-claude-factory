@@ -36,7 +36,7 @@
 - Finding: <what is wrong and why it is a defect, stated as its consequence>
 - Action: <delete | rewrite | move | improve | adjust | add>
 - Fix:
-  ````
+  ````text
   <exact replacement text, or the destination path and the pointer line left behind>
   ````
 - Justification: <why this fix is the right one for this skill>
@@ -50,7 +50,7 @@
 - Point: <reference file> §<section>
 - Current: <what exists now>
 - Recommended:
-  ````
+  ````text
   <what the reference recommends instead, as actual text or structure>
   ````
 - Why for this skill: <why that is better for this skill specifically>
