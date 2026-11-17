@@ -53,6 +53,9 @@
   - Each script reconfigures stdout to UTF-8 with `errors="replace"`, wrapped for `AttributeError` and `ValueError`, as Anthropic's `math-proof` `ledger.py` does for Windows consoles.
   - Python 3.15 "What's New", PEP 686: "For best compatibility between versions of Python, ensure that an explicit encoding argument is always provided."
 - **Invocation:** `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter/<check>.py" "<SKILL.md>"`, the pattern of the skills docs ("Generate visual output") and of Anthropic's plugins.
+  - Never a bare relative path such as `python3 scripts/...` in Claude Code. The skills docs ("Working directory"): "Claude Code runs each command in the session shell's current working directory. That directory moves when Claude runs `cd`. Use `${CLAUDE_SKILL_DIR}` or `${CLAUDE_PROJECT_DIR}` in paths that must resolve the same way every time." A bare path resolves against the audited project, not the skill.
+  - Paths relative to the skill root are the open standard's form (agentskills.io "Using scripts": "script execution paths (in code blocks) are relative to the **skill directory root**, because the agent runs commands from there"). They fit hosts that run commands from the skill folder. auditing-skills runs only in Claude Code (it calls `claude plugin` and subagents), so it needs no fallback for other hosts.
+  - Fallback when the variable is left unfilled (the path before `/scripts` doesn't exist): `${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/...`, as Anthropic's `math-proof` plugin does for its `ledger.py`. If both are unfilled, the check is `not_run` and the main session says so.
   - If `python3` is not found, or Windows answers with the Store message, the main session uses `python` from then on, as in Anthropic's `math-proof` plugin.
   - Scripts carry `#!/usr/bin/env python3` and the executable bit but never rely on either.
 - **Wiring in the same commit:** each task that adds a check also registers it in `common/registry.py` (Task 1B), adds its entry to `MECHANICAL-CHECKS.md`, adds its script path under the reviewers that receive it in `SKILL.md`, updates what each of those reviewers receives in `MECHANICAL-CHECKS.md`, and updates `.claude/maintainer/skills-engineering/mechanical-check-sources.md`, as the rule's sync point requires.
@@ -79,7 +82,8 @@
 - **Prerequisites:** a check whose prerequisite failed returns `status: not_run` with `reason` naming the check that failed, for example `"frontmatter.yaml failed"`.
 - **Identifiers:** check ids are `frontmatter.<slug>`. FM-n appears only in this plan, never in plugin files, because no plugin file names a maintainer validator rule id.
 - **Field tables:** only in `common/fields.py`, taken from the Claude Code 2.1.326 docs (`/en/skills` Frontmatter reference), `agentskills.io/specification` and anthropics/skills `quick_validate.py`.
-- **Quality:** ruff check and ruff format clean with no suppressions, basedpyright 0 errors, and an `__init__.py` in `common/`.
+- **Quality:** ruff check and ruff format clean, basedpyright 0 errors, and an `__init__.py` in `common/`.
+- **No suppressions, ever (Nery):** no `# noqa`, `# type: ignore`, `# pyright: ignore` or `# basedpyright: ignore`, and no per-file ignore, `exclude` or rule change in `ruff.toml`, `pyrightconfig.json` or `pyproject.toml` added to silence a finding. Fix the code. If a finding truly can't be fixed, stop and ask Nery. Task 10 Step 5 gates this.
 - **Portability:** no POSIX-only Python APIs. Commands use only POSIX options, avoid `grep -P`, `sed -i` and `$'…'`, and contain no `$` followed by a digit, because skills substitute `$N` with arguments.
 - **Tests:** in `plugins/skills-engineering/tests/test_frontmatter_*.py`, stdlib `unittest`, run by `npm run test:plugins`.
 - **Git:** one commit per task, and no push without Nery's authorization.
@@ -685,12 +689,13 @@ Each command's entry in `MECHANICAL-CHECKS.md` follows "Mechanical-checks entry 
   - `SKILL.md` lists every script, reference and asset under its phase or reviewer, one level deep;
   - `SKILL.md`'s first 5,000 tokens hold the whole orchestration. Measure with `claude plugin details`, not by hand.
 - [ ] **Step 5:** Run ruff check, ruff format check and `basedpyright --outputjson` over `plugins/skills-engineering`, plus `claude plugin validate --strict`. Expected: 0 findings and `valid`.
+- [ ] **Step 5b: Suppressions gate.** Run `grep -rnE '(noqa|type:[[:space:]]*ignore|pyright:[[:space:]]*ignore)' plugins/skills-engineering --include='*.py'` and `git diff main -- ruff.toml pyrightconfig.json pyproject.toml`. Expected: no grep output, and no diff that adds an ignore, exclude or rule change. Show both raw outputs. Any hit fails the release.
 - [ ] **Step 6: Independent review.** One fresh reviewer on the most capable model reviews the whole branch against this plan and the spec. Fix every confirmed finding and rerun Steps 1 to 5.
 - [ ] **Step 7:** Commit fixes and report to Nery with the raw outputs. No push.
 
 ## Out of scope (next plan)
 
-- `allowed-tools` for the scripts: since 2.1.325, scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools`, so adding it is a separate decision for Nery.
+- `allowed-tools` for the scripts, a separate decision for Nery. The skills docs show the pairing: with `allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/render.sh *)` and the same path in the body, "the script runs without prompting". The costs: since 2.1.325, "scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks" (changelog), and managed `allowManagedPermissionRulesOnly` drops it for plugins outside official or vouched sources. If added, the body's command and the rule must be written identically; whether a quoted path still matches an unquoted rule is unverified.
 - The CHANGELOG entry.
 - The other data domains.
 
