@@ -59,15 +59,16 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 
 - Command: `python3 <entry> check frontmatter.yaml <SKILL.md>`.
 - What it checks: the frontmatter against strict YAML, because Claude Code's parser accepts some YAML that packaging, uploads and other parsers reject, and a skill whose YAML doesn't parse still loads, with no fields set.
-- `claude plugin validate` already reports a missing block, a root that isn't a mapping, an unclosed quote and a tab in the indentation; this check adds the four failures validate passes, and bytes that aren't UTF-8.
+- `claude plugin validate` already reports a missing block and a root that isn't a mapping; this check adds four failures validate passes, an unclosed quote and a tab in the indentation, which validate reports only in some positions, and bytes that aren't UTF-8.
 - Reading the result:
   - `duplicate-key`: a key appears twice; Claude Code keeps the last value.
   - `colon-in-value`: `: ` inside a plain value, or a plain value ending with `:`.
   - `unclosed-flow`: a `[` or `{` that never closes, at the line it opens on.
   - `key-under-scalar`: a key indented under a key that already has a value.
+  - `unclosed-quote` and `tab-indent`: a quote that never closes, and a tab before a line's content. validate reports them only in some positions, and not, for example, a quote inside `[ ]` or a tab before a nested key; where it reports one, Claude Code loads the skill with no fields set, so read validate's output for the file too.
+  - A finding on any of these six means packaging and uploads reject the file, while Claude Code may still load it.
   - `not-utf8`: the first byte that isn't UTF-8, in hex; Claude Code replaces such bytes without a word.
-  - A finding on the first four means packaging and uploads reject the file, while Claude Code may still load it.
-  - `not_run` with the reason that validate reports the error, or that there is no frontmatter block: read validate's output for that file instead. `not_run` because the reader can't read the YAML names the line; validate's output decides it.
+  - `not_run` because there is no frontmatter block or its root isn't a mapping: read validate's output for that file instead. `not_run` because the reader can't read the YAML names the line; validate's output decides it.
   - `data.close_line`: the line of the closing `---`.
 - Goes to: `frontmatter-description` and `runtime-contract`.
 

@@ -2,7 +2,7 @@
 """Tests for the strict YAML check, frontmatter.yaml, run through frontmatter-checks.py.
 
 It reports the strict-YAML failures claude plugin validate passes, and the bytes that aren't
-UTF-8; what validate already reports gives `not_run` with the reason to read validate instead.
+UTF-8; a missing block or a root that isn't a mapping, which validate reports, gives `not_run`.
 """
 
 import unittest
@@ -10,7 +10,10 @@ import unittest
 from frontmatter_helpers import JsonObject, is_list, rules, run_check
 
 CHECK = "frontmatter.yaml"
-VALIDATE_REASON = "the frontmatter has an error claude plugin validate reports"
+VALIDATE_POSITION_CONDITION = (
+    "claude plugin validate reports it in some positions, and then Claude Code loads the skill "
+    "with no fields set; read its output for this file"
+)
 NO_BLOCK_REASON = "no frontmatter block: claude plugin validate reports it"
 
 
@@ -68,13 +71,22 @@ class YamlCheckTest(unittest.TestCase):
         result = self.result(skill("name: a\n  b: c"))
         self.assertEqual(rules(result), [("key-under-scalar", 3)])
 
-    def test_validate_reports_quotes_and_tabs(self) -> None:
-        """An unclosed quote and a tab in the indentation are left to validate."""
-        for yaml in ('d: "abc', "m:\n\tk: v"):
+    def test_quotes_and_tabs(self) -> None:
+        """An unclosed quote and a tab in the indentation are findings in every position."""
+        cases = (
+            ('d: "abc', ("unclosed-quote", 2)),
+            ('p: ["a, b]', ("unclosed-quote", 2)),
+            ("m:\n\tk: v", ("tab-indent", 3)),
+            ("name: a\n\tdescription: x", ("tab-indent", 3)),
+        )
+        for yaml, expected in cases:
             with self.subTest(yaml=yaml):
                 result = self.result(skill(yaml))
+                self.assertEqual(rules(result), [expected])
+                finding = self.first_finding(result)
                 self.assertEqual(
-                    (result.get("status"), result.get("reason")), ("not_run", VALIDATE_REASON)
+                    (finding.get("basis"), finding.get("surfaces"), finding.get("condition")),
+                    ("official", ["open-spec", "upload"], VALIDATE_POSITION_CONDITION),
                 )
 
     def test_no_block_or_not_a_mapping(self) -> None:

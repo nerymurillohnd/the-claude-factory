@@ -21,7 +21,7 @@ The main session runs every mechanical check and passes each reviewer only the r
 
 Each check's command, reading and receivers are in `skills/auditing-skills/MECHANICAL-CHECKS.md`; this list ties each one to its spec card in `.claude/maintainer/specs/2026-11-17-frontmatter-checks.md`.
 
-- `frontmatter.yaml` (FM-2): duplicate keys, `: ` inside a value, unclosed flow collections, keys under a scalar, and bytes that aren't UTF-8; to frontmatter-description and runtime-contract.
+- `frontmatter.yaml` (FM-2): duplicate keys, `: ` inside a value, unclosed flow collections, keys under a scalar, unclosed quotes and tabs in the indentation (validate reports these two only in some positions on 2.1.326, against the FM-2 card's Coverage line), and bytes that aren't UTF-8; to frontmatter-description and runtime-contract.
 - `frontmatter.plain-values` (FM-3): comments that cut a value, leading indicators, collections, anchors, aliases and tags in text fields, and text read as a boolean or null; to frontmatter-description.
 - `frontmatter.name` (FM-4, and FM-6's reserved words in the name): format, folder, refused characters, reserved words and the name's counts; to frontmatter-description, and its counts to size-limits-and-budgets.
 - `frontmatter.name-plain` (FM-5): the name written as one plain line; to frontmatter-description.

@@ -12,8 +12,7 @@ from common.context import Context
 from common.skill_file import SkillFile
 from common.yaml_reader import Node, ReadError, read
 
-# The not_run reasons the checks share, for what claude plugin validate already reports.
-VALIDATE_REASON = "the frontmatter has an error claude plugin validate reports"
+# The not_run reason the checks share for a missing block, which claude plugin validate reports.
 NO_BLOCK_REASON = "no frontmatter block: claude plugin validate reports it"
 
 
