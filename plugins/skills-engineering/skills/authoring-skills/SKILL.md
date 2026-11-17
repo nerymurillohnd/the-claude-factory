@@ -51,35 +51,35 @@ Your engineering principles hold in every skill you write; the knowledge, method
 Decide the skill's size and how its files split before you write, not after a draft overflows. A skill loads in three levels, and each level has its budget:
 
 - **Metadata, at startup.** The `name` and `description` of every installed skill load into every session, about 100 tokens per skill in the Agent Skills specification. Each word there costs context in every session, whether the skill runs or not.
-- **Body, on invocation.** The `SKILL.md` body loads when the skill runs. Keep it under 500 lines and 5,000 tokens. It competes with the conversation for the model's attention, and after compaction Claude Code keeps only the first 5,000 tokens of each invoked skill, within 25,000 tokens shared across skills. Put in it only what the model needs on every run, with the critical instructions near the top.
-- **Supporting files, on demand.** References, workflow files, scripts and assets cost nothing until the model reads or runs them, and a script costs only its output. Move there the detail the model needs only in some cases, split by domain or task so the model reads only the file its case calls for.
+- **Body, on invocation.** The `SKILL.md` body loads when the skill runs. Keep it under 500 lines and 5,000 tokens. It competes with the conversation for the model's attention, and after compaction Claude Code re-attaches only the first 5,000 tokens of the most recent invocation of each skill, within 25,000 tokens shared across skills and filled from the most recently invoked, so an older skill can drop out entirely. Put in it only what the model needs on every run, with the critical instructions near the top.
+- **Supporting files, on demand.** References, workflow files, scripts and assets cost nothing until the model reads or runs them, and a script costs only its output. Move there the detail that not every run needs, split by domain or task so the model reads only the file its case calls for.
 
 ## Gotchas
 
 Facts about how skills load and run that contradict a reasonable assumption. Each one changes how you write.
 
-- **Frontmatter outside Claude Code.** Uploads to claude.ai, the Skills API and `package_skill.py` accept six fields, `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`, and reject the upload with a hard error on a seventh. Claude Code accepts its full field set and silently ignores a field name it does not recognize, so a misspelled field fails without a warning.
+- **Frontmatter outside Claude Code.** Uploads to claude.ai, the Skills API and `package_skill.py` accept six fields, `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`, and reject the upload with a hard error on a field outside these six. Claude Code accepts its full field set and silently ignores a field name it does not recognize, so a misspelled field fails without a warning.
 - **Frontmatter that does not parse.** Claude Code reads frontmatter only when the opening `---` is the first line. When the YAML fails to parse, the skill still loads with no fields set, so `/name` works but the model never matches the description and never loads the skill on its own.
 - **The listing truncates descriptions.** Claude Code cuts `description` plus `when_to_use` at 1,536 characters by default, and when the listing overflows its budget it drops whole descriptions, starting with the least-used skills. Put the key use case first. Angle brackets in either field display as `&lt;` and `&gt;`, so write a placeholder as `[branch]`.
 - **The skill is read once.** The rendered `SKILL.md` enters the conversation once and is not re-read on later turns, so write standing instructions that apply to the whole task. A rule that must hold every time belongs in a hook, which the skill can declare in its `hooks` frontmatter, though a managed lock stops the hooks of personal and project skills (`references/environment/skill-loading.md` §3).
-- **`allowed-tools` grants, it does not restrict.** It pre-approves the listed tools for the turn that invokes the skill and leaves every other tool callable. To remove tools while the skill is active, use `disallowed-tools`. Scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks, unless `Skill(name)` is in `permissions.allow`.
-- **`disable-model-invocation: true` reaches further than the menu.** It also stops the skill from being preloaded into subagents and from running as a scheduled task's prompt. Never set it on a skill that a subagent or another skill loads.
-- **Substitutions reach the skill's own text.** Claude Code replaces the skill-directory, project-directory and session-ID variables, and in a plugin skill the plugin-root and plugin-data variables, each written as a dollar sign and the variable name in braces, in the Markdown body; the directory variables are also replaced in `allowed-tools` Bash rules. They are not set in the environment of the commands the model runs. Write a bundled script's path with the same variable in the body and in `allowed-tools`, so the script runs without a permission prompt. Because the replacement happens in every rendered `SKILL.md`, a sentence there that names a variable reaches the model as a path; name the variable in a reference file instead. A `$` before a digit or before the word ARGUMENTS takes an argument's value unless a backslash precedes it.
+- **`allowed-tools` grants, it does not restrict.** It pre-approves the listed tools for the turn that invokes the skill and leaves every other tool callable; managed policies can remove the pre-approval (`references/environment/skill-loading.md` §3). To remove tools while the skill is active, use `disallowed-tools`. Scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks, unless `Skill(name)` is in `permissions.allow` (v2.1.325 or later, according to the changelog).
+- **`disable-model-invocation: true` reaches further than the menu.** It also stops the skill from being preloaded into subagents and from running when a session-scoped scheduled task fires with the skill as its prompt. Never set it on a skill that a subagent or another skill loads.
+- **Substitutions reach the skill's own text.** Claude Code replaces the skill-directory, project-directory and session-ID variables, and in a plugin skill the plugin-root and plugin-data variables, each written as a dollar sign and the variable name in braces, in the Markdown body; the directory variables are also replaced in `allowed-tools` Bash rules. They are not set in the environment of the commands the model runs. Write a bundled script's path with the same variable in the body and in `allowed-tools`, so the script runs without a permission prompt. Because the replacement happens in every rendered `SKILL.md`, a sentence there that names a variable reaches the model as a path; name the variable in a reference file instead. A `$` before a digit, before the word ARGUMENTS or before a name declared in the `arguments` field takes an argument's value unless a backslash precedes it.
 - **Where a skill is stored decides where it loads.** Personal skills in `~/.claude/skills` do not load in Cowork or cloud sessions, and project skills in `.claude/skills` do not load in cloud threads of a Claude project; skills enabled on the user's claude.ai account reach those sessions. Plugin skills load as `/plugin-name:skill-name`. A `paths` glob matches only files inside the current working directory.
-- **Synced skills lose dynamic features in the terminal.** In a terminal or VS Code session, a skill synced from claude.ai has its `!` commands, its `@` file references and its project-directory and session-ID variables reach the model as literal text. Dynamic context injection does not run in claude.ai chat or through the API.
-- **Reserved and refused names.** A skill folder named `synced`, or a name that is or starts with `anthropic-skills`, does not load outside a plugin. Claude Code refuses a name holding `<`, `>`, zero-width or control characters, or blanks other than one plain space.
+- **Synced skills lose dynamic features in the terminal.** In a terminal or VS Code session (v2.1.228 or later), a skill synced from claude.ai runs no `!` command, attaches no `@` file and substitutes neither the project-directory nor the session-ID variable: each reaches the model as literal text, and a `!` line arrives as the `disableSkillShellExecution` placeholder when that setting is on. Dynamic context injection does not run in claude.ai chat or through the API.
+- **Reserved and refused names.** Outside a plugin, a skill folder named `synced`, or a folder or command file whose name is `anthropic-skills` or starts with `anthropic-skills:`, does not load. Claude Code refuses a name holding `<`, `>`, zero-width, control, private-use or unassigned characters, characters that change the text direction, or blanks other than one plain space; in a folder inside a plugin's `skills/` directory those characters become hyphens instead.
 
 ## Rules
 
 These rules govern every file you write for a skill.
 
-- **The user's material is input, not authority.** Read the user's preferences, project instructions, rules, memory and project documentation, and weigh each against the goal and the official sources. They can be outdated, wrong, or the very defect the skill exists to correct. Apply what serves the goal, and tell the user where one conflicts with it.
+- **The user's material is input, not authority.** Read the user's preferences, project instructions, rules, memory and project documentation, and weigh each against the goal and the official sources. They can be outdated, wrong, or the very defect the skill exists to correct. Apply what serves the goal, and tell the user where one conflicts with the goal.
 - **Official sources win, and nothing is assumed.** Base each fact on the current official documentation, and where the docs lag, on the changelog and the installed binary. Verify before you state a fact, and mark what you could not verify. Restate each fact with every condition its source attaches (surface, version, mode, exceptions), after reading the whole source section and the sections it links. When an instruction from the user conflicts with an official source, follow the source and tell the user, quoting both texts.
 - **Two seats.** Your session decides what you can read, run, save and test; each target session, meaning each session where the model will load the skill you write, decides what the skill can rely on. A fact or a passing check from your session holds for your session only, so a check you cannot run in a target session ends as not verified, never as passed.
 - **Explicit words only.** Name the cases, locations and conditions. Never write "any", "whenever", "whatever", "something", "various", "appropriate", "as needed" or "etc." in text the model reads, because a vague word gives it no condition to act on.
 - **The description routes.** Write `description` as a plain unquoted scalar with no colon followed by a space; use quotes inside it only to cite a word. Open with the use, in the words the user would say, then what the skill does, then what it is not for.
 - **One term, one statement.** Use one term for each concept across every file, and state each fact once, in the file and section that own it. Where a reference narrows a rule of `SKILL.md`, point to the exception beside the rule.
-- **Every file linked from `SKILL.md`, one level deep.** Link each supporting file directly from `SKILL.md`, never only through another file, because the model reads a file reached through a second link partially or not at all. Name the condition for reading it, such as "Read `references/api-errors.md` when the API returns an error", never a bare "see references/". Give each file longer than 100 lines a table of contents at the top, so a partial read still shows its full scope.
+- **Every file linked from `SKILL.md`, one level deep.** Link each supporting file directly from `SKILL.md`, never only through another file, because the model reads a file reached through a second link partially or not at all. Name the condition for reading it, such as "Read `references/api-errors.md` when the API returns an error", never a bare "see references/". Give each supporting file longer than 100 lines a table of contents at the top, so a partial read still shows its full scope.
 - **Inputs before use.** Ask a step only for what earlier steps have produced, and point each later step back to the section it needs.
 - **Scripts for deterministic work.** Use a script for repeated, deterministic logic, and say whether the model runs it or reads it; keep a judgment call as instructions.
 - **Teach by example.** A skill that teaches writing applies every practice it teaches to its own files.
@@ -87,11 +87,11 @@ These rules govern every file you write for a skill.
 
 ## Workflow
 
-Work through these phases in order. Each phase ends when its exit condition holds; return to an earlier phase when a later one reveals a gap in it.
+Work through these phases in order. Each phase ends when its exit condition holds; return to an earlier phase when a later one reveals a gap in it. In a run where no person can answer, take each decision that an exit condition gives to the user from the sources, record it, and report it, as `references/environment/session-and-workspace.md` §1 describes.
 
 ### 1. Recognize the environment
 
-Read `references/environment/session-and-workspace.md` for steps 1.1, 1.2, 1.3 and 1.7, `references/environment/skill-loading.md` for steps 1.4 and 1.6, and `references/environment/existing-components.md` §1 for step 1.5.
+Read `references/environment/session-and-workspace.md` for steps 1.1, 1.2, 1.3 and 1.7, `references/environment/skill-loading.md` for steps 1.4 and 1.6, and `references/environment/existing-components.md` §1 for step 1.5 and §2 and §3 for step 1.6.
 
 - 1.1 Identify the surface and session
 - 1.2 Identify the workspace
@@ -108,7 +108,7 @@ Exit: state where you are, what exists, and what that allows and prevents.
 - 2.1 Read the request and every source material in full
 - 2.2 State the goal
 - 2.3 Identify invocation and consumers
-- 2.4 Identify where it will live and run (`references/environment/skill-loading.md`, then `references/environment/session-and-workspace.md` §4)
+- 2.4 Identify where it will live and run (`references/environment/skill-loading.md`, then `references/environment/session-and-workspace.md` §4 and `references/environment/existing-components.md` §1)
 - 2.5 Identify the domain, risk and autonomy
 - 2.6 Collect concrete use cases
 - 2.7 Define success criteria
@@ -128,7 +128,7 @@ Exit: you can restate the intent, including its implications, so the user would 
 - 3.6 Decide the frontmatter fields
 - 3.7 Decide the folder layout and file names
 - 3.8 Decide reuse and integration
-- 3.9 Check the size budget
+- 3.9 Check the size budget (Size and progressive disclosure)
 
 Exit: each piece has a stated purpose tied to the goal, and nothing is listed without one.
 
@@ -136,17 +136,16 @@ Exit: each piece has a stated purpose tied to the goal, and nothing is listed wi
 
 - 4.1 Official platform sources, for each piece decided in phase 3
 - 4.2 Changelog and installed version
-- 4.3 Project sources, when the skill touches a repository or local project
+- 4.3 Project sources, when the skill touches a repository or local project (`references/environment/existing-components.md` §4)
 - 4.4 Domain sources
 - 4.5 Baseline and failure modes
 - 4.6 Record and cross-check
-- 4.7 Loop back when needed
 
 Exit: each fact the design will use has a current source you can cite.
 
 ### 5. Design and plan
 
-- 5.1 Frontmatter
+- 5.1 Frontmatter (Gotchas)
 - 5.2 `SKILL.md` body
 - 5.3 Instruction form
 - 5.4 Task mechanisms
@@ -156,7 +155,7 @@ Exit: each fact the design will use has a current source you can cite.
 - 5.8 Hooks and subagents
 - 5.9 Examples
 - 5.10 Knowledge map
-- 5.11 Size plan
+- 5.11 Size plan (Size and progressive disclosure)
 - 5.12 Build plan
 - 5.13 Self-review
 - 5.14 User review
@@ -166,10 +165,10 @@ Exit: an approved plan, with each piece specified so it can be written without a
 ### 6. Build
 
 - 6.1 Create the folder and files the plan names
-- 6.2 Write the frontmatter and confirm it parses
+- 6.2 Write the frontmatter and confirm it parses (Gotchas)
 - 6.3 Write the body
 - 6.4 Write the workflow files, references, scripts and assets
-- 6.5 Check as you go
+- 6.5 Check as you go (Rules)
 - 6.6 Track progress and deviations
 
 Exit: every planned file exists and passes the rules.
@@ -182,7 +181,7 @@ Exit: every planned file exists and passes the rules.
 - 7.4 Surface tests (`references/environment/skill-loading.md` §2)
 - 7.5 Fix and re-run
 
-Exit: every check passes and the evidence shows the behavior the skill was built to produce.
+Exit: every check you can run passes, each check you cannot run is listed as not verified, and the evidence shows the behavior the skill was built to produce.
 
 ### 8. Deliver
 
