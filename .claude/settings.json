@@ -47,7 +47,11 @@
       "ToolSearch",
       "WebSearch(*)",
       "WebFetch(*)",
-      "Agent(*)"
+      "Agent(*)",
+      "Read",
+      "Edit",
+      "Write",
+      "Bash"
     ],
     "ask": [
       "Bash(git push*)",
