@@ -69,7 +69,7 @@ Recognize the difference (two skills in one plugin):
 ## 6. `when_to_use`
 
 - A Claude Code-only field, appended to the description in the listing. Use it only for a skill served solely by Claude Code, when trigger phrases or example requests would otherwise bury what the skill does.
-- For any skill also served elsewhere (claude.ai, the Skills API, other clients), put the triggers in the description instead: elsewhere the field doesn't route.
+- For any skill also served elsewhere (claude.ai, the Skills API, other clients), put the triggers in the description instead: elsewhere the field doesn't route, and an upload that carries it fails.
 - Spell it exactly `when_to_use`; a misspelled key is ignored silently. Don't repeat or contradict the description in it.
 
 ## 7. Input at invocation
@@ -78,7 +78,7 @@ Recognize the difference (two skills in one plugin):
 - `argument-hint` is what autocomplete shows, such as `[issue-number] [branch]`. A value that starts with `[` must be quoted in YAML, or it parses as a list.
 - `arguments` names positions in order, so the body can write `$issue` instead of `$0`. Every named placeholder in the body must be declared, and every declared name used; keep the order the hint shows.
 - With no placeholder in the body, Claude Code appends the input as `ARGUMENTS: <value>`, so a skill can take free-form input without declaring anything.
-- A skill preloaded into a subagent receives no arguments: don't make its body depend on them.
+- No source documents how placeholders render in a skill preloaded into a subagent, since no invocation passes it arguments: don't make such a skill's body depend on them.
 - Read the current substitution rules on the Claude Code skills page before using indexed placeholders, escapes or `${CLAUDE_*}` variables.
 
 ## 8. The body's first lines

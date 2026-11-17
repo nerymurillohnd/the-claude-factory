@@ -18,7 +18,7 @@ Decide these before naming or writing anything: whether the content should be a 
 A skill earns its place only by what Claude lacks without it. Once invoked, its text stays in the conversation for the rest of the session and competes for attention with everything else, so a skill that restates what Claude already does costs every turn and buries the lines that matter.
 
 - Write a skill when the gap requests from understanding the request show Claude failing in a way the skill can fix: the project's or team's conventions, a domain procedure and its order, edge cases and corrections, which of several tools is right here, decisions written nowhere Claude can read, facts about the environment that defy a reasonable guess, or platform facts newer than training.
-- Don't write one when Claude handles the whole task well alone. Say so to the user, and suggest checking with one run with the skill and one without before building it.
+- Don't write one when Claude handles the whole task well alone. Say so to the user, and suggest running the gap requests without any skill first; build only if that run fails.
 - Aim the skill at the harder tasks in its area. Claude consults skills for work beyond what it does unaided; a skill pitched at a one-step request such as "read this file" triggers unreliably, because Claude just does the task.
 
 ## 2. Content that belongs in another feature
@@ -50,7 +50,8 @@ Where a skill lives decides who gets it, under which name, and on which surfaces
 
 - Personal: one person, every project on one machine; not in Cowork or cloud sessions, which load account skills instead.
 - Project: everyone working in the repository; not in cloud threads inside a Claude Code project, which reach skills through the claude.ai account.
-- Plugin: everyone who installs the plugin, namespaced as `plugin:skill`, so it never collides with skills elsewhere. The right home for anything distributed to people you don't know.
+- Managed: every user on machines where the organization deploys it.
+- Plugin: everyone who installs the plugin, namespaced as `plugin:skill`, so its full name never collides; its bare name still competes with same-named commands (see the name-and-description guide). The right home for anything distributed to people you don't know.
 - claude.ai account or upload: chat, Cowork, cloud sessions, and terminal sessions signed in with that account. Uploads accept only the specification's frontmatter fields (see the frontmatter guide).
 - Skills API and Managed Agents: their own upload or attachment routes, and their own runtime limits (see section 5).
 

@@ -74,7 +74,7 @@ By default both the user and Claude can start a skill. Two fields each close one
 
 ## 8. `shell` and `hooks`
 
-- `shell` selects the shell for the skill's injected commands. Set it only when there are injected commands: `powershell` when they are PowerShell syntax. An explicit `bash` turns the fallback on machines without bash into a hard failure; set it only when the commands need bash and failing early is the intent.
+- `shell` selects the shell for the skill's injected commands. Set it only when there are injected commands: `powershell` when they are PowerShell syntax, and only where the PowerShell tool is enabled, which by default is not the case on macOS and Linux; check the skills page for where it is on by default. An explicit `bash` turns the fallback on machines without bash into a hard failure; set it only when the commands need bash and failing early is the intent.
 - `hooks` registers hooks when the skill is invoked, and they keep running for the rest of the session. Whether a rule belongs in a hook, and where the hook should live, is decided in the scripts-and-hooks guide.
 
 ## 9. `license`, `compatibility`, `metadata`

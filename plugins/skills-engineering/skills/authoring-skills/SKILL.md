@@ -21,13 +21,13 @@ You engineer a skill: a set of files that changes how another Claude behaves, in
 Before designing anything, establish these, from the request, the material provided and the workspace first, and ask the user only what none of those answers:
 
 - The job: what the skill makes Claude do or know, for whom, and what its output feeds.
-- The gap: two or three realistic requests the skill must handle, and what Claude does wrong on each today without it. These are the gap requests; the later steps and the guides test the design against them. If you can't name a gap, the skill may not be needed; say so.
-- The discipline: which field or fields govern the work, how that field defines good work, and what errors are frequent and costly in it. The higher the cost of an error, the more evidence, verification and human control the skill must require.
+- The gap: two or three realistic requests the skill must handle, and what Claude does wrong on each today without it. These are the gap requests; the later steps and the guides test the design against them. If you can't name a gap, the skill may not be needed: say so, and wait for the user to decide whether to proceed.
+- The discipline: which profession or professions govern the work, how each defines good work, and what errors are frequent and costly in it. The higher the cost of an error, the more evidence, verification and human control the skill must require.
 - The setting: which surfaces will run it (Claude Code, the Claude app, the API, the Agent SDK), how it is invoked (by Claude, by the user, both, or by another skill or subagent), where it will live (personal, project, plugin, managed, an upload) and who else receives it.
 - The material: the user's documents, examples, corrections, project files and existing skills on the topic. Read what's relevant in full; keep its terms, distinctions and requirements instead of replacing them with generic practice.
 - The control line: which actions the skill may take on its own and which stay with the user.
 
-When the request is to change an existing skill, read the whole skill first, every file, and treat a list of findings as input to weigh, not as orders: a finding can be wrong for this skill's setting.
+When the request is to change an existing skill, first find where its source lives: the repository or plugin source it is built from, or the claude.ai account for a synced skill. Never edit a synced copy or an installed plugin copy: the next sync or update replaces it and the change is lost. If only such a copy is reachable, say so and deliver the changed files for the user to upload or commit. Then read the whole skill, every file, and treat a list of findings as input to weigh, not as orders: a finding can be wrong for this skill's setting. For a change confined to one part of a skill, research only the platform facts the change touches, and read only the guides in step 3 that govern that part.
 
 Separate what is stated, what is implied, what you assume and what is missing. Ask focused questions only for what changes the design; state every assumption you take.
 
@@ -78,14 +78,14 @@ Read the result the way Claude meets it, forward only and with no memory of writ
 - Concepts: every term, file and tool named, each defined before it is used.
 - End state: what done looks like, and what Claude delivers.
 
-Where you can't fill one of the six, or have to guess to fill it, that's a defect: fix the text and read again from the top. Stop when two passes in a row find no new defect. If the same defect returns three times, the design is the problem, not the wording: go back to step 3.
+Where you can't fill one of the six, or have to guess to fill it, that's a defect: fix the text and read again from the top. Stop when two passes in a row find no new defect. If the same defect returns three times, the design is the problem, not the wording: go back to step 3. If it returns after the redesign, stop and report the defect to the user.
 
 ## 6. Verify before delivering
 
-Every item must be true, with the file and line you checked:
+Every item must be true, with the file and line you checked. On a failed item, fix it and return to step 5. If an item can't be made true, such as a fact no source can confirm, deliver with that item listed under what you couldn't verify.
 
 - Each platform fact (field, limit, path, behavior) traces to a source you read in this task, or is marked unverified.
-- Nothing in the text is something Claude would do correctly without it.
+- Every passage you judged Claude would do correctly without it is cut; every passage you couldn't judge is marked for comparison.
 - Every file in the skill's folder is pointed to from `SKILL.md`, with what it holds and when to read it, and every pointer resolves.
 - No frontmatter field is one a target surface rejects, and the YAML parses with no quoting surprises.
 - The description says what the skill does and when to use it, in the words users type, with a boundary wherever a sibling skill competes, inside the length limits.
@@ -102,5 +102,5 @@ Give the user:
 
 - The files, with their paths.
 - The decisions and their reasons, from your notes in step 4.
-- What you assumed and what you couldn't verify, and what each affects.
+- What you assumed and what you couldn't verify, and what each affects, including the passages marked for comparison.
 - The next steps: run `skills-engineering:auditing-skills` on the result, then test the behavior on the gap requests from step 1, with `claude plugin eval` for a skill inside a plugin or with a skill-testing tool such as skill-creator otherwise. Don't claim the skill was tested unless it was.
