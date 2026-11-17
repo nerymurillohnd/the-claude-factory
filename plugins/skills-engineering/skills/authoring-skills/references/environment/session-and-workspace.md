@@ -1,6 +1,6 @@
 # Session and workspace
 
-This file teaches you how to recognize the session you write the skill in: its surface, its workspace and the capabilities it gives you, and what they let you save, run and test. It serves workflow steps 1.1, 1.2, 1.3 and 1.7. Each section gives the facts, why they matter for the skill you write, the questions to answer, and what to do with the answers.
+This file teaches you how to recognize the session you write the skill in: its surface, its workspace and the capabilities it gives you, and what they let you save, run and test. It serves workflow steps 1.1, 1.2, 1.3 and 1.7, and step 2.4, where section 4 is settled for the location you choose. Each section gives the facts, why they matter for the skill you write, the questions to answer, and what to do with the answers.
 
 ## Contents
 
@@ -86,14 +86,14 @@ The environment comes down to three answers: where you can save the skill from t
 
 Ask yourself:
 
-1. Can the location the skill needs be written from this session, and will the file persist?
+1. Which locations can be written from this session, and will a file there persist?
 2. Can I load the skill, in this session or a separate one, to run the trigger and behavior tests?
 3. Which checks will end as not verified, and what would the user need to run them?
 
 Then:
 
-- Write down the three answers before phase 2; step 2.4 and phase 7 rely on them.
-- When the location the skill needs cannot be written or tested from this session, tell the user before you build, and name the session that can.
+- Write down the three answers before phase 2, for each location this session can write and for the location the request names, if it names one. At step 2.4, settle them for the location you choose; phase 7 relies on them.
+- When the location you choose at step 2.4 cannot be written or tested from this session, tell the user before you build, and name the session that can.
 - State the answers in plain terms, for example: "This is a cloud thread of a Claude project with Claude Code 2.1.326. The plugin folder can be written and validated here, and a `claude -p --plugin-dir` run can load the skill for trigger tests. The terminal surface on the user's machine cannot be tested here and will be reported as not verified."
 
 ## Verify and go deeper

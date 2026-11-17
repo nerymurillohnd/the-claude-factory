@@ -1,6 +1,6 @@
 # Existing components
 
-This file teaches you how to take stock of what already surrounds the skill you write, and how to find where it would collide with that environment before you build it. It serves workflow steps 1.5 and 1.6. Each section gives the facts, why they matter for the skill you write, the questions to answer, and what to do with the answers.
+This file teaches you how to take stock of what already surrounds the skill you write, and how to find where it would collide with that environment before you build it. It serves workflow step 1.5, where you take the inventory, step 2.8, where you check the name, and step 3.2, where you settle the boundaries against existing skills. Each section gives the facts, why they matter for the skill you write, the questions to answer, and what to do with the answers.
 
 ## Contents
 
@@ -13,7 +13,7 @@ This file teaches you how to take stock of what already surrounds the skill you 
 
 ## How to use this file
 
-Read it in phase 1, after you know which locations your session loads. Inventory the environment where the model will load the skill, not only your own session: a project skill meets the repository's components, a plugin skill meets the skills, plugins and instructions its users have installed. You cannot see that second environment, so reason about it from the users the plugin is built for, and say in your report that it was not inspected.
+Read section 1 in phase 1, after you know which locations your session loads. Inventory your own session and each target session the request already names: a project skill meets the repository's components, and a plugin skill meets the skills, plugins and instructions its users have installed. You cannot see the users' sessions, so reason about them from the users the plugin is built for, and say in your report that they were not inspected. Sections 2 and 3 need the skill's name and goal, which phase 2 settles: answer them at steps 2.8 and 3.2, where `SKILL.md` sends you back to them. Read section 4 when the skill will live in a repository or a plugin.
 
 ---
 
@@ -43,7 +43,8 @@ Then:
 When two skills share a name, where each came from decides which one runs:
 
 - Enterprise runs over personal, and personal over project.
-- A personal or project skill replaces a bundled skill or a built-in command of the same name, but not its aliases: a project skill named `usage` replaces `/usage`, and `/cost` still runs the built-in command.
+- An enterprise, personal or project skill replaces a bundled skill of the same name, but not its aliases: a project skill named `code-review` replaces `/code-review`, and `/review` still runs the bundled skill.
+- An enterprise, personal or project skill replaces a built-in command of the same name only in a local terminal session, and again not its aliases: a project skill named `usage` replaces `/usage` there, and `/cost` still runs the built-in command. The docs promise no such replacement on other surfaces, so never count on one in cloud sessions or project threads.
 - A skill runs over a file of the same name in `.claude/commands/`.
 - A project-root skill and a nested skill with the same name both load: `/deploy` runs the root skill, and `/apps/web:deploy` runs the nested one.
 - A skill in an added directory whose name clashes runs under a prefix, `/<folder>:<name>` (v2.1.309 or later).
@@ -75,7 +76,7 @@ Ask yourself:
 
 Then:
 
-- Write down each overlapping skill and the requests both would claim, and settle the boundary in phase 3, where you decide the count and boundaries of the skills.
+- Write down each overlapping skill and the requests both would claim, and settle the boundary at step 3.2, where you decide the count and boundaries of the skills.
 - Ask the user, when the listing could be near its budget, to run `/doctor`, which estimates the listing's context cost and its largest contributors, and `/skill-doctor` (v2.1.252 or later), which reports each skill's cost and how often it runs. `/skill-doctor` answers only in the terminal of the machine where the session runs, not over Remote Control.
 
 ## 4. Project conventions
