@@ -65,6 +65,11 @@ Load `extended-memory:extended-memory` at the start of every session.
 
 Do every task, area, phase and function through the skill this section designates for it: load it before the task and keep using it until the task ends.
 
+### Skills
+
+- Use `skills-engineering:authoring-skills` to write or change any skill, in a plugin or in a project's `.claude/skills/`.
+- Use `skills-engineering:auditing-skills` to audit or review a skill, including one `authoring-skills` wrote, and run it only when the owner asks: each run launches up to nine reviewer agents.
+
 ### Plugins
 
 Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside the task's skill below for all work on plugins or their commands: read its complete list of plugin commands first, and do no manual work a command already does.
@@ -75,7 +80,6 @@ Use `plugin-engineering:cli-commands-guide`, which governs plugins and their com
 - Use `hook-engineering:hook-development` to debug or audit a hook.
 - Use `plugin-engineering:plugin-testing-and-debugging` to test, debug or review a plugin before publishing it.
 - Use `plugin-evals:plugin-evals` to write or run a plugin's evals; every run bills the owner.
-- Use `skill-diagnostics:skills-best-practices` to audit a skill.
 - Use `plugin-releases` to set or bump a plugin's version, or to release and tag it.
 - Use `plugin-catalog-changes` to rename, remove or merge a plugin.
 - Use `plugin-icons` to draw or change a plugin's icon.

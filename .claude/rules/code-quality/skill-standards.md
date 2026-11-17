@@ -42,4 +42,3 @@ paths:
 ## Checks
 
 - Run `npm run lint:skills -- <skill folder>` after each change, and report each defect to the owner, one question per rule id, before fixing it or recording it as debt.
-- Run the `skill-diagnostics:skills-best-practices` audit only when the owner asks for it.
