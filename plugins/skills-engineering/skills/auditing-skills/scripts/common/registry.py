@@ -7,7 +7,9 @@ from dataclasses import dataclass
 from frontmatter import (
     compatibility,
     description,
+    field_values,
     listing_cap,
+    metadata,
     name_format,
     name_plain,
     plain_values,
@@ -86,6 +88,18 @@ CHECKS: tuple[CheckSpec, ...] = (
         compatibility.CHECK,
         compatibility.check,
         ("frontmatter-description", "size-limits-and-budgets"),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        metadata.CHECK,
+        metadata.check,
+        ("frontmatter-description",),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        field_values.CHECK,
+        field_values.check,
+        ("frontmatter-description",),
         requires=(yaml_syntax.CHECK,),
     ),
 )

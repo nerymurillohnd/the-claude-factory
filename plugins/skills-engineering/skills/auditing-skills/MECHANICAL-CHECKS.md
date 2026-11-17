@@ -142,6 +142,29 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 - Reading the result: `not-a-string`, `empty` and `too-long`, as in `frontmatter.description`; `data.length` and `data.utf16_length` are its lengths, or null when the field is absent.
 - Goes to: `frontmatter-description`, and `size-limits-and-budgets` for the lengths.
 
+### frontmatter.metadata
+
+- Command: `python3 <entry> check frontmatter.metadata <SKILL.md>`.
+- What it checks: that `metadata`, when present, is a map of string keys to string values whose keys aren't frontmatter field names. Types follow YAML 1.1, as uploads read them, so `1.0` and `yes` aren't strings.
+- `claude plugin validate` passed `metadata: {a: 1}` when tested, so this check is the only source. It needs `frontmatter.yaml` to pass first.
+- Reading the result:
+  - `not-a-map`: Claude Code drops a `metadata` that isn't a map, and the open specification and uploads expect one.
+  - `non-string-key` and `non-string-value`: a key or value YAML 1.1 reads as another type, or a value that is a list or a mapping.
+  - `reused-field-name`: a key named like a frontmatter field, such as `paths`, which sets nothing inside `metadata`.
+- Goes to: `frontmatter-description`.
+
+### frontmatter.field-values
+
+- Command: `python3 <entry> check frontmatter.field-values <SKILL.md>`.
+- What it checks: the boolean forms of `disable-model-invocation`, `user-invocable` and `background`; that `context` is `fork`; that `effort` is a documented level; that `model` is an alias `/model` accepts, `inherit` or a full model id; and that `disallowed-tools`, `paths` and `arguments` are a string or a list of strings.
+- `claude plugin validate` rejected a non-string `allowed-tools` and an unknown `shell` when tested, so read those two in its output; it passed `user-invocable: maybe`, `effort: turbo` and `context: spoon`. It needs `frontmatter.yaml` to pass first.
+- Reading the result:
+  - `boolean-form`: a value outside the documented forms. A quoted value has basis `inference` and a `condition`, because whether Claude Code reads it as a boolean is unverified.
+  - `context-value`, `effort-value` and `string-or-list`: a value outside the documented ones or types.
+  - `model-value`, basis `inference`: neither an alias nor a model id. `data.model_id_unchecked` is true when the value looks like a full model id, which the check doesn't verify exists.
+  - `empty-value`: the field is present with no value.
+- Goes to: `frontmatter-description`.
+
 ## Plugin structure and loading
 
 - `claude plugin validate --json <plugin root>` for a plugin skill, or `claude plugin validate --json <skills directory>`, the directory named `skills` that holds the skill, otherwise. It doesn't read a `SKILL.md` at a plugin's root, doesn't follow symlinks, and accepts some malformed YAML, so its pass proves only what it reports.
@@ -174,7 +197,7 @@ Write into each reviewer's prompt the results listed under its name, and name ev
 - `size-limits-and-budgets`: where the body's first 5,000 tokens end; the always-on and on-invoke token estimates from `claude plugin details`; the skill's listing cost after the budget from `/skill-doctor`, and the Skills total from `/context`; character counts of `name`, `description`, `when_to_use` and `compatibility`, and where the 1,536th character of `description` plus `when_to_use` falls, from the `frontmatter.name`, `frontmatter.description`, `frontmatter.compatibility` and `frontmatter.listing-cap` results; the body's line and approximate token counts; line counts of supporting files and which references over 100 lines lack a table of contents; bundle size and file count; the source's frontmatter hook count and total matcher characters; the length of any preload list shipped with the skill.
 - `knowledge-delta`: no mechanical result of its own; only the `/doctor prompt-audit` leads.
 - `task-mechanisms`: no mechanical result of its own; only the `/doctor prompt-audit` leads.
-- `frontmatter-description`: the `claude plugin validate --json` output; the `frontmatter.yaml`, `frontmatter.plain-values`, `frontmatter.name`, `frontmatter.name-plain`, `frontmatter.description`, `frontmatter.listing-cap` and `frontmatter.compatibility` results; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
+- `frontmatter-description`: the `claude plugin validate --json` output; the `frontmatter.yaml`, `frontmatter.plain-values`, `frontmatter.name`, `frontmatter.name-plain`, `frontmatter.description`, `frontmatter.listing-cap`, `frontmatter.compatibility`, `frontmatter.metadata` and `frontmatter.field-values` results; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
 - `comprehension`: where the body's first 5,000 tokens end; capitalized absolutes; time-sensitive wording.
 - `feature-fit`: the mode, with or without an environment; the paths of the environment's Markdown instruction files (every CLAUDE.md and CLAUDE.local.md level, rules with their `paths`, other skills with their names and descriptions, and subagents), with the contents of any outside the working directory, such as `~/.claude/`, read for it; the hooks by event, matcher and source; the installed plugins with their scope and whether each is enabled, from `claude plugin list --json`; the MCP server names; the permission rules; and the active output style. Extract these from settings and MCP files without their values, and never pass the reviewer a settings, MCP or credential file.
 - `scripts`: the inventory of code files in the skill's folder, at the plugin level, in `bin/` and run by its hooks, each with its path and language; each one's first line and executable bit; each script the Markdown runs, with its interpreter and whether the file exists; the scripts each hook command runs; Python imports outside the standard library with no inline dependency declaration; external commands a script calls that neither the Markdown nor `compatibility` mentions; package installs in scripts, global or local; the packages `claude plugin list --json` notes as not installed; network and credential signals in scripts, by file and line, never with a value; and the output of any linter run on the scripts, such as ShellCheck or Ruff, or the name of each linter not run.

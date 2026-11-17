@@ -28,3 +28,5 @@ Each check's command, reading and receivers are in `skills/auditing-skills/MECHA
 - `frontmatter.description` (FM-7): present, a non-blank string, at most 1,024 characters, no `<` or `>`; to frontmatter-description, and its lengths to size-limits-and-budgets.
 - `frontmatter.listing-cap` (FM-8): where the 1,536-character listing cap cuts `description` plus `when_to_use`; to size-limits-and-budgets and frontmatter-description.
 - `frontmatter.compatibility` (FM-9): a string of 1 to 500 characters; to frontmatter-description, and its lengths to size-limits-and-budgets.
+- `frontmatter.metadata` (FM-10): a map of string keys to string values, no field names as keys; to frontmatter-description.
+- `frontmatter.field-values` (FM-12): boolean forms, `context`, `effort`, `model`, and the string-or-list fields; a non-string `allowed-tools` and an unknown `shell` stay with validate; to frontmatter-description.
