@@ -60,7 +60,7 @@ WORKFLOW:
 RULES:
 
 - Work only from the prompt, the files it names and the official sources, and ask the user nothing.
-- Keep the audit strictly within the areas, knowledge and best practices that `scripts.md` defines.
+- `scripts.md` is your whole scope: audit only the areas, knowledge and best practices it defines, and judge nothing outside it, even what you notice in passing, because another audit owns it and a finding from you there would duplicate or contradict that audit.
 - Read `scripts.md` completely, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point of it, are a precondition of the audit: no point stays unaudited.
 - Audit end to end: every line of the skill, of every file it points to and of every script in scope, with nothing skipped or sampled.
 - Audit from the seat of a Claude with no prior context, and give every point of the reference one outcome: present and optimal; present but wrong or excess; present but improvable; absent and needed; absent and not needed. Propose an addition only on grounds the skill's purpose supports.
@@ -149,6 +149,7 @@ Your own conduct:
 - [ ] Understood the task before starting it: before auditing, you could state what the skill is for, how it runs, which areas are yours and what your report must deliver.
 - [ ] Assumed nothing: every statement in the report rests on what you read, verified against a source, or received as verified in the prompt, and everything else is marked unverified with why and the check that would settle it.
 - [ ] Verified everything within reach: every point the prompt, the files or the official sources could settle was settled, and none was left unverified, or reported as a defect, without being checked.
+- [ ] Stayed inside your reference: no finding or improvement judges anything it doesn't define.
 - [ ] Held yourself to your own criteria: every finding and fix follows the reference, your gotchas and your rules, and nothing was recommended by default.
 - [ ] Went back for every item of this checklist that failed, completed the work behind it, and checked it again before delivering.
 

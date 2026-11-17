@@ -6,7 +6,7 @@ argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] 
 
 # Auditing skills
 
-You orchestrate an audit of a Claude skill. Specialized reviewers do the auditing; you understand what is being asked and what the skill is, run the mechanical checks, brief each reviewer, launch them in parallel, hold each report to its own checklist, present every report complete and exactly as written, and then recommend where to start. These rules hold for the whole audit: the findings come only from the reviewers, so you add no finding of your own; you estimate no figure by hand; and you apply no fix until the user asks for one after the reports. Your own judgment goes into understanding the request and the skill, briefing the reviewers, holding each report to its checklist, and the closing recommendation.
+You orchestrate an audit of a Claude skill, and no agent orchestrates in your place: you brief, launch and hold every reviewer to account. Specialized reviewers do the auditing; you understand what is being asked and what the skill is, run the mechanical checks, brief each reviewer, launch them in parallel, hold each report to its own checklist, present every report complete and exactly as written, and then recommend where to start. These rules hold for the whole audit: the findings come only from the reviewers, so you add no finding of your own; you estimate no figure by hand; and you apply no fix until the user asks for one after the reports. Your own judgment goes into understanding the request and the skill, briefing the reviewers, holding each report to its checklist, and the closing recommendation.
 
 ## Gotchas
 
@@ -73,11 +73,15 @@ This invocation's arguments: $ARGUMENTS
    - the skill's name and the absolute path of its directory;
    - where it lives, how it is invoked, which surfaces it targets, and its purpose in one sentence, from step 2;
    - the instruction to read and understand the whole skill, every file it points to, before auditing anything;
-   - its bounds: the areas its entry in the Reviewers list names, audited in full, and nothing outside them, stated as that reviewer's own ground without naming any other reviewer or what another one covers;
+   - its bounds: its own reference is its whole scope, so name the areas its entry in the Reviewers list names, to be audited in full, and tell it to judge nothing outside them, even what it notices in passing; state them as that reviewer's own ground, without naming any other reviewer or what another one covers;
    - any target the user stated, and any reading you took in its place;
    - the results of the mechanical checks that reviewer receives, from step 3, and the name of every check not run;
    - for `runtime-contract` and `frontmatter-description`, the path of [references/skill-types-and-frontmatter.md](references/skill-types-and-frontmatter.md), the lookup of every frontmatter field, name rule, argument, body feature and layout by type of skill, with the instruction to read it whole before judging the skill's type;
-   - what you demand of it: verify every point instead of assuming it holds because a file or a line exists; check every fact a finding rests on against the current official sources with its docs and web tools, and report where they changed since its reference; ground every finding in quoted evidence; complete its verification checklist; and deliver its report complete, in its template.
+   - what you demand of it, even though its own rules and template already say so:
+     - verify every point instead of assuming it holds because a file or a line exists, and check every fact a finding rests on against the current official sources with its docs and web tools, reporting where they changed since its reference;
+     - classify every defect as Critical, High, Medium or Low by its consequence, and give for each one the file, the lines, the quoted evidence, why it is a defect, its fix written out, and the grounds for that fix;
+     - report every improvement opportunity and recommendation it finds, present or absent, each with the file and lines, or where it belongs, what to do, and why it is better for this skill;
+     - complete its verification checklist, and deliver its report complete, in its template.
 5. Launch every selected reviewer in a single message, so they run in parallel. Wait until every reviewer has finished before you present any report: the reports go out together, in the order of the Reviewers list, and your recommendation weighs all of them.
 6. Check each report before you accept it:
    - against the report template, [assets/audit-report.md](assets/audit-report.md), for its structure;
