@@ -52,9 +52,7 @@ Decide the skill's size and how its files split before you write, not after a dr
 
 - **Metadata, at startup.** The `name` and `description` of every installed skill load into every session, about 100 tokens per skill in the Agent Skills specification. Each word there costs context in every session, whether the skill runs or not.
 - **Body, on invocation.** The `SKILL.md` body loads when the skill runs. Keep it under 500 lines and 5,000 tokens. It competes with the conversation for the model's attention, and after compaction Claude Code keeps only the first 5,000 tokens of each invoked skill, within 25,000 tokens shared across skills. Put in it only what the model needs on every run, with the critical instructions near the top.
-- **Supporting files, on demand.** References, scripts and assets cost nothing until the model reads or runs them, and a script costs only its output. Move there the detail the model needs only in some cases, split by domain or task so the model reads only the file its case calls for.
-
-Link each supporting file directly from `SKILL.md`, one level deep, and name the condition for reading it, such as "Read `references/api-errors.md` when the API returns an error", never a bare "see references/". Give each file longer than 100 lines a table of contents at the top, so a partial read still shows its full scope.
+- **Supporting files, on demand.** References, workflow files, scripts and assets cost nothing until the model reads or runs them, and a script costs only its output. Move there the detail the model needs only in some cases, split by domain or task so the model reads only the file its case calls for.
 
 ## Gotchas
 
@@ -62,7 +60,7 @@ Facts about how skills load and run that contradict a reasonable assumption. Eac
 
 - **Frontmatter outside Claude Code.** Uploads to claude.ai, the Skills API and `package_skill.py` accept six fields, `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`, and reject the upload with a hard error on a seventh. Claude Code accepts its full field set and silently ignores a field name it does not recognize, so a misspelled field fails without a warning.
 - **Frontmatter that does not parse.** Claude Code reads frontmatter only when the opening `---` is the first line. When the YAML fails to parse, the skill still loads with no fields set, so `/name` works but the model never matches the description and never loads the skill on its own.
-- **The listing truncates descriptions.** Claude Code cuts `description` plus `when_to_use` at 1,536 characters, and when the listing overflows its budget it drops whole descriptions, starting with the least-used skills. Put the key use case first. Angle brackets in either field display as `&lt;` and `&gt;`, so write a placeholder as `[branch]`.
+- **The listing truncates descriptions.** Claude Code cuts `description` plus `when_to_use` at 1,536 characters by default, and when the listing overflows its budget it drops whole descriptions, starting with the least-used skills. Put the key use case first. Angle brackets in either field display as `&lt;` and `&gt;`, so write a placeholder as `[branch]`.
 - **The skill is read once.** The rendered `SKILL.md` enters the conversation once and is not re-read on later turns, so write standing instructions that apply to the whole task. A rule that must hold every time belongs in a hook, which the skill can declare in its `hooks` frontmatter.
 - **`allowed-tools` grants, it does not restrict.** It pre-approves the listed tools for the turn that invokes the skill and leaves every other tool callable. To remove tools while the skill is active, use `disallowed-tools`. Scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks, unless `Skill(name)` is in `permissions.allow`.
 - **`disable-model-invocation: true` reaches further than the menu.** It also stops the skill from being preloaded into subagents and from running as a scheduled task's prompt. Never set it on a skill that a subagent or another skill loads.
@@ -80,86 +78,113 @@ These rules govern every file you write for a skill.
 - **Explicit words only.** Name the cases, locations and conditions. Never write "any", "whenever", "whatever", "something", "various", "appropriate", "as needed" or "etc." in text the model reads, because a vague word gives it no condition to act on.
 - **The description routes.** Write `description` as a plain unquoted scalar with no colon followed by a space; use quotes inside it only to cite a word. Open with the use, in the words the user would say, then what the skill does, then what it is not for.
 - **One term, one statement.** Use one term for each concept across every file, and state each fact once, in the file and section that own it.
+- **Every file linked from `SKILL.md`, one level deep.** Link each supporting file directly from `SKILL.md`, never only through another file, because the model reads a file reached through a second link partially or not at all. Name the condition for reading it, such as "Read `references/api-errors.md` when the API returns an error", never a bare "see references/". Give each file longer than 100 lines a table of contents at the top, so a partial read still shows its full scope.
 - **Scripts for deterministic work.** Use a script for repeated, deterministic logic, and say whether the model runs it or reads it; keep a judgment call as instructions.
 - **Teach by example.** A skill that teaches writing applies every practice it teaches to its own files.
 - **Re-read after every edit.** After each change, from one line to a section, re-read the whole file and fix broken context, duplication, redundancy and incoherence before delivering.
 
-## How you build a skill
+## Workflow
 
 Work through these phases in order. Each phase ends when its exit condition holds; return to an earlier phase when a later one reveals a gap in it.
 
-### 1. Understand the request and its source
+### 1. Recognize the environment
 
-Before you write a single instruction, understand what the skill must accomplish. Read the source material in full and find the user's real intention behind the request. Establish:
+Read `references/environment/session-and-workspace.md` for steps 1.1, 1.2, 1.3 and 1.7, `references/environment/skill-loading.md` for steps 1.4 and 1.6, and `references/environment/existing-components.md` for steps 1.5 and 1.6.
 
-- The knowledge or expertise being transferred, and the responsibilities, problems and decisions the model takes on.
-- The actions it performs, the information it must obtain, and who or what consumes its output.
-- What can go wrong, what success looks like, how much autonomy fits the risk, and what stays under human control.
+- 1.1 Identify the surface and session
+- 1.2 Identify the workspace
+- 1.3 Identify the capabilities at hand
+- 1.4 Map what loads in this session
+- 1.5 Inventory existing components
+- 1.6 Detect conflicts and constraints
+- 1.7 Derive the implications
 
-Keep the source's concepts, terminology, distinctions, requirements and intended meaning. Never drop an inconvenient detail without saying so, simplify a critical requirement, or replace the user's methodology with generic best practice. Sort what you learn into explicit requirements, implied requirements, established domain knowledge, assumptions that need validation, missing information and contradictions.
+Exit: state where you are, what exists, and what that allows and prevents.
 
-When essential information is missing, ask the user focused questions before you make the decisions that depend on it. Never ask what the documentation, the source material, the project context or the tools you are authorized to use can answer.
+### 2. Understand the intent
 
-Exit when you can state the skill's goal, its consumer and its success criteria in the user's terms.
+- 2.1 Read the request and every source material in full
+- 2.2 State the goal
+- 2.3 Identify invocation and consumers
+- 2.4 Identify where it will live and run, with `references/environment/skill-loading.md`
+- 2.5 Identify the domain, risk and autonomy
+- 2.6 Collect concrete use cases
+- 2.7 Define success criteria
+- 2.8 Settle the name
+- 2.9 Sort what you know
+- 2.10 Ask about context gaps
 
-### 2. Recognize the domain and the failures to prevent
+Exit: you can restate the intent, including its implications, so the user would recognize it as theirs, and no open question would change what you build.
 
-Determine which discipline, or combination of disciplines, governs the work, and what professional capability you are building. Classify by context and along several dimensions: a skill for an inventory system draws on software engineering, database engineering, business operations and security at once. Hold the classification as a working hypothesis, and revise it when research or the user's answers reveal a discipline you had not recognized.
+### 3. Define what to build
 
-Each discipline defines good work its own way. In software, code that appears to work must still pass its tests and respect the architecture. In science, a plausible conclusion needs methodological traceability and empirical support. In research, finding information is not verifying it, because authority, currency, provenance and contradictions must be weighed. Derive the skill's quality criteria from its discipline, its purpose and its level of risk: the higher the cost of an error in that domain, the more evidence, verification and human control the skill requires.
+- 3.1 Confirm a skill is the right feature
+- 3.2 Decide the count and boundaries
+- 3.3 Decide the skill type
+- 3.4 Decide the invocation model
+- 3.5 Decide the components
+- 3.6 Decide the frontmatter fields
+- 3.7 Decide the folder layout and file names
+- 3.8 Decide reuse and integration
+- 3.9 Check the size budget
 
-A skill exists because the model's general behavior falls short for a specific responsibility. Name the failures your skill must prevent and set the behavioral standard that prevents each one. Depending on the domain, they include:
+Exit: each piece has a stated purpose tied to the goal, and nothing is listed without one.
 
-- Understanding a complex request superficially, or executing before the objective is clear.
-- Following the literal instruction and missing the intent behind it.
-- Assuming instead of validating, or treating one piece of evidence as proof.
-- Applying generic knowledge, a universal template or generic quality criteria where the discipline demands its own.
-- Following procedures without knowing their purpose, or ignoring dependencies between connected systems.
-- Relying on incomplete, outdated or unreliable information.
-- Missing risks and alternative approaches.
-- Abandoning the task at the first obstacle.
-- Delivering incomplete results without stating their limits, or claiming success without verifying it.
-- Adding needless complexity, technical debt or operational risk.
+### 4. Acquire the knowledge
 
-Include only the failures that matter to the skill's domain. A rule added to make the skill look thorough dilutes the rules that carry weight.
+- 4.1 Official platform sources, for each piece decided in phase 3
+- 4.2 Changelog and installed version
+- 4.3 Project sources, when the skill touches a repository or local project
+- 4.4 Domain sources
+- 4.5 Baseline and failure modes
+- 4.6 Record and cross-check
+- 4.7 Loop back when needed
 
-Exit when you can name the governing disciplines, their quality criteria and the failures the skill prevents.
+Exit: each fact the design will use has a current source you can cite.
 
-### 3. Research the current sources
+### 5. Design and plan
 
-For each discipline, learn its standards, methods and professional practices, its frequent errors with their consequences and how they are detected, and the tools, integrations and sources the model needs, without assuming the model always has the same ones. For the skill platform itself, read the current official documentation for the location and surfaces the skill targets, and check the changelog of the installed version for changes the docs have not caught up with.
+- 5.1 Frontmatter
+- 5.2 `SKILL.md` body
+- 5.3 Instruction form
+- 5.4 Task mechanisms
+- 5.5 References
+- 5.6 Scripts
+- 5.7 Assets
+- 5.8 Hooks and subagents
+- 5.9 Examples
+- 5.10 Knowledge map
+- 5.11 Size plan
+- 5.12 Build plan
+- 5.13 Self-review
+- 5.14 User review
 
-Exit when each fact the skill will state has a current source you can cite.
+Exit: an approved plan, with each piece specified so it can be written without another design decision.
 
-### 4. Decide the architecture
+### 6. Build
 
-Make each decision from the skill's goal, and know why you made it:
+- 6.1 Create the folder and files the plan names
+- 6.2 Write the frontmatter and confirm it parses
+- 6.3 Write the body
+- 6.4 Write the workflow files, references, scripts and assets
+- 6.5 Check as you go
+- 6.6 Track progress and deviations
 
-- The skill type that fits the work, which sets what the body teaches and how the model is expected to act.
-- Where the skill lives and where it is served from, which set the frontmatter it may use, the paths it may reach and the surfaces it must run on.
-- The internal architecture and scaffold: what stays in `SKILL.md`, what moves to reference files, and how the files are split.
-- The components it needs, such as scripts, assets, templates and subagents, and where a script does the work better than an instruction.
-- The formats, the examples and the output the model returns, including checklists and output templates where the work calls for them.
-- The gates and validations that prove the work is done before the model reports it.
+Exit: every planned file exists and passes the rules.
 
-Exit when each file the skill needs has a stated purpose and each decision has a reason tied to the goal.
+### 7. Validate
 
-### 5. Write the skill
+- 7.1 Mechanical checks
+- 7.2 Trigger tests
+- 7.3 Behavior tests
+- 7.4 Surface tests, planned with `references/environment/skill-loading.md`
+- 7.5 Fix and re-run
 
-Write the frontmatter, then the body as the contract: the role, the gotchas before the instructions, the standards and the phases of the work, each instruction answering the six questions. Write the reference files, scripts and assets phase 4 named, within the budgets in Size and progressive disclosure. Apply the Rules to every file.
+Exit: every check passes and the evidence shows the behavior the skill was built to produce.
 
-Exit when every file phase 4 named exists and passes the Rules.
+### 8. Deliver
 
-### 6. Validate
+- 8.1 Report
+- 8.2 Ask the closing question
 
-Run the checks the environment offers, such as `claude plugin validate` on the skill or plugin folder, and read their raw output. Test the description against realistic requests that should and should not load the skill, and test the body against a realistic task in its domain. Fix each defect at its cause and run the checks again.
-
-Exit when every check passes and the tests show the behavior the skill was built to produce, with the evidence in hand.
-
-### 7. Deliver
-
-Report what you built, the decisions you made and why, the evidence from phase 6, and what remains open. Then stop and ask the user to choose:
-
-- Keep the skill as it is.
-- Add evals. For a skill in a plugin, the evals belong to the plugin, run with `claude plugin eval`; for a standalone skill, the `skill-creator` plugin stores them in the skill's `evals/evals.json`.
-- Audit it with `skills-engineering:auditing-skills`.
+Exit: the user has the report and has chosen the next step.
