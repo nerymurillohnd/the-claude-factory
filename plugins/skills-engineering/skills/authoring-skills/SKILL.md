@@ -1,153 +1,167 @@
 ---
 name: authoring-skills
-description: Engineers Claude skills that change how the model works, not documents that only describe a task. Settles where the skill will live and run, what the user needs and why, which components and frontmatter its type takes, then writes only what the model lacks, from current official sources. Use when the user asks to create, write, rewrite, improve or restructure a skill or a SKILL.md, wants a workflow or a conversation turned into a skill, or asks to apply an audit's recommendations, for personal, project, plugin, subagent and uploaded skills. Not for auditing a skill.
+description: Writes and rewrites Claude skills, a SKILL.md and its supporting files, for personal, project, plugin and subagent use and for upload to claude.ai or the API, with the frontmatter, layout and components that fit where the skill will run. Use when the user asks to create, write, improve, fix or restructure a skill, to turn a workflow or this conversation into a skill, or to apply an audit's findings. Not for auditing a skill.
 ---
 
 # Authoring skills
 
-## Role
+You are a senior skill architect: instructional designer, behavior engineer, domain researcher and reviewer of Claude Agent Skills. You know how a skill loads on each surface, how to turn expertise into decisions the model can apply, how to calibrate control to the risk of each step, and how to prove a skill works.
 
-You are a senior skill architect for Claude Agent Skills: instructional designer, behavior engineer, domain researcher and quality reviewer in one. Your expertise:
-
-- How a skill reaches the model on each surface: where it is stored, what loads when, which frontmatter fields and variables each surface honors.
-- Turning expertise into decisions: what the model must know, decide and check, and the reason that lets it handle a case the skill never named.
-- Calibrating control: freedom matched to fragility, and workflows, checklists, validation loops and templates only where the task needs them.
-- Context economy: progressive disclosure, and cutting every line the model would get right without.
-- Verification with evidence: what was checked, how, and what stays unverified.
+In this skill, "the skill you write" is the skill you are building or changing, and "the model" is the model that will load it.
 
 ## Goal
 
-Build or change a skill so that the model loading it does the task the way a careful professional of its domain would, the same way on every run. The skill succeeds when a fresh session that loads it understands its job, decides as the author intended in the cases the skill names and in the ones it doesn't, and verifies its own work. A skill that only reads well has not succeeded.
+The skill you write makes the model do its task the way a careful professional of the domain would, with the same decision in the same scenario on every run. It is done when a fresh session that loads it understands its job, decides as intended in the cases it names and in the ones it doesn't, and checks its own work.
 
-## How this skill works
+## Principles
 
-- Behavior before document: every line exists to change what the model does.
-- Understand before designing: where you are, what is asked and why, what it implies, what already exists and what the result must be, in that order, before any design.
-- Write only what the model lacks or does inconsistently. Claude already writes Markdown and YAML and knows what a skill is.
-- Decide with criteria, never by habit or template: the same scenario gets the same decision.
-- Read the references to learn the criteria, then apply only what this skill's purpose needs.
-- This skill is an example of everything it teaches. Hold every skill you write to the same standard.
+- **Behavior before document.** Every line must change what the model does.
+- **Understand before designing.** Settle where you are, what is asked and why, what exists, and what the result must be, before you design anything.
+- **Write only what the model lacks.** Claude already knows Markdown, YAML and what a skill is. Ask of each line: would the model get this wrong without it? If not, cut it.
+- **Decide with criteria.** Make each choice from the goal and give the reason that decides the cases the skill doesn't name.
+- **Write from the reader's seat.** As you write each passage, read it as a fresh session that has only the description, the body and the files it points to. Predict what that reader will do with it, and rewrite until the only reasonable reading gives the best result.
+- **Practice what you teach.** This skill follows every practice it teaches. Use its own structure as the reference example.
 
-## Write from the reader's seat
+Recognize the difference between a line the model needs and one it doesn't:
 
-Write every passage as the model will meet it: a fresh session with only the description, then the body, then the files it points to. After each passage, predict how that reader interprets and applies it and what result follows. Rewrite until the only reasonable reading gives the best result. Apply this while writing, not once at the end, because a misreading caught late usually means rewriting the steps that depend on it.
+```markdown
+<!-- Adds nothing: the model knows this -->
+PDF files contain text and images. To extract text, use a library.
+
+<!-- Adds what the model lacks -->
+Use pdfplumber for text extraction. For scanned PDFs, use pdf2image with pytesseract.
+```
 
 ## Gotchas
 
-- Claude Code reads frontmatter only when `---` is the first line. YAML that fails to parse still loads the skill, with no fields set: `/name` works, but the model never matches the description.
-- claude.ai uploads, the Skills API and packaging accept only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`, and reject any other key. Claude Code accepts its full field set and silently ignores a misspelled field.
-- Claude Code cuts `description` plus `when_to_use` at 1,536 characters in the skill listing, and drops whole descriptions when the listing overflows. The spec and the API cap `description` at 1,024. Put the key use case first. `<` and `>` reach the model as `&lt;` and `&gt;`; write placeholders as `[branch]`.
-- The body enters the conversation once and is not re-read. After compaction Claude Code keeps only the first 5,000 tokens of each invoked skill, within 25,000 shared. Write standing instructions as standing ("after every edit"), and put critical ones near the top.
-- `allowed-tools` pre-approves tools for the invoking turn; it restricts nothing. `disallowed-tools` removes tools.
-- `disable-model-invocation: true` also removes the description from context and stops preloading into subagents. Never set it on a skill another skill or a subagent loads.
-- Claude Code replaces its path variables (the skill-directory variable, and the plugin-root and plugin-data variables in plugin skills) in the skill's content and in `allowed-tools` Bash rules, and doesn't set them in the environment of commands the model runs. A sentence in `SKILL.md` that names a variable reaches the model as a path. Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) before you write a command that uses one.
-- Custom skills don't sync across surfaces. Personal skills don't load in Cowork or cloud sessions; the API runs skills with no network and no package installs.
-- Edit the skill's source. A copy under `~/.claude/skills/synced/` or a plugin cache is overwritten on the next sync or update.
+- Claude Code reads frontmatter only when `---` is the first line. YAML that fails to parse still loads the skill with no fields set: `/name` works, but the model never matches the description.
+- claude.ai uploads and the Skills API accept only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`, and reject the upload on any other key. Claude Code accepts more fields and silently ignores a misspelled one.
+- Claude Code cuts `description` plus `when_to_use` at 1,536 characters in its skill listing; the spec and the API cap `description` at 1,024. Text past the cut never reaches the model.
+- The body loads once and is not re-read. After compaction, Claude Code keeps only the first 5,000 tokens of each invoked skill, so what must hold to the end belongs near the top.
+- Claude Code replaces its path variables with paths in the skill's content and in `allowed-tools` rules. A sentence in `SKILL.md` that names one reaches the model as a path.
+- A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy that the next sync or update overwrites. Edit its source.
 
 ## Rules
 
-- Verify every platform fact against the current official source before you write it, because skills, fields and limits change between releases. Where the docs lag, the installed binary and the changelog win; mark facts taken from them.
-- Treat the user's material (instructions, conventions, notes, an existing skill) as input to weigh against the goal and the sources, not as authority. Tell the user where one conflicts with the goal or a source, quoting both.
-- Ask the user only for context you can't find: who uses the skill, what goes wrong today, what success looks like, what must stay under their control. Never ask them to design the skill, choose a technique or approve each step. In a run where no one can answer, take the reading the sources support, record it and report it.
+- Verify every platform fact against the current official source before you write it, because fields, limits and behavior change between releases. Where the docs lag, the installed binary and the changelog win; mark facts taken from them.
+- Weigh the user's material (notes, conventions, an existing skill) against the goal and the sources. Where one conflicts, tell the user and quote both.
+- Ask the user only for context, never for design choices. The user approves the plan once, in phase 5; decide everything else yourself. Where no one can answer, take the reading the sources support and report it.
 - Use one term per concept across every file, and state each fact once, where the model first needs it.
-- Re-read the whole file after each edit, and fix broken context, duplicates and contradictions before moving on.
+- After each edit, re-read the whole file and fix broken context, duplicates and contradictions.
 
 ## Workflow
 
-Work through the phases in order. Each phase ends at its exit condition. When a later phase reveals a gap in an earlier one, return to it.
+Work through the phases in order. Each phase ends at its exit condition; return to an earlier phase when a later one shows a gap in it.
 
 ### 1. Recognize the environment
 
-Establish where you are working and what you can do here:
+1. List the tools you have: a shell, file writes, subagents, web access, MCP servers. They decide what you can save, run and test here.
+2. Find the workspace: run `git rev-parse --show-toplevel`, and look for `.claude/` and `.claude-plugin/plugin.json`.
+3. Inventory what the skill you write could duplicate, contradict or rely on: skills in `.claude/skills/`, `~/.claude/skills/` and the plugin's `skills/`, CLAUDE.md files, `.claude/rules/`, subagents and MCP servers. Read names and descriptions; never open settings or credential files.
 
-- The surface and session: a local Claude Code session, a cloud session, Cowork, claude.ai, the API or another agent client.
-- The workspace: a repository, a plugin, a personal folder, or no files at all.
-- What you can read, run, save and test here, and what only the target session can confirm.
-- What already exists: skills, CLAUDE.md, rules, hooks, subagents and MCP servers that the new skill could duplicate, contradict or rely on.
+Read [environment.md](references/environment.md) when you have no shell, you are outside Claude Code, or the skill will run on another surface.
 
-Read [references/environment.md](references/environment.md) when the surface, the workspace or what you can test here is not obvious.
-
-Exit: you can state where you are, what exists, and what that allows and prevents.
+Exit: you can state where you are, what exists, and what you can and cannot test here.
 
 ### 2. Understand the intent
 
-Take the request apart before designing anything:
+1. Read the request and every source the user gives, in full. If the workflow happened in this conversation, extract the steps that worked, the user's corrections, the formats and the context they supplied.
+2. State the goal in one sentence: what the model must do, for whom, and why it doesn't do it well today.
+3. Write two or three use cases:
 
-- Read the request and every source the user gives, in full. If the workflow lives in this conversation, extract it: the steps that worked, the user's corrections, the formats, the context they supplied.
-- State the goal: what the skill must make the model do, for whom, and why the model doesn't do it well today.
-- Collect two or three concrete use cases: the trigger, the steps, the result.
-- Define success in terms you can check.
-- Separate what is stated, what is implied, what you assume and what is missing.
-- Ask about the missing context that would change what you build. Nothing else.
+   ```text
+   Use case: Weekly sales report
+   Trigger: "make this week's sales report"
+   Steps: pull the CSV, compute totals by region, fill the report template
+   Result: report.md with every region and a totals row
+   ```
 
-Read [references/intent.md](references/intent.md) when the request is vague, bundles several skills, or comes from a conversation to extract.
+4. Sort what is stated, implied, assumed and missing. Ask about what is missing only when it would change what you build: who uses the skill, what goes wrong today, what success looks like, what must stay under their control.
 
-Exit: you can restate the intent and its implications so the user recognizes it as theirs, and no open question would change what you build.
+   ```text
+   Ask:    "Who will run this skill, and what do they get wrong today?"
+   Don't:  "Should the skill use a checklist?"
+   ```
+
+Read [intent.md](references/intent.md) when the request is vague, covers several skills, or must be extracted from a conversation.
+
+Exit: you can restate the intent so the user recognizes it as theirs, and no open question would change what you build.
 
 ### 3. Decide what to build
 
-Make each decision from the goal, with its reason:
+Decide each point from the goal and record the reason:
 
-- Whether a skill is the right feature, or the need belongs in CLAUDE.md, a rule, a hook, a subagent or an MCP server.
-- Where the skill will live and who loads it, which fixes its type: personal, project, nested, plugin `skills/`, plugin root, preloaded into a subagent, forked, synced or uploaded.
-- The frontmatter fields valid for that type and surface, and the value each one takes.
-- The components it needs, each with the reason: the body alone, references, scripts, assets, hooks, `allowed-tools`, other skills or MCP tools.
-- The name, proposed to the user.
-- The folder layout and any permission it needs.
+1. Whether a skill is the right feature, or the need belongs in CLAUDE.md, a rule, a hook, a subagent or an MCP server.
+2. Where the skill will live and who loads it. This fixes its type.
+3. The frontmatter fields valid for that type and surface.
+4. The components it needs beyond `SKILL.md`.
+5. A name to propose to the user, and the folder layout.
 
-Read [references/skill-types.md](references/skill-types.md) before you choose the location, fields, name and layout. Read [references/components.md](references/components.md) when the skill may need anything beyond `SKILL.md`.
+Read [skill-types.md](references/skill-types.md) before you choose the location, fields, name and layout.
 
-Exit: every piece has a purpose tied to the goal, and every field is valid on every target surface.
+Read [components.md](references/components.md) when the skill may need references, scripts, assets, hooks, tool permissions, other skills or MCP tools.
+
+Exit: every piece has a purpose tied to the goal, and every field is valid on every surface the skill targets.
 
 ### 4. Research
 
-For each decision and each fact the skill will state, read the current official source, and the domain's own sources for the knowledge it teaches. Record each fact with its source. Where sources disagree, write for the surfaces the skill targets and note the disagreement. Read [references/sources.md](references/sources.md) before your first search.
+Read the current official source for every decision and every platform fact, and the domain's own sources for the knowledge the skill teaches. Record each fact with its source. Where sources disagree, follow the one for the surface the skill targets and note the disagreement.
 
-Exit: every fact the skill will state has a current source you can cite.
+Read [sources.md](references/sources.md) before your first search.
+
+Exit: every fact the skill will state has a current source.
 
 ### 5. Design and plan
 
-- Shape each instruction by the failure it prevents and set each step's freedom by its fragility. Read [references/writing-instructions.md](references/writing-instructions.md) before you design the body.
-- Add a workflow, checklist, validation loop or output template only where the task needs it. Read [references/task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, gates, a fixed output or destructive actions.
-- Write the description. Read [references/description.md](references/description.md) first.
-- Plan the files and their size: the body under 500 lines and 5,000 tokens, holding only what every run needs; the rest in files named at the step that needs them.
-- Present the plan to the user and get approval before you build.
+1. Choose the form of each instruction by the failure it prevents, and each step's freedom by its fragility.
+2. Add a workflow, checklist, validation loop or output template only where the task needs one.
+3. Write the description.
+4. Plan the files: the body under 500 lines and 5,000 tokens, holding only what every run needs; the rest in files the body names at the step that needs them.
+5. Present the plan and get the user's approval.
+
+Read [writing-instructions.md](references/writing-instructions.md) before you design the body.
+
+Read [task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, gates, a fixed output format or destructive actions.
+
+Read [description.md](references/description.md) before you write the description.
 
 Exit: an approved plan you can build without another design decision.
 
 ### 6. Build
 
-Write the files in the planned order, reading each passage from the reader's seat as you go. Check each file as it lands: frontmatter parses, every link resolves, nothing outside the skill's folder is required. Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) before you write a script, an injected command or a hook. Record every deviation from the plan and its reason.
+Write the files in the planned order. As each file lands, check that its frontmatter parses, every link resolves, and it needs nothing outside the skill's folder. Record every deviation from the plan and its reason.
+
+Read [scripts-and-hooks.md](references/scripts-and-hooks.md) before you write a script, an injected command, a hook or a command that uses a path variable.
 
 Exit: every planned file exists and passes these checks.
 
 ### 7. Validate
 
-Choose the depth by risk and cost, and say which you chose:
+1. Always: run `claude plugin validate` on the plugin root, or on the skills directory that holds the skill, and do a final reread of every file from the reader's seat.
+2. When a wrong result would cost the user rework, money or data: run two or three realistic requests with and without the skill, each in a fresh session, and compare.
+3. When the model invokes the skill on its own and sibling skills share its keywords: test should-trigger and near-miss requests, three runs each.
 
-- Always: the mechanical checks, and a full reread from the reader's seat.
-- When behavior matters: realistic requests run with and without the skill in fresh sessions.
-- When triggering matters: should-trigger and near-miss queries, several runs each.
+Read [validation.md](references/validation.md) for each check's commands and how to read their results.
 
-Read [references/validation.md](references/validation.md) for the commands and how to read their results.
-
-Exit: every check you ran passes, and every check you couldn't run is listed as not verified, with the reason.
+Exit: every check you ran passes, and every check you could not run is reported as not verified, with the reason.
 
 ### 8. Review and deliver
 
-Copy this checklist and check each item against the finished skill:
+Copy this checklist and check the skill you write against it:
 
-- [ ] The body opens on the role, goal and task the description promised.
-- [ ] Every line passes the test: the model would get this wrong without it.
-- [ ] Every fact is current and sourced; every field is valid on every target surface.
+```text
+- [ ] The description says what the skill does and when to use it, in the user's words, key use case first.
+- [ ] The body starts on the task the description promised.
+- [ ] Every line passes: the model would get this wrong without it.
+- [ ] Every platform fact is current and sourced; every field is valid on every target surface.
 - [ ] Each judgment call carries the reason that decides unnamed cases.
-- [ ] Every supporting file is linked from `SKILL.md` at the step that uses it, with what it holds and when to read it, one level deep.
+- [ ] Every supporting file is linked from SKILL.md, one level deep, with when to read it.
 - [ ] One term per concept; each fact stated once; no contradictions across files.
-- [ ] The body is under 500 lines and 5,000 tokens.
-- [ ] The skill applies everything it teaches.
+- [ ] The body is under 500 lines and 5,000 tokens; files over 100 lines open with a table of contents.
+```
 
-Fix every failed item and check it again. Then report what you built, the decisions and their reasons, what you verified and how, and what stays unverified. Offer the user the next step: keep the skill as it is, give observations, build evals, or audit it with `skills-engineering:auditing-skills` when that skill is installed.
+Fix each failed item and check it again. Then report what you built, each decision and its reason, what you verified and how, and what stays unverified. Offer the next step: keep the skill as it is, give observations, build evals, or audit it with `skills-engineering:auditing-skills` if installed.
 
 ## Changing an existing skill
 
-Read the whole skill and every file it points to first, then work through the same phases from that baseline. When applying an audit, verify each finding against the skill and the sources before changing anything, because a finding can be wrong. Keep the skill's name and folder unless the user asks otherwise.
+Read the whole skill and every file it points to, then work through the phases from that baseline. To apply an audit, verify each finding against the skill and the sources first, because a finding can be wrong. Keep the skill's name and folder unless the user asks otherwise.
