@@ -1,16 +1,23 @@
-# Frontmatter mechanical checks Implementation Plan (v2)
+# Frontmatter mechanical checks Implementation Plan (v3)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Deliver the 14 frontmatter checks (spec FM-1 to FM-14), each one stable, read-only and release ready:
-- FM-1, FM-6 and FM-11 as portable shell commands in step 3 of `SKILL.md`;
-- the other eleven as standalone Python scripts under `skills/auditing-skills/scripts/frontmatter/`, standard library only.
+**Goal:** Deliver the 14 frontmatter checks (spec FM-1 to FM-14), each one stable, read-only and release ready.
+- Each check covers only what its spec's Coverage line marks as missing. Whatever `claude plugin validate` already reports stays with that command.
+- FM-1 and FM-11 are covered by commands. FM-6 is covered by a command for the folder and by `frontmatter.name` for the name.
+- The rest are standalone Python scripts under `skills/auditing-skills/scripts/frontmatter/`, using only the standard library.
+- Each one is wired into step 3 of `SKILL.md` in the same commit that adds it.
 
 **Architecture:**
-- The commands print raw facts: bytes, marker lines, top-level keys, the folder name. The reviewer judges them against its reference.
 - The scripts share one `common/` package. Its own frontmatter reader handles the YAML forms skills use, with file positions, styles, anchors and tags. Each script prints one JSON result.
 - Anything the reader cannot read with certainty is reported as unreadable. It is never guessed.
-- The entry script and the wiring of the eleven scripts into `SKILL.md` belong to the next plan.
+- Step 3 of `SKILL.md` tells the main session, for every check:
+  - the exact command;
+  - what it is for and why;
+  - what `claude plugin validate` already covers and what the check adds;
+  - how to read its output;
+  - which reviewer receives it;
+  - what to do when it is not run.
 
 **Tech Stack:**
 - Python ≥ 3.12, standard library only, `unittest`, ruff, basedpyright;
@@ -36,8 +43,11 @@
   - Each script reconfigures stdout to UTF-8 with `errors="replace"`, wrapped for `AttributeError` and `ValueError`, as Anthropic's `math-proof` `ledger.py` does for Windows consoles.
   - Python 3.15 "What's New", PEP 686: "For best compatibility between versions of Python, ensure that an explicit encoding argument is always provided."
 - **Invocation:** `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter/<check>.py" "<SKILL.md>"`, the pattern of the skills docs ("Generate visual output") and of Anthropic's plugins.
+  - If `python3` is not found, or Windows answers with the Store message, the main session uses `python` from then on, as in Anthropic's `math-proof` plugin.
   - Scripts carry `#!/usr/bin/env python3` and the executable bit but never rely on either.
-  - The `python` fallback on Windows belongs to the wiring plan.
+- **Wiring in the same commit:** each task that adds a check also adds its entry to step 3 of `SKILL.md`, updates the Receives entry of every reviewer that gets it, and updates `.claude/maintainer/skills-engineering/mechanical-check-sources.md`, as the rule's sync point requires.
+  - Each entry follows the "SKILL.md entry shape" below.
+  - Run `npm run lint:frontmatter` on `SKILL.md` and `claude plugin validate --strict plugins/skills-engineering` after each wiring.
 - **Read-only:** no network, no subprocess, and no writes outside the test temp dirs. A script reads only the `SKILL.md` it is given and its folder name, never settings, MCP or credential files.
 - **CLI:** `<check>.py <SKILL.md> [check options]`.
   - Exit 0 when a JSON result was printed. Exit 2 on a usage error, a missing path, a directory path or an unreadable file; stderr then gets one line and stdout stays empty.
@@ -55,13 +65,54 @@
 - **Tests:** in `plugins/skills-engineering/tests/test_frontmatter_*.py`, stdlib `unittest`, run by `npm run test:plugins`.
 - **Git:** one commit per task, and no push without Nery's authorization.
 
+## Coverage split: what the existing command does and what each check adds
+
+`claude plugin validate --json`, already in step 3, is "the command" in the spec's Coverage lines. No check re-reports what it already reports.
+
+| Spec | `claude plugin validate` already reports (spec Coverage) | Added by this plan | Form |
+| :-- | :-- | :-- | :-- |
+| FM-1 | no block (unclosed, blank first line, none); not a mapping | the files validate never reads: a `SKILL.md` at a plugin root and a skill in a symlinked folder. Step 3 copies them, following symlinks (`cp -RL`), into `skills/<name>/` of the temporary plugin step 3 already builds, so validate reads them. BOM and CRLF follow Task 0. | command |
+| FM-2 | unclosed quote, tab in indentation | duplicate keys, `: ` inside a value, unclosed flow collection, key indented under a scalar | script `frontmatter.yaml` |
+| FM-3 | nothing | all of it | script `frontmatter.plain-values` |
+| FM-4 | nothing (passed `Other_Name-claude-`) | all of it, plus the name's character counts for size-limits | script `frontmatter.name` |
+| FM-5 | nothing | all of it | script `frontmatter.name-plain` |
+| FM-6 | nothing | the reserved words in `name` (in `frontmatter.name`); the folder name by command, read against the location from step 2 | script + command |
+| FM-7 | nothing (passed an XML tag and 1,100 characters) | all of it | script `frontmatter.description` |
+| FM-8 | nothing | all of it | script `frontmatter.listing-cap` |
+| FM-9 | nothing (passed 600 characters) | all of it | script `frontmatter.compatibility` |
+| FM-10 | nothing (passed `metadata: {a: 1}`) | all of it | script `frontmatter.metadata` |
+| FM-11 | nothing (`--strict` passed `bogus-key`) | the top-level keys with their lines, by command; the reviewer compares them with the field table in its reference | command |
+| FM-12 | `allowed-tools: 42`, `shell: fish` | the boolean forms, `context`, `effort`, `model`, and the string-or-list types of `disallowed-tools`, `paths` and `arguments` | script `frontmatter.field-values` |
+| FM-13 | nothing | all of it | script `frontmatter.field-combinations` |
+| FM-14 | nothing | all of it | script `frontmatter.allowed-tools` |
+
+When the reader stops on an error that validate already reports (an unclosed quote or a tab), the script returns `status: not_run` with `reason: "the frontmatter has an error claude plugin validate reports"`. It never re-reports that error.
+
+Task 10 checks this split against validate on 2.1.326. A case where validate now reports something the spec says it missed moves to validate and leaves the script. Report it to Nery with both outputs.
+
+## SKILL.md entry shape
+
+Step 3 gains one shared paragraph (Task 1) and then one entry per check. The shared paragraph states once:
+- how to run a script (`python3`, then `python`, with quoted paths);
+- the JSON fields and what `status`, `findings`, `surfaces` and `condition` mean;
+- that exit 2 or a missing interpreter means the check was not run: name it to its reviewers with the exit code and message;
+- that `not_run` means its prerequisite failed, which also goes to its reviewers;
+- that findings are passed verbatim, with no severity added and none dropped.
+
+Each entry then holds:
+- **the exact command**;
+- **what it checks and why**, in one sentence;
+- **what validate already covers and what the check adds**, or "no other command covers this; this check is the only source";
+- **how to read the result**: which rules exist and what a finding on each means;
+- **who receives it**: the reviewer names, matching their Receives entries.
+
 ## Review Focus
 
 1. A `SKILL.md` that isn't UTF-8 (UTF-16 with a BOM, Latin-1) gives `frontmatter.yaml` the rule `not-utf8` and no traceback (Task 4).
 2. Recursive or deeply nested YAML (`a: &x [*x]`, 5,000 nested `[`) terminates within 5 s with `too-deep` or `unsupported`, and no other script hangs (Task 3).
 3. Characters outside the Basic Multilingual Plane (emoji) in `description` or `when_to_use`: lengths are in code points, with `utf16_length` in `data` (Task 6).
 4. A missing path or a directory exits 2. A symlinked folder takes its name from the path as given, with the resolved name in `data` (Task 1).
-5. CRLF, a BOM and a trailing space on the markers give the same reader result as clean LF, and the commands show them visibly (Tasks 2 and 9).
+5. CRLF, a BOM and a trailing space on the markers give the same reader result as clean LF (Task 2). Validate's handling of them, from Task 0, decides whether Task 9 adds a command for them.
 
 ---
 
@@ -74,7 +125,8 @@ No code ships from this task. Its results fill the Appendix, and the later tests
   - CRLF line endings;
   - `--- ` with a trailing space as the opening and as the closing marker;
   - a U+2028 character in a value;
-  - a duplicate key, to see which value Claude Code keeps.
+  - a duplicate key, to see which value Claude Code keeps;
+  - Latin-1 and UTF-16 bytes, to see whether validate reports a file that isn't UTF-8.
 
   Record each outcome.
 - [ ] **Step 2:** With ruamel.yaml 0.19.1 (`uv run`), confirm that `a: foo:` and `a: x: y` fail to parse. Then settle each of these and record its source:
@@ -109,7 +161,6 @@ No code ships from this task. Its results fill the Appendix, and the later tests
   - `BOOLEAN_FIELDS`: `disable-model-invocation`, `user-invocable`, `background`.
   - `BOOLEAN_FORMS`: {`true`, `false`, `yes`, `no`, `on`, `off`, `1`, `0`}, matched case-insensitively.
   - `EFFORT_LEVELS`: `low`, `medium`, `high`, `xhigh`, `max`.
-  - `SHELLS`: `bash`, `powershell`.
   - `MODEL_VALUES`: `default`, `best`, `fable`, `sonnet`, `opus`, `haiku`, `sonnet[1m]`, `opus[1m]`, `opusplan`, `inherit`.
   - `TEXT_FIELDS`: `name`, `description`, `when_to_use`, `argument-hint`, `model`, `effort`, `context`, `agent`, `shell`, `license`, `compatibility`.
   - `SOURCES`: a dict of rule area to doc URL.
@@ -136,8 +187,9 @@ No code ships from this task. Its results fill the Appendix, and the later tests
   - `/usr/bin/python3.11` gets exit 2 and the floor message, with the test skipped when that interpreter is absent.
 - [ ] **Step 2:** Run `python3 -m unittest discover -s plugins/skills-engineering/tests -p 'test_frontmatter_*.py' -v`. Expected: the tests fail with a missing module.
 - [ ] **Step 3:** Implement the interfaces.
-- [ ] **Step 4:** Run the tests on `/usr/bin/python3.12`, `/usr/bin/python3.13` and `python3` (3.15). Expected: all pass. Then run ruff and basedpyright on the new files: 0 findings.
-- [ ] **Step 5:** Commit: `git commit -m "Add the shared foundation for the frontmatter checks"`.
+- [ ] **Step 4: Wire.** Add the shared paragraph from "SKILL.md entry shape" to step 3 of `SKILL.md`, before any check entry.
+- [ ] **Step 5:** Run the tests on `/usr/bin/python3.12`, `/usr/bin/python3.13` and `python3` (3.15). Expected: all pass. Then run ruff and basedpyright on the new files: 0 findings. Then run `npm run lint:frontmatter` and `claude plugin validate --strict plugins/skills-engineering`. Expected: `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add the shared foundation for the frontmatter checks"`.
 
 ### Task 2: Frontmatter reader, block structure and scalars
 
@@ -153,7 +205,7 @@ No code ships from this task. Its results fill the Appendix, and the later tests
   - `value: str`, the scalar's text after unquoting and folding;
   - `pairs: list[tuple[Node, Node]]`, `items: list[Node]`;
   - `line: int`, `column: int`, `end_line: int`, `anchor: str | None`, `tag: str | None`.
-- `ReadError(rule: Literal["syntax-error","duplicate-key","tab-indent","too-deep","unsupported"], message: str, line: int, column: int)`, an exception carrying file positions.
+- `ReadError(rule: Literal["colon-in-value","unclosed-quote","unclosed-flow","key-under-scalar","tab-indent","duplicate-key","syntax-error","too-deep","unsupported"], message: str, line: int, column: int)`, an exception carrying file positions.
 - `read(yaml_text: str, first_line: int) -> Node`: raises `ReadError`.
 
 What this task supports:
@@ -164,11 +216,10 @@ What this task supports:
 - `#` comments, both full-line and after a space.
 
 What it rejects:
-- `syntax-error`:
-  - `: ` or a trailing `:` inside a plain value in block context ("mapping values are not allowed here");
-  - an unclosed quote;
-  - a key indented under a scalar;
-  - a plain value starting with `,`, `%`, `@` or `` ` ``.
+- `colon-in-value`: `: ` or a trailing `:` inside a plain value in block context ("mapping values are not allowed here").
+- `unclosed-quote`: an unclosed quote.
+- `key-under-scalar`: a key indented under a scalar.
+- `syntax-error`: any other malformed input, such as a plain value starting with `,`, `%`, `@` or `` ` ``.
 - `tab-indent`: a tab in indentation.
 - `duplicate-key`: the second occurrence of a key in the same mapping, compared by key text after unquoting.
 - `unsupported`: anything this task does not parse yet, such as `?` complex keys, `%` directives, a `...` document end or a multi-document stream.
@@ -183,10 +234,10 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
   - `tools:\n  - Read\n  - Grep` gives a seq of 2;
   - `d: x # note` gives `value == "x"`;
   - errors with their lines:
-    - `d: Use when: x` gives `syntax-error` at line 2;
-    - `d: "abc` gives `syntax-error`;
+    - `d: Use when: x` gives `colon-in-value` at line 2;
+    - `d: "abc` gives `unclosed-quote`;
     - `m:\n\tk: v` gives `tab-indent` at line 3;
-    - `name: a\n  b: c` gives `syntax-error` at line 3;
+    - `name: a\n  b: c` gives `key-under-scalar` at line 3;
     - `name: a\nname: b` gives `duplicate-key` at line 3;
     - `? a` gives `unsupported`.
 - [ ] **Step 2:** Run the Task 1 test command. Expected: these tests fail.
@@ -206,7 +257,7 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
   - `|` and `>` with the chomping indicators `-` and `+` and an indentation digit;
   - flow sequences and mappings `[a, b]` and `{a: 1}`, nested and over several lines;
   - `&anchor`, `*alias` (kind `alias`, `value` = the anchor name) and `!tag` or `!!tag` on any node.
-- An unclosed flow collection raises `syntax-error` at the line of its opening bracket.
+- An unclosed flow collection raises `unclosed-flow` at the line of its opening bracket.
 - An alias to an unknown anchor raises `syntax-error`.
 - An alias is never expanded, so recursion is impossible.
 - `yaml_types.yaml11_tag(node: Node) -> Literal["str","bool","int","float","null","timestamp"]`: YAML 1.1 implicit resolution for plain scalars, using the regular expressions of the YAML 1.1 type repository (`bool`, `int`, `float`, `null`, `timestamp`). Quoted and block scalars are `str`.
@@ -216,7 +267,7 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
 - [ ] **Step 1: Write the failing tests.**
   - `d: |\n  a\n  b\n` gives `"a\nb\n"`, and `d: >-\n  a\n  b` gives `"a b"`.
   - `t: [Read, "Bash(git *)"]` gives a seq of 2 with `style == "flow"`, and `m: {a: 1}` gives a map.
-  - `t: [Read` gives `syntax-error` at line 2.
+  - `t: [Read` gives `unclosed-flow` at line 2.
   - `name: &n demo` gives `anchor == "n"`, `x: *n` gives an alias, and `d: !!str 1` gives `tag == "!!str"`.
   - `a: &x [*x]` returns in under 1 s.
   - 5,000 nested `[` give `too-deep`.
@@ -245,13 +296,20 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
 - `error: ReadError | None`;
 - `fields: dict[str, tuple[Node, Node]]`, keyed by the top-level key text, holding the key node and the value node.
 
-`yaml_syntax.py`:
-- Reports the block problems `not-utf8`, `no-opening-marker`, `unclosed` and `empty` as their own rules.
-- Reports the reader error as its rule.
-- Adds `not-a-mapping` when the root is not a map.
-- Basis is `official` for `syntax-error` and `not-a-mapping` (skills docs: "the skill still loads with no fields set") and `inference` for `duplicate-key` and `tab-indent`.
-- Surfaces are `("open-spec","upload")` plus `claude-code`, with the condition "if Claude Code's own parser also rejects it". Task 9's commands and `claude plugin validate` show the Claude Code side.
-- `data` = `{had_bom, had_crlf, close_line, keys}`.
+`yaml_syntax.py` reports only the four failures validate misses:
+- `duplicate-key`: basis `inference`, because Claude Code's parser accepted it;
+- `colon-in-value`: `: ` or a trailing `:` inside a plain value;
+- `unclosed-flow`;
+- `key-under-scalar`.
+
+The last three have basis `official` (skills docs: the skill "still loads with no fields set"). All four use surfaces `("open-spec","upload")` and the condition "Claude Code accepted it when tested; packaging and upload reject it".
+
+It does not report:
+- an unclosed quote or a tab, which return `not_run` with the reason from the coverage split;
+- a missing block or a non-mapping root, which return `not_run` with the reason "no frontmatter block: claude plugin validate reports it";
+- not-UTF-8 bytes, which give the single rule `not-utf8`, since validate's handling of them is unverified. Task 0 checks it and drops the rule if validate covers it.
+
+`data` = `{close_line}`.
 
 `plain_values.py`, surfaces `("upload","open-spec")`, basis `inference`, with these rules:
 - `comment-truncates`: a plain value followed by ` #` on its line;
@@ -263,10 +321,13 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
 
 - [ ] **Step 1: Write the failing tests.**
   - For `yaml_syntax.py`:
-    - the six spec failures give their rules at their lines, as in Task 2;
-    - `- a` gives `not-a-mapping`;
+    - `name: a\nname: b` gives `("duplicate-key", 3)`;
+    - `d: Use when: x` gives `("colon-in-value", 2)`;
+    - `t: [Read` gives `("unclosed-flow", 2)`;
+    - `name: a\n  b: c` gives `("key-under-scalar", 3)`;
+    - `d: "abc` gives `not_run` with the validate reason, and so does `m:\n\tk: v`;
+    - `- a` and `\n---` give `not_run`;
     - Latin-1 bytes give `not-utf8`;
-    - `\n---` gives `no-opening-marker`;
     - a valid block gives `[]`.
   - For `plain_values.py`:
     - `description: Run it # carefully` gives `("comment-truncates", 2)`;
@@ -281,8 +342,19 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
     - a syntax error gives `status == "not_run"` and `reason == "frontmatter.yaml failed"`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4:** Run the tests on 3.12, 3.13 and 3.15, plus ruff and basedpyright. Expected: pass and 0 findings.
-- [ ] **Step 5:** Commit: `git commit -m "Add the strict YAML and plain-value frontmatter checks"`.
+- [ ] **Step 4: Wire.** Add the two entries to step 3 of `SKILL.md`.
+  - `frontmatter.yaml`:
+    - adds the four strict-YAML failures validate passes;
+    - a finding means packaging and upload reject the file, while Claude Code may still load it;
+    - `not_run` with the validate reason means read validate's output instead;
+    - goes to `frontmatter-description` and `runtime-contract`.
+  - `frontmatter.plain-values`:
+    - no other command covers it;
+    - a finding means the parsed value differs from what the line shows;
+    - goes to `frontmatter-description`.
+  - Update both Receives entries and the sync file.
+- [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add and wire the strict YAML and plain-value frontmatter checks"`.
 
 ### Task 5: FM-4 (`frontmatter.name`) and FM-5 (`frontmatter.name-plain`)
 
@@ -302,6 +374,7 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
   - a `Zs` character other than U+0020;
   - two spaces in a row;
   - a leading or trailing space.
+- `reserved-word` (FM-6's name part): `anthropic` or `claude` in the name, case-insensitive, or in the folder name when `name` is absent. Surfaces `("upload",)`, basis official.
 - `data` = `{name, length, utf16_length, folder_name, matches_folder, unicode_version}`, where `unicode_version` comes from `unicodedata.unidata_version`, because `Cn` depends on it.
 
 `name_plain.py`:
@@ -329,8 +402,9 @@ The parser is a recursive-descent over lines with an explicit depth counter: bey
     - `name: on` gives `[]`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4:** Run the tests on 3.12, 3.13 and 3.15, plus ruff and basedpyright. Expected: pass and 0 findings.
-- [ ] **Step 5:** Commit: `git commit -m "Add the name and plain-name frontmatter checks"`.
+- [ ] **Step 4: Wire.** Add the entries to step 3 of `SKILL.md`. `frontmatter.name`: validate passed a malformed name, so this check is the only source for the name rules; it also covers the reserved words in the name and gives the name's character counts. Its findings and `data` go to `frontmatter-description`, and its counts to `size-limits-and-budgets`. `frontmatter.name-plain`: no other command covers it; its findings follow a project convention, not an official rule; goes to `frontmatter-description`. Update each named reviewer's Receives entry and the sync file.
+- [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add and wire the name and plain-name frontmatter checks"`.
 
 ### Task 6: FM-7 (`frontmatter.description`), FM-8 (`frontmatter.listing-cap`) and FM-9 (`frontmatter.compatibility`)
 
@@ -376,8 +450,9 @@ Every length is in code points, with `utf16_length` in `data`.
     - `7` gives `not-a-string`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4:** Run the tests on 3.12, 3.13 and 3.15, plus ruff and basedpyright. Expected: pass and 0 findings.
-- [ ] **Step 5:** Commit: `git commit -m "Add the description, listing-cap and compatibility frontmatter checks"`.
+- [ ] **Step 4: Wire.** Add the entries to step 3 of `SKILL.md`. `frontmatter.description` and `frontmatter.compatibility`: validate passed an XML tag and over-long values, so these checks are the only source; findings go to `frontmatter-description`, and the lengths to `size-limits-and-budgets`. `frontmatter.listing-cap`: no command reports where the cap cuts (`/skill-doctor` gives the listing cost, not the cut point); this check is the only source; `first_lost_field`, `first_lost_offset` and `around_cut` show which trigger words never reach Claude; goes to `size-limits-and-budgets` and `frontmatter-description`. Update each named reviewer's Receives entry and the sync file.
+- [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add and wire the description, listing-cap and compatibility frontmatter checks"`.
 
 ### Task 7: FM-10 (`frontmatter.metadata`) and FM-12 (`frontmatter.field-values`)
 
@@ -394,8 +469,8 @@ Every length is in code points, with `utf16_length` in `data`.
   - a quoted value gives the finding with basis inference and the message "quoted: unverified whether Claude Code reads it as a boolean".
 - `context-value`: anything other than `fork`.
 - `effort-value`: a value outside `EFFORT_LEVELS`.
-- `shell-value`: a value outside `SHELLS`.
-- `string-or-list`, for `allowed-tools`, `disallowed-tools`, `paths` and `arguments`: a string scalar or a seq of string scalars, under YAML 1.1.
+- `string-or-list`, for `disallowed-tools`, `paths` and `arguments`: a string scalar or a seq of string scalars, under YAML 1.1.
+- It does not check `shell` or the type of `allowed-tools`, which validate already rejects (spec Coverage).
 - `model-value`:
   - a value in `MODEL_VALUES` gives nothing;
   - a value matching `^(claude-|anthropic\.|[a-z]{2,4}\.anthropic\.|arn:)` gives nothing, with `data.model_id_unchecked = true`;
@@ -413,8 +488,8 @@ Every length is in code points, with `utf16_length` in `data`.
     - `user-invocable: maybe` gives `boolean-form`;
     - `effort: turbo` gives `effort-value`;
     - `context: spoon` gives `context-value`;
-    - `allowed-tools: 42` gives `string-or-list`;
-    - `shell: fish` gives `shell-value`;
+    - `allowed-tools: 42` gives `[]`, because that is validate's;
+    - `shell: fish` gives `[]`, because that is validate's;
     - `model: gpt-4` gives `model-value`;
     - `model: opus[1m]` gives `[]`;
     - `model: claude-opus-5-5` gives `[]`;
@@ -424,8 +499,9 @@ Every length is in code points, with `utf16_length` in `data`.
     - `effort:` gives `empty-value`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4:** Run the tests on 3.12, 3.13 and 3.15, plus ruff and basedpyright. Expected: pass and 0 findings.
-- [ ] **Step 5:** Commit: `git commit -m "Add the metadata and field-value frontmatter checks"`.
+- [ ] **Step 4: Wire.** Add the entries to step 3 of `SKILL.md`. `frontmatter.metadata`: validate passed `metadata: {a: 1}`, so this check is the only source; goes to `frontmatter-description`. `frontmatter.field-values`: validate already rejects a non-string `allowed-tools` and an unknown `shell`, so read those in validate's output; this check adds the boolean forms, `context`, `effort`, `model` and the types of `disallowed-tools`, `paths` and `arguments`; goes to `frontmatter-description`. Update each named reviewer's Receives entry and the sync file.
+- [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add and wire the metadata and field-value frontmatter checks"`.
 
 ### Task 8: FM-13 (`frontmatter.field-combinations`) and FM-14 (`frontmatter.allowed-tools`)
 
@@ -458,8 +534,9 @@ Every length is in code points, with `utf16_length` in `data`.
     - `"Bash(git"` gives `[]` with `unparsed_entries == ["Bash(git"]`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4:** Run the tests on 3.12, 3.13 and 3.15, plus ruff and basedpyright. Expected: pass and 0 findings.
-- [ ] **Step 5:** Commit: `git commit -m "Add the field-combination and allowed-tools frontmatter checks"`.
+- [ ] **Step 4: Wire.** Add the entries to step 3 of `SKILL.md`. `frontmatter.field-combinations` and `frontmatter.allowed-tools`: no other command covers them, so these checks are the only source. A combination finding means part of the skill silently does nothing. An `unscoped-bash` finding means the skill pre-approves every command. Both go to `frontmatter-description`, and `frontmatter.allowed-tools` also goes to `runtime-contract`, which audits tool pre-approval. Update each named reviewer's Receives entry and the sync file.
+- [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add and wire the field-combination and allowed-tools frontmatter checks"`.
 
 ### Task 9: Commands for FM-1, FM-6 and FM-11 in step 3 of `SKILL.md`
 
@@ -468,53 +545,66 @@ Every length is in code points, with `utf16_length` in `data`.
 - Modify: `.claude/maintainer/skills-engineering/mechanical-check-sources.md` (the rule's sync point)
 - Test: `tests/test_frontmatter_commands.py`
 
-The exact commands, POSIX only, with `<SKILL.md>` quoted:
+What the commands cover, POSIX only, with every path quoted:
 
-- **FM-1, block placement:**
-  - `head -c 3 "<SKILL.md>" | od -An -tx1`: `ef bb bf` is a BOM;
-  - `grep -n -m 2 -E '^---[[:space:]]*$' "<SKILL.md>"`: the marker lines. The first must be `1:`;
-  - `grep -c "$(printf '\r')" "<SKILL.md>"`: the number of CRLF lines.
-- **FM-11, top-level keys with their lines:**
+- **FM-1, the files validate never reads:**
+  - When the audited `SKILL.md` sits at a plugin root, or the skill's folder is a symlink, copy the skill folder with `cp -RL "<skill folder>" "<temporary plugin>/skills/<skill name>"` into the temporary plugin that step 3 already builds.
+  - Then run `claude plugin validate --json "<temporary plugin>"`, so validate reads the file.
+  - Its frontmatter errors are FM-1's result, with nothing re-checked by a script.
+  - Task 0 decides whether a BOM or CRLF also needs `head -c 3 "<SKILL.md>" | od -An -tx1` and `grep -c "$(printf '\r')" "<SKILL.md>"`. They are added only if validate does not already handle them.
+- **FM-11, top-level keys with their lines**, which no command reports:
 
   ```sh
   awk 'NR==1 && !/---[[:space:]]*$/{exit} NR>1 && /^---[[:space:]]*$/{exit} NR>1 && /^[^[:space:]#]/{print NR": "substr($(0),1,80)}' "<SKILL.md>"
   ```
 
+  - The reviewer compares each key with its reference's field table, for unknown keys, and with the six open-spec fields, for upload, by the skill's origin.
 - **FM-6, the folder name:** `basename "$(dirname "<SKILL.md>")"`.
-  - The reviewer compares it, and the `name` from `frontmatter.name`, with the reserved words, `synced` and `anthropic-skills`, using the skill's location from step 2.
+  - Read it against the location from step 2: `synced` in any capitalization in a personal, project or managed location, and `anthropic-skills` or a name starting with `anthropic-skills:` outside a plugin.
+  - The reserved words in `name` come from `frontmatter.name`.
 
-- [ ] **Step 1: Write the failing tests.** Each runs the command with `sh -c` on fixtures and asserts its stdout:
-  - a BOM file gives `ef bb bf`, and a plain file gives `2d 2d 2d`;
-  - `test_valid` gives `1:---` and `4:---`;
-  - a CRLF file gives a count equal to its number of lines;
-  - FM-11 on the BOM + CRLF fixture lists the keys with their file lines;
+Each command's entry in step 3 follows "SKILL.md entry shape", with these points:
+- FM-1 covers the files validate skips, and validate's output is the result. It goes to `runtime-contract` and `frontmatter-description`.
+- FM-11 has no other command coverage. It goes to `frontmatter-description`.
+- FM-6 has no other command coverage. It goes to `runtime-contract`, which audits discovery.
+
+- [ ] **Step 1: Write the failing tests.** Each runs the command with `sh -c` on fixtures and asserts its result:
+  - a plugin-root `SKILL.md` with no frontmatter, once copied, makes validate report the missing block;
+  - a symlinked skill folder is copied as real files, and validate reads it;
+  - FM-11 on a BOM + CRLF fixture lists the keys with their file lines;
   - a file without frontmatter prints nothing;
   - a folder `Synced` prints `Synced`.
 
   One test asserts each command string appears verbatim in `SKILL.md`. Another asserts that no `$` followed by a digit appears in it.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
-- [ ] **Step 3:** Add the commands to step 3 and the Receives entries, keeping both in sync per the rule, then run `npm run lint:frontmatter -- <SKILL.md>`.
-- [ ] **Step 4:** Run the tests and `claude plugin validate --strict plugins/skills-engineering`. Expected: pass and `valid`. Report that the commands were tested on GNU tools only, with macOS (BSD) and Git Bash not run.
+- [ ] **Step 3: Wire.** Add the command entries to step 3, the Receives entries and the sync file, then run `npm run lint:frontmatter -- <SKILL.md>`.
+- [ ] **Step 4:** Run the tests and `claude plugin validate --strict plugins/skills-engineering`. Expected: pass and `valid`. Report that the commands were tested with GNU tools only; macOS (BSD) and Git Bash were not run.
 - [ ] **Step 5:** Commit: `git commit -m "Add the block, folder and key commands to the audit's mechanical step"`.
 
 ### Task 10: Release verification
 
 - [ ] **Step 1:** Run `npm run test:plugins`, the full suite on `/usr/bin/python3.12` and `/usr/bin/python3.13`, and the suite under `uv run` (3.15 with ruamel). Expected: all pass. Show the raw output.
-- [ ] **Step 2: Corpus run.** Run the 11 scripts and 3 commands on every `SKILL.md` in `plugins/*/skills/*/` and in the synced skills under `/root/.claude/`. Expected:
+- [ ] **Step 2: Corpus run.** Run the 11 scripts and the commands on every `SKILL.md` in `plugins/*/skills/*/` and in the synced skills under `/root/.claude/`. Expected:
   - exit 0 everywhere;
   - no traceback;
   - under 1 s per file.
 
   Show a table of findings per rule. Confirm by hand every finding on `auditing-skills` itself.
 - [ ] **Step 3: Differential check.** A scratchpad script compares the reader with ruamel.yaml on the corpus and lists each divergence with the YAML 1.1 versus 1.2 rule that explains it. A divergence no rule explains is a bug: go back to the owning task.
-- [ ] **Step 4: Claude Code cross-check.** Run `claude plugin validate --json` on every spec case marked tested in Coverage, and confirm the scripts catch what validate misses and agree where it reports.
+- [ ] **Step 4: Claude Code cross-check.** Run `claude plugin validate --json` and the scripts on every spec case marked tested in Coverage. Expected:
+  - every case validate reports appears in no script's findings;
+  - every case validate passes appears in exactly one check.
+
+  Show both outputs side by side.
+- [ ] **Step 4b: SKILL.md check.** Read step 3 as the main session would. Confirm each of the 14 checks has an entry with the five parts of "SKILL.md entry shape", every checks-only-source line is present, and every Receives entry names what step 3 gives it.
 - [ ] **Step 5:** Run ruff check, ruff format check and `basedpyright --outputjson` over `plugins/skills-engineering`, plus `claude plugin validate --strict`. Expected: 0 findings and `valid`.
 - [ ] **Step 6: Independent review.** One fresh reviewer on the most capable model reviews the whole branch against this plan and the spec. Fix every confirmed finding and rerun Steps 1 to 5.
 - [ ] **Step 7:** Commit fixes and report to Nery with the raw outputs. No push.
 
 ## Out of scope (next plan)
 
-- The entry script, the wiring of the eleven scripts into step 3 of `SKILL.md`, its `allowed-tools`, and the `python` fallback on Windows (Anthropic's `math-proof` pattern).
+- An entry script that runs every check in one call. Each check is wired one by one here, as Nery asked.
+- `allowed-tools` for the scripts: since 2.1.325, scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools`, so adding it is a separate decision for Nery.
 - The CHANGELOG entry.
 - The other data domains.
 
