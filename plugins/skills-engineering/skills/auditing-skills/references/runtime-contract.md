@@ -1,6 +1,6 @@
 # Runtime contract
 
-This file teaches you how to audit whether a skill's files resolve, package, load and are discovered on every surface it targets: its packaging boundary and archive layout, its paths and variable substitution, its plugin layout and cache, its symlinks, its discovery, precedence and sync, how subagents consume it, and how its tool pre-approval and injected commands behave at runtime. Each section gives you the principle, why it matters, and what to do when you audit.
+This file teaches you how to audit whether a skill's files resolve, package, load and are discovered on every surface it targets: its packaging boundary and archive layout, how its files link to each other, its paths and variable substitution, its plugin layout and cache, its symlinks, its discovery, precedence and sync, how subagents consume it, and how its tool pre-approval and injected commands behave at runtime. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 
@@ -10,6 +10,7 @@ This file teaches you how to audit whether a skill's files resolve, package, loa
 - 1. Supporting files and the packaging boundary
   - 1.1 Files inside the boundary
   - 1.2 Upload and archive layouts
+  - 1.3 How the skill's files reach each other
 - 2. Paths and variable substitution
   - 2.1 Path variables
   - 2.2 Where substitution happens
@@ -99,7 +100,6 @@ Recognize the difference:
 When you audit:
 
 - Flag every file, script or directory the skill needs that sits outside its boundary: a parent-relative path, an absolute machine path, or a file in the surrounding repository.
-- Flag an essential rule kept only behind an external link, because the target surface may have no network and the page can change.
 - Flag every MCP server, environment variable, network call or external service the skill relies on without declaring it, and ask whether the skill still works detached from its development repository.
 - Take which referenced files exist from the prompt, or from your own reading of the skill. Report a file you couldn't read as missing, with the error.
 
@@ -116,6 +116,36 @@ When you audit:
 - Flag packaging instructions in the skill, or an archive listing the prompt reports, that don't match the route the skill states.
 - Flag one archive layout reused across surfaces without a check against each target's layout.
 - Report the layout of a Skills API upload as unverified: no official source used here gives it.
+
+### 1.3 How the skill's files reach each other
+
+Every file Claude has to open is linked directly from `SKILL.md`, one level deep. Anthropic's best practices give the reason: "Claude might partially read files when they're referenced from other referenced files", previewing them with a command such as `head -100` instead of reading them whole, and their checklist lists "File references are one level deep". The Agent Skills specification says the same, "Avoid deeply nested reference chains", and asks for paths written "relative to the skill root". This holds for an asset as much as for a reference: when a reference tells Claude to use an asset, `SKILL.md` links that asset too. The reference may link the same asset again at the step that uses it, so both ends point to the file; that second link reinforces the first and never replaces it (recommendation; no official source covers it).
+
+Incorrect cases, each with what goes wrong:
+
+- **A chain.** `SKILL.md` links `references/advanced.md`, which links `references/details.md`, and nothing else links `details.md`. Claude may preview `details.md` instead of reading it.
+- **An asset reached only through a reference.** `references/reporting.md` says "Fill in `assets/report.md`", and `SKILL.md` never names `assets/report.md`. Claude learns the asset exists only if it reads that reference whole.
+- **An orphan.** A file in `references/`, `assets/` or `scripts/` that no file links. Claude never opens it, and its content is dead weight in the package.
+- **A path written from the wrong base.** `references/reporting.md` links `../assets/report.md`, or `SKILL.md` links `report.md` for a file in `assets/`. The specification asks for paths from the skill root, such as `assets/report.md`.
+- **A link to a missing file.** A path that names no file in the skill, often after a rename.
+- **Content that lives outside the skill.** An essential rule kept only behind a URL, or a step that reads a file outside the skill's boundary (§1.1).
+
+Links that leave the skill need their own judgment. A URL is fetched at run time, and Anthropic's Agent Skills overview warns: "Skills that fetch data from external URLs pose particular risk, as fetched content might contain malicious instructions. Even trustworthy Skills can be compromised if their external dependencies change over time." Skills on the Claude API run with no network access, so a fetch fails there. A URL is sound as a source to cite or an optional place to read further; it is unsound as the only home of what the skill needs to work.
+
+Recognize the difference:
+
+**Nested:** `SKILL.md` links `references/reporting.md`, and only that reference names `assets/report.md`.
+
+**One level deep, both ends closed:** `SKILL.md` lists `references/reporting.md` ("how to write the report; read before step 6") and `assets/report.md` ("the report template; fill it in at step 6"), and `references/reporting.md` links `assets/report.md` again where it uses it.
+
+When you audit:
+
+- Map every link among the skill's files from the prompt's listing and your own reading: which file links which, and how deep each file sits from `SKILL.md`.
+- Flag each file Claude must open that `SKILL.md` doesn't link directly, naming the chain that reaches it, and recommend the direct link in `SKILL.md`.
+- Flag each bundled file nothing links, and ask whether it should be linked or deleted.
+- Flag each path that isn't written from the skill root, or that names no file in the skill.
+- Flag each URL that carries something the skill needs to work, and recommend moving that content into a reference, keeping the URL as a cited source. On a skill that targets the Claude API, flag every step that needs the network.
+- Recommend, where a reference uses an asset that `SKILL.md` already links, the second link at that step, so both ends point to the file.
 
 ---
 
@@ -379,8 +409,8 @@ Give every finding four things: the exact file and line(s) in the skill under au
 Classify each defect by what it does to the skill on the surfaces it targets. Ask these questions in order and stop at the first yes:
 
 1. Does a target surface fail to discover the skill, fail to load it, reject it, or fail to run its main action? Assign Critical. For example: a plugin dependency above the plugin root that the cache doesn't copy; a top-level `bin/` in a plugin that targets the Claude app; a skill meant for cloud sessions that lives only in `~/.claude/skills/`; an injected command no rule allows, which aborts the skill outside auto mode; a plugin-root variable in a non-plugin skill's required command.
-2. Does it load but fail silently, make Claude do something else, or lose a required behavior on a target? Assign High. For example: a preloaded skill disabled on a target, skipped with only a debug-log warning; a project-directory variable a synced terminal session leaves literal; a bundled-script rule whose path doesn't match the body, so the script prompts; a forked skill that needs a tool the background set lacks; a same-named skill that runs instead of this one.
-3. Does it work, but cost extra steps, fragile assumptions or harder maintenance? Assign Medium. For example: state written under the plugin root; a broad `Bash` grant where an exact rule would do; one archive layout reused across surfaces.
+2. Does it load but fail silently, make Claude do something else, or lose a required behavior on a target? Assign High. For example: a link to a file the skill doesn't contain; a required step that fetches a URL on the Claude API, which has no network; a preloaded skill disabled on a target, skipped with only a debug-log warning; a project-directory variable a synced terminal session leaves literal; a bundled-script rule whose path doesn't match the body, so the script prompts; a forked skill that needs a tool the background set lacks; a same-named skill that runs instead of this one.
+3. Does it work, but cost extra steps, fragile assumptions or harder maintenance? Assign Medium. For example: state written under the plugin root; a broad `Bash` grant where an exact rule would do; one archive layout reused across surfaces; a reference or asset reached only through another reference.
 4. Otherwise, assign Low. For example: a fixed install path that appears only in an illustrative comment Claude never runs.
 
 Tie-breaks:
