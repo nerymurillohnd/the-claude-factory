@@ -105,7 +105,7 @@
     {
       "name": "skills-engineering",
       "source": "./plugins/skills-engineering",
-      "description": "Audits Claude skills wherever they live, from plugins, personal and project folders to claude.ai accounts and URLs: three specialized reviewer agents run in parallel on content patterns, the runtime contract and size limits, check every point against the current official docs, and each returns a report with quoted file-and-line evidence, severity, an exact fix and a verdict.",
+      "description": "Writes and audits Claude skills wherever they live, from plugins, personal and project folders to claude.ai accounts and URLs: authoring-skills writes or changes a skill from the domain's own material and the current docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
       "category": "testing"
     },
     {
