@@ -6,7 +6,7 @@ paths:
 
 ## Sync points
 
-- Add, rename or remove a reviewer in one change across `agents/<area>-reviewer.md`, `references/<area>.md`, the Reviewers list and step 6 of `SKILL.md`, its `argument-hint`, the README's components table and Usage section, and `plugin.json` where its description is affected.
+- Add, rename or remove a reviewer in one change across `agents/<area>-reviewer.md`, `references/<area>.md`, the Reviewers list and step 6 of `SKILL.md`, its `argument-hint`, and `plugin.json` where its description is affected.
 - When a reference's sections are renumbered, update every section number its agent's checklist cites.
 - When what a reviewer receives changes, update its Receives entry and the step 3 command in `SKILL.md`, and `.claude/maintainer/skills-engineering/mechanical-check-sources.md`.
 - Change `assets/audit-report.md` only in a way every agent's REPORT section still matches.
