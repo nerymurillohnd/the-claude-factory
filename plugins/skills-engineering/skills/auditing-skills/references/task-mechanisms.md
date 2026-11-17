@@ -26,9 +26,8 @@ This file teaches you how to audit whether a skill controls its task with the ri
   - 4.3 Choosing the validator: script, reference document or self-check
   - 4.4 Plan-validate-execute
   - 4.5 Error messages that let Claude self-correct
-  - 4.6 Checks that must pass every time
-  - 4.7 Weak loops to flag
-  - 4.8 Recommending a loop where one is missing
+  - 4.6 Weak loops to flag
+  - 4.7 Recommending a loop where one is missing
 - 5. Output templates
   - 5.1 When the task needs a template, and when it doesn't
   - 5.2 Strict or flexible, and the wording that signals which
@@ -55,7 +54,7 @@ You judge by reading. You never run, test or measure anything, and never run the
 
 The right mechanisms depend on the skill in front of you, so settle these four points first.
 
-1. **Where the skill lives.** A personal, project, plugin or managed skill, or one uploaded to an account. Some mechanisms exist only in Claude Code (task tools, plan mode, hooks in the skill's frontmatter), so where the skill runs decides whether recommending one is possible.
+1. **Where the skill lives.** A personal, project, plugin or managed skill, or one uploaded to an account. Some mechanisms exist only in Claude Code (task tools, plan mode), so where the skill runs decides whether recommending one is possible.
 2. **How the skill gets invoked.** In the main conversation, where a user may be present to approve a plan; or forked, preloaded into a subagent, or run unattended (a scheduled task or a `-p` script), where nobody approves anything mid-task.
 3. **Which surfaces and models load it.** Task tools, for example, exist by default only on some models (§2.5).
 4. **What the skill is for**, from its own description and body: whether it teaches knowledge Claude applies alongside other work, or runs a task with steps, side effects and an output. This feeds §1.
@@ -85,7 +84,7 @@ When you audit, answer these about the task before anything else, quoting the sk
 - Is any step fragile, batch, destructive or irreversible, or does any action reach a remote system? (§2, §4)
 - Can something check the result: a script, a test, a build, a linter, a reference document, a list of stated criteria? Or is the only quality at stake taste? (§4)
 - How many distinct steps does it take, and is its scope settled by the request or still open? (§2.5, §3)
-- Is a user present while it runs, and on which surfaces and models does it run? (§2.5, §4.6)
+- Is a user present while it runs, and on which surfaces and models does it run? (§2.5)
 
 Write the classification into your reasoning, then judge each mechanism against it. Most skills mix parts: one part may need exact steps and a validation loop while another needs only goals and criteria. Classify each part on its own.
 
@@ -344,17 +343,7 @@ When you audit:
 - Flag a validator whose pass or fail Claude can't read from its output or exit code, one that waits for interactive input, or one that can print unbounded output.
 - Flag a failure branch that says "fix it" without telling Claude to read the error first.
 
-### 4.6 Checks that must pass every time
-
-A skill's text is an instruction Claude weighs; Claude usually follows it, but nothing guarantees it, and a line such as "Always typecheck before you finish" works most of the time, not every time. Claude Code's documentation puts a check with zero exceptions in a hook, which the harness runs every time its event fires: a `Stop` hook whose command exits with code 2 sends Claude back to work with the command's stderr as the reason, until the check passes or the block limit is reached (eight blocks in a row with no tool call between them, by default). A skill that runs in Claude Code can carry its own hooks in its `hooks` frontmatter; they register when the skill is invoked and stay active for the rest of the session. A hook is only for a rule with no exceptions, and it doesn't replace naming the check in the skill: Claude still needs the command to check its own work as it goes.
-
-When you audit:
-
-- Ask whether the skill describes a check that must pass with no exceptions, such as before finishing or after every edit. For a skill that runs in Claude Code, recommend the hook, carried in the skill's `hooks` frontmatter, and keep the check named in the text.
-- Don't recommend a hook for a check Claude should apply with judgment, or for a skill that doesn't run in Claude Code.
-- Flag a skill that relies on a hook but never names the check's command in its text.
-
-### 4.7 Weak loops to flag
+### 4.6 Weak loops to flag
 
 A loop can be present and still fail at its job.
 
@@ -372,14 +361,13 @@ Recognize the difference:
 - Weak: "Verify the migration worked."
 - Strong: "Run `python scripts/check_migration.py`. It exits non-zero and lists each table whose row count differs from the backup. Fix and re-run until it exits 0. If two runs in a row report the same tables, stop and report them."
 
-### 4.8 Recommending a loop where one is missing
+### 4.7 Recommending a loop where one is missing
 
 When the task needs a loop and the skill has none, recommend one fully specified, and state which signal of 4.1 makes it necessary so it can be weighed against its cost:
 
 - **The validator**: the most objective the task allows. An existing project command, a bundled script for mechanical checks, a reference document with listed criteria for checks that need reading, a self-check only with stated criteria.
 - **Placement**: in the step right after the action it checks; for batch or destructive work, the plan file and its validation as steps before the change.
 - **The fix branch and gate**, **the exit** with what Claude reports if it stops without a pass, and **evidence** where the user relies on the result.
-- **A hook** only when the check has zero exceptions and the skill runs in Claude Code (4.6).
 
 ## 5. Output templates
 

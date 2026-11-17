@@ -64,12 +64,13 @@ The main session runs every mechanical check and passes each reviewer only the r
 - **task-mechanisms:** none; it judges the task and its mechanisms by reading, and only receives the `/doctor prompt-audit` leads.
 - **frontmatter-description:** `claude plugin validate --json` output; frontmatter parse errors; the parsed keys and values; the sibling skills' descriptions; whether each field is valid on each target surface. Sources: skill-lint CO-02 format, PO-03, PO-06, PO-07; frontmatter-lint FM-01 to FM-03.
 - **comprehension:** where the body's first 5,000 tokens end; capitalized absolutes; time-sensitive wording. Sources: skill-lint CO-11.
+- **feature-fit:** the environment inventory: the mode; the paths of every CLAUDE.md, CLAUDE.local.md, rule (with its `paths`), skill (with its name and description) and subagent, with the contents of those outside the working directory; hooks by event, matcher and source; MCP server names; permission rules; the active output style. Extract settings and MCP facts without their values. Sources: none yet; a new script.
 - **Live-session checks:** `/doctor`, the Skills row of `/context`, `/skill-doctor` and `claude plugin details` only run in a live Claude Code session; when the main session can't run one, a reviewer names it as the check that would settle a point.
 - Checks with no reviewer yet (script dependencies and network: SC-04 to SC-06, CA-04) wait for the reviewer that will own them.
 
 ## Components
 
-- Built: `skills/auditing-skills/SKILL.md`; the reviewers `content-patterns`, `runtime-contract`, `size-limits-and-budgets`, `knowledge-delta`, `task-mechanisms`, `frontmatter-description` and `comprehension`, each with its agent, its reference in `references/` and the shared `assets/audit-report.md`.
+- Built: `skills/auditing-skills/SKILL.md`; the reviewers `content-patterns`, `runtime-contract`, `size-limits-and-budgets`, `knowledge-delta`, `task-mechanisms`, `frontmatter-description`, `comprehension` and `feature-fit`, each with its agent, its reference in `references/` and the shared `assets/audit-report.md`.
 - Not built: the scripts of the mechanical checks, `.claude-plugin/plugin.json`, `LICENSE`, `CHANGELOG.md`, `README.md`, the plugin's row in the root `README.md` catalog, and its entry in `PRIVACY.md`.
 - Content moved out of a reviewer's scope, the verified-facts ledgers and the runtime-contract traceability map are in `.claude/maintainer/skills-engineering/`. Build the future security and scripts reviewers from the parked content there.
 
@@ -82,7 +83,7 @@ Follow the docs-maintenance skill's New plugin event, in its order:
 3. Launch the `plugin-readme-writer` subagent for the README, briefed as docs-maintenance's governance says, with these owner values: emoji 🔬; surfaces Claude Code and Claude; minimum Claude Code version v2.1.304. Give it these facts too:
    - Prerequisites: Claude Code; the Claude Code docs MCP server, recommended, added with `claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp` and checked with `claude mcp list`, which shows `claude-code-docs` connected; it needs no sign-in.
    - What's inside: the skill `auditing-skills` and its reviewer agents.
-   - Usage: `/skills-engineering:auditing-skills` with a skill path, name or URL; reviewer names (`content-patterns`, `runtime-contract`, `size-limits-and-budgets`, `knowledge-delta`, `task-mechanisms`, `frontmatter-description`, `comprehension`) run only those reviewers, and none runs all; it also runs after a skill is created or edited.
+   - Usage: `/skills-engineering:auditing-skills` with a skill path, name or URL; reviewer names (`content-patterns`, `runtime-contract`, `size-limits-and-budgets`, `knowledge-delta`, `task-mechanisms`, `frontmatter-description`, `comprehension`, `feature-fit`) run only those reviewers, and none runs all; it also runs after a skill is created or edited.
    - What this plugin runs and sends: no hooks and no MCP server of its own; the reviewers read the official docs through the user's docs MCP server, and through WebSearch and WebFetch to code.claude.com, platform.claude.com, claude.com and support.claude.com; files written: none.
    - Compatibility note: the reviewers are agents, so in Claude the audit runs only where Claude can run tasks, and elsewhere the skill reports that its reviewers aren't available.
    - Limitations: until a mechanical check has a script, the reviewers report it as not run and their reports come back incomplete.

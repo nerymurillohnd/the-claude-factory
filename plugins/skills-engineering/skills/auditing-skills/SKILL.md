@@ -1,7 +1,7 @@
 ---
 name: auditing-skills
 description: Use every time the user or the task involves auditing, reviewing, checking, diagnosing, improving or refining a Claude Agent Skill, recommending changes to one, judging whether one is worth installing or finding why one misbehaves, and right after a skill or any of its files is created or edited, for every kind of skill, whether in a plugin, a personal, project or managed folder, a claude.ai account, a URL or a repository. Not for writing a new skill. Runs specialized reviewer agents in parallel, each bound to its own domain, against a curated collection of current best practices from the Claude Platform and Claude Code docs, Anthropic and the Agent Skills specification, and returns each one's complete report with explicit evidence for every finding, the corrections it needs and suggested improvements.
-argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [comprehension] [skill path, name or URL]"
+argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [comprehension] [feature-fit] [skill path, name or URL]"
 ---
 
 # Auditing skills
@@ -45,6 +45,8 @@ Each reviewer carries its own expertise, reference, verification checklist and r
   - Receives: the `claude plugin validate --json` output; frontmatter parse errors; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
 - `comprehension` → `skills-engineering:comprehension-reviewer`: whether a Claude reading the skill top to bottom forms the task it means, the order of its instructions and concepts, its coherence (contradictions, terms, literal and semantic duplicates), the gaps that leave Claude guessing, and the register and language of each passage.
   - Receives: where the body's first 5,000 tokens end; capitalized absolutes; time-sensitive wording.
+- `feature-fit` → `skills-engineering:feature-fit-reviewer`: whether each piece of the skill belongs in a skill or in another feature (CLAUDE.md, a path-scoped rule, a hook or permission rule, a subagent, an MCP server, an output style), its duplication, contradiction and conflict with the environment it lives in, environment content that belongs in the skill or should become a skill, and how each recommendation reaches the users of a distributed skill.
+  - Receives: the mode, with or without an environment; the paths of the environment's Markdown instruction files (every CLAUDE.md and CLAUDE.local.md level, rules with their `paths`, other skills with their names and descriptions, and subagents), with the contents of any outside the working directory, such as `~/.claude/`, read for it; the hooks by event, matcher and source; the MCP server names; the permission rules; and the active output style. Extract these from settings and MCP files without their values, and never pass the reviewer a settings, MCP or credential file.
 
 ## Choose the reviewers
 
@@ -77,7 +79,7 @@ This invocation's arguments: $ARGUMENTS
 6. Check each report before you accept it:
    - against the report template, [assets/audit-report.md](assets/audit-report.md), for its structure;
    - against its reviewer's verification checklist, in `${CLAUDE_PLUGIN_ROOT}/agents/<reviewer name>-reviewer.md`: Status is filled, every defect gives file, lines, quoted evidence or the measured figure, and its fix, and every checklist exception names a blocker;
-   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md), [references/task-mechanisms.md](references/task-mechanisms.md), [references/frontmatter-description.md](references/frontmatter-description.md) or [references/comprehension.md](references/comprehension.md), only when you need a section a finding cites to judge whether the report is complete.
+   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md), [references/task-mechanisms.md](references/task-mechanisms.md), [references/frontmatter-description.md](references/frontmatter-description.md), [references/comprehension.md](references/comprehension.md) or [references/feature-fit.md](references/feature-fit.md), only when you need a section a finding cites to judge whether the report is complete.
 
    If a report falls short, resume that reviewer with `SendMessage`, name what is missing, and wait for the corrected report.
 7. Present the reports in this exact structure, with nothing added between them:
