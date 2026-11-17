@@ -326,7 +326,6 @@ When you audit:
 - For a batch, destructive or high-stakes operation, flag a skill whose only check comes after the irreversible step.
 - Ask whether the plan is a structured file a script can check, or exists only in Claude's prose.
 - Flag a validator that checks only that the plan file is well formed, not that it matches the real input.
-- Where the skill bundles a script that makes destructive or stateful changes, recommend a dry-run option so Claude can preview the effect first.
 
 Recognize the difference:
 
