@@ -129,7 +129,7 @@ Area 4, failure handling and constants:
 
 Area 5, dependencies and runtime environment:
 - [ ] Every third-party package is declared with the script, pinned, and honored by the run command (5.1).
-- [ ] Every script's interpreter version, packages, tools and network needs are checked against each target surface, and no script installs globally or installs on the API (5.2).
+- [ ] Every script's interpreter version, packages, tools and network needs are checked against each target surface, no script installs globally or installs on the API, and no script relies on opening a browser on a target that has none (5.2).
 - [ ] Every external command a script calls is named in the skill and checked for by the script where its absence would mislead (5.3).
 
 Area 6, portability:

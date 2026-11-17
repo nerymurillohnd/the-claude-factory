@@ -62,7 +62,7 @@ This invocation's arguments: $ARGUMENTS
 ## Workflow
 
 1. Locate the skill and get every file it includes onto disk, as the gotchas say.
-2. Read the whole skill, its `SKILL.md` and every file it points to, and understand it before you brief anyone: what it does and its purpose, what kind of skill it is, what it contains and how it is composed, where it lives, how it is invoked, and which surfaces load it.
+2. Read the whole skill, its `SKILL.md` and every file it points to, and understand it before you brief anyone: what it does and its purpose, what kind of skill it is, what it contains and how it is composed, where it lives, how it is invoked, and which surfaces load it. Record what it has and what it lacks, such as supporting files, scripts, hooks, subagents that consume it, other skills it invokes and plugin dependencies: step 4 passes this inventory to every reviewer.
 3. Run the mechanical checks the selected reviewers receive, and read every result. They need the `claude` command, Claude Code's CLI; where it isn't available, every check below is not run. In each command, `<plugin root>` is the directory that holds the plugin's `.claude-plugin/` folder and `<plugin name>` is the `name` in its `plugin.json`:
    - `claude plugin validate --json <plugin root>` for a plugin skill, or `claude plugin validate --json <skills directory>`, the directory named `skills` that holds the skill, otherwise. It doesn't read a `SKILL.md` at a plugin's root, doesn't follow symlinks, and accepts some malformed YAML, so its pass proves only what it reports.
    - `claude --plugin-dir <plugin root> plugin details <plugin name>`: the inventory, and each skill's always-on and on-invoke token estimates. For a skill outside a plugin, copy its folder into `skills/<skill name>/` inside a new empty directory, and use that directory as `<plugin root>` and its folder name as `<plugin name>`.
@@ -73,6 +73,7 @@ This invocation's arguments: $ARGUMENTS
    - the skill's name and the absolute path of its directory;
    - where it lives, how it is invoked, which surfaces it targets, and its purpose in one sentence, from step 2;
    - the instruction to read and understand the whole skill, every file it points to, before auditing anything;
+   - the skill's inventory from step 2, what it has and what it lacks, such as supporting files, scripts, hooks, subagents that consume it, other skills it invokes and plugin dependencies, given as context to focus the reviewer, never as a limit: the reviewer still audits every point of its reference, and judges each part the skill lacks against the skill's purpose, as an improvement where the purpose needs it;
    - its bounds: its own reference is its whole scope, so name the areas its entry in the Reviewers list names, to be audited in full, and tell it to judge nothing outside them, even what it notices in passing; state them as that reviewer's own ground, without naming any other reviewer or what another one covers;
    - any target the user stated, and any reading you took in its place;
    - the results of the mechanical checks that reviewer receives, from step 3, and the name of every check not run;

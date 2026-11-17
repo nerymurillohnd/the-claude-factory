@@ -544,6 +544,7 @@ When you audit:
 - Flag each invocation from a subagent, forked or custom, whose tools leave out `Skill`.
 - Flag each step that uses a forked target's result in the same turn while the target runs in the background, and recommend `background: false` on the target or a step that waits for its result.
 - Flag a skill meant to run unattended that invokes a target the Skill tool would prompt for, and recommend the `Skill(<name>)` allow rule its users add.
+- Flag usage instructions, in the skill or its documentation, that tell the user to type `/<name>` after other text in a message to run a skill: after plain text, the name "gives Claude permission to run the skill but doesn't run it", and Claude judges from the wording whether it was asked to. Recommend `/<name>` at the start of the message.
 
 ### 10.2 Skills meant to load together
 

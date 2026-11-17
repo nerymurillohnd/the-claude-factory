@@ -154,7 +154,7 @@ Area 9, hooks and the skill at runtime:
 - [ ] Every hook, mod and permission rule that acts on the skill is judged on each path that reaches it, typed and Skill-tool, with matchers judged as exact or regular expression (9.2).
 
 Area 10, composition between skills:
-- [ ] Every skill the audited skill invokes resolves by its exact name, may be invoked by Claude, is reachable through the Skill tool where the skill runs, and delivers its result when the caller needs it, on every target (10.1).
+- [ ] Every skill the audited skill invokes resolves by its exact name, may be invoked by Claude, is reachable through the Skill tool where the skill runs, delivers its result when the caller needs it, on every target, and every typed invocation the skill documents puts `/<name>` at the start of the message (10.1).
 - [ ] Every stacked or combined use of skills works on each target's invocation path (10.2).
 - [ ] Every `dependencies` entry is judged by its install, version, marketplace and claude.ai behavior, and no skill outside a plugin expects a skill it relies on to be installed for it (10.3).
 - [ ] Every step that relies on another skill invokes or preloads it, and every invocation and dependency serves a step of the task (10.4).
