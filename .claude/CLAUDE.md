@@ -68,7 +68,7 @@ Do every task, area, phase and function through the skill this section designate
 ### Skills
 
 - Use `skills-engineering:authoring-skills` to write or change any skill, in a plugin or in a project's `.claude/skills/`.
-- Use `skills-engineering:auditing-skills` to audit or review a skill, including one `authoring-skills` wrote, and run it only when the owner asks: each run launches up to nine reviewer agents.
+- Use `skills-engineering:auditing-skills` to audit or review a skill, including one `authoring-skills` wrote, and run it only when the owner asks: each run launches a reviewer agent per selected domain.
 
 ### Plugins
 
