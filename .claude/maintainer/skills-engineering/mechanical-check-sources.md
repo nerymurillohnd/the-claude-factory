@@ -30,3 +30,5 @@ Each check's command, reading and receivers are in `skills/auditing-skills/MECHA
 - `frontmatter.compatibility` (FM-9): a string of 1 to 500 characters; to frontmatter-description, and its lengths to size-limits-and-budgets.
 - `frontmatter.metadata` (FM-10): a map of string keys to string values, no field names as keys; to frontmatter-description.
 - `frontmatter.field-values` (FM-12): boolean forms, `context`, `effort`, `model`, and the string-or-list fields; a non-string `allowed-tools` and an unknown `shell` stay with validate; to frontmatter-description.
+- `frontmatter.field-combinations` (FM-13): `disable-model-invocation: true` with `user-invocable: false` or with `paths`, and `agent` or `background` without `context: fork`; to frontmatter-description.
+- `frontmatter.allowed-tools` (FM-14): the list form outside Claude Code and an unscoped `Bash`, `Bash(*)` or `Bash(:*)`; to frontmatter-description and runtime-contract.

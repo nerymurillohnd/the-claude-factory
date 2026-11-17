@@ -5,8 +5,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from frontmatter import (
+    allowed_tools,
     compatibility,
     description,
+    field_combinations,
     field_values,
     listing_cap,
     metadata,
@@ -100,6 +102,18 @@ CHECKS: tuple[CheckSpec, ...] = (
         field_values.CHECK,
         field_values.check,
         ("frontmatter-description",),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        field_combinations.CHECK,
+        field_combinations.check,
+        ("frontmatter-description",),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        allowed_tools.CHECK,
+        allowed_tools.check,
+        ("frontmatter-description", "runtime-contract"),
         requires=(yaml_syntax.CHECK,),
     ),
 )
