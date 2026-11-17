@@ -109,7 +109,6 @@ Area 2, passages that add nothing:
 - [ ] Instructions for default behavior are flagged, and specific bars Claude couldn't guess are kept (2.2).
 - [ ] Instructions written for older models are flagged with their cost or documented harm, and a real need behind one is kept stated once, plainly (2.3).
 - [ ] Copies of what Claude can read are flagged only where the original is reachable on every runtime the skill targets, and what the original doesn't say is kept (2.4).
-- [ ] Every fact stated more than once is flagged with every location, and checklists that name rules the body teaches aren't counted (2.5).
 
 Area 3, passages that must stay:
 - [ ] No current version, limit, field, flag, default, name or deprecation was flagged as general knowledge, and each was verified against its source (3.1).

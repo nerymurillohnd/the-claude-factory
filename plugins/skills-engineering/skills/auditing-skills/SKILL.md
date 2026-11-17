@@ -1,7 +1,7 @@
 ---
 name: auditing-skills
 description: Use every time the user or the task involves auditing, reviewing, checking, diagnosing, improving or refining a Claude Agent Skill, recommending changes to one, judging whether one is worth installing or finding why one misbehaves, and right after a skill or any of its files is created or edited, for every kind of skill, whether in a plugin, a personal, project or managed folder, a claude.ai account, a URL or a repository. Not for writing a new skill. Runs specialized reviewer agents in parallel, each bound to its own domain, against a curated collection of current best practices from the Claude Platform and Claude Code docs, Anthropic and the Agent Skills specification, and returns each one's complete report with explicit evidence for every finding, the corrections it needs and suggested improvements.
-argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [skill path, name or URL]"
+argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [comprehension] [skill path, name or URL]"
 ---
 
 # Auditing skills
@@ -31,8 +31,8 @@ Once you have read the skill (Workflow, step 2), answer them again with evidence
 
 Each reviewer carries its own expertise, reference, verification checklist and report template, so its prompt needs only what this skill tells you to give it. Each one receives the mechanical results listed under its name.
 
-- `content-patterns` → `skills-engineering:content-patterns-reviewer`: examples, embedded commands and code, the shape of the content, and its wording.
-  - Receives: where the body's first 5,000 tokens end; misplaced inline `!` commands; every injected command; unescaped `$` before a digit, `ARGUMENTS` or a declared argument name; path variables written in reference files; backslash paths; unqualified MCP tool names; `@` references; capitalized absolutes; time-sensitive wording.
+- `content-patterns` → `skills-engineering:content-patterns-reviewer`: examples, and embedded commands and code.
+  - Receives: misplaced inline `!` commands; every injected command; unescaped `$` before a digit, `ARGUMENTS` or a declared argument name; path variables written in reference files; backslash paths; unqualified MCP tool names; `@` references.
 - `runtime-contract` → `skills-engineering:runtime-contract-reviewer`: packaging boundary and archive layout, paths and variable substitution, plugin layout and cache, symlinks, discovery, precedence and surfaces, subagent consumption, and tool pre-approval.
   - Receives: the `claude plugin validate --json` output; the component inventory from `claude plugin details`; the name each skill registers under and its source, from `/context` and `/skill-doctor`; frontmatter parse errors; which referenced files and links exist and stay inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs, with its interpreter, shebang and executable bit; archive listings.
 - `size-limits-and-budgets` → `skills-engineering:size-limits-and-budgets-reviewer`: frontmatter field lengths, the `SKILL.md` body, supporting files, upload and install size, active-skill counts, script and injected-command output, and frontmatter hook budgets.
@@ -43,6 +43,8 @@ Each reviewer carries its own expertise, reference, verification checklist and r
   - Receives: no mechanical result of its own; only the `/doctor prompt-audit` leads every reviewer gets.
 - `frontmatter-description` → `skills-engineering:frontmatter-description-reviewer`: frontmatter structure and parsing, each field's validity and fit on every target surface, the name, the description as the text Claude chooses the skill by, and activation and trigger tests.
   - Receives: the `claude plugin validate --json` output; frontmatter parse errors; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
+- `comprehension` → `skills-engineering:comprehension-reviewer`: whether a Claude reading the skill top to bottom forms the task it means, the order of its instructions and concepts, its coherence (contradictions, terms, literal and semantic duplicates), the gaps that leave Claude guessing, and the register and language of each passage.
+  - Receives: where the body's first 5,000 tokens end; capitalized absolutes; time-sensitive wording.
 
 ## Choose the reviewers
 
@@ -75,7 +77,7 @@ This invocation's arguments: $ARGUMENTS
 6. Check each report before you accept it:
    - against the report template, [assets/audit-report.md](assets/audit-report.md), for its structure;
    - against its reviewer's verification checklist, in `${CLAUDE_PLUGIN_ROOT}/agents/<reviewer name>-reviewer.md`: Status is filled, every defect gives file, lines, quoted evidence or the measured figure, and its fix, and every checklist exception names a blocker;
-   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md), [references/task-mechanisms.md](references/task-mechanisms.md) or [references/frontmatter-description.md](references/frontmatter-description.md), only when you need a section a finding cites to judge whether the report is complete.
+   - against its reviewer's reference, [references/content-patterns.md](references/content-patterns.md), [references/runtime-contract.md](references/runtime-contract.md), [references/size-limits-and-budgets.md](references/size-limits-and-budgets.md), [references/knowledge-delta.md](references/knowledge-delta.md), [references/task-mechanisms.md](references/task-mechanisms.md), [references/frontmatter-description.md](references/frontmatter-description.md) or [references/comprehension.md](references/comprehension.md), only when you need a section a finding cites to judge whether the report is complete.
 
    If a report falls short, resume that reviewer with `SendMessage`, name what is missing, and wait for the corrected report.
 7. Present the reports in this exact structure, with nothing added between them:

@@ -16,7 +16,6 @@ This file teaches you how to audit whether every passage of a skill gives Claude
   - 2.2 Behavior Claude already has
   - 2.3 Instructions written for older models
   - 2.4 What Claude can find on its own
-  - 2.5 The same content twice
 - 3. Passages that must stay
   - 3.1 Facts that are new or that changed
   - 3.2 Gotchas and corrections
@@ -53,7 +52,7 @@ What Claude lacks depends on the skill in front of you, so settle these five poi
 Audit what the skill has and what it should have: cutting what adds nothing is half the audit, and finding what Claude lacks and the skill doesn't say is the other half. Go through every passage of `SKILL.md` and of every file it points to that Claude reads, then walk the task the skill covers for what it should add (§1.3), and give each item exactly one of these outcomes:
 
 - **Present and optimal.** It gives Claude something it lacks, and only that. Record no finding.
-- **Present but wrong.** It restates what Claude already knows or does, repeats itself, or misleads Claude where its own default was right. Record it as a defect, classify it (see "Classifying findings"), and say whether it must be deleted or rewritten.
+- **Present but wrong.** It restates what Claude already knows or does, or misleads Claude where its own default was right. Record it as a defect, classify it (see "Classifying findings"), and say whether it must be deleted or rewritten.
 - **Present, right, but improvable.** It carries something Claude lacks, wrapped in material Claude doesn't need. Record it as an improvement opportunity, with the passage reduced to what Claude lacks.
 - **Absent, and the skill's purpose needs it.** Claude would fail at a point of the task the skill covers, and the skill is silent. Record it as an improvement opportunity: say where it belongs, what it should contain, and the point of this file it rests on.
 - **Absent, and the skill's purpose doesn't need it.** Record no finding.
@@ -162,16 +161,6 @@ When you audit:
 - Flag a passage that copies what Claude can reach on the skill's runtime, and recommend telling Claude where to look and when, in one line.
 - Before you flag, confirm from §"Before auditing" that Claude can reach the original on every runtime the skill targets. A skill that runs where the repository or the tool isn't available, or that runs without network access, may need the copy: then it stays.
 - Keep what the original doesn't say and the skill must: which option to use, which output to trust, which step comes first.
-
-### 2.5 The same content twice
-
-After Claude reads a fact once, a second statement of it gives nothing new, and two copies drift apart until they contradict each other.
-
-When you audit:
-
-- Flag every fact, rule or instruction stated more than once across the skill's files, with every location.
-- Recommend keeping one statement, where Claude needs it first, and deleting the others. Where a later section needs the fact, it can name it without restating it.
-- Don't count as repetition a short summary list whose job is to be checked against, such as a checklist that names rules the body teaches.
 
 ## 3. Passages that must stay
 
