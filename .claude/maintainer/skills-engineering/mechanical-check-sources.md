@@ -32,3 +32,9 @@ Each check's command, reading and receivers are in `skills/auditing-skills/MECHA
 - `frontmatter.field-values` (FM-12): boolean forms, `context`, `effort`, `model`, and the string-or-list fields; a non-string `allowed-tools` and an unknown `shell` stay with validate; to frontmatter-description.
 - `frontmatter.field-combinations` (FM-13): `disable-model-invocation: true` with `user-invocable: false` or with `paths`, and `agent` or `background` without `context: fork`; to frontmatter-description.
 - `frontmatter.allowed-tools` (FM-14): the list form outside Claude Code and an unscoped `Bash`, `Bash(*)` or `Bash(:*)`; to frontmatter-description and runtime-contract.
+
+Commands in `MECHANICAL-CHECKS.md`, "Block, keys and folder name", tested on Linux with dash, GNU coreutils and mawk only; macOS (BSD) and Git Bash not run:
+
+- FM-1: `cp -RL` of a plugin-root or symlinked skill into a temporary plugin, then `claude plugin validate --json` on it; to runtime-contract and frontmatter-description.
+- FM-11: the top-level keys with their lines, with `awk`; to frontmatter-description.
+- FM-6: the folder name, with `basename` and `dirname`; to runtime-contract.

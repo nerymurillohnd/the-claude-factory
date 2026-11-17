@@ -9,6 +9,7 @@ This file is yours, the orchestrator's: it tells you how to run every mechanical
 - Reading a frontmatter check's result
 - Frontmatter checks
 - Plugin structure and loading
+- Block, keys and folder name
 - Dependencies
 - Code files
 - Registration and listing
@@ -194,6 +195,35 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 - `claude --plugin-dir <plugin root> plugin details <plugin name>`: the inventory, and each skill's always-on and on-invoke token estimates. For a skill outside a plugin, copy its folder into `skills/<skill name>/` inside a new empty directory, and use that directory as `<plugin root>` and its folder name as `<plugin name>`. Its `Hooks` line lists the plugin's hooks by event.
 - `claude --plugin-dir <plugin root> plugin list --json`: from the audited plugin's entry, its `errors`, `errorDetails`, `notes` and `noteDetails`, which appear only when the plugin has load errors, unmet dependencies or packages not installed; from every entry, the `id`, `scope` and `enabled` of the plugins installed with it. Never pass an entry's `mcpServers`, because a server definition can hold a credential's value.
 
+## Block, keys and folder name
+
+These commands need a POSIX shell, with `cp`, `awk`, `basename` and `dirname`; where the shell or a command is missing, the check is not run. Write every path in double quotes, as shown.
+
+### The frontmatter block of a skill validate doesn't read
+
+- Command: when the audited `SKILL.md` sits at a plugin's root, or the skill's folder or its `SKILL.md` is a symlink, make a new empty directory as `<temporary plugin>`, or use the one built above for a skill outside a plugin, then run:
+  - `mkdir -p "<temporary plugin>/skills"`;
+  - `cp -RL "<skill folder>" "<temporary plugin>/skills/<skill name>"`, where `<skill folder>` is the folder that holds the audited `SKILL.md` and `<skill name>` is that folder's name;
+  - `claude plugin validate --json "<temporary plugin>"`.
+- What it checks: the frontmatter block and its errors, with validate reading the copy, because validate skips a `SKILL.md` at a plugin's root and doesn't follow symlinks; `cp -RL` copies the targets as real files.
+- No other command reads these files; validate's output on the copy is the result, and no script checks it again.
+- Reading the result: the copied `SKILL.md`'s entry under `contents`, with its `errors` and `warnings`, such as `No frontmatter block found`. The `directory` findings about the temporary plugin itself, such as a missing README or LICENSE, are not the skill's: leave them out.
+- Goes to: `runtime-contract` and `frontmatter-description`.
+
+### The top-level keys with their lines
+
+- Command: `awk 'NR==1 && !/---[[:space:]]*$/{exit} NR>1 && /^---[[:space:]]*$/{exit} NR>1 && /^[^[:space:]#]/{print NR": "substr($(0),1,80)}' "<SKILL.md>"`.
+- What it checks: each line of the frontmatter that starts a top-level key, as `<line>: <text>`, cut at 80 characters, because Claude Code ignores a field it doesn't recognize without a word, and uploads reject any field outside the open specification's six.
+- No command reports unknown keys: validate passed a made-up key with `--strict` when tested. This command lists them for the reviewer to compare with its field tables, by the skill's origin. It prints nothing when the file has no frontmatter block.
+- Goes to: `frontmatter-description`.
+
+### The folder name
+
+- Command: `basename "$(dirname "<SKILL.md>")"`.
+- What it checks: the name of the folder that holds the audited `SKILL.md`, as written, capitals kept.
+- No command reports it. Read it against the location recorded in step 2: `synced`, in any capitalization, in a personal, project or managed location, and `anthropic-skills` or a name starting with `anthropic-skills:` outside a plugin. The reserved words in `name` come from `frontmatter.name`.
+- Goes to: `runtime-contract`.
+
 ## Dependencies
 
 - For each plugin dependency whose source is its own git repository: `git ls-remote --tags <repository URL>`, keeping the tags named `<dependency>--v*`, the tags that can satisfy its version range. It needs network access to that repository; offline or without access, it is not run.
@@ -216,11 +246,11 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 Write into each reviewer's prompt the results listed under its name, and name every one of them that was not run. Every reviewer also gets the `/doctor prompt-audit` leads.
 
 - `content-patterns`: misplaced inline `!` commands; every injected command; unescaped `$` before a digit, `ARGUMENTS` or a declared argument name; path variables written in reference files; backslash paths; unqualified MCP tool names; `@` references.
-- `runtime-contract`: the `claude plugin validate --json` output; the component inventory from `claude plugin details`; the name each skill registers under and its source, from `/context` and `/skill-doctor`; the `frontmatter.yaml` and `frontmatter.allowed-tools` results; which referenced files and links exist and stay inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs and whether its file exists; archive listings; the skill's frontmatter hooks by event, matcher and command, with the path variable each command uses; the hooks of the skill's own plugin by event and matcher, marking those that match `Skill` or `UserPromptExpansion`; every skill name the body tells Claude to invoke or stack, with whether it resolves in the plugin or its dependencies and that skill's `disable-model-invocation`, `user-invocable`, `context`, `agent` and `background` values; every subagent in the plugin that preloads or invokes the skill, with its `tools`, `disallowedTools` and `skills`; the plugin's `dependencies`, its marketplace entry and `allowCrossMarketplaceDependenciesOn`, and each dependency's source type and the tags that satisfy its range; the plugin's load errors and notes from `claude plugin list --json`; the plugin's `engines` range.
+- `runtime-contract`: the `claude plugin validate --json` output; the component inventory from `claude plugin details`; the name each skill registers under and its source, from `/context` and `/skill-doctor`; the `frontmatter.yaml` and `frontmatter.allowed-tools` results; validate's output on the temporary plugin, for a `SKILL.md` validate doesn't read in place; the skill's folder name; which referenced files and links exist and stay inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs and whether its file exists; archive listings; the skill's frontmatter hooks by event, matcher and command, with the path variable each command uses; the hooks of the skill's own plugin by event and matcher, marking those that match `Skill` or `UserPromptExpansion`; every skill name the body tells Claude to invoke or stack, with whether it resolves in the plugin or its dependencies and that skill's `disable-model-invocation`, `user-invocable`, `context`, `agent` and `background` values; every subagent in the plugin that preloads or invokes the skill, with its `tools`, `disallowedTools` and `skills`; the plugin's `dependencies`, its marketplace entry and `allowCrossMarketplaceDependenciesOn`, and each dependency's source type and the tags that satisfy its range; the plugin's load errors and notes from `claude plugin list --json`; the plugin's `engines` range.
 - `size-limits-and-budgets`: where the body's first 5,000 tokens end; the always-on and on-invoke token estimates from `claude plugin details`; the skill's listing cost after the budget from `/skill-doctor`, and the Skills total from `/context`; character counts of `name`, `description`, `when_to_use` and `compatibility`, and where the 1,536th character of `description` plus `when_to_use` falls, from the `frontmatter.name`, `frontmatter.description`, `frontmatter.compatibility` and `frontmatter.listing-cap` results; the body's line and approximate token counts; line counts of supporting files and which references over 100 lines lack a table of contents; bundle size and file count; the source's frontmatter hook count and total matcher characters; the length of any preload list shipped with the skill.
 - `knowledge-delta`: no mechanical result of its own; only the `/doctor prompt-audit` leads.
 - `task-mechanisms`: no mechanical result of its own; only the `/doctor prompt-audit` leads.
-- `frontmatter-description`: the `claude plugin validate --json` output; the `frontmatter.yaml`, `frontmatter.plain-values`, `frontmatter.name`, `frontmatter.name-plain`, `frontmatter.description`, `frontmatter.listing-cap`, `frontmatter.compatibility`, `frontmatter.metadata`, `frontmatter.field-values`, `frontmatter.field-combinations` and `frontmatter.allowed-tools` results; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
+- `frontmatter-description`: the `claude plugin validate --json` output; the `frontmatter.yaml`, `frontmatter.plain-values`, `frontmatter.name`, `frontmatter.name-plain`, `frontmatter.description`, `frontmatter.listing-cap`, `frontmatter.compatibility`, `frontmatter.metadata`, `frontmatter.field-values`, `frontmatter.field-combinations` and `frontmatter.allowed-tools` results; validate's output on the temporary plugin, for a `SKILL.md` validate doesn't read in place; the top-level keys with their lines; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
 - `comprehension`: where the body's first 5,000 tokens end; capitalized absolutes; time-sensitive wording.
 - `feature-fit`: the mode, with or without an environment; the paths of the environment's Markdown instruction files (every CLAUDE.md and CLAUDE.local.md level, rules with their `paths`, other skills with their names and descriptions, and subagents), with the contents of any outside the working directory, such as `~/.claude/`, read for it; the hooks by event, matcher and source; the installed plugins with their scope and whether each is enabled, from `claude plugin list --json`; the MCP server names; the permission rules; and the active output style. Extract these from settings and MCP files without their values, and never pass the reviewer a settings, MCP or credential file.
 - `scripts`: the inventory of code files in the skill's folder, at the plugin level, in `bin/` and run by its hooks, each with its path and language; each one's first line and executable bit; each script the Markdown runs, with its interpreter and whether the file exists; the scripts each hook command runs; Python imports outside the standard library with no inline dependency declaration; external commands a script calls that neither the Markdown nor `compatibility` mentions; package installs in scripts, global or local; the packages `claude plugin list --json` notes as not installed; network and credential signals in scripts, by file and line, never with a value; and the output of any linter run on the scripts, such as ShellCheck or Ruff, or the name of each linter not run.
