@@ -40,12 +40,12 @@
 - **Python floor 3.12**, the marketplace's floor for plugin Python (`ruff.toml` `per-file-target-version`, `pyrightconfig.json` `pythonVersion`).
   - The thin entry checks the version before it imports any check module and prints `frontmatter-checks.py: needs Python 3.12 or later; this is X.Y.Z.` to stderr, exit 2. The guard can't sit in a file that also uses 3.12 syntax: Python compiles the whole file first, so `type Alias = int` on 3.11 stops with `SyntaxError` and exit 1 before the guard runs (tested on `/usr/bin/python3.11`). The entry therefore uses only syntax older Pythons parse.
   - The guard compares with a named constant, `MINIMUM_PYTHON = (3, 12)` and `if sys.version_info < MINIMUM_PYTHON:`. Written with the literal, Ruff's UP036 ("Version block is outdated for minimum Python version") fires under the py312 target; with the constant, Ruff, `ruff format` and basedpyright are clean (tested).
-- **`allowed-tools` (Nery, 2026-11-17): one wildcard rule per interpreter for the one entry**, not one per command. `SKILL.md`'s frontmatter gets `allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py *), Bash(python ${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py *)`, plus the same two with the `${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py` fallback path. `SKILL.md` and `MECHANICAL-CHECKS.md` write out each exact command.
+- **`allowed-tools` (Nery, 2026-11-17): one wildcard rule per interpreter for the one entry**, not one per command. `SKILL.md`'s frontmatter gets `allowed-tools: Bash(python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *)`, plus the same two with the `"${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py"` fallback path. The path is quoted in the rule and in every command, because Task 0 found that the rule and the command must match quote for quote. `SKILL.md` and `MECHANICAL-CHECKS.md` write out each exact command.
   - Sources: "A `*` in a Bash rule matches any text, including spaces" and "Claude Code matches everything before the first `*` as written" (permissions, "Wildcard patterns"); with the rule and the body using the same `${CLAUDE_SKILL_DIR}` path, "the script runs without prompting" (skills, "Available string substitutions"). The rule never covers a chained command: "a rule like `Bash(safe-cmd *)` won't give it permission to run the command `safe-cmd && other-cmd`" (permissions, "Compound commands").
   - Why not a repository `settings.json` or `settings.local.json`: those files reach only sessions opened in this repository, never a third party's machine, and in project cloud threads "none of a repository's `.claude/settings.json` permission rules, hooks, or `env` apply" (settings, "Settings in cloud sessions"). `allowed-tools` travels with the skill.
   - Known costs, stated in `MECHANICAL-CHECKS.md`: since 2.1.325 "scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks; add `Skill(name)` to `permissions.allow` to run it unattended" (changelog), and under managed `allowManagedPermissionRulesOnly` plugins outside an official or vouched source lose the pre-approval (changelog).
   - `clean` deletes, and the wildcard lets it run without a prompt. That is acceptable only because `clean` refuses any folder without its prefix and marker (Task 1B, Review Focus 4).
-  - Unverified, settled in Task 0: whether a quoted path in the body (`python3 "/path/…"`) matches the unquoted rule. If it doesn't, the body writes the path unquoted, as the docs' example does, and quoting moves to a fallback for paths with spaces.
+  - Settled in Task 0 (Appendix): an unquoted rule doesn't approve the quoted command, and a quoted rule approves the quoted command, even in a path with a space, and not the unquoted one.
 - **Packages and the entry (Python docs, tested on 3.12, 3.13 and 3.15):**
   - Layout: `scripts/frontmatter-checks.py` (the only file run by path), `scripts/common/` and `scripts/frontmatter/`, each package with its own `__init__.py`. A regular package "is typically implemented as a directory containing an `__init__.py` file" (Python reference, "The import system", Regular packages); no folder relies on an implicit namespace package, which Ruff's INP001 also rejects.
   - The entry, in this order: imports `pathlib`, `runpy` and `sys`; runs the version guard; sets `sys.dont_write_bytecode = True`; inserts its own folder with `sys.path.insert(0, str(Path(__file__).resolve().parent))`; then hands over with `runpy.run_module("frontmatter.cli", run_name="__main__", alter_sys=True)`. This is the repo's own thin-entry pattern (`scripts/release/release-status.py`), and Ruff's E402 exempts `sys.path` changes between imports, so nothing needs a suppression.
@@ -716,4 +716,34 @@ Each command's entry in `MECHANICAL-CHECKS.md` follows "Mechanical-checks entry 
 
 ## Appendix: Task 0 results
 
-To be filled by Task 0.
+Run on 2026-11-17 with Claude Code 2.1.326 and ruamel.yaml 0.19.1. Loader results come from `claude -p --plugin-dir <lab>` sessions asked to copy each lab skill's listed description character for character, so they rest on the model's copy of its own listing.
+
+| Case | `claude plugin validate --strict --json` | What Claude Code loads |
+| :-- | :-- | :-- |
+| UTF-8 BOM before `---` | nothing reported | fields read normally |
+| CRLF line endings | nothing reported | fields read normally |
+| `--- ` with a trailing space, opening marker | nothing reported | fields read normally |
+| `--- ` with a trailing space, closing marker | nothing reported | fields read normally |
+| U+2028 inside `description` | nothing reported | kept as U+2028 |
+| duplicate `description` key | nothing reported | the last value wins |
+| Latin-1 byte (`caf\xe9`) | nothing reported | decoded with U+FFFD in place of the byte, silently |
+| UTF-16 with BOM | "No frontmatter block found" (warning) | no fields |
+| `description: COLON-A: COLON-B marker.` | nothing reported | the whole text, `COLON-A: COLON-B marker.` |
+
+Consequences for later tasks:
+- FM-1 needs no BOM or CRLF command (Task 9): Claude Code reads both. The reader still normalizes them (Task 2) and marker equality ignores trailing spaces and tabs.
+- A non-UTF-8 file is never reported by validate, and Claude Code silently replaces the bad bytes: `frontmatter.yaml`'s `not-utf8` finding is the only source (Review Focus 1).
+- Duplicate keys: report that Claude Code keeps the last value, in the finding's `expected`.
+- `a: b: c` style values: Claude Code keeps the whole text while ruamel (YAML 1.2) rejects them, confirming FM-2's surfaces: a finding for `open-spec` and `upload`, not `claude-code`.
+
+Step 2 results:
+- ruamel.yaml 0.19.1 (`typ="safe"`, `pure=True`) rejects `a: foo:`, `a: x: y` and `a: "q": r` with `ScannerError: mapping values are not allowed here`.
+- `description` + `when_to_use`: the listing shows `WTU-DESC part. - WTU-WHEN part.`, so the separator is ` - ` (space, hyphen, space), 3 characters, counted toward the 1,536 cap (FM-8). The docs say only "Appended to `description`".
+- `Bash` and `Bash(*)`: permissions docs: "`Bash(*)` is equivalent to `Bash` and matches all Bash commands." FM-14 flags both.
+- Six-field upload rule for plugin skills: the skills docs ("Using skill frontmatter outside Claude Code") list "Claude Code skills at any level, including plugin skills" as using every field, and "claude.ai skill uploads, the Skills API, and packaging with `package_skill.py`" as limited to the six. Whether a plugin added in claude.ai Customize > Plugins passes through that upload check stays unverified; FM-11 keeps "a personal skill gets a warning" and reports plugin skills under `upload` only as a condition.
+- `allowed-tools` quoting (lab plugin, `--permission-mode default`, only `Skill` pre-allowed):
+  - rule `Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/x.py *)`: the unquoted command ran (`RAN ['unquoted']`); the quoted command was denied ("This command requires approval");
+  - rule `Bash(python3 "${CLAUDE_SKILL_DIR}/scripts/x.py" *)` in a plugin path with a space: the quoted command ran (`RAN ['quoted']`); the unquoted one was denied.
+  - So the rule and the command must be written identically, quotes included. The plan quotes both.
+
+Step 3: no result contradicts the spec.
