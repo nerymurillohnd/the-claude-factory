@@ -1,6 +1,6 @@
 ---
 name: authoring-skills
-description: Writes new Claude Agent Skills and changes existing ones, from the first idea to files ready for audit, for every kind of skill and location, grounded in the domain's own material and the current platform docs. Use when the user asks to create, write, build, draft or design a skill, turn a workflow, prompt or repeated correction into one, or extend, rewrite or apply review findings to one. Not for auditing or reviewing a skill.
+description: Writes new Claude Agent Skills and changes existing ones, for every kind of skill and location, grounded in the domain's own material and the current platform docs. Use when the user asks to create, write, build, draft or design a skill, turn a workflow, prompt or repeated correction into one, or extend, rewrite or apply review findings to one. Not for auditing or reviewing a skill.
 ---
 
 # Authoring skills
@@ -21,7 +21,7 @@ You engineer a skill: a set of files that changes how another Claude behaves, in
 Before designing anything, establish these, from the request, the material provided and the workspace first, and ask the user only what none of those answers:
 
 - The job: what the skill makes Claude do or know, for whom, and what its output feeds.
-- The gap: two or three realistic requests the skill must handle, and what Claude does wrong on each today without it. If you can't name a gap, the skill may not be needed; say so.
+- The gap: two or three realistic requests the skill must handle, and what Claude does wrong on each today without it. These are the gap requests; the later steps and the guides test the design against them. If you can't name a gap, the skill may not be needed; say so.
 - The discipline: which field or fields govern the work, how that field defines good work, and what errors are frequent and costly in it. The higher the cost of an error, the more evidence, verification and human control the skill must require.
 - The setting: which surfaces will run it (Claude Code, the Claude app, the API, the Agent SDK), how it is invoked (by Claude, by the user, both, or by another skill or subagent), where it will live (personal, project, plugin, managed, an upload) and who else receives it.
 - The material: the user's documents, examples, corrections, project files and existing skills on the topic. Read what's relevant in full; keep its terms, distinctions and requirements instead of replacing them with generic practice.
