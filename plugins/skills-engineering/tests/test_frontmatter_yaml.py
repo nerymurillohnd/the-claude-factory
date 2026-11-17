@@ -89,6 +89,30 @@ class YamlCheckTest(unittest.TestCase):
                     ("official", ["open-spec", "upload"], VALIDATE_POSITION_CONDITION),
                 )
 
+    def test_syntax_errors_are_findings(self) -> None:
+        """Values strict parsers reject, which validate passed when tested, are findings."""
+        for value in ("[WIP] audits", "`x` audits", "@file x", "%x", ", x", "] x", "*star x"):
+            with self.subTest(value=value):
+                result = self.result(skill(f"description: {value}"))
+                self.assertEqual(rules(result), [("syntax-error", 2)])
+                finding = self.first_finding(result)
+                self.assertEqual(
+                    (finding.get("basis"), finding.get("surfaces"), finding.get("field")),
+                    ("official", ["open-spec", "upload"], "description"),
+                )
+
+    def test_surrogate_escape(self) -> None:
+        """An escape to a lone surrogate is a syntax error, not a crash."""
+        for escape in ("\\udfff", "\\U0000d800"):
+            with self.subTest(escape=escape):
+                result = self.result(skill(f'name: "demo{escape}"'))
+                self.assertEqual(rules(result), [("syntax-error", 2)])
+
+    def test_unsupported_is_not_run(self) -> None:
+        """YAML the reader doesn't support stays not run."""
+        result = self.result(skill("? k\n: v"))
+        self.assertEqual(result.get("status"), "not_run")
+
     def test_no_block_or_not_a_mapping(self) -> None:
         """A list as the root, and a file whose first line isn't the marker, are not run."""
         for content in (skill("- a"), "\n---\nname: a\n---\n"):

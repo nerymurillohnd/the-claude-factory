@@ -26,6 +26,8 @@ type Rule = Literal[
 
 MAX_DEPTH = 100
 MAX_CODE_POINT = 0x10FFFF
+# UTF-16 surrogates, which no UTF-8 text can hold on their own.
+SURROGATES = (0xD800, 0xDFFF)
 BLANKS = " \t"
 # Characters a plain scalar can't start with; `-`, `?` and `:` can, when a non-blank follows.
 PLAIN_START_INDICATORS = frozenset(",[]{}#&*!|>'\"%@`")
@@ -318,5 +320,7 @@ class Source:
         point = int(digits, 16)
         if point > MAX_CODE_POINT:
             self.fail("syntax-error", f"an escape beyond Unicode `\\{code}{digits}`", line_i, k)
+        if SURROGATES[0] <= point <= SURROGATES[1]:
+            self.fail("syntax-error", f"a lone surrogate `\\{code}{digits}`", line_i, k)
         out.append(chr(point))
         return k + 2 + width

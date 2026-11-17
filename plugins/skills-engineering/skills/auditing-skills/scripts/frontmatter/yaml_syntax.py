@@ -2,8 +2,10 @@
 
 validate reports a missing block and a root that isn't a mapping, so those give `not_run`. Four
 failures it passes, and Claude Code accepts, are findings: packaging and upload reject them. An
-unclosed quote and a tab in the indentation are findings too, because validate reports them
-only in some positions (on 2.1.326, not a quote inside `[ ]` or a tab before a nested key).
+unclosed quote, a tab in the indentation and other syntax errors are findings too, because
+validate reports them only in some positions (on 2.1.326, not a quote inside `[ ]`, a tab before
+a nested key, or a value starting with `[`, `` ` `` or `@`). YAML the reader doesn't support,
+and nesting past its depth limit, give `not_run`.
 """
 
 from typing import Final
@@ -56,6 +58,11 @@ REPORTED: Final[dict[str, tuple[Basis, str, str]]] = {
         "Indent with spaces: YAML forbids tabs in indentation.",
         VALIDATE_POSITION_CONDITION,
     ),
+    "syntax-error": (
+        "official",
+        "Valid YAML here; quote a value that is meant as text.",
+        VALIDATE_POSITION_CONDITION,
+    ),
 }
 
 
@@ -94,6 +101,8 @@ def _not_run(ctx: Context, reason: str) -> CheckResult:
 def _error_finding(loaded: Loaded, error: ReadError) -> Finding:
     """The finding for one of the reported failures."""
     basis, expected, condition = REPORTED[error.rule]
+    if error.rule == "syntax-error":
+        expected = f"Valid YAML, not {error.message}; quote a value that is meant as text."
     return Finding(
         check=CHECK,
         rule=error.rule,

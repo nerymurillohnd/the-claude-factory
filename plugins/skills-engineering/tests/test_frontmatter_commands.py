@@ -88,7 +88,7 @@ class PlaybookTest(unittest.TestCase):
 
 @unittest.skipUnless(shutil.which("claude"), "needs the claude command")
 class CopyAndValidateTest(unittest.TestCase):
-    """FM-1: copy the skill into a temporary plugin so validate reads its SKILL.md."""
+    """Copy the skill into a temporary plugin so validate reads its SKILL.md."""
 
     def copy(self, plugin: Path, folder: Path, name: str) -> None:
         """Make the skills folder and copy one skill folder into it."""
@@ -143,7 +143,7 @@ class CopyAndValidateTest(unittest.TestCase):
 
 
 class KeysAndFolderTest(unittest.TestCase):
-    """FM-11's keys with their lines, and FM-6's folder name."""
+    """The top-level keys with their lines, and the folder name."""
 
     def run_on(self, command: str, folder: str, data: bytes) -> str:
         """Write <tmp>/<folder>/SKILL.md and run the command on it."""

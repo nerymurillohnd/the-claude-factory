@@ -59,16 +59,17 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 
 - Command: `python3 <entry> check frontmatter.yaml <SKILL.md>`.
 - What it checks: the frontmatter against strict YAML, because Claude Code's parser accepts some YAML that packaging, uploads and other parsers reject, and a skill whose YAML doesn't parse still loads, with no fields set.
-- `claude plugin validate` already reports a missing block and a root that isn't a mapping; this check adds four failures validate passes, an unclosed quote and a tab in the indentation, which validate reports only in some positions, and bytes that aren't UTF-8.
+- `claude plugin validate` already reports a missing block and a root that isn't a mapping; this check adds four failures validate passes, an unclosed quote, a tab in the indentation and other syntax errors, which validate reports only in some positions, and bytes that aren't UTF-8.
 - Reading the result:
   - `duplicate-key`: a key appears twice; Claude Code keeps the last value.
   - `colon-in-value`: `: ` inside a plain value, or a plain value ending with `:`.
   - `unclosed-flow`: a `[` or `{` that never closes, at the line it opens on.
   - `key-under-scalar`: a key indented under a key that already has a value.
   - `unclosed-quote` and `tab-indent`: a quote that never closes, and a tab before a line's content. validate reports them only in some positions, and not, for example, a quote inside `[ ]` or a tab before a nested key; where it reports one, Claude Code loads the skill with no fields set, so read validate's output for the file too.
-  - A finding on any of these six means packaging and uploads reject the file, while Claude Code may still load it.
+  - `syntax-error`: any other text strict YAML rejects, such as a value starting with `[`, `` ` ``, `@`, `%` or `*`; `expected` names what the reader found. validate reports such errors only in some positions too.
+  - A finding on any of these seven means packaging and uploads reject the file, while Claude Code may still load it.
   - `not-utf8`: the first byte that isn't UTF-8, in hex; Claude Code replaces such bytes without a word.
-  - `not_run` because there is no frontmatter block or its root isn't a mapping: read validate's output for that file instead. `not_run` because the reader can't read the YAML names the line; validate's output decides it.
+  - `not_run` because there is no frontmatter block or its root isn't a mapping: read validate's output for that file instead. `not_run` because the reader can't read the YAML, which is YAML it doesn't support or nesting deeper than 100 levels, names the line; validate's output decides it.
   - `data.close_line`: the line of the closing `---`.
 - Goes to: `frontmatter-description` and `runtime-contract`.
 
@@ -215,14 +216,16 @@ These commands need a POSIX shell, with `cp`, `awk`, `basename` and `dirname`; w
 
 - Command: `awk 'NR==1 && !/---[[:space:]]*$/{exit} NR>1 && /^---[[:space:]]*$/{exit} NR>1 && /^[^[:space:]#]/{print NR": "substr($(0),1,80)}' "<SKILL.md>"`.
 - What it checks: each line of the frontmatter that starts a top-level key, as `<line>: <text>`, cut at 80 characters, because Claude Code ignores a field it doesn't recognize without a word, and uploads reject any field outside the open specification's six.
-- No command reports unknown keys: validate passed a made-up key with `--strict` when tested. This command lists them for the reviewer to compare with its field tables, by the skill's origin. It prints nothing when the file has no frontmatter block.
+- No command reports unknown keys: validate passed a made-up key with `--strict` when tested, so this command is the only source.
+- Reading the result: one line per key; the reviewer compares each key with its field tables, by the skill's origin. Nothing printed means the file has no frontmatter block, which validate reports.
 - Goes to: `frontmatter-description`.
 
 ### The folder name
 
 - Command: `basename "$(dirname "<SKILL.md>")"`.
 - What it checks: the name of the folder that holds the audited `SKILL.md`, as written, capitals kept.
-- No command reports it. Read it against the location recorded in step 2: `synced`, in any capitalization, in a personal, project or managed location, and `anthropic-skills` or a name starting with `anthropic-skills:` outside a plugin. The reserved words in `name` come from `frontmatter.name`.
+- No command reports it, so this command is the only source; the reserved words in `name` come from `frontmatter.name`.
+- Reading the result: the folder name, read against the location recorded in step 2: `synced`, in any capitalization, in a personal, project or managed location, and `anthropic-skills` or a name starting with `anthropic-skills:` outside a plugin.
 - Goes to: `runtime-contract`.
 
 ## Dependencies

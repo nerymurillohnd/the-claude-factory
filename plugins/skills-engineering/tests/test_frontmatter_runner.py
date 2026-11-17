@@ -17,6 +17,10 @@ import unittest
 
 from frontmatter_helpers import SCRIPTS, is_list, parse_object, run_python
 
+sys.path.insert(0, str(SCRIPTS))
+
+from frontmatter.results import is_removable
+
 PREFIX = "auditing-skills-fm-"
 MARKER = ".auditing-skills-results"
 PYTHON_311 = Path("/usr/bin/python3.11")
@@ -224,8 +228,14 @@ class RunnerTest(unittest.TestCase):
         self.assertEqual((code, out), (0, f"removed {folder}\n"), err)
         self.assertFalse(folder.exists())
 
+    def test_root_and_home_are_never_removable(self) -> None:
+        """/ and the home folder fail the removal check, tested in process, never by cleaning."""
+        for target in (Path("/"), Path.home()):
+            with self.subTest(target=target):
+                self.assertFalse(is_removable(target))
+
     def test_clean_refuses_what_it_did_not_create(self) -> None:
-        """/, the home folder, the cwd, a symlink, and a prefixed folder with no marker survive."""
+        """A throwaway home, the cwd, a symlink, and a prefixed folder with no marker survive."""
         folder, _ = self.run_all()
         link = self.temp_root / f"{PREFIX}link"
         link.symlink_to(folder, target_is_directory=True)
@@ -233,7 +243,10 @@ class RunnerTest(unittest.TestCase):
         unmarked.mkdir()
         cwd = self.tmp / "cwd"
         cwd.mkdir()
-        for target in (Path("/"), Path.home(), cwd, link, unmarked):
+        home = self.tmp / "home"
+        home.mkdir()
+        self.env["HOME"] = str(home)
+        for target in (home, cwd, link, unmarked):
             code, out, _ = self.entry_run("clean", str(target), cwd=cwd)
             self.assertEqual((code, out), (2, ""), target)
             self.assertTrue(target.exists(), target)

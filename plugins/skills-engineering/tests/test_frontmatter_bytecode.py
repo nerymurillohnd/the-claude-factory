@@ -18,6 +18,7 @@ IN_PROCESS = (
     "test_frontmatter_foundation",
     "test_frontmatter_reader",
     "test_frontmatter_reader_advanced",
+    "test_frontmatter_runner",
 )
 
 
