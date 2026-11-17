@@ -116,6 +116,7 @@ Area 1, supporting files and the packaging boundary:
 - [ ] Everything the skill needs sits inside its boundary and every dependency is declared (1.1).
 - [ ] Every packaging instruction and every archive listing in the prompt matches the route it targets, and an unsourced layout is reported as unverified (1.2).
 - [ ] Mapped every link among the skill's files: every file Claude must open, reference or asset, is linked directly from `SKILL.md`, no file is orphaned, every path is written from the skill root and names a real file, and no URL is the only home of what the skill needs (1.3).
+- [ ] Judged the layout by its roles, not by folder names: every file sits where its role and reader match its folder, readers and domains are kept apart where the skill needs them apart, and every link matches its file name letter for letter (1.4).
 
 Area 2, paths and variable substitution:
 - [ ] Every variable is one that exists for this skill's route and keeps no state where it moves on update (2.1).

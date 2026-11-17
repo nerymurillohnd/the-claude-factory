@@ -11,6 +11,7 @@ This file teaches you how to audit whether a skill's files resolve, package, loa
   - 1.1 Files inside the boundary
   - 1.2 Upload and archive layouts
   - 1.3 How the skill's files reach each other
+  - 1.4 How the skill's files are organized
 - 2. Paths and variable substitution
   - 2.1 Path variables
   - 2.2 Where substitution happens
@@ -158,6 +159,28 @@ When you audit:
 - Flag each path that isn't written from the skill root, or that names no file in the skill.
 - Flag each URL that carries something the skill needs to work, and recommend moving that content into a reference, keeping the URL as a cited source. On a skill that targets the Claude API, flag every step that needs the network.
 - Recommend, where a reference uses an asset that `SKILL.md` already links, the second link at that step, so both ends point to the file.
+
+### 1.4 How the skill's files are organized
+
+The layout is free. The Agent Skills specification says "A skill directory may contain any files and directories beyond the required `SKILL.md`. The conventions below are recommendations for organizing common types of content", and describes `scripts/` as executable code, `references/` as "additional documentation that agents can read when needed" (with `REFERENCE.md`, `FORMS.md` and domain files as its examples) and `assets/` as static resources. Anthropic's best practices keep `FORMS.md` and `reference.md` at the skill root next to `SKILL.md`. A layout is never a defect because it departs from these names (§1.1).
+
+What the layout must do is let Claude find the right file and tell from where a file sits what it is for. Anthropic's best practices say "Claude navigates your skill directory like a filesystem" and "Organize for discovery: Structure directories by domain or feature", with `reference/finance.md` as good and `docs/file1.md` as bad. Inside one skill, a folder's role is a promise: once the skill gives a folder one role, such as one subagent's reference per area, a file with another role or another reader placed there is taken for that role, by Claude and by whoever maintains the skill (inference). A skill whose files have different readers, such as the main session and the subagents it briefs, keeps each reader's files apart (recommendation, inferred from the organize-by-domain guidance).
+
+A link also has to match the file name letter for letter. On a case-sensitive file system, such as Linux's, `reference.md` doesn't open `REFERENCE.md`; on a case-insensitive one, such as macOS's default, it does, so the mismatch passes on the author's machine and breaks elsewhere (general file-system behavior; no Claude source states it).
+
+Recognize the difference:
+
+**Misleading:** a skill whose `references/` holds one subagent reference per area also keeps there the main session's run book, which no subagent reads.
+
+**Clear:** the run book sits at the skill root next to `SKILL.md`, in capitals like `FORMS.md`, and `references/` holds only the subagent references.
+
+When you audit:
+
+- Never flag a layout for departing from `scripts/`, `references/` and `assets/`, or for keeping guides at the root, and leave where an example sits out of this judgment: that depends on how Claude uses the example, not on the layout.
+- Map each folder's role from the files it holds and from how `SKILL.md` describes them. Flag each file whose role or reader differs from its folder's role everywhere else in the skill, naming who reads it, and recommend the folder or root location that matches its role.
+- Flag a folder that mixes files for different readers when the skill tells each reader to read only its own, and recommend one place per reader.
+- Flag a folder that mixes several domains when the task needs one domain at a time, and recommend one file or subfolder per domain.
+- Compare each link's spelling, letter case included, with the file listing in the prompt or your reading of the skill. Flag every mismatch as a link to a missing file on case-sensitive file systems, even when it opens on the author's machine.
 
 ---
 
@@ -613,7 +636,7 @@ Classify each defect by what it does to the skill on the surfaces it targets. As
 
 1. Does a target surface fail to discover the skill, fail to load it, reject it, or fail to run its main action? Assign Critical. For example: a cross-marketplace dependency declared in `plugin.json` without the allowlist entry, so the plugin fails to load after install; a skill whose main action invokes a skill with `disable-model-invocation: true`, which Claude Code blocks; a plugin dependency above the plugin root that the cache doesn't copy; a top-level `bin/` in a plugin that targets the Claude app; a skill meant for cloud sessions that lives only in `~/.claude/skills/`; an injected command no rule allows, which aborts the skill outside auto mode; a plugin-root variable in a non-plugin skill's required command.
 2. Does it load but fail silently, make Claude do something else, or lose a required behavior on a target? Assign High. For example: a guard hook that covers only one of the paths that reach the skill; a forked or preloaded skill that needs `AskUserQuestion`; a step that reads a background forked skill's result before it arrives; a bundled hook script reached through a relative path or the project-directory variable; a skill invoked from a subagent whose tools lack `Skill`; usage instructions that stack skills on a `-p` target; a link to a file the skill doesn't contain; a required step that fetches a URL on the Claude API, which has no network; a preloaded skill disabled on a target, skipped with only a debug-log warning; a project-directory variable a synced terminal session leaves literal; a bundled-script rule whose path doesn't match the body, so the script prompts; a forked skill that needs a tool the background set lacks; a same-named skill that runs instead of this one.
-3. Does it work, but cost extra steps, fragile assumptions or harder maintenance? Assign Medium. For example: an unconstrained dependency whose names the plugin calls; a skill hook's behavior in a forked run or a subagent, unverified; a `dependencies` entry no component uses; state written under the plugin root; a broad `Bash` grant where an exact rule would do; one archive layout reused across surfaces; a reference or asset reached only through another reference.
+3. Does it work, but cost extra steps, fragile assumptions or harder maintenance? Assign Medium. For example: an unconstrained dependency whose names the plugin calls; a skill hook's behavior in a forked run or a subagent, unverified; a `dependencies` entry no component uses; state written under the plugin root; a broad `Bash` grant where an exact rule would do; one archive layout reused across surfaces; a reference or asset reached only through another reference; a file kept in a folder whose role or reader is another's.
 4. Otherwise, assign Low. For example: a fixed install path that appears only in an illustrative comment Claude never runs.
 
 Tie-breaks:
