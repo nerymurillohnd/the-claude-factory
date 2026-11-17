@@ -5,9 +5,9 @@
 **Goal:** Deliver the 14 frontmatter checks (spec FM-1 to FM-14), each one stable, read-only and release ready.
 - Each check covers only what its spec's Coverage line marks as missing. Whatever `claude plugin validate` already reports stays with that command.
 - FM-1 and FM-11 are covered by commands. FM-6 is covered by a command for the folder and by `frontmatter.name` for the name.
-- The rest are standalone Python scripts under `skills/auditing-skills/scripts/frontmatter/`, using only the standard library.
+- The rest are standard-library Python modules in the package `skills/auditing-skills/scripts/frontmatter/`, run through one thin entry script, `scripts/frontmatter-checks.py`.
 - Each one is wired in the same commit that adds it: its logic goes into `MECHANICAL-CHECKS.md`, and its file goes into `SKILL.md`'s file list.
-- One runner, `scripts/frontmatter/run.py` (Task 1B), runs every frontmatter script in one call, writes each result to a per-run temporary folder and prints a short summary with that folder's path. The main session hands each reviewer its part and removes the folder through the runner when the audit ends.
+- The entry's `run` subcommand (Task 1B) runs every frontmatter check in one call, writes each result to a per-run temporary folder and prints a short summary with that folder's path. The main session hands each reviewer its part and removes the folder through the runner when the audit ends.
 
 **Architecture:**
 - The scripts share one `common/` package. Its own frontmatter reader handles the YAML forms skills use, with file positions, styles, anchors and tags. Each script prints one JSON result.
@@ -38,7 +38,20 @@
 ## Global Constraints
 
 - **Python floor 3.12**, the marketplace's floor for plugin Python (`ruff.toml` `per-file-target-version`, `pyrightconfig.json` `pythonVersion`).
-  - Each script checks the version before any other import and prints `<script>: needs Python 3.12 or later; this is X.Y.Z.` to stderr, exit 2.
+  - The thin entry checks the version before it imports any check module and prints `frontmatter-checks.py: needs Python 3.12 or later; this is X.Y.Z.` to stderr, exit 2. The guard can't sit in a file that also uses 3.12 syntax: Python compiles the whole file first, so `type Alias = int` on 3.11 stops with `SyntaxError` and exit 1 before the guard runs (tested on `/usr/bin/python3.11`). The entry therefore uses only syntax older Pythons parse.
+  - The guard compares with a named constant, `MINIMUM_PYTHON = (3, 12)` and `if sys.version_info < MINIMUM_PYTHON:`. Written with the literal, Ruff's UP036 ("Version block is outdated for minimum Python version") fires under the py312 target; with the constant, Ruff, `ruff format` and basedpyright are clean (tested).
+- **`allowed-tools` (Nery, 2026-11-17): one wildcard rule per interpreter for the one entry**, not one per command. `SKILL.md`'s frontmatter gets `allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py *), Bash(python ${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py *)`, plus the same two with the `${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py` fallback path. `SKILL.md` and `MECHANICAL-CHECKS.md` write out each exact command.
+  - Sources: "A `*` in a Bash rule matches any text, including spaces" and "Claude Code matches everything before the first `*` as written" (permissions, "Wildcard patterns"); with the rule and the body using the same `${CLAUDE_SKILL_DIR}` path, "the script runs without prompting" (skills, "Available string substitutions"). The rule never covers a chained command: "a rule like `Bash(safe-cmd *)` won't give it permission to run the command `safe-cmd && other-cmd`" (permissions, "Compound commands").
+  - Why not a repository `settings.json` or `settings.local.json`: those files reach only sessions opened in this repository, never a third party's machine, and in project cloud threads "none of a repository's `.claude/settings.json` permission rules, hooks, or `env` apply" (settings, "Settings in cloud sessions"). `allowed-tools` travels with the skill.
+  - Known costs, stated in `MECHANICAL-CHECKS.md`: since 2.1.325 "scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks; add `Skill(name)` to `permissions.allow` to run it unattended" (changelog), and under managed `allowManagedPermissionRulesOnly` plugins outside an official or vouched source lose the pre-approval (changelog).
+  - `clean` deletes, and the wildcard lets it run without a prompt. That is acceptable only because `clean` refuses any folder without its prefix and marker (Task 1B, Review Focus 4).
+  - Unverified, settled in Task 0: whether a quoted path in the body (`python3 "/path/…"`) matches the unquoted rule. If it doesn't, the body writes the path unquoted, as the docs' example does, and quoting moves to a fallback for paths with spaces.
+- **Packages and the entry (Python docs, tested on 3.12, 3.13 and 3.15):**
+  - Layout: `scripts/frontmatter-checks.py` (the only file run by path), `scripts/common/` and `scripts/frontmatter/`, each package with its own `__init__.py`. A regular package "is typically implemented as a directory containing an `__init__.py` file" (Python reference, "The import system", Regular packages); no folder relies on an implicit namespace package, which Ruff's INP001 also rejects.
+  - The entry, in this order: imports `pathlib`, `runpy` and `sys`; runs the version guard; sets `sys.dont_write_bytecode = True`; inserts its own folder with `sys.path.insert(0, str(Path(__file__).resolve().parent))`; then hands over with `runpy.run_module("frontmatter.cli", run_name="__main__", alter_sys=True)`. This is the repo's own thin-entry pattern (`scripts/release/release-status.py`), and Ruff's E402 exempts `sys.path` changes between imports, so nothing needs a suppression.
+  - Why the explicit path: "The first entry in the module search path is the directory that contains the input script" (Python docs, "The initialization of the sys.path module search path"), and under `-I` "sys.path contains neither the script's directory nor the user's site-packages directory" (Python docs, command line, `-I`). The explicit insert finds `common/` from any working directory, with or without `-I`, and never relies on `PYTHONPATH`. Inserting at position 0 also keeps another package named `common` on the user's path from shadowing ours.
+  - No bytecode in the installed plugin: `sys.dont_write_bytecode`: "If this is true, Python won't try to write .pyc files on the import of source modules … you can set it yourself" (Python docs, `sys`). Set in the entry, it holds however the entry is launched, so the documented command and any `allowed-tools` rule need no `-B`. Tested: without it, a run wrote `scripts/common/__pycache__/`; with it, nothing. A read-only skill folder doesn't make Python fail either way (tested, exit 0); the reason is a clean plugin cache on the user's machine.
+  - The repository's `.gitignore` already lists `__pycache__/` and `*.pyc` (checked with `git check-ignore`).
 - **Python 3.12 idioms allowed:** PEP 695 `type` aliases and type parameters, `typing.override`, PEP 701 f-strings, `match`, dataclasses with `slots=True`.
 - **Python 3.13+ APIs and syntax banned:**
   - `warnings.deprecated`, `copy.replace`, `TypeIs`, `ReadOnly`;
@@ -52,7 +65,7 @@
 - **Explicit encoding on every read and write.**
   - Each script reconfigures stdout to UTF-8 with `errors="replace"`, wrapped for `AttributeError` and `ValueError`, as Anthropic's `math-proof` `ledger.py` does for Windows consoles.
   - Python 3.15 "What's New", PEP 686: "For best compatibility between versions of Python, ensure that an explicit encoding argument is always provided."
-- **Invocation:** `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter/<check>.py" "<SKILL.md>"`, the pattern of the skills docs ("Generate visual output") and of Anthropic's plugins.
+- **Invocation:** `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" <subcommand> …`, the pattern of the skills docs ("Generate visual output") and of Anthropic's plugins. Subcommands: `run <SKILL.md>`, `show <folder> …`, `clean <folder>` (Task 1B) and `check <check-id> <SKILL.md>` for one check alone.
   - Never a bare relative path such as `python3 scripts/...` in Claude Code. The skills docs ("Working directory"): "Claude Code runs each command in the session shell's current working directory. That directory moves when Claude runs `cd`. Use `${CLAUDE_SKILL_DIR}` or `${CLAUDE_PROJECT_DIR}` in paths that must resolve the same way every time." A bare path resolves against the audited project, not the skill.
   - Paths relative to the skill root are the open standard's form (agentskills.io "Using scripts": "script execution paths (in code blocks) are relative to the **skill directory root**, because the agent runs commands from there"). They fit hosts that run commands from the skill folder. auditing-skills runs only in Claude Code (it calls `claude plugin` and subagents), so it needs no fallback for other hosts.
   - Fallback when the variable is left unfilled (the path before `/scripts` doesn't exist): `${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/...`, as Anthropic's `math-proof` plugin does for its `ledger.py`. If both are unfilled, the check is `not_run` and the main session says so.
@@ -78,7 +91,7 @@
   - The runner creates its folder with `tempfile.mkdtemp(prefix="auditing-skills-fm-")`, which follows `TMPDIR`, then `TEMP`, then `TMP`, then the platform list (Python `tempfile.gettempdir`). The random suffix is the run id. The folder is "readable, writable, and searchable only by the creating user ID" (Python `tempfile.mkdtemp`).
   - It prints the folder's absolute path, and `show` and `clean` take that path as an argument and never recompute it. The sandboxing docs ("Temporary directories") say sandboxed and unsandboxed commands "resolve `$TMPDIR` to different directories" while filesystem isolation is on.
   - Not `${CLAUDE_PLUGIN_DATA}`: the plugins docs describe it as "a directory that survives updates, for `node_modules`, virtual environments, and caches", so per-audit results would stay there across sessions.
-  - The main session reads results only through `run.py show`, a Bash command, never with the Read tool, because reads outside the working directory and additional directories prompt (permissions docs). Reviewers never open the folder; each gets its part in its brief.
+  - The main session reads results only through `frontmatter-checks.py show`, a Bash command, never with the Read tool, because reads outside the working directory and additional directories prompt (permissions docs). Reviewers never open the folder; each gets its part in its brief.
 - **Prerequisites:** a check whose prerequisite failed returns `status: not_run` with `reason` naming the check that failed, for example `"frontmatter.yaml failed"`.
 - **Identifiers:** check ids are `frontmatter.<slug>`. FM-n appears only in this plan, never in plugin files, because no plugin file names a maintainer validator rule id.
 - **Field tables:** only in `common/fields.py`, taken from the Claude Code 2.1.326 docs (`/en/skills` Frontmatter reference), `agentskills.io/specification` and anthropics/skills `quick_validate.py`.
@@ -135,7 +148,7 @@ Each entry then holds:
 1. A `SKILL.md` that isn't UTF-8 (UTF-16 with a BOM, Latin-1) gives `frontmatter.yaml` the rule `not-utf8` and no traceback (Task 4).
 2. Recursive or deeply nested YAML (`a: &x [*x]`, 5,000 nested `[`) terminates within 5 s with `too-deep` or `unsupported`, and no other script hangs (Task 3).
 3. Characters outside the Basic Multilingual Plane (emoji) in `description` or `when_to_use`: lengths are in code points, with `utf16_length` in `data` (Task 6).
-4. `run.py clean` given a folder it did not create (`/`, the home folder, the working directory, a symlink to a results folder, a folder with the prefix but no marker) removes nothing and exits 2 (Task 1B).
+4. `frontmatter-checks.py clean` given a folder it did not create (`/`, the home folder, the working directory, a symlink to a results folder, a folder with the prefix but no marker) removes nothing and exits 2 (Task 1B).
 5. CRLF, a BOM and a trailing space on the markers give the same reader result as clean LF (Task 2). Validate's handling of them, from Task 0, decides whether Task 9 adds a command for them.
 
 ---
@@ -156,7 +169,8 @@ No code ships from this task. Its results fill the Appendix, and the later tests
 - [ ] **Step 2:** With ruamel.yaml 0.19.1 (`uv run`), confirm that `a: foo:` and `a: x: y` fail to parse. Then settle each of these and record its source:
   - the separator Claude Code puts between `description` and `when_to_use` (docs: "Appended to `description`");
   - whether `Bash` and `Bash(*)` both approve every command (`/en/permissions`);
-  - whether plugin skills that reach claude.ai hit the six-field upload rule (support.claude.com). The spec says they do; this is unverified.
+  - whether plugin skills that reach claude.ai hit the six-field upload rule (support.claude.com). The spec says they do; this is unverified;
+  - with a throwaway plugin skill declaring `allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/x.py *)`, whether `python3 "<expanded path>/scripts/x.py" a` and `python3 <expanded path>/scripts/x.py a` each run without a prompt in `claude -p` with no other allow rules.
 - [ ] **Step 3:** If any result contradicts the spec, stop and report it to Nery with both texts quoted.
 - [ ] **Step 4:** Commit the Appendix: `git commit -m "Record the loader behaviors the frontmatter checks rely on"`.
 
@@ -215,7 +229,7 @@ Steps:
   - `MODEL_VALUES`: `default`, `best`, `fable`, `sonnet`, `opus`, `haiku`, `sonnet[1m]`, `opus[1m]`, `opusplan`, `inherit`.
   - `TEXT_FIELDS`: `name`, `description`, `when_to_use`, `argument-hint`, `model`, `effort`, `context`, `agent`, `shell`, `license`, `compatibility`.
   - `SOURCES`: a dict of rule area to doc URL.
-- `frontmatter_helpers.run_check(script: str, skill_md: str | bytes, *, folder: str = "demo-skill", args: tuple[str, ...] = (), python: str = sys.executable) -> tuple[int, dict[str, object]]`. It writes `<tmp>/<folder>/SKILL.md`, runs the script and parses stdout. `rules(result) -> list[tuple[str, int | None]]`.
+- `frontmatter_helpers.run_check(check_id: str, skill_md: str | bytes, *, folder: str = "demo-skill", args: tuple[str, ...] = (), python: str = sys.executable) -> tuple[int, dict[str, object]]`. It writes `<tmp>/<folder>/SKILL.md`, runs `frontmatter-checks.py check <check_id>` with that file and parses stdout. `rules(result) -> list[tuple[str, int | None]]`.
 
 - [ ] **Step 1: Write the failing tests.** In `test_frontmatter_foundation.py`:
 
@@ -238,7 +252,8 @@ Steps:
   - a missing path exits 2 with empty stdout;
   - a directory exits 2;
   - a symlink `link -> real` gives `folder_name == "link"` and `resolved_folder_name == "real"`;
-  - `/usr/bin/python3.11` gets exit 2 and the floor message, with the test skipped when that interpreter is absent.
+  - `/usr/bin/python3.11` gets exit 2 and the floor message, with the test skipped when that interpreter is absent;
+  - run from an unrelated working directory, and again under `python3 -I`, the entry finds its packages, and no `__pycache__` appears under `scripts/`.
 - [ ] **Step 2:** Run `python3 -m unittest discover -s plugins/skills-engineering/tests -p 'test_frontmatter_*.py' -v`. Expected: the tests fail with a missing module.
 - [ ] **Step 3:** Implement the interfaces.
 - [ ] **Step 4: Wire.** Add the shared section from "Mechanical-checks entry shape" to `MECHANICAL-CHECKS.md`, before any check entry, and list `scripts/common/` in `SKILL.md`'s file list as shared by every frontmatter script.
@@ -248,18 +263,18 @@ Steps:
 ### Task 1B: Runner and results lifecycle
 
 **Files:**
-- Create: `.../auditing-skills/scripts/common/registry.py`, `.../auditing-skills/scripts/frontmatter/run.py`
+- Create: `.../auditing-skills/scripts/common/registry.py`, `.../auditing-skills/scripts/frontmatter-checks.py`, `.../auditing-skills/scripts/frontmatter/cli.py`
 - Test: `tests/test_frontmatter_runner.py`
 
 **Interfaces (produced):**
 - `registry.CheckSpec(check: str, module: str, receivers: tuple[str, ...], requires: tuple[str, ...] = ())`, frozen and slotted. `registry.CHECKS: tuple[CheckSpec, ...]`, in run order, empty at this task; each later task appends its check. `requires` names the checks whose failure makes this one `not_run`.
-- Each check module exposes `check(ctx: Context) -> CheckResult`, and its `main` calls `cli.run`. The runner imports the modules and calls `check` in-process: no subprocess.
-- `run.py run <SKILL.md>`:
+- Each check module exposes `check(ctx: Context) -> CheckResult`. `frontmatter/cli.py` parses the subcommands, imports the check modules and calls `check` in-process: no subprocess. `check <id>` goes through `cli.run`, so a single check prints exactly what `run` writes to its file.
+- `frontmatter-checks.py run <SKILL.md>`:
   - sweeps folders in `tempfile.gettempdir()` named `auditing-skills-fm-*` that hold the marker `.auditing-skills-results` and are older than 24 hours, skipping symlinks;
   - creates the results folder and the marker, writes `<check>.json` per check and `summary.json` (check, status, finding count, receivers);
   - prints one line per check, `<check> <status> <n> finding(s) -> <receivers>`, then `results: <absolute folder path>`. Exit 0; exit 2 if the file can't be read or the folder can't be created, with the folder removed.
-- `run.py show <folder> (--check <check> | --reviewer <name>)`: prints the matching results, one JSON line each. Exit 2 for a folder without the marker or prefix, or an unknown check or reviewer.
-- `run.py clean <folder>`: removes the folder only when it is a real directory (not a symlink) directly under a temp root, named with the prefix, and holding the marker; prints `removed <path>`. Otherwise removes nothing and exits 2.
+- `frontmatter-checks.py show <folder> (--check <check> | --reviewer <name>)`: prints the matching results, one JSON line each. Exit 2 for a folder without the marker or prefix, or an unknown check or reviewer.
+- `frontmatter-checks.py clean <folder>`: removes the folder only when it is a real directory (not a symlink) directly under a temp root, named with the prefix, and holding the marker; prints `removed <path>`. Otherwise removes nothing and exits 2.
 
 - [ ] **Step 1: Write the failing tests**, with a throwaway check registered in the test:
   - `run` prints one line per registered check plus the `results:` line, and the folder holds `summary.json`, the marker and one file per check;
@@ -272,7 +287,7 @@ Steps:
   - with `TMPDIR` pointed at a test folder, the results folder is created there.
 - [ ] **Step 2:** Run the tests. Expected: they fail with a missing module.
 - [ ] **Step 3:** Implement the interfaces. Use `shutil.rmtree` only after the checks in `clean`, and never follow symlinks.
-- [ ] **Step 4: Wire.** In `MECHANICAL-CHECKS.md`'s shared section, add the runner command, how to read its summary, `show` and `clean`, and the delivery check before dispatch. In `SKILL.md`, step 3 runs the runner, each reviewer's brief gets its `show --reviewer` output, and the report step ends with `clean`. Re-measure the first 5,000 tokens with `claude plugin details`.
+- [ ] **Step 4: Wire.** In `MECHANICAL-CHECKS.md`'s shared section, add the runner command, how to read its summary, `show` and `clean`, and the delivery check before dispatch. In `SKILL.md`, add the `allowed-tools` rules from Global Constraints to the frontmatter, written as Task 0 found they match; step 3 runs the runner, each reviewer's brief gets its `show --reviewer` output, and the report step ends with `clean`. Re-measure the first 5,000 tokens with `claude plugin details`.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, then ruff, basedpyright, `npm run lint:frontmatter` and `claude plugin validate --strict plugins/skills-engineering`. Expected: all pass, 0 findings, `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add the frontmatter checks runner and its results lifecycle"`.
 
@@ -669,7 +684,7 @@ Each command's entry in `MECHANICAL-CHECKS.md` follows "Mechanical-checks entry 
 ### Task 10: Release verification
 
 - [ ] **Step 1:** Run `npm run test:plugins`, the full suite on `/usr/bin/python3.12` and `/usr/bin/python3.13`, and the suite under `uv run` (3.15 with ruamel). Expected: all pass. Show the raw output.
-- [ ] **Step 2: Corpus run.** Run `run.py run`, then `run.py clean`, and the commands on every `SKILL.md` in `plugins/*/skills/*/` and in the synced skills under `/root/.claude/`. Expected:
+- [ ] **Step 2: Corpus run.** Run `frontmatter-checks.py run`, then `frontmatter-checks.py clean`, and the commands on every `SKILL.md` in `plugins/*/skills/*/` and in the synced skills under `/root/.claude/`. Expected:
   - exit 0 everywhere;
   - no traceback;
   - under 1 s per file;
@@ -689,13 +704,13 @@ Each command's entry in `MECHANICAL-CHECKS.md` follows "Mechanical-checks entry 
   - `SKILL.md` lists every script, reference and asset under its phase or reviewer, one level deep;
   - `SKILL.md`'s first 5,000 tokens hold the whole orchestration. Measure with `claude plugin details`, not by hand.
 - [ ] **Step 5:** Run ruff check, ruff format check and `basedpyright --outputjson` over `plugins/skills-engineering`, plus `claude plugin validate --strict`. Expected: 0 findings and `valid`.
+- [ ] **Step 5a: No-bytecode gate.** Copy the skill folder with `cp -R` to a fresh temp folder, run `frontmatter-checks.py run`, `show` and `clean` from it with `python3` and with `python3 -I`, from a working directory outside it, then run `find <copy> -name __pycache__ -o -name '*.pyc'`. Expected: no output. Show it raw.
 - [ ] **Step 5b: Suppressions gate.** Run `grep -rnE '(noqa|type:[[:space:]]*ignore|pyright:[[:space:]]*ignore)' plugins/skills-engineering --include='*.py'` and `git diff main -- ruff.toml pyrightconfig.json pyproject.toml`. Expected: no grep output, and no diff that adds an ignore, exclude or rule change. Show both raw outputs. Any hit fails the release.
 - [ ] **Step 6: Independent review.** One fresh reviewer on the most capable model reviews the whole branch against this plan and the spec. Fix every confirmed finding and rerun Steps 1 to 5.
 - [ ] **Step 7:** Commit fixes and report to Nery with the raw outputs. No push.
 
 ## Out of scope (next plan)
 
-- `allowed-tools` for the scripts, a separate decision for Nery. The skills docs show the pairing: with `allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/render.sh *)` and the same path in the body, "the script runs without prompting". The costs: since 2.1.325, "scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks" (changelog), and managed `allowManagedPermissionRulesOnly` drops it for plugins outside official or vouched sources. If added, the body's command and the rule must be written identically; whether a quoted path still matches an unquoted rule is unverified.
 - The CHANGELOG entry.
 - The other data domains.
 
