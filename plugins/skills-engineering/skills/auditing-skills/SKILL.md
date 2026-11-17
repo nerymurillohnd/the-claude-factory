@@ -63,7 +63,7 @@ This invocation's arguments: $ARGUMENTS
 
 1. Locate the skill and get every file it includes onto disk, as the gotchas say.
 2. Read the whole skill, its `SKILL.md` and every file it points to, and understand it before you brief anyone: what it does and its purpose, what kind of skill it is, what it contains and how it is composed, where it lives, how it is invoked, and which surfaces load it. Record what it has and what it lacks, such as supporting files, scripts, hooks, subagents that consume it, other skills it invokes and plugin dependencies: step 4 passes this inventory to every reviewer.
-3. Run the mechanical checks the selected reviewers receive, as [MECHANICAL-CHECKS.md](MECHANICAL-CHECKS.md) describes: the command for each check, how to read its result, and what each reviewer receives. Read it in full before running any check, and read it again whenever it is no longer in your context.
+3. Run the mechanical checks the selected reviewers receive, as [MECHANICAL-CHECKS.md](MECHANICAL-CHECKS.md) describes: the command for each check, how to read its result, and what each reviewer receives. Read it in full before running any check, and read it again whenever it is no longer in your context. The frontmatter checks are Python scripts in `scripts/`, and `scripts/common/` holds the reader, result format and command line they share: run the scripts as that file says, and never read their code.
 4. Write one prompt per selected reviewer. Each prompt holds:
    - the skill's name and the absolute path of its directory;
    - where it lives, how it is invoked, which surfaces it targets, and its purpose in one sentence, from step 2;

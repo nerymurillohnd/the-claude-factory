@@ -5,6 +5,7 @@ This file is yours, the orchestrator's: it tells you how to run every mechanical
 ## Contents
 
 - How to run the checks
+- Reading a frontmatter check's result
 - Plugin structure and loading
 - Dependencies
 - Code files
@@ -17,6 +18,24 @@ This file is yours, the orchestrator's: it tells you how to run every mechanical
 Run the checks the selected reviewers receive, and read every result. They need the `claude` command, Claude Code's CLI; where it isn't available, every check below is not run. In each command, `<plugin root>` is the directory that holds the plugin's `.claude-plugin/` folder and `<plugin name>` is the `name` in its `plugin.json`.
 
 A check no command in this file covers is not run: name it to the reviewer as not run, and never measure it by hand, because a figure you estimate reads to the reviewer as measured. A command that fails or is unavailable is also not run: name it with its exit code and message.
+
+## Reading a frontmatter check's result
+
+Each frontmatter check prints one line of JSON and exits 0, whether or not it found anything.
+
+- Exit 2 means the check could not run: stdout is empty and stderr holds one line with the reason. Name the check to its reviewers as not run, with the exit code and that line. Do the same when no Python interpreter is found.
+- `status` is `ran` or `not_run`. `not_run` means a check it depends on failed, and `reason` names that check: name it to its reviewers as not run, with that reason.
+- `skill` is the skill's folder name as given, and `data` holds the check's own measurements, which its entry describes.
+- Each finding holds:
+  - `rule`: the rule it breaks, which the check's entry explains;
+  - `file`, `line` and `column`: where it is, relative to the skill's folder and counted from 1, or `null` when it has no position;
+  - `field`: the frontmatter key, or `null`;
+  - `found`: what the file holds there, cut at 120 characters with `…`, and `found_length`, its full length in characters;
+  - `expected`: what the rule wants, in one sentence;
+  - `basis`: `official` when the docs or the specification state the rule, `convention` when it is a project convention rather than an official rule, and `inference` when it follows from documented behavior without being stated;
+  - `surfaces`: where it applies: `claude-code`; `open-spec`, the Agent Skills specification; `upload`, claude.ai uploads, the Skills API and skill packaging;
+  - `condition`: the case it depends on, or `null` when it always applies.
+- Pass every finding to its reviewers verbatim: add no severity, and drop or merge none. Each reviewer grades findings by its own severity model, from `basis`, `surfaces` and `condition`.
 
 ## Plugin structure and loading
 

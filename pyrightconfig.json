@@ -12,6 +12,17 @@
     ".ruff_cache",
     "scripts"
   ],
+  "executionEnvironments": [
+    {
+      "root": "plugins/skills-engineering/skills/auditing-skills/scripts"
+    },
+    {
+      "root": "plugins/skills-engineering/tests",
+      "extraPaths": [
+        "plugins/skills-engineering/skills/auditing-skills/scripts"
+      ]
+    }
+  ],
   "typeCheckingMode": "all",
   "pythonVersion": "3.12",
   "pythonPlatform": "All",
