@@ -1,6 +1,6 @@
 # Session and workspace
 
-This file teaches you how to recognize the session you write the skill in: its surface, its workspace and the capabilities it gives you, and what they let you save, run and test. It serves workflow steps 1.1, 1.2, 1.3 and 1.7, and step 2.4, where section 4 is settled for the location you choose. Each section gives the facts, why they matter for the skill you write, the questions to answer, and what to do with the answers.
+This file teaches you how to recognize the session you write the skill in: its surface, its workspace and the capabilities it gives you, and what they let you save, run and test. It serves workflow steps 1.1, 1.2, 1.3 and 1.7, and step 2.4, where section 4 is settled for the location you choose.
 
 ## Contents
 
@@ -15,7 +15,7 @@ This file teaches you how to recognize the session you write the skill in: its s
 
 Read it at the start of phase 1, before you open or write a skill file.
 
-Work from two seats and keep them apart. Your seat is the session you write in, which decides what you can read, run, save and test now. The model's seat is each session where it will load the skill, which decides what the skill can rely on. A fact you observe in your session holds for your session only: the user's sessions can load other skills, run other policies and lack the tools you have.
+Keep the two seats of the rule "Two seats" in `SKILL.md` apart: here you establish your own seat, and the questions about the target sessions come back at step 2.4.
 
 Answer each question with evidence you can point to: your system prompt and tool list, an environment variable, the output of a command, or a file. When no evidence settles a question, record it as unknown. Ask the user only when the answer would change what you build or where you save it.
 
@@ -23,7 +23,7 @@ Answer each question with evidence you can point to: your system prompt and tool
 
 ## 1. Identify the surface and session
 
-The surface decides which skills load and which of their features run, so you identify it before anything else. Claude Code runs in the terminal, the IDE extensions, the desktop app, cloud sessions and the cloud threads of a Claude project. Claude.ai chat, Cowork and programs built on the Claude API or the Agent SDK are surfaces with their own rules for skills, which section 2 of `skill-loading.md` lists. A cloud session starts from a fresh clone of the repository, so it holds nothing installed only on the user's machine, and a file you leave uncommitted ends with the container. A non-interactive run, a scheduled task and a routine have no person to answer a question or a permission prompt.
+The surface decides which skills load and which of their features run, so you identify it before anything else. Claude Code runs in the terminal, the IDE extensions, the desktop app, cloud sessions and the cloud threads of a Claude project. Claude.ai chat, Cowork and programs built on the Claude API or the Agent SDK are surfaces with their own rules for skills, which section 2 of `references/environment/skill-loading.md` lists. A cloud session starts from a fresh clone of the repository, so it holds nothing installed only on the user's machine, and a file you leave uncommitted ends with the container. A non-interactive run, a scheduled task and a routine have no person to answer a question or a permission prompt.
 
 Claude Code sets variables you can read from a shell:
 
@@ -47,7 +47,7 @@ Then:
 
 ## 2. Identify the workspace
 
-The working directory decides which project skills, `CLAUDE.md` files and rules load, and where a relative path lands. Claude Code loads project skills from `.claude/skills/` in the start directory and in each parent directory up to the repository root. In a linked git worktree it stops at the worktree root, and from v2.1.277, when the worktree has no `.claude/skills` at its root, it loads the main checkout's project skills instead. A `.claude/skills/` folder below the start directory loads only the first time Claude reads or edits a file in that subdirectory. A `paths` glob in a skill matches only files inside the working directory. A directory added with `--add-dir` or `/add-dir` contributes its `.claude/skills/`, `.claude/commands/` and `.claude/agents/`, while the `permissions.additionalDirectories` setting grants file access and loads none of them.
+The working directory decides which project skills, `CLAUDE.md` files and rules load, and where a relative path lands. Which `.claude/skills/` folders load from it, and when, is in section 1 of `references/environment/skill-loading.md`, which you apply at step 1.4; here you record what the workspace holds.
 
 Ask yourself:
 
@@ -58,13 +58,13 @@ Ask yourself:
 
 Then:
 
-- Run `pwd`, `git rev-parse --show-toplevel`, `git branch --show-current` and `git worktree list` before you choose where to save.
-- List the skills the workspace holds with `find "$(git rev-parse --show-toplevel)" -name SKILL.md -not -path '*/node_modules/*'`, and note which of them your session loaded at startup.
-- Write every save path from the repository root, never from the working directory, so a session started in a subdirectory or a worktree finds the file.
+- Before you choose where to save, list the `SKILL.md` files the workspace holds, outside `node_modules`; step 1.4 maps which of them your session loaded.
+- When the working directory is not inside a git repository, record that there is no repository, branch or worktree.
+- Write each save path as an absolute path: from the repository root for a file inside a repository, from the home directory for a personal skill, and from the working directory when there is no repository. A path relative to the working directory misses for a session started in a subdirectory or a worktree.
 
 ## 3. Identify the capabilities at hand
 
-What you can verify depends on the tools this session gives you. Without a shell you cannot run `claude plugin validate`, a script's tests or a trigger test. Without network access you cannot read the current documentation. Without the `claude` CLI you cannot load the skill in a separate session to test it. The installed Claude Code version decides which features exist, since the documentation marks many features with a minimum version. MCP servers connected to the session appear in your tool list as tools named `mcp__<server>__<tool>`, and a documentation server or a GitHub server changes where you research and read. A check you cannot run here ends as not verified, never as passed.
+What you can verify depends on the tools this session gives you. Without a shell you cannot run `claude plugin validate`, a script's tests or a trigger test. Without network access you cannot read the current documentation. Without the `claude` CLI you cannot load the skill in a separate session to test it. The installed Claude Code version decides which features exist, since the documentation marks many features with a minimum version. MCP servers connected to the session appear in your tool list as tools named `mcp__<server>__<tool>`, and a documentation server or a GitHub server changes where you research and read.
 
 Ask yourself:
 
@@ -76,31 +76,37 @@ Ask yourself:
 
 Then:
 
-- Run `claude --version` and record the version: phase 4 reads the release notes from it.
+- Run `claude --version` and record the version: phase 4 reads the changelog for it.
 - Take the MCP servers from your tool list. Avoid `claude mcp list` for this, because it starts and health-checks each configured server.
 - Write down each check of phase 7 you cannot run here, with the reason, and carry the list to your report.
 
 ## 4. Derive the implications
 
-The environment comes down to three answers: where you can save the skill from this session, what you can test in it, and what you must report as not verified. The answers often differ from what the request assumes. A skill saved in a repository's `.claude/skills/` does not load in a cloud thread of a Claude project, so typing its name there cannot test it, while a non-interactive `claude -p` run started inside the repository is a separate session that loads it. A personal skill written in a cloud session lands in the container's `~/.claude/skills/`, which never reaches the user's machine. A skill meant for claude.ai or the Skills API can be built and packaged here, while the upload stays with the user.
+The environment comes down to three answers: where you can save the skill from this session, what you can test in it, and what you must report as not verified. The answers often differ from what the request assumes. A skill saved in a repository's `.claude/skills/` does not load in a cloud thread of a Claude project, so typing its name there cannot test it. A personal skill written in a cloud session lands in the container's `~/.claude/skills/`, which never reaches the user's machine. A skill meant for claude.ai or the Skills API can be built and packaged here, while the upload stays with the user.
+
+A separate non-interactive run, `claude -p` started in the repository, with `--plugin-dir <plugin folder>` for a plugin skill, is a second session that can load the skill for trigger tests. No official page documents this run inside a cloud container. It was observed loading both the repository's project skills and a `--plugin-dir` plugin's skills in a cloud thread of a Claude project on v2.1.326. Two documented limits apply: a managed `disableSideloadFlags` makes Claude Code reject `--plugin-dir` at startup (v2.1.193 or later), and from v2.1.325 a `.claude/skills/` folder inside a `--plugin-dir` plugin does not load in a session started above that folder, according to the changelog.
 
 Ask yourself:
 
 1. Which locations can be written from this session, and will a file there persist?
 2. Can I load the skill, in this session or a separate one, to run the trigger and behavior tests?
-3. Which checks will end as not verified, and what would the user need to run them?
+3. What would the user need to run each check you listed at step 1.3 as not runnable here?
 
 Then:
 
 - Write down the three answers before phase 2, for each location this session can write and for the location the request names, if it names one. At step 2.4, settle them for the location you choose; phase 7 relies on them.
+- Before you plan tests on a separate run, confirm it loads the skill: start it with `--output-format stream-json --verbose` and read the `skills` array of its `init` message. When the skill is missing there, report the tests that depend on the run as not verified.
+- Claude Code picks up a skill you add, edit or remove under `~/.claude/skills/`, the project's `.claude/skills/` or an added directory's `.claude/skills/` within the session, except in bare mode, but only in skill directories that existed when the session started. A top-level skills directory you create during the session loads only after the user runs `/reload-skills`, and again after each later change there. For a skill folder that is also a plugin, changes to its `.mcp.json`, `agents/`, `output-styles/` and `hooks/` need `/reload-plugins`. A plugin you write does not load in your session, so test it in the separate run.
 - When the location you choose at step 2.4 cannot be written or tested from this session, tell the user before you build, and name the session that can.
-- State the answers in plain terms, for example: "This is a cloud thread of a Claude project with Claude Code 2.1.326. The plugin folder can be written and validated here, and a `claude -p --plugin-dir` run can load the skill for trigger tests. The terminal surface on the user's machine cannot be tested here and will be reported as not verified."
+- State the answers in plain terms. In this example the version, the surface and the run's result are illustrative values, and the three answers are the fixed part: "This is a cloud thread of a Claude project with Claude Code 2.1.326. The plugin folder can be written and validated here, and a `claude -p --plugin-dir` check run listed the skill, so trigger tests can run here. The terminal surface on the user's machine cannot be tested here and will be reported as not verified."
 
 ## Verify and go deeper
 
 Read these pages to confirm a fact in this file against the current official guidance, or to go deeper than this file does.
 
-- Claude Code docs, Skills: "Choose where skills load", "Load skills in monorepos and subdirectories", "Load skills from a directory outside the project", "Use skills in Cowork and cloud sessions". https://code.claude.com/docs/en/skills
+- Claude Code docs, Skills: "Choose where skills load", "Load skills in monorepos and subdirectories", "Load skills from a directory outside the project", "Use skills in Cowork and cloud sessions", "Edit a skill during a session". https://code.claude.com/docs/en/skills
 - Claude Code docs, Environment variables: `CLAUDECODE`, `CLAUDE_CODE_CHILD_SESSION`, `CLAUDE_CODE_BRIDGE_SESSION_ID`, `CLAUDE_CODE_REMOTE`, `CLAUDE_CODE_REMOTE_SESSION_ID`. https://code.claude.com/docs/en/env-vars
+- Claude Code docs, Settings: `disableSideloadFlags`. https://code.claude.com/docs/en/settings-reference
 - Claude Code docs, Cloud environments: "What carries over from your setup". https://code.claude.com/docs/en/cloud-environments
+- Claude Code changelog, for the version you run and the releases since the docs were last updated. https://code.claude.com/docs/en/changelog
 - Claude Platform docs, Agent Skills overview: "Where Skills work", "Runtime environment constraints". https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview
