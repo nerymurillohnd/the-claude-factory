@@ -6,7 +6,7 @@
 - Each check covers only what its spec's Coverage line marks as missing. Whatever `claude plugin validate` already reports stays with that command.
 - FM-1 and FM-11 are covered by commands. FM-6 is covered by a command for the folder and by `frontmatter.name` for the name.
 - The rest are standalone Python scripts under `skills/auditing-skills/scripts/frontmatter/`, using only the standard library.
-- Each one is wired in the same commit that adds it: its logic goes into `references/mechanical-checks.md`, and its file goes into `SKILL.md`'s file list.
+- Each one is wired in the same commit that adds it: its logic goes into `MECHANICAL-CHECKS.md`, and its file goes into `SKILL.md`'s file list.
 - One runner, `scripts/frontmatter/run.py` (Task 1B), runs every frontmatter script in one call, writes each result to a per-run temporary folder and prints a short summary with that folder's path. The main session hands each reviewer its part and removes the folder through the runner when the audit ends.
 
 **Architecture:**
@@ -15,9 +15,13 @@
 - **Progressive disclosure** (Task 0B):
   - `SKILL.md` keeps the role, the end-to-end flow, the reviewers, the report format and the orchestration rules.
   - It lists, for each phase and each reviewer, every file that belongs to it (agent, reference, assets, scripts), one level deep.
-  - Its step 3 links `references/mechanical-checks.md` with "read it in full before running any check, and read it again whenever it is no longer in your context".
+  - Its step 3 links `MECHANICAL-CHECKS.md` with "read it in full before running any check, and read it again whenever it is no longer in your context".
   - The reason: after auto-compaction, Claude Code re-attaches only "the first 5,000 tokens" of each invoked skill (skills docs, "Skill content lifecycle"), never the files it links.
-- `references/mechanical-checks.md` tells the main session, for every check:
+- **Where it lives:** `MECHANICAL-CHECKS.md` sits at the skill root, next to `SKILL.md`, not in `references/`.
+  - The sources allow both. The Agent Skills spec ("Optional directories") says "A skill directory may contain any files and directories beyond the required `SKILL.md`. The conventions below are recommendations", and lists `REFERENCE.md` and `FORMS.md` under `references/`. Anthropic's best practices ("Pattern 1") and its `pdf` skill keep `FORMS.md` and `REFERENCE.md` at the root.
+  - What decides it is this skill's own layout: the build rule fixes `references/<area>.md` as one reviewer's reference, and each reviewer reads only its own. This file is the main session's playbook and no reviewer reads it, so it stays out of `references/`. Best practices: "Organize for discovery: Structure directories by domain or feature."
+  - Links use the exact case, `MECHANICAL-CHECKS.md`, because Linux file systems are case-sensitive.
+- `MECHANICAL-CHECKS.md` tells the main session, for every check:
   - the exact command;
   - what it is for and why;
   - what `claude plugin validate` already covers and what the check adds;
@@ -51,7 +55,7 @@
 - **Invocation:** `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter/<check>.py" "<SKILL.md>"`, the pattern of the skills docs ("Generate visual output") and of Anthropic's plugins.
   - If `python3` is not found, or Windows answers with the Store message, the main session uses `python` from then on, as in Anthropic's `math-proof` plugin.
   - Scripts carry `#!/usr/bin/env python3` and the executable bit but never rely on either.
-- **Wiring in the same commit:** each task that adds a check also registers it in `common/registry.py` (Task 1B), adds its entry to `references/mechanical-checks.md`, adds its script path under the reviewers that receive it in `SKILL.md`, updates what each of those reviewers receives in `references/mechanical-checks.md`, and updates `.claude/maintainer/skills-engineering/mechanical-check-sources.md`, as the rule's sync point requires.
+- **Wiring in the same commit:** each task that adds a check also registers it in `common/registry.py` (Task 1B), adds its entry to `MECHANICAL-CHECKS.md`, adds its script path under the reviewers that receive it in `SKILL.md`, updates what each of those reviewers receives in `MECHANICAL-CHECKS.md`, and updates `.claude/maintainer/skills-engineering/mechanical-check-sources.md`, as the rule's sync point requires.
   - Each entry follows the "Mechanical-checks entry shape" below.
   - Run `npm run lint:frontmatter` on `SKILL.md` and `claude plugin validate --strict plugins/skills-engineering` after each wiring.
 - **Read-only:** no network and no subprocess. A check script writes nothing. A script reads only the `SKILL.md` it is given and its folder name, never settings, MCP or credential files. The runner writes only inside the results folder it created, and deletes only a folder that carries its prefix and its marker file (Task 1B).
@@ -66,7 +70,7 @@
   - `upload` means claude.ai uploads, the Skills API and `package_skill.py`, which the skills docs group as one path.
   - **No severity, not even a hint.** Severity belongs to each reviewer's severity model, which depends on facts a script doesn't know, such as the surfaces the skill targets: "A surface the skill doesn't target gets no finding" and "When the consequence differs by target, set the severity of the most affected target" (`references/frontmatter-description.md`). A count-based label is the error `references/size-limits-and-budgets.md` shows as "Wrong severity: The body has 612 lines, over the limit: Critical." `basis`, `surfaces` and `condition` carry the facts the reviewer grades from.
   - **Deterministic:** no timestamps and no absolute paths. Findings sorted by `line`, `column`, `rule`; `data` keys in a fixed order per check. Two runs on the same file print the same bytes.
-  - The meaning of each `rule` lives once in `references/mechanical-checks.md`, not in every finding.
+  - The meaning of each `rule` lives once in `MECHANICAL-CHECKS.md`, not in every finding.
 - **Results lifecycle (Task 1B):**
   - The runner creates its folder with `tempfile.mkdtemp(prefix="auditing-skills-fm-")`, which follows `TMPDIR`, then `TEMP`, then `TMP`, then the platform list (Python `tempfile.gettempdir`). The random suffix is the run id. The folder is "readable, writable, and searchable only by the creating user ID" (Python `tempfile.mkdtemp`).
   - It prints the folder's absolute path, and `show` and `clean` take that path as an argument and never recompute it. The sandboxing docs ("Temporary directories") say sandboxed and unsandboxed commands "resolve `$TMPDIR` to different directories" while filesystem isolation is on.
@@ -107,7 +111,7 @@ Task 10 checks this split against validate on 2.1.326. A case where validate now
 
 ## Mechanical-checks entry shape
 
-`references/mechanical-checks.md` holds one shared section (Tasks 1 and 1B) and then one entry per check. The shared section states once:
+`MECHANICAL-CHECKS.md` holds one shared section (Tasks 1 and 1B) and then one entry per check. The shared section states once:
 - how to run the runner and a single script (`python3`, then `python`, with quoted paths);
 - the summary lines, the JSON fields and what `status`, `findings`, `found_length`, `surfaces` and `condition` mean;
 - that exit 2 or a missing interpreter means the check was not run: name it to its reviewers with the exit code and message;
@@ -157,27 +161,27 @@ No code ships from this task. Its results fill the Appendix, and the later tests
 `SKILL.md` measures 20,277 bytes today, already about the 5,000-token mark, before any check is wired.
 
 **Files:**
-- Create: `plugins/skills-engineering/skills/auditing-skills/references/mechanical-checks.md`
+- Create: `plugins/skills-engineering/skills/auditing-skills/MECHANICAL-CHECKS.md`
 - Modify: `.../auditing-skills/SKILL.md`, `.claude/rules/plugins/skills-engineering.md` (sync points), `.claude/maintainer/skills-engineering/mechanical-check-sources.md`
 
 Steps:
 - [ ] **Step 1:** Run `claude --plugin-dir plugins/skills-engineering plugin details skills-engineering` and record the skill's on-invoke token estimate (the "before" figure).
-- [ ] **Step 2:** Move step 3's commands and every reviewer's "Receives" list, unchanged in meaning, into `references/mechanical-checks.md`, under these headings:
+- [ ] **Step 2:** Move step 3's commands and every reviewer's "Receives" list, unchanged in meaning, into `MECHANICAL-CHECKS.md`, under these headings:
   - "How to run the checks";
   - one heading per data domain;
   - "What each reviewer receives".
 - [ ] **Step 3:** Rewrite `SKILL.md`:
   - Step 3 holds one link with when to read it: "read it in full before running any check, and read it again whenever it is no longer in your context".
   - Each reviewer entry keeps its name, agent, domain sentence and its files: the agent, its reference, the report template and, as they land, its scripts. Each file is linked one level deep.
-  - Step 4's "results of the mechanical checks that reviewer receives" points to the Receives section of `references/mechanical-checks.md`.
-- [ ] **Step 4:** Update the rule's sync points. "Receives entry and the step 3 command in `SKILL.md`" becomes "the Receives list and the command entry in `references/mechanical-checks.md`, and the reviewer's file list in `SKILL.md`". Load `instruction-engineering:claude-md-and-rules` first, as the repo requires for any rule edit.
+  - Step 4's "results of the mechanical checks that reviewer receives" points to the Receives section of `MECHANICAL-CHECKS.md`.
+- [ ] **Step 4:** Update the rule's sync points. "Receives entry and the step 3 command in `SKILL.md`" becomes "the Receives list and the command entry in `MECHANICAL-CHECKS.md`, and the reviewer's file list in `SKILL.md`". Add that `references/` holds only reviewer references and that the root `MECHANICAL-CHECKS.md` is the main session's playbook, which no reviewer reads. Load `instruction-engineering:claude-md-and-rules` first, as the repo requires for any rule edit.
 - [ ] **Step 5:** Run `npm run lint:frontmatter`, `npx biome lint` on both Markdown files, `claude plugin validate --strict plugins/skills-engineering` and `plugin details` again. Expected:
   - `valid`;
   - an on-invoke estimate lower than Step 1's;
   - the whole orchestration inside the first 5,000 tokens of `SKILL.md`.
 
   Show both figures.
-- [ ] **Step 6:** Commit: `git commit -m "Move the audit's mechanical step into its own reference"`.
+- [ ] **Step 6:** Commit: `git commit -m "Move the audit's mechanical step into MECHANICAL-CHECKS.md"`.
 
 ### Task 1: Shared foundation
 
@@ -233,7 +237,7 @@ Steps:
   - `/usr/bin/python3.11` gets exit 2 and the floor message, with the test skipped when that interpreter is absent.
 - [ ] **Step 2:** Run `python3 -m unittest discover -s plugins/skills-engineering/tests -p 'test_frontmatter_*.py' -v`. Expected: the tests fail with a missing module.
 - [ ] **Step 3:** Implement the interfaces.
-- [ ] **Step 4: Wire.** Add the shared section from "Mechanical-checks entry shape" to `references/mechanical-checks.md`, before any check entry, and list `scripts/common/` in `SKILL.md`'s file list as shared by every frontmatter script.
+- [ ] **Step 4: Wire.** Add the shared section from "Mechanical-checks entry shape" to `MECHANICAL-CHECKS.md`, before any check entry, and list `scripts/common/` in `SKILL.md`'s file list as shared by every frontmatter script.
 - [ ] **Step 5:** Run the tests on `/usr/bin/python3.12`, `/usr/bin/python3.13` and `python3` (3.15). Expected: all pass. Then run ruff and basedpyright on the new files: 0 findings. Then run `npm run lint:frontmatter` and `claude plugin validate --strict plugins/skills-engineering`. Expected: `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add the shared foundation for the frontmatter checks"`.
 
@@ -264,7 +268,7 @@ Steps:
   - with `TMPDIR` pointed at a test folder, the results folder is created there.
 - [ ] **Step 2:** Run the tests. Expected: they fail with a missing module.
 - [ ] **Step 3:** Implement the interfaces. Use `shutil.rmtree` only after the checks in `clean`, and never follow symlinks.
-- [ ] **Step 4: Wire.** In `references/mechanical-checks.md`'s shared section, add the runner command, how to read its summary, `show` and `clean`, and the delivery check before dispatch. In `SKILL.md`, step 3 runs the runner, each reviewer's brief gets its `show --reviewer` output, and the report step ends with `clean`. Re-measure the first 5,000 tokens with `claude plugin details`.
+- [ ] **Step 4: Wire.** In `MECHANICAL-CHECKS.md`'s shared section, add the runner command, how to read its summary, `show` and `clean`, and the delivery check before dispatch. In `SKILL.md`, step 3 runs the runner, each reviewer's brief gets its `show --reviewer` output, and the report step ends with `clean`. Re-measure the first 5,000 tokens with `claude plugin details`.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, then ruff, basedpyright, `npm run lint:frontmatter` and `claude plugin validate --strict plugins/skills-engineering`. Expected: all pass, 0 findings, `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add the frontmatter checks runner and its results lifecycle"`.
 
@@ -419,7 +423,7 @@ It does not report:
     - a syntax error gives `status == "not_run"` and `reason == "frontmatter.yaml failed"`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4: Wire.** Add the two entries to `references/mechanical-checks.md`, and list both scripts under their reviewers in `SKILL.md`.
+- [ ] **Step 4: Wire.** Add the two entries to `MECHANICAL-CHECKS.md`, and list both scripts under their reviewers in `SKILL.md`.
   - `frontmatter.yaml`:
     - adds the four strict-YAML failures validate passes;
     - a finding means packaging and upload reject the file, while Claude Code may still load it;
@@ -429,7 +433,7 @@ It does not report:
     - no other command covers it;
     - a finding means the parsed value differs from what the line shows;
     - goes to `frontmatter-description`.
-  - Update both reviewers' Receives lists in `references/mechanical-checks.md` and the sync file.
+  - Update both reviewers' Receives lists in `MECHANICAL-CHECKS.md` and the sync file.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add and wire the strict YAML and plain-value frontmatter checks"`.
 
@@ -479,7 +483,7 @@ It does not report:
     - `name: on` gives `[]`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4: Wire.** Add the entries to `references/mechanical-checks.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.name`: validate passed a malformed name, so this check is the only source for the name rules; it also covers the reserved words in the name and gives the name's character counts. Its findings and `data` go to `frontmatter-description`, and its counts to `size-limits-and-budgets`. `frontmatter.name-plain`: no other command covers it; its findings follow a project convention, not an official rule; goes to `frontmatter-description`. Update each named reviewer's Receives list in `references/mechanical-checks.md` and the sync file.
+- [ ] **Step 4: Wire.** Add the entries to `MECHANICAL-CHECKS.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.name`: validate passed a malformed name, so this check is the only source for the name rules; it also covers the reserved words in the name and gives the name's character counts. Its findings and `data` go to `frontmatter-description`, and its counts to `size-limits-and-budgets`. `frontmatter.name-plain`: no other command covers it; its findings follow a project convention, not an official rule; goes to `frontmatter-description`. Update each named reviewer's Receives list in `MECHANICAL-CHECKS.md` and the sync file.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add and wire the name and plain-name frontmatter checks"`.
 
@@ -527,7 +531,7 @@ Every length is in code points, with `utf16_length` in `data`.
     - `7` gives `not-a-string`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4: Wire.** Add the entries to `references/mechanical-checks.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.description` and `frontmatter.compatibility`: validate passed an XML tag and over-long values, so these checks are the only source; findings go to `frontmatter-description`, and the lengths to `size-limits-and-budgets`. `frontmatter.listing-cap`: no command reports where the cap cuts (`/skill-doctor` gives the listing cost, not the cut point); this check is the only source; `first_lost_field`, `first_lost_offset` and `around_cut` show which trigger words never reach Claude; goes to `size-limits-and-budgets` and `frontmatter-description`. Update each named reviewer's Receives list in `references/mechanical-checks.md` and the sync file.
+- [ ] **Step 4: Wire.** Add the entries to `MECHANICAL-CHECKS.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.description` and `frontmatter.compatibility`: validate passed an XML tag and over-long values, so these checks are the only source; findings go to `frontmatter-description`, and the lengths to `size-limits-and-budgets`. `frontmatter.listing-cap`: no command reports where the cap cuts (`/skill-doctor` gives the listing cost, not the cut point); this check is the only source; `first_lost_field`, `first_lost_offset` and `around_cut` show which trigger words never reach Claude; goes to `size-limits-and-budgets` and `frontmatter-description`. Update each named reviewer's Receives list in `MECHANICAL-CHECKS.md` and the sync file.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add and wire the description, listing-cap and compatibility frontmatter checks"`.
 
@@ -576,7 +580,7 @@ Every length is in code points, with `utf16_length` in `data`.
     - `effort:` gives `empty-value`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4: Wire.** Add the entries to `references/mechanical-checks.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.metadata`: validate passed `metadata: {a: 1}`, so this check is the only source; goes to `frontmatter-description`. `frontmatter.field-values`: validate already rejects a non-string `allowed-tools` and an unknown `shell`, so read those in validate's output; this check adds the boolean forms, `context`, `effort`, `model` and the types of `disallowed-tools`, `paths` and `arguments`; goes to `frontmatter-description`. Update each named reviewer's Receives list in `references/mechanical-checks.md` and the sync file.
+- [ ] **Step 4: Wire.** Add the entries to `MECHANICAL-CHECKS.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.metadata`: validate passed `metadata: {a: 1}`, so this check is the only source; goes to `frontmatter-description`. `frontmatter.field-values`: validate already rejects a non-string `allowed-tools` and an unknown `shell`, so read those in validate's output; this check adds the boolean forms, `context`, `effort`, `model` and the types of `disallowed-tools`, `paths` and `arguments`; goes to `frontmatter-description`. Update each named reviewer's Receives list in `MECHANICAL-CHECKS.md` and the sync file.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add and wire the metadata and field-value frontmatter checks"`.
 
@@ -611,14 +615,14 @@ Every length is in code points, with `utf16_length` in `data`.
     - `"Bash(git"` gives `[]` with `unparsed_entries == ["Bash(git"]`.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
 - [ ] **Step 3:** Implement the scripts and set the executable bit.
-- [ ] **Step 4: Wire.** Add the entries to `references/mechanical-checks.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.field-combinations` and `frontmatter.allowed-tools`: no other command covers them, so these checks are the only source. A combination finding means part of the skill silently does nothing. An `unscoped-bash` finding means the skill pre-approves every command. Both go to `frontmatter-description`, and `frontmatter.allowed-tools` also goes to `runtime-contract`, which audits tool pre-approval. Update each named reviewer's Receives list in `references/mechanical-checks.md` and the sync file.
+- [ ] **Step 4: Wire.** Add the entries to `MECHANICAL-CHECKS.md`, and list the scripts under their reviewers in `SKILL.md`. `frontmatter.field-combinations` and `frontmatter.allowed-tools`: no other command covers them, so these checks are the only source. A combination finding means part of the skill silently does nothing. An `unscoped-bash` finding means the skill pre-approves every command. Both go to `frontmatter-description`, and `frontmatter.allowed-tools` also goes to `runtime-contract`, which audits tool pre-approval. Update each named reviewer's Receives list in `MECHANICAL-CHECKS.md` and the sync file.
 - [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, plus ruff, basedpyright, `lint:frontmatter` and `validate --strict`. Expected: pass, 0 findings and `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add and wire the field-combination and allowed-tools frontmatter checks"`.
 
-### Task 9: Commands for FM-1, FM-6 and FM-11 in `references/mechanical-checks.md`
+### Task 9: Commands for FM-1, FM-6 and FM-11 in `MECHANICAL-CHECKS.md`
 
 **Files:**
-- Modify: `references/mechanical-checks.md` (the command entries and the Receives lists of `frontmatter-description` and `runtime-contract`)
+- Modify: `MECHANICAL-CHECKS.md` (the command entries and the Receives lists of `frontmatter-description` and `runtime-contract`)
 - Modify: `.claude/maintainer/skills-engineering/mechanical-check-sources.md` (the rule's sync point)
 - Test: `tests/test_frontmatter_commands.py`
 
@@ -640,7 +644,7 @@ What the commands cover, POSIX only, with every path quoted:
   - Read it against the location from step 2: `synced` in any capitalization in a personal, project or managed location, and `anthropic-skills` or a name starting with `anthropic-skills:` outside a plugin.
   - The reserved words in `name` come from `frontmatter.name`.
 
-Each command's entry in `references/mechanical-checks.md` follows "Mechanical-checks entry shape", with these points:
+Each command's entry in `MECHANICAL-CHECKS.md` follows "Mechanical-checks entry shape", with these points:
 - FM-1 covers the files validate skips, and validate's output is the result. It goes to `runtime-contract` and `frontmatter-description`.
 - FM-11 has no other command coverage. It goes to `frontmatter-description`.
 - FM-6 has no other command coverage. It goes to `runtime-contract`, which audits discovery.
@@ -652,9 +656,9 @@ Each command's entry in `references/mechanical-checks.md` follows "Mechanical-ch
   - a file without frontmatter prints nothing;
   - a folder `Synced` prints `Synced`.
 
-  One test asserts each command string appears verbatim in `references/mechanical-checks.md`. Another asserts that no `$` followed by a digit appears in it or in `SKILL.md`. This matters even in a linked file only if it is ever injected; the test keeps both safe.
+  One test asserts each command string appears verbatim in `MECHANICAL-CHECKS.md`. Another asserts that no `$` followed by a digit appears in it or in `SKILL.md`. This matters even in a linked file only if it is ever injected; the test keeps both safe.
 - [ ] **Step 2:** Run the tests. Expected: they fail.
-- [ ] **Step 3: Wire.** Add the command entries and the Receives lists to `references/mechanical-checks.md`, and the sync file, then run `npm run lint:frontmatter -- <SKILL.md>`.
+- [ ] **Step 3: Wire.** Add the command entries and the Receives lists to `MECHANICAL-CHECKS.md`, and the sync file, then run `npm run lint:frontmatter -- <SKILL.md>`.
 - [ ] **Step 4:** Run the tests and `claude plugin validate --strict plugins/skills-engineering`. Expected: pass and `valid`. Report that the commands were tested with GNU tools only; macOS (BSD) and Git Bash were not run.
 - [ ] **Step 5:** Commit: `git commit -m "Add the block, folder and key commands to the audit's mechanical step"`.
 
@@ -674,7 +678,7 @@ Each command's entry in `references/mechanical-checks.md` follows "Mechanical-ch
   - every case validate passes appears in exactly one check.
 
   Show both outputs side by side.
-- [ ] **Step 4b: Skill check.** Read `SKILL.md` and then `references/mechanical-checks.md` as the main session would. Confirm:
+- [ ] **Step 4b: Skill check.** Read `SKILL.md` and then `MECHANICAL-CHECKS.md` as the main session would. Confirm:
   - each of the 14 checks has an entry with the five parts of "Mechanical-checks entry shape";
   - every "only source" line is present;
   - every Receives list names what the file gives it;
