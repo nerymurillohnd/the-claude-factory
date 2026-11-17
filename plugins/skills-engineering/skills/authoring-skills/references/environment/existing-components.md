@@ -1,6 +1,6 @@
 # Existing components
 
-This file teaches you how to take stock of what already surrounds the skill you write, and how to find where it would collide with that environment before you build it. It serves workflow step 1.5, where you take the inventory, step 2.8, where you check the name, and step 3.2, where you settle the boundaries against existing skills. Each section gives the facts, why they matter for the skill you write, the questions to answer, and what to do with the answers.
+This file teaches you how to take stock of what already surrounds the skill you write, and how to find where it would collide with that environment before you build it. It serves workflow step 1.5, where you take the inventory, step 2.8, where you check the name, and step 3.2, where you settle the boundaries against existing skills.
 
 ## Contents
 
@@ -13,7 +13,7 @@ This file teaches you how to take stock of what already surrounds the skill you 
 
 ## How to use this file
 
-Read section 1 in phase 1, after you know which locations your session loads. Inventory your own session and each target session the request already names: a project skill meets the repository's components, and a plugin skill meets the skills, plugins and instructions its users have installed. You cannot see the users' sessions, so reason about them from the users the plugin is built for, and say in your report that they were not inspected. Sections 2 and 3 need the skill's name and goal, which phase 2 settles: answer them at steps 2.8 and 3.2, where `SKILL.md` sends you back to them. Read section 4 when the skill will live in a repository or a plugin.
+Read section 1 in phase 1, after you know which locations your session loads. Inventory your own session and each target session the request already names: a project skill meets the repository's components, and a plugin skill meets the skills, plugins and instructions its users have installed. You cannot see the target sessions on third-party users' machines, so reason about them from the users the plugin is built for, and say in your report that they were not inspected. Sections 2 and 3 need the skill's name and goal, which phase 2 settles: answer them at steps 2.8 and 3.2, where `SKILL.md` sends you back to them. Read section 4 when the skill will live in a repository or a plugin.
 
 ---
 
@@ -25,7 +25,7 @@ Some of these components live in files that can hold credential values: `setting
 
 Ask yourself:
 
-1. Which skills reach the target sessions, with which names and descriptions? Your session lists the skills it loaded in the Skill tool's listing.
+1. Which skills reach the target sessions, with which names and descriptions? For your own session, take them from the map you wrote at step 1.4.
 2. Which plugins are installed, and which skills, agents, hooks and MCP servers do they bring?
 3. Which `CLAUDE.md` files, rules, subagents, commands and output styles load in the target sessions?
 4. Which hooks and permission rules apply there, and on which events, tools and paths?
@@ -34,8 +34,9 @@ Ask yourself:
 Then:
 
 - Read each Markdown instruction file in full: `CLAUDE.md` files, rules, skills, subagent definitions and commands.
-- List installed plugins with `claude plugin list --json`, and take the connected MCP servers from your tool list.
-- Read a settings file only through a filter that prints the keys you need, for example `jq '{hooks, permissions, enabledPlugins, skillOverrides}' .claude/settings.json`. Never print an `env` block, an `apiKeyHelper`, an `.mcp.json` file or `~/.claude.json`.
+- List installed plugins with `claude plugin list --json`. When the `claude` CLI is not installed, record the plugins as not inspected. The connected MCP servers are the ones you took from your tool list at step 1.3.
+- Read a settings file only through a filter that prints the keys you need: run `jq '{hooks, permissions, enabledPlugins, skillOverrides}' <file>` for each of `~/.claude/settings.json`, `<root>/.claude/settings.json` and `<root>/.claude/settings.local.json` that exists, where `<root>` is the repository root you recorded at step 1.2, or the working directory when there is no repository. Managed settings are covered in section 3 of `references/environment/skill-loading.md`. When `jq` is not installed, never open the file whole: ask the user to run `/hooks` for the hooks, and record the permission rules, enabled plugins and skill overrides as not inspected.
+- Never print an `env` block or an `apiKeyHelper` value. Read `.mcp.json` and `~/.claude.json` only for server names, for example `jq '.mcpServers | keys' .mcp.json`, never whole, because their entries can hold tokens and headers.
 - Write the inventory down as a list grouped by component type, with each entry's location and a one-line summary of what it does.
 
 ## 2. Name conflicts
@@ -44,14 +45,14 @@ When two skills share a name, where each came from decides which one runs:
 
 - Enterprise runs over personal, and personal over project.
 - An enterprise, personal or project skill replaces a bundled skill of the same name, but not its aliases: a project skill named `code-review` replaces `/code-review`, and `/review` still runs the bundled skill.
-- An enterprise, personal or project skill replaces a built-in command of the same name only in a local terminal session, and again not its aliases: a project skill named `usage` replaces `/usage` there, and `/cost` still runs the built-in command. The docs promise no such replacement on other surfaces, so never count on one in cloud sessions or project threads.
+- An enterprise, personal or project skill replaces a built-in command of the same name only in a local terminal session, and again not its aliases: a project skill named `usage` replaces `/usage` there, and `/cost` still runs the built-in command. The docs promise no such replacement on other surfaces, so never count on one in cloud sessions or cloud threads of a Claude project.
 - A skill runs over a file of the same name in `.claude/commands/`.
 - A project-root skill and a nested skill with the same name both load: `/deploy` runs the root skill, and `/apps/web:deploy` runs the nested one.
 - A skill in an added directory whose name clashes runs under a prefix, `/<folder>:<name>` (v2.1.309 or later).
-- A plugin skill loads beside a skill of the same name, because plugin skills are namespaced as `/plugin-name:skill-name`. The frontmatter `name` of a plugin skill replaces its directory name in the last segment.
+- A plugin skill loads beside a skill of the same name, because of its plugin prefix. The frontmatter `name` of a plugin skill replaces its directory name in the last segment.
 - A synced skill whose short name another command uses runs only under its full name, `/anthropic-skills:<name>`.
 
-Claude Code ignores case, spacing, invisible characters and compatibility forms when it compares names, so `Commit` and `commit` are the same name.
+When Claude Code compares a synced skill's name with other command names, it ignores case, spacing, invisible characters and compatibility forms (v2.1.228 or later), so a synced `Commit` loses its short name to a local `commit`. No page states the same comparison between other locations, so treat names that differ only in case as a collision there too, and avoid them.
 
 Ask yourself:
 
@@ -66,7 +67,7 @@ Then:
 
 ## 3. Trigger overlap and the listing budget
 
-The model picks a skill by matching the request against the descriptions in its listing. When two descriptions claim the same requests, the choice between them is unpredictable, and the user cannot tell which skill ran. The listing always holds each skill's name, but its descriptions share a character budget of 1% of the context window. The user can raise it with the `skillListingBudgetFraction` setting or set a fixed count with `SLASH_COMMAND_TOOL_CHAR_BUDGET`, and can list a skill without its description by setting it to `name-only` in `skillOverrides`. A skill whose description was dropped keeps only its name for the model to match.
+The model picks a skill by matching the request against the descriptions in its listing. When two descriptions claim the same requests, the choice between them is unpredictable, and the user cannot tell which skill ran. The listing always holds each skill's name; its descriptions share a character budget of 1% of the context window and are dropped on overflow, as the gotcha "The listing truncates descriptions" in `SKILL.md` says. The user can raise the budget with the `skillListingBudgetFraction` setting or set a fixed count with `SLASH_COMMAND_TOOL_CHAR_BUDGET`, and can list a skill without its description by setting it to `name-only` in `skillOverrides`.
 
 Ask yourself:
 
@@ -77,7 +78,7 @@ Ask yourself:
 Then:
 
 - Write down each overlapping skill and the requests both would claim, and settle the boundary at step 3.2, where you decide the count and boundaries of the skills.
-- Ask the user, when the listing could be near its budget, to run `/doctor`, which estimates the listing's context cost and its largest contributors, and `/skill-doctor` (v2.1.252 or later), which reports each skill's cost and how often it runs. `/skill-doctor` answers only in the terminal of the machine where the session runs, not over Remote Control.
+- Ask the user, when your own Skill tool listing shows a skill without its description, or when the target sessions are machines you cannot inspect, to run `/doctor`, which estimates the listing's context cost and its largest contributors, and `/skill-doctor` (v2.1.252 or later), which reports each skill's cost and how often it runs. `/skill-doctor` answers only in the terminal of the machine where the session runs, not over Remote Control.
 
 ## 4. Project conventions
 
@@ -91,7 +92,7 @@ Ask yourself:
 
 Then:
 
-- Find the checks in `package.json` scripts, the Makefile, the CI workflows, `CONTRIBUTING.md` and the project's `CLAUDE.md` and rules, and run each one's `--help` before you plan to use it.
+- Find the checks in `package.json` scripts, the Makefile, the CI workflows, `CONTRIBUTING.md` and the project's `CLAUDE.md` and rules. Read each check's definition, such as the `scripts` entry, the Makefile target or the workflow step, to learn its command and arguments, and run nothing yet. Run `<tool> --help` only on a standalone command line tool that a definition calls, where `<tool>` is that tool's own command name, because npm reads `--help` itself in `npm run <script> --help` and `make --help` prints make's own options.
 - Record each convention with its source, and weigh it as the rule on the user's material requires.
 
 ## Verify and go deeper
