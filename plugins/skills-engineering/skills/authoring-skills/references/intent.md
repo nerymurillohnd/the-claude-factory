@@ -26,8 +26,8 @@ Sort everything you know into stated, implied, assumed and missing. Carry the as
 The best source is a task already done well with the model in this conversation, or the project's own material. Extract:
 
 - **The steps that worked**, in the order they worked.
-- **The corrections**: each place the user steered the model. Each is a rule or gotcha the skill must carry.
-- **The formats**: the inputs as they arrived and the outputs the user accepted.
+- **The corrections**: each place the requester steered the model. Each is a rule or gotcha the skill must carry.
+- **The formats**: the inputs as they arrived and the outputs the requester accepted.
 - **The context supplied**: names, conventions, paths, accounts, facts the model couldn't have known.
 - **What the model did well unaided**: leave it out of the skill.
 
@@ -37,7 +37,7 @@ Show the requester what you extracted and confirm it before designing.
 
 ## Use cases and success criteria
 
-Write two or three use cases before any design. They define the skill's scope and become the scenarios you test it with.
+Write the use cases before any design. They define the skill's scope and become the scenarios you test it with.
 
 ```text
 Use case: Release notes for a minor version
@@ -74,5 +74,5 @@ Ask only what changes what you build, in one round, at most three questions, eac
 ## Requests that aren't one skill
 
 - **Several skills in one request**: split by trigger and by task. If two parts would load on different requests, or one is reference and the other a procedure with side effects, propose them as separate skills, with the boundary between their descriptions.
-- **Not a skill**: a rule that must hold every time is a hook; a fact every session needs belongs in CLAUDE.md; access to an external system is an MCP server. Say which feature fits and why, and stop unless the requester still wants a skill for part of it.
+- **Not a skill**: when part of the request looks like a hook, CLAUDE.md content or an MCP server, record it as an open point; it is decided in phase 3.
 - **A one-off task**: if the work won't repeat, do the task instead of writing a skill for it, and say so.

@@ -18,21 +18,21 @@ How to check a skill before delivering it: the mechanical checks, the reread fro
 Run every check that applies and is runnable here; the cost of more checks should match what a defect would cost:
 
 - **Every skill**: mechanical checks, the reread, and each use case in a fresh session.
-- **Skills the model invokes on its own, with sibling skills that share keywords**: trigger tests.
+- **Skills the model invokes on its own**: trigger tests, under the condition in [name-and-description.md](name-and-description.md).
 - **Skills that take destructive or irreversible actions, write to external systems, or are distributed to third parties**: behavior tests with and without the skill, on each model its users run, and evals that can be rerun after every change.
 
 ## Mechanical checks
 
 - **Claude Code**: `claude plugin validate` on the plugin root, or on the skills folder that holds the skill (`claude plugin validate .claude/skills`), reports frontmatter that fails to parse (v2.1.233 or later). Add `--strict` for a plugin before release.
 - **Specification**: `skills-ref validate path/to/skill` checks the frontmatter and naming rules of the Agent Skills specification.
-- **Uploads to claude.ai or the Skills API**: only the six spec fields; `name` and `description` within their limits, with no XML tags and no reserved words; `SKILL.md` at the root or in one folder; the archive under 30 MB.
+- **Uploads to claude.ai or the Skills API**: only the six spec fields; `name` and `description` within their limits, with no XML tags and no reserved words; `SKILL.md` at the root or in one folder; the archive within the upload limit in [skill-types.md](skill-types.md).
 - **Links and paths**: every link in `SKILL.md` resolves to a file, spelled exactly as named; no path reaches outside the skill except through a path variable; no file goes unlinked.
-- **Body size**: under 500 lines and about 5,000 tokens; every file over 100 lines opens with a table of contents.
+- **Body size**: within the budgets in [structure.md](structure.md); every supporting file that structure.md requires a table of contents for opens with one.
 - **Scripts**: each runs with `--help`, exits non-zero on bad input with a message that says what to fix, and needs only the dependencies the skill states.
 
 ## The reread
 
-Read every file once more as the model will, with only the description, the body and what it points to. Read [writing-instructions.md](writing-instructions.md) for what to look for. Fix what you find before running anything: a run costs more than a reread.
+Run the reread in [writing-instructions.md](writing-instructions.md) once more over every file. Fix what you find before running anything: a run costs more than a reread.
 
 ## Behavior tests
 
@@ -68,7 +68,7 @@ Two formats exist, and they aren't interchangeable:
 - The Agent Skills format (`evals/evals.json` in the skill folder: prompt, expected output, files, assertions), run by skill-creator or your own runner. Its guide: https://agentskills.io/skill-creation/evaluating-skills.
 - `claude plugin eval` for skills in a plugin: isolated runs with and without the plugin, graders, and a non-zero exit below a threshold for CI. Its guide: https://code.claude.com/docs/en/plugin-evals.
 
-Each eval run spends tokens on the user's account; confirm before running a large set.
+Each eval run spends tokens on the requester's account; confirm before running a large set.
 
 ## Watch how the model uses it
 

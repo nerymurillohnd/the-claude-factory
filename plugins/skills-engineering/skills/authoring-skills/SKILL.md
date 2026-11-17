@@ -19,6 +19,7 @@ Terms used throughout:
 - **The skill you write**: the skill you are building or changing.
 - **The model**: the model that will load the skill you write, in a session that knows nothing of this one.
 - **The requester**: the person asking for it.
+- **Its users**: the people who will run the skill you write; examples call one of them "the user".
 
 ## Goal
 
@@ -38,8 +39,8 @@ These hold in every phase:
 
 - Write only what the model would get wrong without. Cut every line it already handles.
 - Write from the model's seat: after each passage, read it as the model will, with only the description, the body and the files the body points to. Rewrite until its only reasonable reading gives the best result.
-- Verify every platform fact against its current official source before you write it. When the requester's instruction contradicts a source, follow the source, show the requester both, and wait for their decision if it changes what they asked for.
-- Ask the requester for context only. Decide the design yourself and present it once for approval; ask again only if a later change alters its scope, files or surfaces.
+- Verify every platform fact against its current official source before you write it. When the requester's instruction contradicts a source, show the requester both and follow the source; if that changes what they asked for, wait for their decision before building that part.
+- Decide the design yourself and present it once for approval; ask again only if a later change alters its scope, files or surfaces.
 - After every edit, reread the edited file and every file that states the same facts, and fix each contradiction and duplicate.
 - Use one term per concept and state each fact in one file, across the whole skill you write.
 
@@ -55,8 +56,9 @@ These hold in every phase:
 
 - For a new skill, or a change to an existing skill's purpose, location or structure, run every phase.
 - To change an existing skill, read it whole, with every file it points to, before phase 2. Keep its name and folder unless the requester asks otherwise.
-- To apply an audit, verify each finding against the skill and the sources before changing anything, because a finding can be wrong. Then run the phases the accepted findings touch.
-- For a change that touches no design decision, such as a corrected fact or a typo, make it and run phase 6.
+- To apply an audit, verify each finding against the skill and the sources before changing anything, because a finding can be wrong. Then run the phases that the findings you confirmed touch.
+- For a change that touches no design decision, such as a corrected fact or a typo, make it, run phase 6, and report as phase 7 describes.
+- For a request split into several skills, run phases 3 to 7 once per skill.
 
 ## Workflow
 
@@ -65,6 +67,8 @@ Run the phases in order. Each ends at its exit condition; return to an earlier p
 ### 1. Recognize the environment
 
 Read [references/environment.md](references/environment.md) before you start.
+
+Read [references/sources.md](references/sources.md) before your first lookup of a platform fact.
 
 1. Identify your surface, and what it lets you save, run and test.
 2. Inventory the skills, instructions, hooks, subagents and MCP servers the skill you write could duplicate, contradict or rely on.
@@ -84,13 +88,13 @@ Exit: the requester confirms the goal and the use cases, and no open question wo
 
 ### 3. Decide what to build
 
-Read [references/sources.md](references/sources.md) before your first lookup of a platform fact.
-
 Read [references/components.md](references/components.md) before deciding whether a skill is the right feature and which components it needs.
 
 Read [references/skill-types.md](references/skill-types.md) before choosing the location, surfaces, frontmatter fields, invocation and layout.
 
 Read [references/name-and-description.md](references/name-and-description.md) before proposing the name.
+
+Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) before deciding on a script, a hook, an injected command or a path variable.
 
 Decide each point from the goal, check it against its current source, and record the reason:
 
@@ -108,14 +112,14 @@ Exit: every piece has a purpose tied to the goal, and every fact and field has a
 
 Read [references/writing-instructions.md](references/writing-instructions.md) before you design the body.
 
-Read [references/task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, a step later steps depend on, a fixed output format, or destructive actions.
+Read [references/task-mechanisms.md](references/task-mechanisms.md) before you choose the task mechanisms in step 2.
 
 Read [references/structure.md](references/structure.md) before you plan the files.
 
 1. Choose the form of each instruction by the failure it prevents, and its freedom by how fragile the step is.
 2. Choose the smallest set of task mechanisms the task needs.
 3. Plan the files: the body holds what every run needs; everything else goes in files the body links at the step that needs them.
-4. Write the description by [references/name-and-description.md](references/name-and-description.md).
+4. Read [references/name-and-description.md](references/name-and-description.md) again, then write the description.
 5. Present the plan in this shape and get the requester's approval:
 
    ```text
@@ -135,7 +139,7 @@ Exit: an approved plan you can build without another design decision.
 
 Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) before you write a script, a hook, an injected command, or a command that uses a path variable.
 
-Write the files in the planned order. As each file lands, check that every link resolves, that it reaches nothing outside its folder except through a path variable, and that it reads right from the model's seat. Record every deviation from the plan and its reason.
+Write each file the plan lists. As each file lands, check that every link resolves, that it reaches nothing outside its folder except through a path variable, and that it reads right from the model's seat. Record every deviation from the plan and its reason.
 
 Exit: every planned file exists and passes these checks.
 
@@ -155,10 +159,10 @@ Copy this checklist and check the skill you write against it:
 - [ ] Each use case from phase 2 ran in a fresh session and met its stated result, or is listed as not run, with where it must run.
 - [ ] The validator for each target surface reported no errors.
 - [ ] Every frontmatter key is accepted on every target surface, and each key set has a reason in the plan.
-- [ ] The description opens with the key use case, carries the trigger words of every use case, and states the boundary with each sibling skill from phase 1 that shares its keywords.
-- [ ] The body is under 500 lines, and its first instruction after any role and goal acts on the task the description promises.
+- [ ] The description opens with what the skill does in its key use case, carries the trigger words of every use case, and states the boundary with each sibling skill from phase 1 that shares its keywords.
+- [ ] The body is within the size budget in references/structure.md, and its first instruction after any role and goal acts on the task the description promises.
 - [ ] Every supporting file is linked from SKILL.md on its own line, with the verb for its use and the condition to open it; no file is reachable only through another file.
-- [ ] Every file over 100 lines opens with a table of contents.
+- [ ] Every supporting file that references/structure.md requires a table of contents for opens with one.
 - [ ] Each section prevents a failure you can name from a use case or a test run.
 - [ ] Each step that asks the model to judge states its criterion and the reason.
 - [ ] Each term keeps one meaning, and each number, limit and path appears in one file only.
@@ -167,9 +171,11 @@ Copy this checklist and check the skill you write against it:
 
 Fix each item that fails, then check it again.
 
-Report as [references/validation.md](references/validation.md) describes. Then offer the next step, recommending the first unless the requester asked otherwise:
+Read [references/validation.md](references/validation.md) for the report, and deliver it.
+
+Offer the next step, recommending the first unless the requester asked otherwise:
 
 1. Keep the skill as it is.
 2. Give observations to apply.
-3. Build evals for it.
+3. Build evals for it, if phase 6 didn't.
 4. Audit it with `skills-engineering:auditing-skills`, if installed.

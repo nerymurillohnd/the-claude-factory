@@ -15,7 +15,7 @@ How to write the body of a skill and its references so the model acts the same w
 
 ## What earns a line
 
-The model is already capable; every line competes with the conversation for context. Keep a line only if the model would get the task wrong without it. When unsure, test the task without the line.
+The model is already capable, and every line competes with the conversation for context. When unsure whether the model needs a line, test the task without it.
 
 What usually earns a line:
 
@@ -27,22 +27,22 @@ What usually earns a line:
 
 What doesn't:
 
-- what any capable model knows: what a PDF is, how to write a loop, that tests are good;
+- what any capable model knows: what a CSV is, how to write a loop, that tests are good;
 - generic advice: "handle errors appropriately", "follow best practices";
 - explanations of the skill to a human reader.
 
-Start from real expertise, never from general knowledge. Extract it from a task done with the user (the steps that worked, their corrections, the formats, the context they supplied) or from the project's own material: runbooks, style guides, incident reports, review comments, past fixes. A skill written from general knowledge produces general results.
+A skill written from general knowledge produces general results; write from the material phase 2 gathered.
 
 Correct (adds what the model lacks):
 
 ```markdown
-Use pdfplumber for text extraction. For scanned PDFs, use pdf2image with pytesseract instead.
+Read invoice dates as DD/MM/YYYY: the suppliers are in Central America. A date that only parses as MM/DD is a data-entry error; flag it, don't swap it.
 ```
 
 Incorrect (tells the model what it knows):
 
 ```markdown
-PDF files are a common format that contains text and images. To extract text, you'll need a library. There are many libraries available, but pdfplumber is easy to use and handles most cases well.
+Dates can be written in many formats around the world, such as DD/MM/YYYY or MM/DD/YYYY. It's important to parse dates carefully, because getting them wrong can cause problems in reports.
 ```
 
 Scope the skill like a function: one coherent unit of work. Too narrow and several skills must load for one task; too broad and it triggers where it shouldn't and dilutes its guidance.
@@ -60,11 +60,11 @@ Set how tightly each step is specified by how badly it fails when done different
 
 - **High freedom**, as goals and criteria, where several approaches work and context decides: reviewing code, writing a summary. Say what a good result is and why; let the model choose how.
 - **Medium freedom**, as a preferred pattern or a parameterized script, where one way is better but variation is acceptable: "Use this template and adapt the sections to the data."
-- **Low freedom**, as an exact command or sequence, where a deviation breaks something: a migration, a release, a file format. "Run exactly this script. Don't change the command or add flags."
+- **Low freedom**, as an exact command or sequence, where a deviation breaks something: a migration, a release, a file format. "Run exactly this command. Don't change it or add flags."
 
 Within any level:
 
-- **Give a default, not a menu.** Name the tool or approach to use, and the exception as its own condition: "Use pdfplumber. For scanned PDFs, use pytesseract." Equal options make the model choose differently on each run.
+- **Give a default, not a menu.** Name the tool or approach to use, and the exception as its own condition: "Export with the accounting system's CSV importer. For systems without one, write the journal file by hand from the template." Equal options make the model choose differently on each run.
 - **Teach the class of problem, not one answer.** Write the procedure that solves every instance ("find the table's join keys, then..."), not the result for the instance you tested.
 - **Give the reason where the model must judge.** One clause of why lets the model decide the cases the rule doesn't name: "Keep the summary under 100 words, because it is shown in a notification."
 
@@ -72,10 +72,10 @@ Within any level:
 
 Choose each instruction's form by the failure it prevents. Test runs show which failure you have:
 
-- **The model skips a step under pressure or shortcuts a discipline**: make it a gate with an exit condition ("Don't continue until the validator passes"), a checklist item, or a hook if it must hold every time.
+- **The model skips a step under pressure or shortcuts a discipline**: make it a gate with an exit condition ("Don't continue until the check passes"), a checklist item, or a hook if it must hold every time.
 - **The output comes out in the wrong shape**: give a template or an input and output example, not a description of the format.
 - **The model misses an element it can't infer**: state the fact or rule where it applies, as a gotcha if it defies assumptions.
-- **The right action depends on a condition**: write the condition and both branches: "If the file has signatures, read FORMS.md; otherwise continue."
+- **The right action depends on a condition**: write the condition and both branches: "If the invoice has more than one currency, read CURRENCIES.md; otherwise continue."
 - **The model makes a judgment call inconsistently**: write the criterion that decides it and its reason.
 - **The model does too much**: state the stopping point and what not to do beyond it.
 - **The model reinvents the same code each run**: bundle a script.
@@ -87,12 +87,12 @@ Read [task-mechanisms.md](task-mechanisms.md) for how to build workflows, checkl
 Write the way the official skill examples do: short and complete. Short is not thin: each instruction names the action, its object, the condition and, where one exists, the fallback.
 
 - **Imperative, to the model**: "Run", "Read", "Write", not "You should consider running" or "The skill runs".
-- **One action per line or bullet**, with its condition and fallback: "Run `scripts/validate.py out/`. If it reports missing fields, add them to the CSV and run it again."
+- **One action per line or bullet**, with its condition and fallback: "Run the totals check. If a row's total differs from its lines, fix the row in the CSV and run it again."
 - **Concrete names**, not categories: the file, the command, the field, the value. "Check `amount` is positive", not "validate the data".
 - **The reason only where it decides an unnamed case**, in one clause. Don't narrate why every step exists.
 - **No narration**: no "First, we'll...", "Now that we have...", "This is important because...".
 - **Positive instructions**: say what to do. Use a prohibition only for a specific mistake the model actually makes, and pair it with what to do instead.
-- **No emphasis by capitals or alarm words** ("CRITICAL", "YOU MUST"). Current models follow plain instructions; emphasis makes them over-apply a rule. If a rule keeps being skipped, move it earlier, make it a gate, or enforce it with a hook.
+- **No emphasis by capitals or alarm words** ("CRITICAL", "YOU MUST"). Plain instructions are followed; emphasis makes the model over-apply a rule. If a rule keeps being skipped, move it earlier, make it a gate, or enforce it with a hook.
 - **Lists over tables** in instructions the model follows; paragraphs only where the reasoning lives in the connections between ideas.
 - **One term per concept**, the same in every file: if it is a "field", it is never a "box" or an "element".
 - **No time-sensitive wording** ("currently", "the new API", "after August"). Write the current method; put a superseded one under an "Old patterns" heading, if anywhere.
@@ -100,13 +100,13 @@ Write the way the official skill examples do: short and complete. Short is not t
 Correct:
 
 ```markdown
-Run `python scripts/validate.py --input data.csv`. If it fails, the error names the column: fix the value in the CSV and run it again.
+Run `python3 scripts/check_totals.py invoices.csv`. If it fails, the error names the row and the column: fix that value and run it again.
 ```
 
 Incorrect:
 
 ```markdown
-Make sure to validate the data before proceeding.
+Make sure the data is valid before you continue.
 ```
 
 ## Examples and snippets
@@ -115,8 +115,8 @@ An example teaches what prose can't: a tone, a level of detail, a format. Add on
 
 - **Input and output pairs** for transformations and style: show the input, the output, then the rule line that says what to imitate.
 - **Two or three examples that differ** where the output varies, so the model learns the pattern, not one instance.
-- **The rule after the examples**: "Follow this style: type(scope): description, then the detail."
-- **Commands** in a fenced block with the language tag, versions pinned, placeholders in square brackets with what goes there: `python scripts/fill.py [input.pdf] [fields.json] [output.pdf]`.
+- **The rule after the examples**: "Follow this style: [the pattern in one line]."
+- **Commands** in a fenced block with the language tag, versions pinned, placeholders in square brackets with what goes there: `python3 scripts/to_csv.py [invoice.pdf] [out.csv]`.
 - **Code** only as long as the pattern needs: the call and its arguments, not a whole program.
 - **Inline** when short and needed on every run; **in a file** (`references/examples.md` or `assets/`) when long or needed only in some cases, with a pointer that says when to read it.
 - **Correct and incorrect pairs** where the model would otherwise produce the incorrect one, each with a one-line reason.
@@ -124,27 +124,27 @@ An example teaches what prose can't: a tone, a level of detail, a format. Add on
 Correct:
 
 ````markdown
-Write commit messages like these:
+Write each changelog line like these:
 
-Input: Added user authentication with JWT tokens
+Input: PR "Add CSV export to the invoices page" (label: feature)
 Output:
 ```text
-feat(auth): implement JWT-based authentication
+- Added CSV export on the invoices page.
 ```
 
-Input: Fixed dates shown in the wrong timezone in reports
+Input: PR "Fix rounding of tax on multi-currency invoices" (label: bug)
 Output:
 ```text
-fix(reports): use UTC timestamps in timezone conversion
+- Fixed tax rounding on invoices with more than one currency.
 ```
 
-Follow this style: type(scope): what changed, in the imperative.
+Follow this style: past-tense verb, what changed for the user, one line, no PR jargon.
 ````
 
 Incorrect:
 
 ```markdown
-Write good commit messages that follow conventional commits and are descriptive.
+Write clear, user-friendly changelog entries.
 ```
 
 ## Anti-patterns
@@ -165,25 +165,18 @@ Incorrect: Handle errors appropriately and follow best practices.
 Correct:   On a 429, wait the seconds in the Retry-After header, then retry once.
 ```
 
-A menu instead of a default:
-
-```markdown
-Incorrect: You can use pypdf, pdfplumber, PyMuPDF or pdf2image.
-Correct:   Use pdfplumber. For scanned PDFs, use pdf2image with pytesseract.
-```
-
 Time-sensitive wording:
 
 ```markdown
-Incorrect: If it's before August 2025, use the old API.
-Correct:   Use `api.example.com/v2/messages`.
+Incorrect: Until the migration finishes next quarter, use the old endpoint.
+Correct:   Use `api.example.com/v2/invoices`.
 ```
 
 One term for two concepts, or two terms for one:
 
 ```markdown
-Incorrect: Extract the fields ... then pull the boxes ... then validate each element.
-Correct:   Extract the fields ... then fill each field ... then validate each field.
+Incorrect: Extract the line items ... then total the rows ... then check each entry.
+Correct:   Extract the line items ... then total the line items ... then check each line item.
 ```
 
 The same fact in two places:
@@ -211,12 +204,12 @@ A vague step with no check:
 
 ```markdown
 Incorrect: Make sure the output is correct.
-Correct:   Open output.pdf and confirm every field in fields.json has a value on the page.
+Correct:   Open out.csv and confirm it has one row per line item in the invoice, and the totals match.
 ```
 
 ## Read it from the model's seat
 
-After writing each section, read it as the model will: a fresh session that knows only the description, the body and the files the body points to, with none of this conversation.
+The walk behind the standing rule in `SKILL.md`, for each section you write:
 
 1. Read the description alone. Would it pick this skill for each use case, and not for the near-misses?
 2. Read the body top to bottom. At each instruction, predict what the model does. Where two readings are possible, rewrite until only the right one is.
@@ -224,4 +217,4 @@ After writing each section, read it as the model will: a fresh session that know
 4. Look for what the model would need and not find: a term never defined, a step that assumes a file exists, a decision with no criterion.
 5. Look for what it would find and not need: anything it does well without being told.
 
-Then confirm with a run in a fresh session; reading only predicts. Read [validation.md](validation.md) for running it.
+Reading only predicts; read [validation.md](validation.md) for confirming it with runs.

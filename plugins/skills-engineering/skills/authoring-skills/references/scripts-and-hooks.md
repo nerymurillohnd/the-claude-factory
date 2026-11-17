@@ -7,6 +7,7 @@ When a skill should run code, where that code lives so it is found on every mach
 - When a script earns its place
 - Where a script lives
 - Reaching the script
+- How a script starts
 - The interface the model meets
 - Dependencies and portability
 - Injected commands
@@ -22,10 +23,10 @@ Write a script when the operation:
 
 Keep it as instructions when the step needs judgment: choosing, wording, reviewing. A script only moves the judgment out of sight.
 
-Running a script costs only its output; its code never enters context. Tell the model which it should do:
+Tell the model whether to run the script or read it:
 
-- **Run it** (most scripts): "Run `python scripts/analyze_form.py input.pdf` to extract the fields."
-- **Read it** (when the logic itself is the knowledge): "Read `scripts/analyze_form.py` for the field-extraction algorithm."
+- **Run it** (most scripts): "Run `python3 scripts/split_pages.py scan.pdf` to get one image per page."
+- **Read it** (when the logic itself is the knowledge): "Read `scripts/tax_rounding.py` for how each country rounds tax lines."
 
 A short command the model can type from memory, such as `git log --oneline -20`, needs no script: write the command in the body.
 
@@ -36,16 +37,16 @@ Choose by who must reach it and where the skill travels.
 **Inside the skill folder** (`scripts/` or a subfolder): travels with the skill to every surface, upload and copy. The default for any script one skill uses.
 
 ```text
-my-skill/scripts/validate.py
-→ body: Run `python "${CLAUDE_SKILL_DIR}/scripts/validate.py" out/`   (Claude Code)
-→ body: Run `python scripts/validate.py out/`                          (claude.ai, API)
+my-skill/scripts/check_totals.py
+→ body: Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py out/`   (Claude Code)
+→ body: Run `python3 scripts/check_totals.py out/`                        (claude.ai, API)
 ```
 
 **At the plugin level**, shared by several skills of one plugin: reached through the plugin root. The skill is no longer self-contained: uploaded or copied alone, it loses the script.
 
 ```text
 my-plugin/scripts/common.sh
-→ body: Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/common.sh"`
+→ body: Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/common.sh`
 ```
 
 **In the plugin's `bin/`**: Claude Code puts `bin/` on the PATH of the shell it runs commands in while the plugin is enabled, so the model runs the tool by name. Use it for a command-line tool the plugin offers to several skills or to the user.
@@ -59,36 +60,47 @@ my-plugin/bin/lint-skill
 
 ```text
 <project>/.claude/scripts/release.sh
-→ body: Run `bash "${CLAUDE_PROJECT_DIR}/.claude/scripts/release.sh"`
+→ body: Run `bash ${CLAUDE_PROJECT_DIR}/.claude/scripts/release.sh`
 ```
 
-**Outside the plugin**: never. Installing a plugin copies only its own folder into a cache. A path above the plugin root does not exist on users' machines. Symlinks to a file elsewhere in the plugin are kept; to a file elsewhere in the same marketplace repository they are replaced with a copy; to anything outside the marketplace they are skipped.
+**Outside the plugin**: never. Installing a plugin copies only its own folder into a cache, and the install folder is replaced on every update. A path above the plugin root does not exist on users' machines. Symlinks to a file elsewhere in the plugin are kept; to a file elsewhere in the same marketplace repository they are replaced with a copy; to anything outside the marketplace they are skipped.
 
 Incorrect:
 
 ```text
 my-plugin/skills/deploy/SKILL.md   → Run `bash ../../../shared/deploy.sh`
-~/.claude/skills/report/SKILL.md   → Run `python ~/work/tools/build_report.py`
+~/.claude/skills/report/SKILL.md   → Run `python3 ~/work/tools/build_report.py`
 ```
 
 The first fails after installation; the second works only on the author's machine.
 
-Never write state next to a plugin script: the install folder is replaced on every update. Use the plugin data folder; read [components.md](components.md) for setup and state.
+Read [components.md](components.md) for where a skill keeps its configuration and state.
 
 ## Reaching the script
 
-- `CLAUDE_SKILL_DIR`, `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`, written with a dollar sign and braces, are replaced in the skill body and in `allowed-tools` Bash rules before the model reads them. They are not environment variables in the model's shell. The plugin ones exist only in plugin skills.
-- Quote every substituted path: install folders can contain spaces.
-- Without these variables (claude.ai, the API), write paths relative to the skill root with forward slashes.
-- To run a bundled script without a permission prompt, write the same path in the rule and in the body:
+- In Claude Code, `CLAUDE_SKILL_DIR`, `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`, written with a dollar sign and braces, are replaced in the skill body and in `allowed-tools` Bash rules before the model reads them, so the path resolves whatever the working directory. The plugin ones exist only in plugin skills.
+- Without them (claude.ai, the API), write paths relative to the skill root, with forward slashes.
+- Write the command in the body exactly as the `allowed-tools` rule writes it, so the rule matches and the script runs without a prompt:
 
 ```yaml
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/render.py *)
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/render_chart.py *)
 ```
 
 ```markdown
-Run `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py data.csv` to render the chart.
+Run `python3 ${CLAUDE_SKILL_DIR}/scripts/render_chart.py sales.csv` to render the chart.
 ```
+
+- Where no rule covers the command, double-quote the substituted path: install folders can contain spaces.
+
+## How a script starts
+
+How the script is launched decides what its first line and file mode must be:
+
+- **Launched with its interpreter** (`python3 scripts/x.py`, `bash scripts/x.sh`, `node scripts/x.js`): the operating system never reads the first line, so neither a shebang nor the executable bit is needed. The safest choice for a skill's own scripts.
+- **Launched by path, as a command in `bin/`, or by a hook that names the file**: it needs a shebang through `/usr/bin/env` (`#!/usr/bin/env python3`, `#!/usr/bin/env bash`) and mode `755`. Without them the command fails, and a failing hook lets the action through unchecked.
+- **Imported or sourced by another script**: neither.
+
+Call Python as `python3`: it is the name macOS and most Linux distributions guarantee; `python` may be missing. On Windows the installer provides `python`; a skill that declares Windows support allows both in its `allowed-tools`.
 
 ## The interface the model meets
 
@@ -96,10 +108,10 @@ The model reads a script's output to decide its next step. Design for that reade
 
 - **No interactive prompts.** The model's shell can't answer one, so the run hangs. Take every input as an argument, a flag, an environment variable or stdin.
 - **`--help`** that states the purpose, arguments, flags and one example. The model reads it to learn the interface instead of the code.
-- **Errors that say what failed, what was expected and what to try**: "Field 'signature_date' not found. Available fields: customer_name, order_total, signature_date_signed."
+- **Errors that say what failed, what was expected and what to try**: "Column 'net_amount' not found in invoices.csv. Columns found: invoice_id, date, gross_amount, tax."
 - **Structured output on stdout** (JSON, CSV or a fixed text shape) and diagnostics on stderr, so the result can be parsed and piped.
 - **Exit codes with meaning**: 0 for success, distinct non-zero codes for distinct failures, documented in `--help`.
-- **Handle errors in the script.** Create a missing file with a default, fall back on a permission error, and report what happened; don't stop and leave the model to guess.
+- **Handle errors in the script.** Create a missing output folder, fall back on a permission error, and report what happened; don't stop and leave the model to guess.
 - **Idempotent**: running it twice gives the same result, because the model retries.
 - **Safe defaults and a dry run** for anything destructive: `--dry-run` shows what would change; destruction needs an explicit flag such as `--confirm`.
 - **Bounded output**: summarize by default; offer `--verbose` or an output file for full detail. Long output may be truncated before the model sees it.
@@ -108,11 +120,10 @@ The model reads a script's output to decide its next step. Design for that reade
 ## Dependencies and portability
 
 - State each prerequisite in `SKILL.md` where the script is introduced: interpreter version, packages, system tools.
-- Pin versions in one-off commands so a new release doesn't change behavior: `uvx ruff@0.8.0 check .`, `npx eslint@9 .`.
+- Pin versions in one-off commands so a new release doesn't change behavior: `uvx black@24.10.0 .`, `npx prettier@3.3.3 --check .`.
 - For a Python script with packages, declare them inline (PEP 723) and run it with `uv run`; Deno, Bun and Ruby have equivalents. Otherwise prefer the standard library.
-- Never install packages globally from a skill; install into the skill's or project's environment.
-- Check what each target surface provides: the Claude API has no network and only preinstalled packages; claude.ai can install from npm and PyPI depending on settings; Claude Code has the user's machine.
-- Write shell scripts for POSIX sh or bash, with forward slashes. On Windows they run through Git Bash; say so where the skill states its requirements.
+- Check what each target surface allows (network, packages, installs); read [skill-types.md](skill-types.md).
+- Write shell scripts for POSIX sh or bash, with forward slashes. On Windows they need Git Bash, since without it Claude Code runs commands through PowerShell; state Git Bash as a requirement.
 
 ## Injected commands
 
@@ -129,7 +140,7 @@ Behavior to design for:
 - Commands run in the session's current working directory, under the shell tool's 2-minute timeout; stderr is merged into the output with bash. Use a path variable for anything that must resolve the same way every time.
 - They never prompt: a command a deny or ask rule matches aborts the invocation, and outside auto mode so does one no rule allows. Pre-approve each one with `allowed-tools`.
 - Output is not re-scanned, so a command can't inject another command.
-- They don't run in Cowork, in synced skills in a terminal session, on claude.ai or through the API, and administrators can disable them with `disableSkillShellExecution`. Write the body so it still works, or fails clearly, when the output is missing.
+- They don't run in Cowork, in synced skills in a terminal or VS Code session, on claude.ai or through the API. The `disableSkillShellExecution` setting replaces them with a placeholder in user, project, plugin and added-directory skills. Write the body so it still works, or fails clearly, when the output is missing.
 
 ## Hooks in a skill
 
@@ -141,12 +152,15 @@ hooks:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: '"${CLAUDE_PLUGIN_ROOT}/scripts/check-output.sh"'
+          command: python3
+          args: ["${CLAUDE_PLUGIN_ROOT}/scripts/check_output.py"]
           once: true
 ```
 
+- With `args`, the hook runs in exec form: no shell, each argument passed as written, and the path variables substituted into `command` and each argument. Use it whenever a hook names a path variable. Without `args` it runs through a shell; double-quote each variable there.
+- Naming the interpreter in `command`, as above, spares the script a shebang and executable bit.
 - `once: true` removes a hook after its first successful run; a failure, a block or a timeout keeps it. It works only in skill frontmatter.
-- Hook commands resolve `CLAUDE_PROJECT_DIR`, and in plugins `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. Point a plugin skill's hook at a script under the plugin root, and a project skill's at a script under the project. Prefer the exec form with `args` when a command contains a path variable; in the shell form, double-quote each variable.
+- Hook commands resolve `CLAUDE_PROJECT_DIR`, and in plugins `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. Point a plugin skill's hook at a script under the plugin root, and a project skill's at a script under the project.
 - Under an organization's `strictPluginOnlyCustomization` lock on hooks, only plugin, bundled and managed skills keep their frontmatter hooks, and a personal or project skill with `hooks` also loses its `allowed-tools`. Ship hooks that must work everywhere in a plugin.
 - Since v2.1.304, each source of skills (the project, the personal folder, each plugin) can register at most 1,024 hooks with 16,384 characters of matchers per session; past that, the skill registers none of its hooks.
 - A hook that must run whether or not the skill was invoked belongs in the plugin's `hooks/hooks.json` or in settings, not in the skill.

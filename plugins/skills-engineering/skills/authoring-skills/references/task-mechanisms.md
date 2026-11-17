@@ -37,9 +37,9 @@ How to build a workflow:
 3. A decision point where the path forks, with each condition the model can check and where each branch goes:
 
 ```markdown
-1. Determine the change:
-   - Creating a new document? Follow "Create" below.
-   - Editing an existing one? Follow "Edit" below.
+1. Check the supplier:
+   - New supplier? Follow "Add a supplier" below.
+   - Existing supplier? Follow "Update a supplier" below.
 ```
 
 4. An exit condition for each phase in a long workflow: what must be true before moving on.
@@ -57,11 +57,11 @@ Two different tools. Use each only for its failure.
 Copy this checklist and check off each step as you complete it:
 
 ```text
-- [ ] 1. Analyze the form (run analyze_form.py)
-- [ ] 2. Map the fields (edit fields.json)
-- [ ] 3. Validate the mapping (run validate_fields.py)
-- [ ] 4. Fill the form (run fill_form.py)
-- [ ] 5. Verify the output (run verify_output.py)
+- [ ] 1. Collect the month's invoices (run list_invoices.py)
+- [ ] 2. Extract the line items (run to_csv.py on each)
+- [ ] 3. Check the totals (run check_totals.py)
+- [ ] 4. Map accounts (edit accounts.json)
+- [ ] 5. Write the journal file (run build_journal.py)
 ```
 ````
 
@@ -76,8 +76,8 @@ Skip it for short tasks or tasks without order: it adds ceremony and no protecti
 Correct:
 
 ```text
-- [ ] Every field listed in fields.json has a value on the filled PDF (run verify_output.py).
-- [ ] The report has one row per region in data.csv, plus a totals row.
+- [ ] Every invoice in the month's folder has rows in out.csv (run check_totals.py --coverage).
+- [ ] The journal's debits equal its credits, to the cent.
 ```
 
 Incorrect:
@@ -102,11 +102,11 @@ Choose the validator by what can check the result:
 Write the loop with its exit:
 
 ```markdown
-1. Edit `word/document.xml`.
-2. Run `python scripts/validate.py unpacked/`.
-3. If it reports errors, fix each one in the XML and run it again.
+1. Edit `accounts.json`.
+2. Run `python3 scripts/check_accounts.py accounts.json`.
+3. If it reports errors, fix each listed account and run it again.
 4. Continue only when it passes.
-5. Pack: `python scripts/pack.py unpacked/ output.docx`.
+5. Build: `python3 scripts/build_journal.py out.csv accounts.json journal.csv`.
 ```
 
 For iterative refinement, add a stopping rule so the loop ends: a pass from the validator, a number of rounds, or no gain over the last round.
@@ -121,38 +121,38 @@ For batch, destructive or high-stakes work, have the model write its plan to a f
 4. Apply the changes.
 5. Verify the result.
 
-The plan can be fixed and re-checked without touching the originals, and a validator's error points at one entry. Use it whenever an error would be expensive to undo: updating 50 fields from a spreadsheet, renaming across a codebase, migrating data. Where the user must approve before anything changes, show them the plan file at step 3.
+The plan can be fixed and re-checked without touching the originals, and a validator's error points at one entry. Use it whenever an error would be expensive to undo: updating 200 supplier records from a spreadsheet, renaming across a codebase, migrating data. Where the user must approve before anything changes, show them the plan file at step 3.
 
 ## Output templates
 
 Give a template when the output has a fixed shape: a template is followed more reliably than a description of the format.
 
-- **Strict** when a reader or program depends on the exact shape (an API payload, a report format other people parse): "Use exactly this structure."
+- **Strict** when a reader or program depends on the exact shape (an API payload, a format other people parse): "Use exactly this structure."
 - **Flexible** when the shape should adapt to the content: "This is a default; adapt the sections to what you find."
 - **Inline** when it is short and every run uses it.
 - **In `assets/`** when it is long or used only in some cases, with a pointer that says when to fill it in.
-- **Placeholders** that say what goes in them: `[one-paragraph overview of the key findings]`, not `[text]`.
+- **Placeholders** that say what goes in them: `[what failed, for whom, for how long]`, not `[text]`.
 
 ````markdown
-Write the report in this structure:
+Write the incident note in this structure:
 
 ```markdown
-# [Analysis title]
+# [Service] incident, [date]
 
-## Summary
-[One paragraph: the key finding and its impact]
+## Impact
+[What failed, for whom, for how long]
 
-## Findings
-- [Finding, with the data that supports it]
+## Cause
+[The first change or event that led to it, with its evidence]
 
-## Recommendations
-1. [Action, owner, deadline]
+## Follow-ups
+- [Action, owner, due date]
 ```
 ````
 
 ## Gotchas
 
-A gotcha is a fact about the environment or domain that defies a reasonable assumption, so the model gets it wrong unless told: the soft-delete column every query must filter, the health endpoint that returns 200 while the database is down, the field named `user_id` that holds an account ID.
+A gotcha is a fact about the environment or domain that defies a reasonable assumption, so the model gets it wrong unless told: the export whose amounts are in cents, the sandbox API that accepts any key but never sends email, the column named `customer` that holds a supplier ID.
 
 - Put them in `SKILL.md`, before the steps they affect: the model must know them before it hits the situation, and won't think to open a file about a mistake it doesn't know it is making.
 - State each as the fact and what to do about it, in one or two lines.

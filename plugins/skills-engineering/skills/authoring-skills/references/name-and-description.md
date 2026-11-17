@@ -15,15 +15,15 @@ How to choose a skill's name and write its description, and how to test that the
 
 ## Choose the name
 
-Hard rules, which fail validation or upload when broken:
+Rules the specification and uploads to claude.ai and the Skills API enforce. Follow them for every skill, so it can leave Claude Code later; a plugin-root `SKILL.md` is the one exception to the folder match, because its folder is the plugin's:
 
 - 1-64 characters, lowercase letters, digits and hyphens; no leading, trailing or doubled hyphen.
 - Matches the folder name exactly.
-- No XML tags, and neither `anthropic` nor `claude` anywhere in it.
+- For uploads: no XML tags, and neither `anthropic` nor `claude` anywhere in it.
 
 Choosing among valid names:
 
-1. Name the activity or capability the skill gives, so the name alone tells the model and its users what it is for. Prefer the gerund form, such as `processing-pdfs` or `writing-release-notes`. A noun phrase (`pdf-processing`) or an action form (`process-pdfs`) is acceptable.
+1. Name the activity or capability the skill gives, so the name alone tells the model and its users what it is for. Prefer the gerund form, such as `exporting-invoices` or `writing-release-notes`. A noun phrase (`invoice-export`) or an action form (`export-invoices`) is acceptable.
 2. Follow the pattern of the sibling skills in the same plugin or folder, even when it isn't the gerund: a consistent set is easier to reference and search.
 3. Avoid names that say nothing about the task (`helper`, `utils`, `tools`) or cover too much (`documents`, `data`, `files`).
 4. Don't repeat the plugin name inside a plugin skill's name: the command is already `/<plugin>:<name>`.
@@ -37,11 +37,10 @@ The description is what the model compares the user's request against. It must l
 
 Put in it:
 
-1. **What the skill does**, in terms of the outcome, not the mechanism: "Extracts text and tables from PDF files, fills forms, merges documents."
-2. **When to use it**, as the situations and requests that call for it, in the words its users actually say: "Use when working with PDF files or when the user mentions PDFs, forms, or document extraction."
-3. **Requests that never name the domain**, when those are common: "even if they don't say 'dashboard'". Models tend to skip skills for tasks they think they can do alone, so a description that is slightly insistent about its cases triggers better.
-4. **The boundary**, when a near-miss request or a sibling skill shares its keywords: "Not for auditing a skill, which [sibling] does." Name what it is not for only where confusion is likely.
-5. **The key use case first.** Claude Code truncates long descriptions in its listing, and the first clause carries the most weight.
+1. **What the skill does in its key use case**, in terms of the outcome, not the mechanism. It comes first: Claude Code truncates long descriptions in its listing, so the end is lost first.
+2. **When to use it**, as the situations and requests that call for it, in the words its users actually say.
+3. **Requests that never name the domain**, when those are common: "even if they don't say 'invoice'". Models tend to skip skills for tasks they think they can do alone, so a description that is slightly insistent about its cases triggers better.
+4. **The boundary**, when a near-miss request or a sibling skill shares its keywords: "Not for X, which [sibling] does." Name what it is not for only where confusion is likely.
 
 Leave out:
 
@@ -59,9 +58,9 @@ Leave out:
 ## Length by surface
 
 - **Spec, claude.ai and Skills API**: at most 1,024 characters, non-empty, no XML tags. Above the limit the upload fails.
-- **Claude Code**: no hard limit on `description` itself, but the listing cuts `description` plus `when_to_use` at 1,536 characters by default (configurable with `skillListingMaxDescChars`). Text past the cut never reaches the model. The whole listing also has a budget, 1% of the context window by default (`skillListingBudgetFraction`); when it overflows, Claude Code drops the descriptions of the least-used skills first.
+- **Claude Code**: doesn't reject a longer `description`, but its listing cuts `description` plus `when_to_use` at 1,536 characters by default (configurable with `skillListingMaxDescChars`). Text past the cut never reaches the model. The whole listing also has a budget, 1% of the context window by default (`skillListingBudgetFraction`); when it overflows, Claude Code drops the descriptions of the least-used skills first.
 - A description within its surface's limit is not too long. Cut it only for a reason: a duplicate, a workflow summary, or words that don't help the model choose.
-- A description far shorter than its cases need is a defect: "Helps with documents" triggers on everything or nothing.
+- A description far shorter than its cases need is a defect: "Handles invoices" triggers on everything or nothing.
 
 For a skill that runs on several surfaces, keep under 1,024 characters.
 
@@ -79,25 +78,25 @@ A Claude Code-only field appended to the description in the listing and counted 
 Vague:
 
 ```yaml
-description: Helps with documents
+description: Handles invoices.
 ```
 
 Specific about what and when:
 
 ```yaml
-description: Analyzes Excel spreadsheets, creates pivot tables and charts. Use when analyzing Excel files, spreadsheets, tabular data, or .xlsx files.
+description: Extracts line items, totals and tax from supplier invoices in PDF or image form and exports them to CSV. Use when the user shares an invoice, asks to digitize receipts, or needs invoice data in a spreadsheet.
 ```
 
 Missing triggers:
 
 ```yaml
-description: Generates commit messages.
+description: Writes changelog entries.
 ```
 
 With the requests that should load it:
 
 ```yaml
-description: Generates descriptive commit messages by analyzing git diffs. Use when the user asks for help writing commit messages or reviewing staged changes.
+description: Writes changelog entries from merged pull requests in Keep a Changelog format. Use when the user asks for release notes, a changelog update, or what changed since the last tag.
 ```
 
 Mechanics instead of intent:
@@ -134,6 +133,6 @@ Test when the model invokes the skill on its own and other skills or general kno
    - Make them concrete, as users write them: file paths, column names, personal context, a pasted error.
 2. Run each request about three times in a fresh session with the skill installed, and record how often the skill loads. A request passes when its rate is above 0.5 for should-trigger, and below it for should-not-trigger.
 3. Split the set about 60/40 into a set you tune against and a set you only check. Change the description from the patterns of failures in the first set, never by pasting keywords from a failed request.
-4. Stop when the held-out set passes or after about five rounds without gain. Keep the version that scored best on the held-out set, not the last one.
+4. Stop when the held-out set passes or after about five rounds. Keep the version that scored best on the held-out set, not the last one.
 
 Run the same requests against the old description when changing an existing one, and keep the change only if it scores higher. Read [validation.md](validation.md) for running the runs with `claude plugin eval` in a plugin.
