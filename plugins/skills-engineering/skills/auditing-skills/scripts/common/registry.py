@@ -4,7 +4,15 @@ import argparse
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from frontmatter import name_format, name_plain, plain_values, yaml_syntax
+from frontmatter import (
+    compatibility,
+    description,
+    listing_cap,
+    name_format,
+    name_plain,
+    plain_values,
+    yaml_syntax,
+)
 
 from common.context import Context
 from common.report import CheckResult
@@ -59,6 +67,25 @@ CHECKS: tuple[CheckSpec, ...] = (
         name_plain.CHECK,
         name_plain.check,
         ("frontmatter-description",),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        description.CHECK,
+        description.check,
+        ("frontmatter-description", "size-limits-and-budgets"),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        listing_cap.CHECK,
+        listing_cap.check,
+        ("size-limits-and-budgets", "frontmatter-description"),
+        requires=(yaml_syntax.CHECK,),
+        options=listing_cap.options,
+    ),
+    CheckSpec(
+        compatibility.CHECK,
+        compatibility.check,
+        ("frontmatter-description", "size-limits-and-budgets"),
         requires=(yaml_syntax.CHECK,),
     ),
 )
