@@ -9,16 +9,15 @@ untyped API stays out of this file; it is skipped where ruamel.yaml isn't instal
 
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
 import time
 from typing import TypeGuard
 import unittest
 
-from frontmatter_helpers import is_list, parse_json
+from frontmatter_helpers import SCRIPTS, is_list, parse_json
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills/auditing-skills/scripts"))
+sys.path.insert(0, str(SCRIPTS))
 
 from common.yaml_reader import Node, ReadError, read
 from common.yaml_types import to_python, yaml11_tag, yaml12_tag

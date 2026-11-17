@@ -12,6 +12,10 @@ import sys
 import tempfile
 from typing import TypeGuard
 
+# Tests that import the scripts in process put SCRIPTS on sys.path after importing this module;
+# without this, Python would write bytecode into the plugin's scripts folder.
+sys.dont_write_bytecode = True
+
 SCRIPTS = Path(__file__).resolve().parents[1] / "skills" / "auditing-skills" / "scripts"
 ENTRY = SCRIPTS / "frontmatter-checks.py"
 

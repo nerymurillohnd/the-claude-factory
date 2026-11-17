@@ -5,11 +5,12 @@ Every case reads YAML whose first line is file line 2, as a SKILL.md block is, s
 checked here is the line a reviewer would open.
 """
 
-from pathlib import Path
 import sys
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills/auditing-skills/scripts"))
+from frontmatter_helpers import SCRIPTS
+
+sys.path.insert(0, str(SCRIPTS))
 
 from common.yaml_reader import Node, ReadError, read
 

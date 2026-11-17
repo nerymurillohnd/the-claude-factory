@@ -15,10 +15,11 @@ import tempfile
 from typing import override
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills/auditing-skills/scripts"))
+from frontmatter_helpers import SCRIPTS, JsonObject, is_list, parse_json, parse_object, run_python
+
+sys.path.insert(0, str(SCRIPTS))
 
 from common import report, skill_file, text
-from frontmatter_helpers import SCRIPTS, JsonObject, is_list, parse_json, parse_object, run_python
 
 LINE_SEPARATOR = "\N{LINE SEPARATOR}"
 ELLIPSIS = "\N{HORIZONTAL ELLIPSIS}"
