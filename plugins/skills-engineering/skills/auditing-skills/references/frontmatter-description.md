@@ -154,6 +154,8 @@ Whether a field is valid depends on where the skill will be served. Claude Code,
 
 These fields exist only in Claude Code: `when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `disallowed-tools`, `model`, `effort`, `context`, `agent`, `background`, `hooks`, `paths` and `shell`. A command file in `.claude/commands/` takes the same fields except `name` and `paths`.
 
+Before you judge the skill's type, read `skill-types-and-frontmatter.md`, in this skill's `references/` folder, whole: it lists, from the official sources, every frontmatter field, name rule, argument, body feature and folder layout by type of skill, and a row read alone can hide a condition another section states.
+
 When you audit:
 - Determine the target before judging any field. The skill's location tells you: a plugin's `skills/`, or a `.claude/skills/` folder, means Claude Code. Packaging instructions, a ZIP, an API upload or a claude.ai or Cowork mention means an upload target. If you can't tell and the answer changes a finding, say which finding depends on it.
 - On a skill for any upload target, flag every Claude Code-only field as an error: the upload fails. Recommend either removing it, or keeping a separate Claude Code copy if the skill needs that behavior.
@@ -247,7 +249,6 @@ When you audit:
 When you audit:
 - Flag a hook written as if it ends with the skill's task. It keeps running for the rest of the session, and `once: true`, which removes it after its first successful run, is the only documented way to stop it sooner.
 - Check the structure: event name, then a list of `matcher` and `hooks` entries, each with a `type`, as in settings.
-- Note the cases where the hooks won't apply. Under an organization's `strictPluginOnlyCustomization` lock on hooks, only plugin, bundled and managed-directory skills keep their frontmatter hooks.
 
 ### 2.10 `context`, `agent`, `background`: valid values
 

@@ -1,6 +1,6 @@
 # Runtime contract
 
-This file teaches you how to audit whether a skill's files resolve, package, load and are discovered on every surface it targets: its packaging boundary and archive layout, how its files link to each other, its paths and variable substitution, its plugin layout and cache, its symlinks, its discovery, precedence and sync, how subagents consume it, and how its tool pre-approval and injected commands behave at runtime. Each section gives you the principle, why it matters, and what to do when you audit.
+This file teaches you how to audit whether a skill's files resolve, package, load and are discovered on every surface it targets: its packaging boundary and archive layout, how its files link to each other, its paths and variable substitution, its plugin layout and cache, its symlinks, its discovery, precedence and sync, how subagents consume it, how its tool pre-approval and injected commands behave at runtime, how hooks, mods and permission rules act on it, and how it composes with other skills. Each section gives you the principle, why it matters, and what to do when you audit.
 
 ## Contents
 
@@ -30,10 +30,20 @@ This file teaches you how to audit whether a skill's files resolve, package, loa
 - 6. Subagent consumption
   - 6.1 Forked skills
   - 6.2 Preloaded skills
+  - 6.3 What no subagent has
+  - 6.4 Agent SDK sessions
 - 7. Tool pre-approval and shell execution
   - 7.1 allowed-tools at runtime
   - 7.2 Injected commands at runtime
 - 8. Validator scope and blind spots
+- 9. Hooks and the skill at runtime
+  - 9.1 The skill's own hooks
+  - 9.2 Hooks, mods and permission rules that act on the skill
+- 10. Composition between skills
+  - 10.1 Invoking another skill during a run
+  - 10.2 Skills meant to load together
+  - 10.3 Dependencies across plugins
+  - 10.4 Composition the skill needs, and composition it doesn't
 - Classifying findings
 - Improvement opportunities
 - Delivering the report
@@ -59,6 +69,8 @@ The prompt you receive states what the orchestrating model's scripts already ver
 
 ### Before auditing: establish the context
 
+Before you judge the skill's type, read `skill-types-and-frontmatter.md`, in this skill's `references/` folder, whole: it lists, from the official sources, every frontmatter field, name rule, argument, body feature and folder layout by type of skill, and a row read alone can hide a condition another section states.
+
 A judgment that's correct for one route can be wrong for another, so settle these four points before you apply any rule. They decide what "correct" means for the skill in front of you.
 
 1. **Where the skill lives.** Identify whether it is an enterprise skill (managed settings directory), a personal skill (`~/.claude/skills/`), a project skill (`.claude/skills/`, including nested ones), a skill from an added directory (`--add-dir`), a skill in a plugin's `skills/` directory, a single `SKILL.md` at a plugin's root, a skill folder that is also a skills-directory plugin, a skill enabled on a claude.ai account and synced, a Skills API upload, or a Managed Agents skill. Each route has its own discovery, packaging and substitution rules, so don't judge one by another's.
@@ -68,7 +80,7 @@ A judgment that's correct for one route can be wrong for another, so settle thes
    - The Claude app. On an account moved to the unified experience, chat and Cowork are one conversation and tasks run in the cloud with no local option. On an account not yet moved, chat and Cowork are separate, and Cowork can also run locally in the desktop app. Cloud Cowork sessions reach local files, local MCP servers, browser use and computer use only while the desktop app is open.
    - The Skills API and Managed Agents.
    If the prompt names no target, infer it from the files and state the assumption in the report. Never audit against Claude Code alone and present the result as valid everywhere. For a skill that targets several surfaces, judge each one.
-3. **How the skill gets invoked.** Determine whether it runs directly in a session, is forced into a subagent with `context: fork`, or is preloaded into a custom subagent's `skills` list (§6).
+3. **How the skill gets invoked.** Determine whether it runs directly in a session, is forced into a subagent with `context: fork`, is preloaded into a custom subagent's `skills` list (§6), runs in an Agent SDK session (§6.4), or is invoked by another skill during that skill's run (§10). Note which paths reach it: the user typing its name, Claude calling the `Skill` tool, or both, because hooks and rules act on each path differently (§9.2).
 4. **What the skill is actually trying to do**, from its own description and body. Use this to decide which areas apply. A skill with no supporting files has nothing to check under §1.1. A skill that isn't in a plugin has nothing to check under §3. Apply each area only where the skill's purpose and targets make it relevant, and never flag an absence the skill never had a reason to fill.
 
 ### Then, audit area by area
@@ -341,29 +353,60 @@ When you audit:
 
 ## 6. Subagent consumption
 
-Judge the mechanics that decide whether the subagent gets the skill at all, and with which tools.
+Judge the mechanics that decide whether the subagent gets the skill at all, with which tools, and what it can do with them.
 
 ### 6.1 Forked skills
 
-With `context: fork`, Claude Code starts a new subagent of the `agent` type and gives it the skill content as its prompt. Despite the name, it isn't a fork of the conversation and doesn't see the history. It runs in the background by default, with the background tool set: every MCP tool, but of the built-in tools only `Read`, `Grep`, `Glob`, `LSP`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage` and `Artifact`; `background: false` makes it wait and keeps the full tool set. Claude Code also waits in non-interactive runs. The built-in Explore and Plan agents start without `CLAUDE.md`.
+With `context: fork`, Claude Code starts a new subagent of the `agent` type and gives it the skill content as its prompt. Despite the name, it isn't a fork of the conversation and doesn't see the history. The `agent` field "determines the execution environment (model, tools, and permissions)": a custom agent from `.claude/agents/` brings its own tool list, and the built-in Explore and Plan agents are read-only, with Write and Edit denied. It runs in the background by default, with the background tool set: every MCP tool, but of the built-in tools only `Read`, `Grep`, `Glob`, `LSP`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage` and `Artifact`; `background: false` makes it wait and keeps the full tool set. Claude Code also waits, whatever `background` says, in `-p` runs and the Agent SDK, with `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` set to `1`, when an earlier invocation of the same skill is still running, and when a session-scoped scheduled task fires the skill; an agent in a dynamic workflow that invokes a forked skill waits for and receives its result from v2.1.295, and before that the result went to the main conversation. A forked skill that runs in the background applies its edits outside the session's checkpoints, so `/rewind` doesn't restore the files it changed. The built-in Explore and Plan agents start without `CLAUDE.md`.
 
 When you audit:
 
 - Flag a forked skill whose steps need a tool outside the background set while it runs in the background.
+- Flag a forked skill whose steps write or edit files while it names Explore or Plan as its agent: both deny Write and Edit, so those steps fail.
+- Flag a forked skill that names a custom agent whose `tools` list, or `disallowedTools`, removes a tool the skill's steps need. Take the agent's lists from the prompt or read its file; where neither is available, report the point as unverified.
 - Flag a forked skill that relies on `CLAUDE.md` while it names Explore or Plan as its agent.
 - Flag `context: fork` on a skill that holds guidelines but no task: the subagent gets no actionable prompt.
+- Flag a background forked skill that edits files while the skill, or its documentation, tells the user `/rewind` can undo the run, and recommend the line that tells the user to revert those edits with git.
 
 ### 6.2 Preloaded skills
 
-A custom subagent's `skills` field injects the full content of the listed skills at startup. It controls what is preloaded, not what the subagent can invoke: a subagent with the `Skill` tool can still invoke other skills. Built-in agents don't preload skills. A skill with `disable-model-invocation: true` can't be preloaded, and a listed skill that is missing or disabled is skipped with only a debug-log warning. Plugin subagents ignore `hooks`, `mcpServers`, `permissionMode` and `initialPrompt`. No official source says whether a plugin agent's `skills` entries take bare or namespaced names.
+A custom subagent's `skills` field injects the full content of the listed skills at startup. In that subagent the system prompt is the subagent's own body and the task is Claude's delegation message, so a preloaded skill arrives as reference beside the task, never as the task itself. The field controls what is preloaded, not what the subagent can invoke: a subagent with the `Skill` tool can still invoke other skills. Listing `Skill` in the subagent's `tools` preloads nothing: the docs say to use the `skills` field "rather than listing `Skill` here". Built-in agents don't preload skills. A skill with `disable-model-invocation: true` can't be preloaded, and a listed skill that is missing or disabled is skipped with only a debug-log warning. Plugin subagents ignore `hooks`, `mcpServers`, `permissionMode` and `initialPrompt`. No official source says whether a plugin agent's `skills` entries take bare or namespaced names, and no source says how a preloaded skill's `$ARGUMENTS` and other invocation placeholders render, since no invocation passes arguments to it.
 
 When you audit:
 
 - Flag a skill meant for preloading that a built-in agent is expected to preload, or that sets `disable-model-invocation: true`.
 - Flag a preloaded skill that may be missing or disabled on a target, such as one outside the subagent's plugin and its declared dependencies.
 - Flag a subagent whose explicit `tools` list leaves out `Skill` while its instructions require invoking skills.
+- Flag a subagent that lists `Skill` in `tools` as its way of preloading a skill, and recommend the `skills` entry instead.
+- Flag a skill written to be preloaded whose body depends on `$ARGUMENTS`, a positional argument or a named argument, as unverified, with the load test that would settle how the placeholder renders.
 - Flag a plugin agent that relies on `hooks`, `mcpServers`, `permissionMode` or `initialPrompt`.
 - Flag a plugin agent's `skills` entry for a plugin skill as unverified, with the load test that would settle it.
+
+### 6.3 What no subagent has
+
+Some tools never reach a subagent, whatever its `tools` list says: `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ScheduleWakeup`, `WaitForMcpServers` and `Workflow`, `ExitPlanMode` unless the subagent's `permissionMode` is `plan`, and `Agent` once the subagent sits at the depth limit, by default three layers below the main conversation. Only a conversation fork, a subagent that copies the conversation, skips this filter. A forked or preloaded skill therefore can't ask the user a structured question, enter or leave plan mode, schedule its own wake-up or start a workflow. A background subagent surfaces each permission prompt in the main session, and an answer that lasts beyond one tool call, such as a grant for the rest of the session, applies to the whole session, the main conversation included. Only the subagent's final message returns to the parent, which may summarize it.
+
+Recognize the difference:
+
+**Fails in a forked skill:** "Use AskUserQuestion to ask which environment to deploy to."
+
+**Works in a forked skill:** "Take the environment from `$ARGUMENTS`. If it is missing, stop and return a message that names the missing argument."
+
+When you audit:
+
+- Flag every step of a forked skill, or of a skill meant to be preloaded, that needs one of the tools above, and recommend the replacement: input taken from the arguments or the delegation prompt, or a final message that tells the parent what it must ask.
+- Flag a skill that runs in a subagent and expects to spawn further subagents while it may already sit at the depth limit, as unverified unless the prompt reports the nesting it runs under.
+- Flag a forked or preloaded skill whose output the parent must present verbatim while nothing tells the parent so, and recommend the line, in the skill or the delegating instruction, that asks the parent to keep the subagent's report as written.
+
+### 6.4 Agent SDK sessions
+
+The Agent SDK discovers skills only through the filesystem setting sources: with default options it loads the user and project sources, and with an explicit `settingSources` (`setting_sources` in Python) that leaves both out it loads no skills; the `plugins` option loads skills from a given path instead. The `skills` option decides which discovered skills Claude may invoke: omitted, every discovered skill; `"all"`, every one; a list, only those, named by the skill's directory name or, for a plugin skill, `plugin:skill`; `[]`, none. Claude doesn't see an unlisted skill, and the Skill tool rejects it with `Skill <name> is not in this session's skills allowlist`, while `/<name>` in a prompt still runs any user-invocable skill. With an explicit `tools` list, `Skill` must be in it, or Claude can't invoke skills. A subagent defined in the SDK's `agents` option preloads through `AgentDefinition.skills`, and unlisted skills stay invocable through the Skill tool.
+
+When you audit:
+
+- Flag a skill, or its documentation, meant for SDK sessions that tells the integrator to set `settingSources` without the source the skill lives in, or to pass an explicit `tools` list without `Skill`.
+- Flag an SDK `skills` list, in the skill's documentation or example code, that names a plugin skill without its `plugin:` prefix, or that leaves out a skill the audited skill invokes.
+- Recommend, for a skill whose documentation targets the SDK, the exact options that load and allow it, for example: `settingSources: ["project"]`, `skills: ["my-plugin:review"]`, and `"Skill"` in `tools` when `tools` is set.
 
 ---
 
@@ -371,7 +414,7 @@ When you audit:
 
 ### 7.1 allowed-tools at runtime
 
-`allowed-tools` grants the listed tools during the turn that invokes the skill, and the grant clears with the next user message. It doesn't restrict which tools exist, and deny and ask rules still win. A rule matches the whole command line, so the skill body and the rule must name the same path through the same variable. A project skill's grant applies even in a `-p` run in an untrusted folder. `allowManagedPermissionRulesOnly` makes Claude Code ignore `allowed-tools` in project and personal skills. When managed settings list `hooks` in `strictPluginOnlyCustomization`, a personal or project skill that declares hooks loses its pre-approval. Scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks, unless `Skill(name)` is in `permissions.allow`.
+`allowed-tools` grants the listed tools during the turn that invokes the skill, and the grant clears with the next user message. It doesn't restrict which tools exist, and deny and ask rules still win. A rule matches the whole command line, so the skill body and the rule must name the same path through the same variable. A project skill's grant applies even in a `-p` run in an untrusted folder. `allowManagedPermissionRulesOnly` makes Claude Code ignore `allowed-tools` in project and personal skills. When managed settings list `hooks` in `strictPluginOnlyCustomization`, a personal or project skill that declares hooks loses its pre-approval in the main conversation, and keeps it when it runs through `context: fork`. Scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks, unless `Skill(name)` is in `permissions.allow`.
 
 When you audit:
 
@@ -402,15 +445,174 @@ When you audit:
 
 ---
 
+## 9. Hooks and the skill at runtime
+
+Judge whether the hooks the skill declares run when and where its task needs them, and whether the hooks, mods and rules around the skill reach it on every path it is invoked by.
+
+### 9.1 The skill's own hooks
+
+A skill's frontmatter hooks register when the user or Claude invokes the skill, and Claude Code keeps running them for the rest of the session; until the first invocation, `/hooks` doesn't list them. They can therefore act on nothing that happened before that invocation: a hook on an event that already fired, such as this session's `SessionStart`, never runs for it (inference from the registration point). Claude Code v2.1.299 changed a skill's own `UserPromptSubmit` hook to first run on the prompt after the one that invokes the skill. With `once: true`, a run that fails, blocks with exit code 2 or times out leaves the hook in place, so it runs again on the next matching event. A project skill's hooks register even in a `-p` run in a folder that was never trusted. Invoking a skill that declares hooks through the Skill tool can prompt for permission.
+
+A hook command runs in the current directory with Claude Code's environment, and that directory moves with `cd`. The documented placeholders for a hook's script path are `${CLAUDE_PROJECT_DIR}`, the project root where the session started, and, for plugin scripts, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`. Claude Code rewrites these three placeholders in a PowerShell shell-form command "whether the hook is defined in `settings.json`, a plugin, or a skill", which implies it expands them in a skill's hooks (inference). The documented skill example writes `'"${CLAUDE_PROJECT_DIR}"/scripts/security-check.sh'`, a script in the user's project, not in the skill.
+
+Several conditions keep a skill's hooks from running at all:
+
+- Under `strictPluginOnlyCustomization` locking hooks, only a plugin skill, a bundled skill or a skill in the managed settings directory keeps its frontmatter hooks, and a lock on any surface also stops skills-directory plugins from loading.
+- `allowManagedHooksOnly` and `disableAllHooks` name settings, plugin and agent-frontmatter hooks among what they block, but no official source says what either does to a skill's frontmatter hooks.
+- In claude.ai chat a plugin's hooks are ignored; no official source says whether Cowork runs a plugin skill's frontmatter hooks.
+- Plugin skill hooks defined in frontmatter were silently ignored before v2.1.94.
+
+Subagent frontmatter hooks run only while the subagent runs, and Claude Code converts their `Stop` hook to `SubagentStop`. The docs state only the session lifetime for skill hooks: no official source says where a forked skill's hooks register, whether they end with the fork, or whether a `Stop` hook there becomes `SubagentStop`, and none says the same for a skill a subagent invokes through the Skill tool. Under the hooks lock, a personal or project skill that runs through `context: fork` keeps its `allowed-tools` pre-approval, which it loses in the main conversation.
+
+Recognize the difference:
+
+**Doesn't reach the script:** a plugin skill whose hook runs `./scripts/check.sh`, or `"${CLAUDE_PROJECT_DIR}"/scripts/check.sh`, while `check.sh` ships in the skill's `scripts/` folder. The first resolves against wherever the session's directory is; the second points into the user's project.
+
+**Reaches the script:** the same hook running `"${CLAUDE_PLUGIN_ROOT}"/skills/<skill>/scripts/check.sh`, quoted for shell form.
+
+When you audit:
+
+- Flag a skill hook the skill needs before its first invocation, such as a setup step on `SessionStart`, or a `UserPromptSubmit` hook the skill expects to see the prompt that invokes it.
+- Flag a hook command that reaches a bundled script through a relative path or through `${CLAUDE_PROJECT_DIR}`. Recommend `${CLAUDE_PLUGIN_ROOT}` in a plugin skill; in a skill outside a plugin, report the skill-directory variable in a hook as unverified (§2.2) and name the test that would settle it.
+- Flag a personal or project skill whose task depends on its own hooks on a target under a hooks lock, and recommend moving the skill into a plugin, which keeps its hooks.
+- Flag a skill whose task depends on its hooks under `allowManagedHooksOnly` or `disableAllHooks`, in Cowork, in a forked run, or when a subagent invokes it, as unverified, naming the check: invoke the skill there and run `/hooks`, or read the debug log.
+- Flag a plugin skill that depends on its frontmatter hooks while the plugin's `engines` range admits a version before v2.1.94.
+- Flag a `once: true` hook the skill treats as having run once whatever the outcome: a failed, blocking or timed-out run keeps it in place.
+- Recommend, for a skill with hooks that must run unattended or without a prompt, the exact `Skill(<name>)` allow rule its users add, stated in the skill's documentation.
+
+### 9.2 Hooks, mods and permission rules that act on the skill
+
+Hooks and rules in the environment, or in the skill's own plugin, can act on the skill when it is invoked, when its text expands and on every tool call during its run, and each mechanism sees only some paths.
+
+- **Invocation by Claude:** a `PreToolUse` or `PostToolUse` hook with the matcher `Skill` fires only when Claude calls the Skill tool; typing `/<name>` bypasses `PreToolUse`.
+- **Invocation by the user:** `UserPromptExpansion` fires when a typed command expands, before the text reaches Claude, matches on `command_name`, such as `my-plugin:example-skill`, and can block the expansion or add context. In the Agent SDK's event table, it "doesn't fire when Claude invokes a skill itself". `UserPromptSubmit` sees the typed line, not the expanded skill, and runs before expansion, so a block there also stops the skill's injected commands.
+- **Matchers:** a matcher made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string; any other character, such as the colon of a plugin skill's name, makes it an unanchored regular expression. A matcher on a plugin skill's bare name therefore doesn't equal its `command_name` (inference from the documented example), and an unanchored scoped name can match more than one command.
+- **During the run:** hooks from settings files, managed settings and plugins also fire inside subagents, forked runs included, with `agent_id` and `agent_type` in their input.
+- **Loading:** `InstructionsLoaded` fires when a `CLAUDE.md` or `.claude/rules/*.md` file loads, and its load reasons name no skill, so it doesn't report a skill loading (inference from its documented scope). `ConfigChange` with the `skills` source fires when a skill file in `.claude/skills/` changes.
+- **Mods:** a mod's `skill.prompt` hook runs when a skill's text is expanded for Claude and can return changed `text` or `frontmatter`; Claude reads the final text. Mods run in Claude Code: the reference covers the CLI, the Desktop app and the VS Code extension, and the directory lists a mod for Claude Code.
+- **Permission rules:** a `Skill` deny rule disables every skill; `Skill(name)` matches exactly and `Skill(name *)` by prefix; a deny on an unqualified name also blocks a nested skill listed as `dir:name`, and `Skill(skill:<name>)` blocks the skill under any of its names. An allow rule matches only the skill's own name and the name in Claude's invocation, and doesn't limit Claude to the skills it names; a synced skill is approved only inside its namespace, as `Skill(anthropic-skills:<name>)`. `skillOverrides` can hide a skill from Claude or turn it off, but doesn't affect plugin skills.
+
+Recognize the difference:
+
+**Guards one path:** a plugin that must refuse its `deploy` skill without an approval file ships only a `PreToolUse` hook matching `Skill`. A user who types `/deploy-kit:deploy` runs it unchecked.
+
+**Guards both paths:** the same check also runs on `UserPromptExpansion` with the matcher `^deploy-kit:deploy$`.
+
+When you audit:
+
+- Flag a hook in the skill's plugin, meant to guard or prepare the skill, that covers only the Skill-tool path or only the typed path while the skill can be reached both ways. Recommend the matching hook on the missing path, with its anchored matcher.
+- Flag a `UserPromptExpansion` matcher on a plugin skill's bare name, or an unanchored scoped name that also matches other commands.
+- Flag a skill or plugin that relies on `InstructionsLoaded` to observe the skill loading.
+- Flag a skill whose text is complete or correct only after a `skill.prompt` mod rewrites it, on a target that doesn't run mods, such as claude.ai chat or the Skills API (inference from where mods run).
+- Flag an allow rule the skill's documentation tells users to add that can't match the skill, such as `Skill(anthropic *)` for a synced skill, and recommend the exact form.
+- Ask, where the prompt reports a deny rule or `skillOverrides` entry that names the skill or a skill it invokes, which step that removes, and judge it under §10.1.
+
+---
+
+## 10. Composition between skills
+
+Judge whether a skill that relies on another skill can reach it at runtime, on every target and path, and whether the composition the skill uses, or lacks, serves its task.
+
+### 10.1 Invoking another skill during a run
+
+Claude has only another skill's description until that skill is invoked; its full content loads on invocation, through the Skill tool or a typed `/<name>`. So a skill that relies on another during its run works only when four things hold: the name resolves, Claude may invoke the target, the Skill tool is present, and the target is loaded on the target surface.
+
+- **The name.** A plugin skill is `/<plugin>:<skill>`, and its bare name also invokes it unless another command already uses that name. When a bare name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the full name (changelog). A synced skill runs under its short name only while no other command uses it, and otherwise only as `anthropic-skills:<name>`.
+- **Who may invoke it.** With `disable-model-invocation: true`, Claude can't invoke the target on its own: Claude Code blocks the call unless the user's message names `/<name>` as a separate word, and the description leaves Claude's context. With `user-invocable: false`, Claude still can.
+- **The Skill tool.** It is in the background tool set. A subagent without it in `tools`, or with it in `disallowedTools`, can't invoke skills, and an SDK session with an explicit `tools` list needs it there. A `Skill` deny rule, a `Skill(name)` deny rule, an SDK `skills` list without the target, or a `skillOverrides` entry that hides it removes the target (§9.2, §6.4). The Skill tool can prompt for a target that sets `allowed-tools`, `disallowed-tools` or `hooks`.
+- **A forked target.** It runs in the background by default, and its result arrives in the conversation when it completes, so the calling skill's turn doesn't have it unless the target sets `background: false` or one of the waiting cases of §6.1 applies.
+- **Pre-approval.** Each skill's `allowed-tools` grants its tools during the turn that invokes that skill, and the grant clears with the next user message. The invoked skill's grant covers its own commands; the caller's grant covers only the commands the caller lists (inference from the per-skill field).
+
+Incorrect cases, each with what goes wrong:
+
+- **A name another command shadows.** The skill says "Run `/review`" for its plugin sibling `my-plugin:review` while a bundled or personal command uses `review`: the other command runs (documented for the typed name; for the Skill tool, inference).
+- **A target Claude may not start.** The skill says "Now invoke the `deploy` skill", and `deploy` sets `disable-model-invocation: true`: Claude Code blocks the call.
+- **No Skill tool.** A subagent with `tools: Read, Grep` is told to "use the `lint-rules` skill": it has no way to load it.
+- **A result read too early.** The skill invokes a forked `collect-metrics` skill and, in the next step, reads its numbers: in the background, they haven't arrived.
+
+Recognize the difference:
+
+**Unresolvable:** "Then run the changelog skill."
+
+**Resolvable:** "Invoke `release-kit:changelog` with the Skill tool and wait for it to finish before step 5; it writes the CHANGELOG entry."
+
+When you audit:
+
+- List every skill the audited skill tells Claude to invoke, and for each one judge the four conditions above on every target and invocation path, taking the target's frontmatter, its location and the session's rules from the prompt or from your own reading.
+- Flag each invoked name that doesn't resolve to the intended skill on a target, with the command that would run instead, and recommend the full invocable name with its plugin prefix.
+- Flag each invocation of a target that sets `disable-model-invocation: true`, and recommend either dropping the field from the target, if nothing requires it, or telling the user to type `/<name>` at that step.
+- Flag each invocation from a subagent, forked or custom, whose tools leave out `Skill`.
+- Flag each step that uses a forked target's result in the same turn while the target runs in the background, and recommend `background: false` on the target or a step that waits for its result.
+- Flag a skill meant to run unattended that invokes a target the Skill tool would prompt for, and recommend the `Skill(<name>)` allow rule its users add.
+
+### 10.2 Skills meant to load together
+
+A user can stack several skills at the start of one message, but only at the terminal prompt: through the Agent SDK or `claude -p`, Claude Code loads only the first skill and passes the rest of the line as its arguments. Expansion stops at the first token that isn't an inline user-invocable skill, such as a skill that runs as a forked subagent, and that token and everything after it become the argument text for every skill already expanded. Without stacking, Claude can still use several skills in one task, as the Agent Skills overview's "Compose capabilities" describes, and on the Claude API each skill must be in the request's `container.skills` list to be used at all.
+
+When you audit:
+
+- Flag usage instructions that rely on stacking, such as "type `/prep /review`", for a target that runs through `-p`, the Agent SDK or a scheduled task: only the first skill loads.
+- Flag a documented stack that places a forked skill, or a skill whose arguments may start with another command, before an inline skill: the later names become arguments.
+- Recommend, where two skills must run together on a non-interactive target, one skill that invokes the other at the step that needs it (§10.1), or two separate invocations.
+
+### 10.3 Dependencies across plugins
+
+The Agent Skills specification defines no field through which one skill declares another: its frontmatter fields are `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`, and `compatibility` is free text about environment requirements. So outside a plugin nothing installs, enables or checks the skill a skill relies on (inference from the spec's fields). Inside a plugin, `dependencies` in `plugin.json` lists "Plugins that must be enabled for this one to work". What it guarantees and how it fails:
+
+- **Install.** Installing the plugin installs each missing dependency, and so do `/reload-plugins`, an auto-update of the marketplace, a repeated `claude plugin install` and `claude plugin marketplace add`. Claude Code never installs a dependency with a `command` source, so users install it first.
+- **Version.** Without a constraint, a dependency moves to each new release, and a release that renames what the plugin calls breaks the plugin for everyone who updates. A constraint resolves against git tags named `<plugin-name>--v<version>`: with no satisfying tag, the install fails for a plugin with its own repository, and a plugin referenced by a relative path installs the marketplace's current copy and stays disabled while that copy is outside the range. For an `npm`, `archive` or `command` source, the range is checked against the dependency's `plugin.json` `version` at load, and a `plugin.json` with no version satisfies no constraint.
+- **Another marketplace.** A dependency from a different marketplace installs only when the root marketplace lists it in `allowCrossMarketplaceDependenciesOn`, or the user already has it enabled at the same scope; declared in `plugin.json` without that, "the install completes without the dependency and your plugin then fails to load".
+- **Local development.** A `--plugin-dir` copy satisfies the entry without a version check, and the plugin stops loading whenever that copy is disabled or absent.
+- **claude.ai.** A plugin turned on from claude.ai loads as `<name>@synced`, and a dependency entry counts as met by the dependency installed from its marketplace or by a claude.ai plugin of the same name; the docs tell authors to tell users to turn the dependency on there too. No official source says how claude.ai chat or Cowork treat `dependencies`.
+
+A dependency makes a plugin present and enabled. It doesn't establish that a given skill name exists in it: the docs' own warning is a release that renames what the dependent plugin calls (inference from L74).
+
+Recognize the difference:
+
+**Fails to load:** `"dependencies": [{ "name": "audit-logger", "marketplace": "shared-tools" }]` in `plugin.json`, while the plugin's marketplace has no `allowCrossMarketplaceDependenciesOn`.
+
+**Loads:** the same entry, with `"allowCrossMarketplaceDependenciesOn": ["shared-tools"]` in the root `marketplace.json`, and a `version` range the dependency's tags satisfy.
+
+When you audit:
+
+- Take the plugin's `dependencies`, its marketplace entry and, where the prompt reports them, the dependencies' tags and sources. For each entry, judge install, version and marketplace on every install route the plugin targets.
+- Flag a cross-marketplace dependency without the allowlist entry: on install the plugin fails to load.
+- Flag a version constraint that no tag satisfies, as the prompt reports it, with its consequence for the dependency's source type; report the point as unverified when the prompt doesn't report the tags.
+- Flag an unconstrained dependency whose skills, agents or MCP tools the plugin calls by name, and recommend a range the author has tested, such as `~2.1.0`.
+- Flag a `command`-source dependency, or one whose marketplace entry sets a `headersHelper`, that the plugin's documentation doesn't tell users to install first.
+- Flag a `dependencies` entry that no component of the plugin uses: every user installs it (inference from the install behavior).
+- Flag a plugin meant to be turned on from claude.ai whose documentation doesn't tell users to turn the dependency on there too.
+- Flag a skill outside any plugin that declares the skill it relies on only in `compatibility`, `metadata` or prose and expects that skill to be installed: nothing installs it. Recommend packaging both in one plugin, or in plugins linked through `dependencies`.
+- Report how claude.ai chat and Cowork treat `dependencies` as unverified wherever the plugin targets them and relies on a dependency.
+
+### 10.4 Composition the skill needs, and composition it doesn't
+
+Because another skill's procedure is in context only once that skill is invoked or preloaded, a step that points at another skill's procedure without invoking it leaves Claude with that skill's description alone, or with nothing when the description isn't listed, and Claude improvises the procedure. The opposite also happens: composition that adds a runtime dependency the task doesn't need, such as a forked invocation for a step whose result the caller needs at once, or a plugin dependency for a skill the plugin never invokes, adds a way to fail without adding anything the task uses.
+
+Recognize the difference:
+
+**Relies on content it never loads:** "Write the entry the way the changelog skill describes."
+
+**Loads what it relies on:** "Invoke `release-kit:changelog` with the Skill tool; it writes the entry."
+
+When you audit:
+
+- Flag each step that relies on another skill's procedure, format or rules without invoking or preloading it, and recommend the invocation at that step, named as in §10.1.
+- Ask, for each invocation and each `dependencies` entry, which step of the task uses it. Flag one no step uses, and recommend removing it.
+- Flag a forked invocation, or a chain of skills, where the step's result is needed inline and one skill could do it in the main conversation, and recommend the inline form.
+- Flag an invocation that can't work on one of the skill's targets, such as a Skill-tool step on the Claude API or in claude.ai chat, where the target's own composition rules apply instead (§10.2), as unverified unless a source the prompt names settles it.
+
+---
+
 ## Classifying findings
 
 Give every finding four things: the exact file and line(s) in the skill under audit, the point in this file it violates or falls short of, the kind of evidence it rests on, why it is a defect stated as a consequence on a named target (not just "doesn't match the guide"), and a specific fix with the reason it's the right one. If you have no line to point to, you have no finding.
 
 Classify each defect by what it does to the skill on the surfaces it targets. Ask these questions in order and stop at the first yes:
 
-1. Does a target surface fail to discover the skill, fail to load it, reject it, or fail to run its main action? Assign Critical. For example: a plugin dependency above the plugin root that the cache doesn't copy; a top-level `bin/` in a plugin that targets the Claude app; a skill meant for cloud sessions that lives only in `~/.claude/skills/`; an injected command no rule allows, which aborts the skill outside auto mode; a plugin-root variable in a non-plugin skill's required command.
-2. Does it load but fail silently, make Claude do something else, or lose a required behavior on a target? Assign High. For example: a link to a file the skill doesn't contain; a required step that fetches a URL on the Claude API, which has no network; a preloaded skill disabled on a target, skipped with only a debug-log warning; a project-directory variable a synced terminal session leaves literal; a bundled-script rule whose path doesn't match the body, so the script prompts; a forked skill that needs a tool the background set lacks; a same-named skill that runs instead of this one.
-3. Does it work, but cost extra steps, fragile assumptions or harder maintenance? Assign Medium. For example: state written under the plugin root; a broad `Bash` grant where an exact rule would do; one archive layout reused across surfaces; a reference or asset reached only through another reference.
+1. Does a target surface fail to discover the skill, fail to load it, reject it, or fail to run its main action? Assign Critical. For example: a cross-marketplace dependency declared in `plugin.json` without the allowlist entry, so the plugin fails to load after install; a skill whose main action invokes a skill with `disable-model-invocation: true`, which Claude Code blocks; a plugin dependency above the plugin root that the cache doesn't copy; a top-level `bin/` in a plugin that targets the Claude app; a skill meant for cloud sessions that lives only in `~/.claude/skills/`; an injected command no rule allows, which aborts the skill outside auto mode; a plugin-root variable in a non-plugin skill's required command.
+2. Does it load but fail silently, make Claude do something else, or lose a required behavior on a target? Assign High. For example: a guard hook that covers only one of the paths that reach the skill; a forked or preloaded skill that needs `AskUserQuestion`; a step that reads a background forked skill's result before it arrives; a bundled hook script reached through a relative path or the project-directory variable; a skill invoked from a subagent whose tools lack `Skill`; usage instructions that stack skills on a `-p` target; a link to a file the skill doesn't contain; a required step that fetches a URL on the Claude API, which has no network; a preloaded skill disabled on a target, skipped with only a debug-log warning; a project-directory variable a synced terminal session leaves literal; a bundled-script rule whose path doesn't match the body, so the script prompts; a forked skill that needs a tool the background set lacks; a same-named skill that runs instead of this one.
+3. Does it work, but cost extra steps, fragile assumptions or harder maintenance? Assign Medium. For example: an unconstrained dependency whose names the plugin calls; a skill hook's behavior in a forked run or a subagent, unverified; a `dependencies` entry no component uses; state written under the plugin root; a broad `Bash` grant where an exact rule would do; one archive layout reused across surfaces; a reference or asset reached only through another reference.
 4. Otherwise, assign Low. For example: a fixed install path that appears only in an illustrative comment Claude never runs.
 
 Tie-breaks:

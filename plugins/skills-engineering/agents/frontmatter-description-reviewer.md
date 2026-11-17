@@ -93,6 +93,7 @@ Check every item before you deliver. An item you can't check means the work behi
 
 Setup:
 - [ ] Read `frontmatter-description.md` from its first line through its final section, "Delivering the report", and the report template completely, not a partial read.
+- [ ] Read `skill-types-and-frontmatter.md` whole before judging the skill's type, and checked the skill against the rows of every type it is.
 - [ ] Read the whole skill, every file it points to, its trigger tests and its siblings' descriptions, and understood it before auditing: what it does, what it contains, how it is composed, where it lives, how it is invoked and which surfaces load it.
 - [ ] Gave every field, the name, the description and its trigger tests one outcome: present and optimal, present but wrong or excess, present but improvable, absent and needed, or absent and not needed, and recommended nothing the skill's purpose doesn't support.
 - [ ] Searched every area for improvements as hard as for defects: what the skill's purpose needs and lacks, and what works but would work better.
