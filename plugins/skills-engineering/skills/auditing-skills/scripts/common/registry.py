@@ -4,6 +4,8 @@ import argparse
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from frontmatter import plain_values, yaml_syntax
+
 from common.context import Context
 from common.report import CheckResult
 
@@ -37,7 +39,17 @@ class CheckSpec:
     options: Callable[[argparse.ArgumentParser], None] | None = None
 
 
-CHECKS: tuple[CheckSpec, ...] = ()
+CHECKS: tuple[CheckSpec, ...] = (
+    CheckSpec(
+        yaml_syntax.CHECK, yaml_syntax.check, ("frontmatter-description", "runtime-contract")
+    ),
+    CheckSpec(
+        plain_values.CHECK,
+        plain_values.check,
+        ("frontmatter-description",),
+        requires=(yaml_syntax.CHECK,),
+    ),
+)
 
 
 def find(check_id: str) -> CheckSpec | None:

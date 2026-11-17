@@ -17,3 +17,9 @@ The main session runs every mechanical check and passes each reviewer only the r
 - **scripts:** the inventory of code files in the skill, at the plugin level, in `bin/` and run by hooks, with path and language; each one's first line and executable bit; each script the Markdown runs, with its interpreter; imports outside the standard library with no inline dependency declaration; external commands not stated in the Markdown or `compatibility`; package installs; packages `claude plugin list --json` notes as not installed; network and credential signals by file and line, never with a value; linter output, or each linter not run. Sources: skill-lint SC-01, SC-02, SC-04 to SC-06, CA-04.
 - **Live-session checks:** `/doctor`, the Skills row of `/context`, `/skill-doctor` and `claude plugin details` only run in a live Claude Code session; when the main session can't run one, a reviewer names it as the check that would settle a point.
 
+## Built checks
+
+Each check's command, reading and receivers are in `skills/auditing-skills/MECHANICAL-CHECKS.md`; this list ties each one to its spec card in `.claude/maintainer/specs/2026-11-17-frontmatter-checks.md`.
+
+- `frontmatter.yaml` (FM-2): duplicate keys, `: ` inside a value, unclosed flow collections, keys under a scalar, and bytes that aren't UTF-8; to frontmatter-description and runtime-contract.
+- `frontmatter.plain-values` (FM-3): comments that cut a value, leading indicators, collections, anchors, aliases and tags in text fields, and text read as a boolean or null; to frontmatter-description.

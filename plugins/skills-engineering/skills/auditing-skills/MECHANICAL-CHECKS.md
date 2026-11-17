@@ -7,6 +7,7 @@ This file is yours, the orchestrator's: it tells you how to run every mechanical
 - How to run the checks
 - Running the frontmatter checks
 - Reading a frontmatter check's result
+- Frontmatter checks
 - Plugin structure and loading
 - Dependencies
 - Code files
@@ -49,6 +50,41 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
   - `condition`: the case it depends on, or `null` when it always applies.
 - Pass every finding to its reviewers verbatim: add no severity, and drop or merge none. Each reviewer grades findings by its own severity model, from `basis`, `surfaces` and `condition`.
 
+## Frontmatter checks
+
+`run` runs each of these; `check <id>` runs one again. The YAML reader stops at the first failure it meets, so a file can hold more failures than one run reports.
+
+### frontmatter.yaml
+
+- Command: `python3 <entry> check frontmatter.yaml <SKILL.md>`.
+- What it checks: the frontmatter against strict YAML, because Claude Code's parser accepts some YAML that packaging, uploads and other parsers reject, and a skill whose YAML doesn't parse still loads, with no fields set.
+- `claude plugin validate` already reports a missing block, a root that isn't a mapping, an unclosed quote and a tab in the indentation; this check adds the four failures validate passes, and bytes that aren't UTF-8.
+- Reading the result:
+  - `duplicate-key`: a key appears twice; Claude Code keeps the last value.
+  - `colon-in-value`: `: ` inside a plain value, or a plain value ending with `:`.
+  - `unclosed-flow`: a `[` or `{` that never closes, at the line it opens on.
+  - `key-under-scalar`: a key indented under a key that already has a value.
+  - `not-utf8`: the first byte that isn't UTF-8, in hex; Claude Code replaces such bytes without a word.
+  - A finding on the first four means packaging and uploads reject the file, while Claude Code may still load it.
+  - `not_run` with the reason that validate reports the error, or that there is no frontmatter block: read validate's output for that file instead. `not_run` because the reader can't read the YAML names the line; validate's output decides it.
+  - `data.close_line`: the line of the closing `---`.
+- Goes to: `frontmatter-description` and `runtime-contract`.
+
+### frontmatter.plain-values
+
+- Command: `python3 <entry> check frontmatter.plain-values <SKILL.md>`.
+- What it checks: plain values that a YAML parser reads differently than they are written.
+- No other command covers this; this check is the only source. It needs `frontmatter.yaml` to pass first.
+- Reading the result:
+  - `comment-truncates`: ` #` after a plain value starts a comment, so the text after it is dropped.
+  - `leading-indicator`: a plain value starting with `-`, `?` or `:`.
+  - `reads-as-collection`: a text field written as a list or a mapping.
+  - `anchor-alias-tag`: a text field with an anchor, an alias or a tag.
+  - `reads-as-boolean` and `reads-as-null`: a plain text field, or a `metadata` value at any depth, whose text a parser reads as a boolean or null; `condition` says when only YAML 1.1 parsers read it so.
+  - A finding means the parsed value differs from what the line shows.
+  - `data.colon_cases`: `: ` inside a value is reported by `frontmatter.yaml`.
+- Goes to: `frontmatter-description`.
+
 ## Plugin structure and loading
 
 - `claude plugin validate --json <plugin root>` for a plugin skill, or `claude plugin validate --json <skills directory>`, the directory named `skills` that holds the skill, otherwise. It doesn't read a `SKILL.md` at a plugin's root, doesn't follow symlinks, and accepts some malformed YAML, so its pass proves only what it reports.
@@ -77,11 +113,11 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 Write into each reviewer's prompt the results listed under its name, and name every one of them that was not run. Every reviewer also gets the `/doctor prompt-audit` leads.
 
 - `content-patterns`: misplaced inline `!` commands; every injected command; unescaped `$` before a digit, `ARGUMENTS` or a declared argument name; path variables written in reference files; backslash paths; unqualified MCP tool names; `@` references.
-- `runtime-contract`: the `claude plugin validate --json` output; the component inventory from `claude plugin details`; the name each skill registers under and its source, from `/context` and `/skill-doctor`; frontmatter parse errors; which referenced files and links exist and stay inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs and whether its file exists; archive listings; the skill's frontmatter hooks by event, matcher and command, with the path variable each command uses; the hooks of the skill's own plugin by event and matcher, marking those that match `Skill` or `UserPromptExpansion`; every skill name the body tells Claude to invoke or stack, with whether it resolves in the plugin or its dependencies and that skill's `disable-model-invocation`, `user-invocable`, `context`, `agent` and `background` values; every subagent in the plugin that preloads or invokes the skill, with its `tools`, `disallowedTools` and `skills`; the plugin's `dependencies`, its marketplace entry and `allowCrossMarketplaceDependenciesOn`, and each dependency's source type and the tags that satisfy its range; the plugin's load errors and notes from `claude plugin list --json`; the plugin's `engines` range.
+- `runtime-contract`: the `claude plugin validate --json` output; the component inventory from `claude plugin details`; the name each skill registers under and its source, from `/context` and `/skill-doctor`; the `frontmatter.yaml` result; which referenced files and links exist and stay inside the skill folder; reference depth and unreferenced files; symlinks and their targets; plugin variables in a skill outside a plugin; `allowed-tools` entries against the injected commands; each script the Markdown runs and whether its file exists; archive listings; the skill's frontmatter hooks by event, matcher and command, with the path variable each command uses; the hooks of the skill's own plugin by event and matcher, marking those that match `Skill` or `UserPromptExpansion`; every skill name the body tells Claude to invoke or stack, with whether it resolves in the plugin or its dependencies and that skill's `disable-model-invocation`, `user-invocable`, `context`, `agent` and `background` values; every subagent in the plugin that preloads or invokes the skill, with its `tools`, `disallowedTools` and `skills`; the plugin's `dependencies`, its marketplace entry and `allowCrossMarketplaceDependenciesOn`, and each dependency's source type and the tags that satisfy its range; the plugin's load errors and notes from `claude plugin list --json`; the plugin's `engines` range.
 - `size-limits-and-budgets`: where the body's first 5,000 tokens end; the always-on and on-invoke token estimates from `claude plugin details`; the skill's listing cost after the budget from `/skill-doctor`, and the Skills total from `/context`; character counts of `name`, `description`, `when_to_use` and `compatibility`, and where the 1,536th character of `description` plus `when_to_use` falls; the body's line and approximate token counts; line counts of supporting files and which references over 100 lines lack a table of contents; bundle size and file count; the source's frontmatter hook count and total matcher characters; the length of any preload list shipped with the skill.
 - `knowledge-delta`: no mechanical result of its own; only the `/doctor prompt-audit` leads.
 - `task-mechanisms`: no mechanical result of its own; only the `/doctor prompt-audit` leads.
-- `frontmatter-description`: the `claude plugin validate --json` output; frontmatter parse errors; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
+- `frontmatter-description`: the `claude plugin validate --json` output; the `frontmatter.yaml` and `frontmatter.plain-values` results; the frontmatter's keys and values as parsed; the descriptions of the skill's sibling skills; whether each field is valid on each target surface.
 - `comprehension`: where the body's first 5,000 tokens end; capitalized absolutes; time-sensitive wording.
 - `feature-fit`: the mode, with or without an environment; the paths of the environment's Markdown instruction files (every CLAUDE.md and CLAUDE.local.md level, rules with their `paths`, other skills with their names and descriptions, and subagents), with the contents of any outside the working directory, such as `~/.claude/`, read for it; the hooks by event, matcher and source; the installed plugins with their scope and whether each is enabled, from `claude plugin list --json`; the MCP server names; the permission rules; and the active output style. Extract these from settings and MCP files without their values, and never pass the reviewer a settings, MCP or credential file.
 - `scripts`: the inventory of code files in the skill's folder, at the plugin level, in `bin/` and run by its hooks, each with its path and language; each one's first line and executable bit; each script the Markdown runs, with its interpreter and whether the file exists; the scripts each hook command runs; Python imports outside the standard library with no inline dependency declaration; external commands a script calls that neither the Markdown nor `compatibility` mentions; package installs in scripts, global or local; the packages `claude plugin list --json` notes as not installed; network and credential signals in scripts, by file and line, never with a value; and the output of any linter run on the scripts, such as ShellCheck or Ruff, or the name of each linter not run.
