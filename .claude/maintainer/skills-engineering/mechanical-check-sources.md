@@ -23,3 +23,5 @@ Each check's command, reading and receivers are in `skills/auditing-skills/MECHA
 
 - `frontmatter.yaml` (FM-2): duplicate keys, `: ` inside a value, unclosed flow collections, keys under a scalar, and bytes that aren't UTF-8; to frontmatter-description and runtime-contract.
 - `frontmatter.plain-values` (FM-3): comments that cut a value, leading indicators, collections, anchors, aliases and tags in text fields, and text read as a boolean or null; to frontmatter-description.
+- `frontmatter.name` (FM-4, and FM-6's reserved words in the name): format, folder, refused characters, reserved words and the name's counts; to frontmatter-description, and its counts to size-limits-and-budgets.
+- `frontmatter.name-plain` (FM-5): the name written as one plain line; to frontmatter-description.
