@@ -1,4 +1,4 @@
-# Frontmatter mechanical checks Implementation Plan (v4)
+# Frontmatter mechanical checks Implementation Plan (v5)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -7,6 +7,7 @@
 - FM-1 and FM-11 are covered by commands. FM-6 is covered by a command for the folder and by `frontmatter.name` for the name.
 - The rest are standalone Python scripts under `skills/auditing-skills/scripts/frontmatter/`, using only the standard library.
 - Each one is wired in the same commit that adds it: its logic goes into `references/mechanical-checks.md`, and its file goes into `SKILL.md`'s file list.
+- One runner, `scripts/frontmatter/run.py` (Task 1B), runs every frontmatter script in one call, writes each result to a per-run temporary folder and prints a short summary with that folder's path. The main session hands each reviewer its part and removes the folder through the runner when the audit ends.
 
 **Architecture:**
 - The scripts share one `common/` package. Its own frontmatter reader handles the YAML forms skills use, with file positions, styles, anchors and tags. Each script prints one JSON result.
@@ -50,18 +51,27 @@
 - **Invocation:** `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter/<check>.py" "<SKILL.md>"`, the pattern of the skills docs ("Generate visual output") and of Anthropic's plugins.
   - If `python3` is not found, or Windows answers with the Store message, the main session uses `python` from then on, as in Anthropic's `math-proof` plugin.
   - Scripts carry `#!/usr/bin/env python3` and the executable bit but never rely on either.
-- **Wiring in the same commit:** each task that adds a check also adds its entry to `references/mechanical-checks.md`, adds its script path under the reviewers that receive it in `SKILL.md`, updates what each of those reviewers receives in `references/mechanical-checks.md`, and updates `.claude/maintainer/skills-engineering/mechanical-check-sources.md`, as the rule's sync point requires.
+- **Wiring in the same commit:** each task that adds a check also registers it in `common/registry.py` (Task 1B), adds its entry to `references/mechanical-checks.md`, adds its script path under the reviewers that receive it in `SKILL.md`, updates what each of those reviewers receives in `references/mechanical-checks.md`, and updates `.claude/maintainer/skills-engineering/mechanical-check-sources.md`, as the rule's sync point requires.
   - Each entry follows the "Mechanical-checks entry shape" below.
   - Run `npm run lint:frontmatter` on `SKILL.md` and `claude plugin validate --strict plugins/skills-engineering` after each wiring.
-- **Read-only:** no network, no subprocess, and no writes outside the test temp dirs. A script reads only the `SKILL.md` it is given and its folder name, never settings, MCP or credential files.
+- **Read-only:** no network and no subprocess. A check script writes nothing. A script reads only the `SKILL.md` it is given and its folder name, never settings, MCP or credential files. The runner writes only inside the results folder it created, and deletes only a folder that carries its prefix and its marker file (Task 1B).
 - **CLI:** `<check>.py <SKILL.md> [check options]`.
-  - Exit 0 when a JSON result was printed. Exit 2 on a usage error, a missing path, a directory path or an unreadable file; stderr then gets one line and stdout stays empty.
+  - Exit 0 whenever a result was printed, with or without findings. Exit 2 when the check could not run: a usage error, a missing path, a directory path, an unreadable file or a Python below 3.12. stderr then gets one line and stdout stays empty.
+  - Never exit 1 for findings. The tools reference ("Output limits") says: "A command that exits 1 counts as a valid result for the Bash tool only when Claude Code recognizes exit code 1 as a benign outcome for that command: grep, rg, egrep, fgrep, find, diff, test, [, git diff, and git grep. Every other command that exits 1 counts as a failure." A failure is shown as a head-and-tail excerpt of about 10,000 characters with no saved file, so findings would read as an error and could be cut. Counts of findings go in the output instead.
+  - stdout carries only data; stderr carries only diagnostics.
   - An uncaught exception is a bug.
-- **Output:** one JSON object on stdout (`ensure_ascii=False`), keys in this order:
-  - `check`, `status` (`ran` | `not_run`), `reason`, `skill_md` (absolute path), `findings`, `data`.
-  - A finding holds `rule`, `message`, `line`, `column` (1-based file positions or null), `evidence` (at most 120 characters plus `…`, or null), `basis` (`official` | `convention` | `inference`), `surfaces` (a subset of `claude-code`, `open-spec`, `upload`) and `condition` (string or null).
+- **Output of a check script:** one line of compact JSON on stdout (`separators=(",", ":")`, `ensure_ascii=False`), keys in this order:
+  - `check`, `status` (`ran` | `not_run`), `reason` (string or null), `skill` (the skill's folder name as given), `findings`, `data`.
+  - A finding holds, in this order: `check`, `rule`, `file` (relative to the skill folder, so `SKILL.md`), `line`, `column` (1-based file positions or null), `field` (the frontmatter key or null), `found` (an excerpt of at most 120 characters plus `…`, or null), `found_length` (the full value's length in characters, or null), `expected` (one short sentence of what the rule wants), `basis` (`official` | `convention` | `inference`), `surfaces` (a subset of `claude-code`, `open-spec`, `upload`, in that order) and `condition` (string or null).
   - `upload` means claude.ai uploads, the Skills API and `package_skill.py`, which the skills docs group as one path.
-  - Findings never carry a severity: that belongs to the reviewers.
+  - **No severity, not even a hint.** Severity belongs to each reviewer's severity model, which depends on facts a script doesn't know, such as the surfaces the skill targets: "A surface the skill doesn't target gets no finding" and "When the consequence differs by target, set the severity of the most affected target" (`references/frontmatter-description.md`). A count-based label is the error `references/size-limits-and-budgets.md` shows as "Wrong severity: The body has 612 lines, over the limit: Critical." `basis`, `surfaces` and `condition` carry the facts the reviewer grades from.
+  - **Deterministic:** no timestamps and no absolute paths. Findings sorted by `line`, `column`, `rule`; `data` keys in a fixed order per check. Two runs on the same file print the same bytes.
+  - The meaning of each `rule` lives once in `references/mechanical-checks.md`, not in every finding.
+- **Results lifecycle (Task 1B):**
+  - The runner creates its folder with `tempfile.mkdtemp(prefix="auditing-skills-fm-")`, which follows `TMPDIR`, then `TEMP`, then `TMP`, then the platform list (Python `tempfile.gettempdir`). The random suffix is the run id. The folder is "readable, writable, and searchable only by the creating user ID" (Python `tempfile.mkdtemp`).
+  - It prints the folder's absolute path, and `show` and `clean` take that path as an argument and never recompute it. The sandboxing docs ("Temporary directories") say sandboxed and unsandboxed commands "resolve `$TMPDIR` to different directories" while filesystem isolation is on.
+  - Not `${CLAUDE_PLUGIN_DATA}`: the plugins docs describe it as "a directory that survives updates, for `node_modules`, virtual environments, and caches", so per-audit results would stay there across sessions.
+  - The main session reads results only through `run.py show`, a Bash command, never with the Read tool, because reads outside the working directory and additional directories prompt (permissions docs). Reviewers never open the folder; each gets its part in its brief.
 - **Prerequisites:** a check whose prerequisite failed returns `status: not_run` with `reason` naming the check that failed, for example `"frontmatter.yaml failed"`.
 - **Identifiers:** check ids are `frontmatter.<slug>`. FM-n appears only in this plan, never in plugin files, because no plugin file names a maintainer validator rule id.
 - **Field tables:** only in `common/fields.py`, taken from the Claude Code 2.1.326 docs (`/en/skills` Frontmatter reference), `agentskills.io/specification` and anthropics/skills `quick_validate.py`.
@@ -97,12 +107,13 @@ Task 10 checks this split against validate on 2.1.326. A case where validate now
 
 ## Mechanical-checks entry shape
 
-`references/mechanical-checks.md` holds one shared section (Task 1) and then one entry per check. The shared paragraph states once:
-- how to run a script (`python3`, then `python`, with quoted paths);
-- the JSON fields and what `status`, `findings`, `surfaces` and `condition` mean;
+`references/mechanical-checks.md` holds one shared section (Tasks 1 and 1B) and then one entry per check. The shared section states once:
+- how to run the runner and a single script (`python3`, then `python`, with quoted paths);
+- the summary lines, the JSON fields and what `status`, `findings`, `found_length`, `surfaces` and `condition` mean;
 - that exit 2 or a missing interpreter means the check was not run: name it to its reviewers with the exit code and message;
 - that `not_run` means its prerequisite failed, which also goes to its reviewers;
-- that findings are passed verbatim, with no severity added and none dropped.
+- that findings are passed verbatim, with no severity added and none dropped;
+- the lifecycle: `run` once in step 3; `show --reviewer <name>` for each reviewer's brief; before dispatch, confirm that every reviewer named in the summary got its part; `clean` after the report, and also when the audit stops early.
 
 Each entry then holds:
 - **the exact command**;
@@ -116,7 +127,7 @@ Each entry then holds:
 1. A `SKILL.md` that isn't UTF-8 (UTF-16 with a BOM, Latin-1) gives `frontmatter.yaml` the rule `not-utf8` and no traceback (Task 4).
 2. Recursive or deeply nested YAML (`a: &x [*x]`, 5,000 nested `[`) terminates within 5 s with `too-deep` or `unsupported`, and no other script hangs (Task 3).
 3. Characters outside the Basic Multilingual Plane (emoji) in `description` or `when_to_use`: lengths are in code points, with `utf16_length` in `data` (Task 6).
-4. A missing path or a directory exits 2. A symlinked folder takes its name from the path as given, with the resolved name in `data` (Task 1).
+4. `run.py clean` given a folder it did not create (`/`, the home folder, the working directory, a symlink to a results folder, a folder with the prefix but no marker) removes nothing and exits 2 (Task 1B).
 5. CRLF, a BOM and a trailing space on the markers give the same reader result as clean LF (Task 2). Validate's handling of them, from Task 0, decides whether Task 9 adds a command for them.
 
 ---
@@ -176,9 +187,9 @@ Steps:
 
 **Interfaces (produced):**
 - `type Surface = Literal["claude-code","open-spec","upload"]`. `type Basis = Literal["official","convention","inference"]`.
-- `report.Finding(rule: str, message: str, line: int | None, column: int | None, evidence: str | None, basis: Basis, surfaces: tuple[Surface, ...], condition: str | None = None)`, a frozen, slotted dataclass.
-- `report.CheckResult(check: str, status: Literal["ran","not_run"], reason: str | None, skill_md: Path, findings: list[Finding], data: dict[str, object])`.
-- `report.emit(result: CheckResult) -> None`: prints the JSON in the key order above and truncates `evidence` to 120 characters plus `…`.
+- `report.Finding(check: str, rule: str, line: int | None, column: int | None, field: str | None, found: str | None, expected: str, basis: Basis, surfaces: tuple[Surface, ...], condition: str | None = None, file: str = "SKILL.md")`, a frozen, slotted dataclass; `found_length` is computed from the untruncated `found`.
+- `report.CheckResult(check: str, status: Literal["ran","not_run"], reason: str | None, skill: str, findings: list[Finding], data: dict[str, object])`.
+- `report.to_json(result: CheckResult) -> str`: one line of compact JSON in the key order above, findings sorted, `found` cut to 120 characters plus `…`. `report.emit(result: CheckResult) -> None` writes it and a newline to stdout.
 - `context.Context(skill_md: Path, skill_dir: Path, folder_name: str, resolved_folder_name: str, options: dict[str, object])`.
 - `cli.run(check_id: str, check: Callable[[Context], CheckResult], extra: Callable[[argparse.ArgumentParser], None] | None = None) -> NoReturn`: reconfigures stdout, validates the path (exit 2 cases), builds `Context`, calls `check`, emits, exits 0.
 - `skill_file.read(path: Path) -> SkillFile`, holding:
@@ -210,7 +221,10 @@ Steps:
   | `test_latin1` | `b"---\nname: \xe9\n---\n"` | `decode_error` set, `text is None` |
   | `test_utf16_len` | `"a😀"` | `3` |
   | `test_snippet` | `("abcdef", 3, 2)` | `"bc|de"` |
-  | `test_emit_order_and_truncation` | a 200-character evidence | keys in order; evidence is 121 characters ending `…` |
+  | `test_emit_order_and_truncation` | a 200-character `found` | keys in order; `found` is 121 characters ending `…`; `found_length == 200` |
+  | `test_json_compact_one_line` | any result | no newline inside, no `", "` or `": "` separators |
+  | `test_findings_sorted` | findings given out of order | sorted by line, column, rule; unpositioned last |
+  | `test_deterministic` | the same file checked twice | byte-identical stdout, no absolute path in it |
 
   Add the CLI cases, run through a throwaway check registered in the test:
   - a missing path exits 2 with empty stdout;
@@ -222,6 +236,37 @@ Steps:
 - [ ] **Step 4: Wire.** Add the shared section from "Mechanical-checks entry shape" to `references/mechanical-checks.md`, before any check entry, and list `scripts/common/` in `SKILL.md`'s file list as shared by every frontmatter script.
 - [ ] **Step 5:** Run the tests on `/usr/bin/python3.12`, `/usr/bin/python3.13` and `python3` (3.15). Expected: all pass. Then run ruff and basedpyright on the new files: 0 findings. Then run `npm run lint:frontmatter` and `claude plugin validate --strict plugins/skills-engineering`. Expected: `valid`.
 - [ ] **Step 6:** Commit: `git commit -m "Add the shared foundation for the frontmatter checks"`.
+
+### Task 1B: Runner and results lifecycle
+
+**Files:**
+- Create: `.../auditing-skills/scripts/common/registry.py`, `.../auditing-skills/scripts/frontmatter/run.py`
+- Test: `tests/test_frontmatter_runner.py`
+
+**Interfaces (produced):**
+- `registry.CheckSpec(check: str, module: str, receivers: tuple[str, ...], requires: tuple[str, ...] = ())`, frozen and slotted. `registry.CHECKS: tuple[CheckSpec, ...]`, in run order, empty at this task; each later task appends its check. `requires` names the checks whose failure makes this one `not_run`.
+- Each check module exposes `check(ctx: Context) -> CheckResult`, and its `main` calls `cli.run`. The runner imports the modules and calls `check` in-process: no subprocess.
+- `run.py run <SKILL.md>`:
+  - sweeps folders in `tempfile.gettempdir()` named `auditing-skills-fm-*` that hold the marker `.auditing-skills-results` and are older than 24 hours, skipping symlinks;
+  - creates the results folder and the marker, writes `<check>.json` per check and `summary.json` (check, status, finding count, receivers);
+  - prints one line per check, `<check> <status> <n> finding(s) -> <receivers>`, then `results: <absolute folder path>`. Exit 0; exit 2 if the file can't be read or the folder can't be created, with the folder removed.
+- `run.py show <folder> (--check <check> | --reviewer <name>)`: prints the matching results, one JSON line each. Exit 2 for a folder without the marker or prefix, or an unknown check or reviewer.
+- `run.py clean <folder>`: removes the folder only when it is a real directory (not a symlink) directly under a temp root, named with the prefix, and holding the marker; prints `removed <path>`. Otherwise removes nothing and exits 2.
+
+- [ ] **Step 1: Write the failing tests**, with a throwaway check registered in the test:
+  - `run` prints one line per registered check plus the `results:` line, and the folder holds `summary.json`, the marker and one file per check;
+  - each `<check>.json` is byte-identical to that script's own stdout on the same file;
+  - two runs give byte-identical per-check files in different folders;
+  - a check whose `requires` failed is `not_run` with the reason naming it;
+  - `show --reviewer` prints exactly the checks whose receivers include that reviewer;
+  - `clean` removes its folder; on `/`, the home folder, the cwd, a symlink to a results folder, and a prefixed folder without the marker it removes nothing and exits 2;
+  - the sweep removes a marked folder older than 24 hours (set with `os.utime`) and keeps a fresh one, an unmarked one and a symlink;
+  - with `TMPDIR` pointed at a test folder, the results folder is created there.
+- [ ] **Step 2:** Run the tests. Expected: they fail with a missing module.
+- [ ] **Step 3:** Implement the interfaces. Use `shutil.rmtree` only after the checks in `clean`, and never follow symlinks.
+- [ ] **Step 4: Wire.** In `references/mechanical-checks.md`'s shared section, add the runner command, how to read its summary, `show` and `clean`, and the delivery check before dispatch. In `SKILL.md`, step 3 runs the runner, each reviewer's brief gets its `show --reviewer` output, and the report step ends with `clean`. Re-measure the first 5,000 tokens with `claude plugin details`.
+- [ ] **Step 5:** Run the tests on 3.12, 3.13 and 3.15, then ruff, basedpyright, `npm run lint:frontmatter` and `claude plugin validate --strict plugins/skills-engineering`. Expected: all pass, 0 findings, `valid`.
+- [ ] **Step 6:** Commit: `git commit -m "Add the frontmatter checks runner and its results lifecycle"`.
 
 ### Task 2: Frontmatter reader, block structure and scalars
 
@@ -498,7 +543,7 @@ Every length is in code points, with `utf16_length` in `data`.
 `field_values.py`:
 - `boolean-form`, for `BOOLEAN_FIELDS`:
   - a plain value outside `BOOLEAN_FORMS` gives the finding with basis official;
-  - a quoted value gives the finding with basis inference and the message "quoted: unverified whether Claude Code reads it as a boolean".
+  - a quoted value gives the finding with basis inference and the condition "quoted: unverified whether Claude Code reads it as a boolean".
 - `context-value`: anything other than `fork`.
 - `effort-value`: a value outside `EFFORT_LEVELS`.
 - `string-or-list`, for `disallowed-tools`, `paths` and `arguments`: a string scalar or a seq of string scalars, under YAML 1.1.
@@ -616,10 +661,11 @@ Each command's entry in `references/mechanical-checks.md` follows "Mechanical-ch
 ### Task 10: Release verification
 
 - [ ] **Step 1:** Run `npm run test:plugins`, the full suite on `/usr/bin/python3.12` and `/usr/bin/python3.13`, and the suite under `uv run` (3.15 with ruamel). Expected: all pass. Show the raw output.
-- [ ] **Step 2: Corpus run.** Run the 11 scripts and the commands on every `SKILL.md` in `plugins/*/skills/*/` and in the synced skills under `/root/.claude/`. Expected:
+- [ ] **Step 2: Corpus run.** Run `run.py run`, then `run.py clean`, and the commands on every `SKILL.md` in `plugins/*/skills/*/` and in the synced skills under `/root/.claude/`. Expected:
   - exit 0 everywhere;
   - no traceback;
-  - under 1 s per file.
+  - under 1 s per file;
+  - no `auditing-skills-fm-*` folder left in the temp folder afterwards.
 
   Show a table of findings per rule. Confirm by hand every finding on `auditing-skills` itself.
 - [ ] **Step 3: Differential check.** A scratchpad script compares the reader with ruamel.yaml on the corpus and lists each divergence with the YAML 1.1 versus 1.2 rule that explains it. A divergence no rule explains is a bug: go back to the owning task.
@@ -640,7 +686,6 @@ Each command's entry in `references/mechanical-checks.md` follows "Mechanical-ch
 
 ## Out of scope (next plan)
 
-- An entry script that runs every check in one call. Each check is wired one by one here, as Nery asked.
 - `allowed-tools` for the scripts: since 2.1.325, scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools`, so adding it is a separate decision for Nery.
 - The CHANGELOG entry.
 - The other data domains.
