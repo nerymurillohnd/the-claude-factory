@@ -5,6 +5,7 @@ This file is yours, the orchestrator's: it tells you how to run every mechanical
 ## Contents
 
 - How to run the checks
+- Running the frontmatter checks
 - Reading a frontmatter check's result
 - Plugin structure and loading
 - Dependencies
@@ -18,6 +19,17 @@ This file is yours, the orchestrator's: it tells you how to run every mechanical
 Run the checks the selected reviewers receive, and read every result. They need the `claude` command, Claude Code's CLI; where it isn't available, every check below is not run. In each command, `<plugin root>` is the directory that holds the plugin's `.claude-plugin/` folder and `<plugin name>` is the `name` in its `plugin.json`.
 
 A check no command in this file covers is not run: name it to the reviewer as not run, and never measure it by hand, because a figure you estimate reads to the reviewer as measured. A command that fails or is unavailable is also not run: name it with its exit code and message.
+
+## Running the frontmatter checks
+
+Every frontmatter check runs through one entry script, whose path step 3 of `SKILL.md` gives already quoted. Below, `<entry>` stands for exactly that quoted path: the skill's permission rules approve only that spelling, and a command written any other way asks the user first. If the path doesn't exist, use the fallback path step 3 gives; if neither exists, every frontmatter check is not run.
+
+- `python3 <entry> run <SKILL.md>`, once, in step 3: runs every frontmatter check. It prints one line per check, `<check> <status> <n> finding(s) -> <receivers>`, then `results: <folder>`. Keep the folder's path exactly as printed, because the commands below take it as written.
+- `python3 <entry> show <folder> --reviewer <name>`: the results that reviewer receives, one JSON line each, to write into its prompt verbatim. `--check <id>` prints one check's result instead.
+- `python3 <entry> check <id> <SKILL.md>`: one check alone, printing the same line `run` stores for it. Use it only to run a single check again.
+- `python3 <entry> clean <folder>`: removes that results folder and nothing else. Run it after presenting the reports, and also whenever the audit stops before that.
+- If `python3` isn't found, or Windows answers with a message about the Microsoft Store, use `python` in its place from then on.
+- Before you launch the reviewers, check against the summary that every selected reviewer it names has its `show` output in its prompt.
 
 ## Reading a frontmatter check's result
 

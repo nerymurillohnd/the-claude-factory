@@ -323,9 +323,10 @@ class CommandLineTest(unittest.TestCase):
         self.assertEqual((done.returncode, done.stdout), (2, ""))
 
     def test_usage_error_exits_2(self) -> None:
-        """No path at all is a usage error: exit 2, nothing on stdout."""
+        """No path at all is a usage error: exit 2, one stderr line, nothing on stdout."""
         done = run_python([str(self.script)])
         self.assertEqual((done.returncode, done.stdout), (2, ""))
+        self.assertEqual(len(done.stderr.splitlines()), 1, done.stderr)
 
     def test_symlinked_folder_names(self) -> None:
         """folder_name is the name as given; resolved_folder_name follows the symlink."""

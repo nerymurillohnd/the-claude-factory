@@ -12,12 +12,21 @@ import contextlib
 import io
 from pathlib import Path
 import sys
-from typing import NoReturn
+from typing import NoReturn, override
 
 from common.context import Context
 from common.report import CheckResult, emit
 
 CANT_RUN = 2
+
+
+class OneLineParser(argparse.ArgumentParser):
+    """An argument parser that reports a usage error on one stderr line, then exits 2."""
+
+    @override
+    def error(self, message: str) -> NoReturn:
+        """Print `<prog>: <message>` and exit 2."""
+        cant_run(self.prog, message)
 
 
 class Arguments(argparse.Namespace):
@@ -26,17 +35,17 @@ class Arguments(argparse.Namespace):
     skill_md: str = ""
 
 
-def _reconfigure_streams() -> None:
-    """Write stdout and stderr as UTF-8 whatever the console's encoding, as on Windows."""
+def reconfigure_streams() -> None:
+    """Write stdout and stderr as UTF-8 with LF line ends, whatever the console, as on Windows."""
     for stream in (sys.stdout, sys.stderr):
         if isinstance(stream, io.TextIOWrapper):
             with contextlib.suppress(ValueError):
-                stream.reconfigure(encoding="utf-8", errors="replace")
+                stream.reconfigure(encoding="utf-8", errors="replace", newline="\n")
 
 
-def _cant_run(check_id: str, message: str) -> NoReturn:
-    """Report why the check can't run on one stderr line, and exit 2."""
-    _ = sys.stderr.write(f"{check_id}: {message}\n")
+def cant_run(prog: str, message: str) -> NoReturn:
+    """Report why the command can't run on one stderr line, and exit 2."""
+    _ = sys.stderr.write(f"{prog}: {message}\n")
     sys.exit(CANT_RUN)
 
 
@@ -44,14 +53,14 @@ def _context(check_id: str, args: Arguments) -> Context:
     """Validate the SKILL.md path and build the check's context."""
     path = Path(args.skill_md)
     if not path.exists():
-        _cant_run(check_id, f"no such file: {args.skill_md}")
+        cant_run(check_id, f"no such file: {args.skill_md}")
     if path.is_dir():
-        _cant_run(check_id, f"a folder, not a SKILL.md file: {args.skill_md}")
+        cant_run(check_id, f"a folder, not a SKILL.md file: {args.skill_md}")
     try:
         with path.open("rb"):
             pass
     except OSError as error:
-        _cant_run(check_id, f"can't read {args.skill_md}: {error.strerror}")
+        cant_run(check_id, f"can't read {args.skill_md}: {error.strerror}")
     given = path.absolute()
     options: dict[str, object] = dict(vars(args))
     del options["skill_md"]
@@ -64,6 +73,19 @@ def _context(check_id: str, args: Arguments) -> Context:
     )
 
 
+def parse(
+    check_id: str,
+    extra: Callable[[argparse.ArgumentParser], None] | None = None,
+    argv: Sequence[str] | None = None,
+) -> Context:
+    """Parse a check's command line and build its context; exit 2 when it can't run."""
+    parser = OneLineParser(prog=check_id)
+    _ = parser.add_argument("skill_md", metavar="SKILL.md", help="the SKILL.md file to check")
+    if extra is not None:
+        extra(parser)
+    return _context(check_id, parser.parse_args(argv, namespace=Arguments()))
+
+
 def run(
     check_id: str,
     check: Callable[[Context], CheckResult],
@@ -71,11 +93,6 @@ def run(
     argv: Sequence[str] | None = None,
 ) -> NoReturn:
     """Parse the command line, run the check on the SKILL.md it names, print the result, exit 0."""
-    _reconfigure_streams()
-    parser = argparse.ArgumentParser(prog=check_id)
-    _ = parser.add_argument("skill_md", metavar="SKILL.md", help="the SKILL.md file to check")
-    if extra is not None:
-        extra(parser)
-    args = parser.parse_args(argv, namespace=Arguments())
-    emit(check(_context(check_id, args)))
+    reconfigure_streams()
+    emit(check(parse(check_id, extra, argv)))
     sys.exit(0)

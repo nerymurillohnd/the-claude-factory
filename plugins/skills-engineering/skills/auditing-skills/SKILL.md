@@ -1,6 +1,7 @@
 ---
 name: auditing-skills
 description: Use every time the user or the task involves auditing, reviewing, checking, diagnosing, improving or refining a Claude Agent Skill, recommending changes to one, judging whether one is worth installing or finding why one misbehaves, and right after a skill or any of its files is created or edited, for every kind of skill, whether in a plugin, a personal, project or managed folder, a claude.ai account, a URL or a repository. Not for writing a new skill. Runs specialized reviewer agents in parallel, each bound to its own domain, against a curated collection of current best practices from the Claude Platform and Claude Code docs, Anthropic and the Agent Skills specification, and returns each one's complete report with explicit evidence for every finding, the corrections it needs and suggested improvements.
+allowed-tools: Bash(python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py" *)
 argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [comprehension] [feature-fit] [scripts] [skill path, name or URL]"
 ---
 
@@ -63,7 +64,7 @@ This invocation's arguments: $ARGUMENTS
 
 1. Locate the skill and get every file it includes onto disk, as the gotchas say.
 2. Read the whole skill, its `SKILL.md` and every file it points to, and understand it before you brief anyone: what it does and its purpose, what kind of skill it is, what it contains and how it is composed, where it lives, how it is invoked, and which surfaces load it. Record what it has and what it lacks, such as supporting files, scripts, hooks, subagents that consume it, other skills it invokes and plugin dependencies: step 4 passes this inventory to every reviewer.
-3. Run the mechanical checks the selected reviewers receive, as [MECHANICAL-CHECKS.md](MECHANICAL-CHECKS.md) describes: the command for each check, how to read its result, and what each reviewer receives. Read it in full before running any check, and read it again whenever it is no longer in your context. The frontmatter checks are Python scripts in `scripts/`, and `scripts/common/` holds the reader, result format and command line they share: run the scripts as that file says, and never read their code.
+3. Run the mechanical checks the selected reviewers receive, as [MECHANICAL-CHECKS.md](MECHANICAL-CHECKS.md) describes: the command for each check, how to read its result, and what each reviewer receives. Read it in full before running any check, and read it again whenever it is no longer in your context. The frontmatter checks are Python scripts in `scripts/`, and `scripts/common/` holds the reader, result format and command line they share: run them as that file says, and never read their code. Their entry script is `"${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py"`, and if that path doesn't exist, `"${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py"`; write it exactly so, quotes included. Start with `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" run <the audited SKILL.md>`, and keep the results folder it prints.
 4. Write one prompt per selected reviewer. Each prompt holds:
    - the skill's name and the absolute path of its directory;
    - where it lives, how it is invoked, which surfaces it targets, and its purpose in one sentence, from step 2;
@@ -71,7 +72,7 @@ This invocation's arguments: $ARGUMENTS
    - the skill's inventory from step 2, what it has and what it lacks, such as supporting files, scripts, hooks, subagents that consume it, other skills it invokes and plugin dependencies, given as context to focus the reviewer, never as a limit: the reviewer still audits every point of its reference, and judges each part the skill lacks against the skill's purpose, as an improvement where the purpose needs it;
    - its bounds: its own reference is its whole scope, so name the areas its entry in the Reviewers list names, to be audited in full, and tell it to judge nothing outside them, even what it notices in passing; state them as that reviewer's own ground, without naming any other reviewer or what another one covers;
    - any target the user stated, and any reading you took in its place;
-   - the results of the mechanical checks that reviewer receives, as "What each reviewer receives" in [MECHANICAL-CHECKS.md](MECHANICAL-CHECKS.md) lists them, from step 3, and the name of every check not run;
+   - the results of the mechanical checks that reviewer receives, as "What each reviewer receives" in [MECHANICAL-CHECKS.md](MECHANICAL-CHECKS.md) lists them, from step 3, the frontmatter results included as `show --reviewer` prints them, and the name of every check not run;
    - for `runtime-contract` and `frontmatter-description`, the path of [references/skill-types-and-frontmatter.md](references/skill-types-and-frontmatter.md), the lookup of every frontmatter field, name rule, argument, body feature and layout by type of skill, with the instruction to read it whole before judging the skill's type;
    - what you demand of it, even though its own rules and template already say so:
      - verify every point instead of assuming it holds because a file or a line exists, and check every fact a finding rests on against the current official sources with its docs and web tools, reporting where they changed since its reference;
@@ -103,6 +104,7 @@ This invocation's arguments: $ARGUMENTS
    ```
 
 8. Under "Where to start", recommend all the findings or which ones to take up, in order of priority, and why each comes where it does: consequence first, then what other fixes depend on it.
+9. Remove the results folder from step 3 with `python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" clean <results folder>`. Remove it the same way whenever the audit stops before this step.
 
 These thoughts mean stop and go back to the rule they break:
 
