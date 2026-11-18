@@ -40,6 +40,6 @@ Approving with "clear context" makes Claude implement from the plan alone, a new
 
 - Several subsystems: split into phases, or into separate plans when the phases can ship apart. End each phase with a task of its own whose check proves the whole phase, so the state file and the gate hold it before the next phase starts.
 - Deploys or data: add a rollback plan with its own check, and an authorization checkpoint before the irreversible step.
-- A write-only probe: Task 0, run by a subagent with `isolation: worktree`, with a go or no-go gate that names what changes in the plan on no-go.
+- A write-only probe: Task 0, run where it can't change the user's work, with a go or no-go gate that names what changes in the plan on no-go.
 - Non-code work: acceptance checks replace tests. Each check is still something that comes back pass or fail: a count, a query, a rendered page inspected against a list, a recipient list compared with its source.
 - Test-first code tasks: the test name, its assertion and the failure message expected before the code exists.

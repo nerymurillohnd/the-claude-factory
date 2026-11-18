@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
+- `planning-before-execution` now delegates its research, before writing the plan, to one or more `planning-researcher` subagents in parallel, sized to the breadth of the work, and briefs each subagent, `plan-verifier` included, with the research resources your session has for the task: docs servers, connectors, skills and plugins. It no longer imposes worktree isolation: Claude decides where a probe or a parallel task runs from what the session and your settings allow.
 - `planning-researcher` and `plan-verifier` now use your session's documentation servers, skills and other MCP tools to check facts, instead of fetching web pages only, and say when to use them at the start of their descriptions. Both now run on your session's model and effort level with every tool your session has, MCP tools included, and are told to change nothing; `plan-verifier` lacks `Edit` and `Write`.
 - `planning-researcher` now covers everything a change touches beyond what its brief names: callers, entry points, every variant that changes the answer, and the official docs of every counterpart in an integration. It reads the release notes for the installed version, the four releases before it and every release after it.
 - Both agents list only the keys of `.env`, settings and MCP configuration files, and never read or quote their values.

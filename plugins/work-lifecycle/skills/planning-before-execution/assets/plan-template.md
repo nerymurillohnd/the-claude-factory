@@ -48,7 +48,7 @@ Guardrail: <plan mode on | off, and why: chat, subagent, tool unavailable, unatt
 
 ## Execution strategy
 
-<Main session, or one subagent per task, with the reason. Worktree isolation for parallel subagents.>
+<Main session, or one subagent per task, with the reason, and how parallel subagents are kept from changing the same files in this session.>
 
 ## Handoff
 

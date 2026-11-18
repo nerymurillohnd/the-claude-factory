@@ -1,7 +1,7 @@
 ---
 name: planning-before-execution
 description: Plans multi-step work before anything changes. Researches current official sources and the code, then writes a self-contained, verifiable plan with a file map, tasks, checks and acceptance criteria, and sets how completion is proven. Use whenever a task spans several steps or files, changes architecture, migrates or upgrades something, touches data or deployments, or is costly to redo, and whenever the user asks to plan, scope, break down or design an approach, even if they never say plan. Also use for multi-step operations or content work that Claude will carry out. Not for one-line edits, questions, explanations, writing a plan document as the deliverable itself (such as a business plan), or work that already has an approved plan.
-compatibility: Claude Code on macOS or Linux with python3 3.12 or later on PATH for the plan gate and the state file validator, standard library only. In the Claude app it plans without agents, hooks or state file.
+compatibility: Claude Code on macOS or Linux with python3 3.12 or later on PATH for the plan gate and the state file validator, standard library only. In the Claude app it plans without subagents, hooks or state file.
 allowed-tools: Bash(python3 "${CLAUDE_SKILL_DIR}/scripts/validate-state.py" *)
 hooks:
   Stop:
@@ -43,7 +43,8 @@ Decide this from what you can see, not from the app's name, before research. Wri
 - Already in plan mode: proceed; the plan lands in Claude Code's plan file.
 - Not in plan mode, `EnterPlanMode` available: call it before research.
 - No `EnterPlanMode` (a subagent, a setting that removes it, the Claude app): work read-only by instruction and say at the top of the plan that the guardrail is off.
-- The plugin's agents are available only when `work-lifecycle:planning-researcher` is among the agents you can call. Without them, do the research and the review inline and say so.
+- The plugin's subagents are available only when `work-lifecycle:planning-researcher` is among the subagents you can call. Without them, do the research and the review inline and say so.
+- The research resources this session has for the plan's domain: docs servers and connectors (find deferred ones with ToolSearch), skills and plugins whose descriptions cover the domain, and language servers. List them before research: every brief you give a subagent names the ones its task needs.
 - The state file and the gate are available only when the paths under Execution reached you as absolute paths. If they still show `${`, the placeholders weren't substituted: skip the state file and `/goal`, and say that completion rests on the final report.
 - Unattended run (scheduled task, no user to answer): skip `EnterPlanMode`, list each unanswered question under Assumptions and open questions with your recommended answer, deliver the plan, and execute nothing that needs authorization.
 
@@ -76,19 +77,21 @@ Planning progress:
 
 1. Read the current official sources for every library, tool or service the plan touches, and check the installed versions and their release notes. Current sources outrank memory.
 2. Read the code the change touches: its callers, its tests, its configuration.
-3. When the scope goes beyond a few files, delegate exploration to the `work-lifecycle:planning-researcher` agent:
-   - Write one brief per question, and send the briefs for independent questions in one message so they run in parallel.
-   - Each brief says what to find, the scope, and what the answer decides; the agent already knows its report contract.
+3. Before you write the plan, delegate the research to one or more `work-lifecycle:planning-researcher` subagents in parallel. Size how many from the breadth of the work: the files, components, sources and integrations the plan touches, and what each implies.
+   - Write one brief per question. Each says what to find, the scope, what the answer decides for the plan, and the evidence you need back: file and line, command and raw output, or URL with its date.
+   - Name the research resources from What this session has that the question needs, and tell the subagent to use them before web search and fetch.
+   - Ask for exhaustive research: everything the change touches, the installed versions and their release notes, and nothing assumed.
+   - Send the briefs for independent questions in one message so they run in parallel. Decide how each one runs from what this session and the user's settings allow.
 4. Treat a claim without evidence as unverified. Re-check yourself every claim the plan depends on before writing it under Verified facts.
 5. Treat research done earlier in this session, before this skill loaded or for another purpose, as leads:
    - A fact from it counts once you re-check it against its source.
    - It counts without a re-check only when its evidence (file and line, command and raw output, or URL with its date) is quoted in this session.
-   - It never replaces the step 3 delegation when the scope goes beyond a few files.
+   - It never replaces the step 3 delegation.
 
 ### 3. De-risk
 
 1. Find the assumptions that would sink the plan if wrong, and test each one now with a read-only probe: an existing test, a type check, a `--dry-run`, a query.
-2. A probe that needs to write becomes Task 0 of the plan, run after approval by a subagent with `isolation: worktree`, with a go or no-go gate before the other tasks.
+2. A probe that needs to write becomes Task 0 of the plan, run after approval, with a go or no-go gate before the other tasks. Decide where it runs from what the session and the user's settings allow, so it can't change the user's work before the gate.
 3. Skip this phase for a plan with no risky assumption, and say so in the checklist.
 
 ### 4. Write the plan
@@ -119,9 +122,10 @@ Run this loop before any handoff, every time:
 
 For high-stakes plans only (production, data, deployments, security, anything published to third parties, such as a public plugin or marketplace, or anything costly to redo):
 
-1. Brief the `work-lifecycle:plan-verifier` agent in plan mode. It can't see this conversation, so the brief carries:
+1. Brief the `work-lifecycle:plan-verifier` subagent in plan mode. It can't see this conversation, so the brief carries:
    - the plan's file path, or the plan's full text when it is only in the reply;
-   - the requirements written out: the user's goal, their answers to your questions and their constraints.
+   - the requirements written out: the user's goal, their answers to your questions and their constraints;
+   - the research resources from What this session has that checking the plan's facts needs, with the instruction to use them.
 2. Resolve each blocking finding before handoff.
 
 For other plans, write why the review was not needed.
@@ -189,7 +193,7 @@ Without the state file (see What this session has), skip "Start: the state file"
 ### Stops and the end
 
 1. Whenever you must stop for the user (a reserved action at its authorization checkpoint, a question, a decision the plan leaves to them), set `status` to `awaiting-authorization` first, ask, and set it back to `executing` once they answer.
-2. On a high-stakes plan, after the last task, give the `work-lifecycle:plan-verifier` agent the plan's path and the state file's path, naming work mode in the brief, and resolve every blocking finding before going on.
+2. On a high-stakes plan, after the last task, brief the `work-lifecycle:plan-verifier` subagent in work mode with the plan's path, the state file's path and the research resources from What this session has that re-running the checks needs. Resolve every blocking finding before going on.
 3. When every task has its evidence, set `status` to `done` and deliver the final report in this structure:
 
    ```text
@@ -206,6 +210,6 @@ Without the state file (see What this session has), skip "Start: the state file"
 ### Delegation
 
 1. Default to the main session.
-2. Use one subagent per task when there are many independent tasks, the context would grow large, or a mistake is costly enough to justify a review per task. Run parallel subagents with `isolation: worktree`.
-3. Tell each delegated code task to use the `work-lifecycle:testing-before-implementation` skill, and require back the commands and raw output of its checks, the red and green runs included.
+2. Use one subagent per task when there are many independent tasks, the context would grow large, or a mistake is costly enough to justify a review per task. Decide how each runs, in parallel or not and in which copy of the repository, from what this session and the user's settings allow, so parallel tasks never change the same files.
+3. Brief each delegated task with its plan task and the research resources from What this session has that it needs. Tell each delegated code task to use the `work-lifecycle:testing-before-implementation` skill, and require back the commands and raw output of its checks, the red and green runs included.
 4. Only the main session writes the state file: record each subagent's evidence from the output it returns, so parallel tasks never write the file at once.
