@@ -142,7 +142,8 @@
     "mcp-server-dev@claude-plugins-official": true,
     "skill-diagnostics@the-claude-factory": false,
     "plugin-engineering@the-claude-factory": true,
-    "skills-engineering@the-claude-factory": true
+    "skills-engineering@the-claude-factory": true,
+    "work-lifecycle@the-claude-factory": true
   },
   "autoMemoryEnabled": true,
   "extraKnownMarketplaces": {
