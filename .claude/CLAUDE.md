@@ -74,11 +74,11 @@ Do every task, area, phase and function through the skill this section designate
 
 Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside the task's skill below for all work on plugins or their commands: read its complete list of plugin commands first, and do no manual work a command already does.
 
-- Use `plugin-engineering:public-marketplace-dev` to build a plugin.
-- Use `plugin-authoring` to create or change a mod.
+- Use `plugin-engineering:cli-commands-guide` to build a plugin.
+- Use `plugin-authoring` to create a plugin that ships mods, or to change a mod.
 - Use `hook-engineering:writing-hooks` to write or rewrite a Claude Code hook.
 - Use `hook-engineering:hook-development` to debug or audit a hook.
-- Use `plugin-engineering:plugin-testing-and-debugging` to test, debug or review a plugin before publishing it.
+- Use `plugin-engineering:plugin-testing-and-debugging` to test, debug and validate a plugin, right after building it, after every change to it and before publishing it.
 - Use `plugin-evals:plugin-evals` to write or run a plugin's evals; every run bills the owner.
 - Use `plugin-releases` to set or bump a plugin's version, or to release and tag it.
 - Use `plugin-catalog-changes` to rename, remove or merge a plugin.
