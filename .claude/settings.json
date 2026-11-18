@@ -140,8 +140,9 @@
     "tailwind-development@synced": false,
     "pdf-viewer@synced": false,
     "mcp-server-dev@claude-plugins-official": true,
-    "skill-diagnostics@the-claude-factory": true,
-    "plugin-engineering@the-claude-factory": true
+    "skill-diagnostics@the-claude-factory": false,
+    "plugin-engineering@the-claude-factory": true,
+    "skills-engineering@the-claude-factory": true
   },
   "autoMemoryEnabled": true,
   "extraKnownMarketplaces": {
