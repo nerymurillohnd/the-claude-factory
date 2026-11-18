@@ -103,6 +103,12 @@
       "category": "testing"
     },
     {
+      "name": "skills-engineering",
+      "source": "./plugins/skills-engineering",
+      "description": "Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills learns your goal and setup, agrees a plan with you and builds the skill from the current official docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
+      "category": "testing"
+    },
+    {
       "name": "svelte-development",
       "source": "./plugins/svelte-development",
       "description": "Writes and reviews Svelte 5 and SvelteKit 3 frontend code by current practice (runes, snippets, Astro and Tailwind CSS projects) and runs the migration from Svelte 4 and SvelteKit 2, checking every change against the official Svelte docs MCP server and autofixer, the Svelte language server (LSP) and your project's own svelte-check.",

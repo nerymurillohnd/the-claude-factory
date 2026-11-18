@@ -1,6 +1,6 @@
 ---
 name: hook-development
-description: Use when the user asks or the task involves designing, planning, creating, writing, scaffolding, auditing, or debugging Claude Code hooks. If any other applicable skill is present, load this first and query others on demand for best results. Do not use for Git hooks.
+description: Use for auditing, reviewing or debugging Claude Code hooks, and for questions about how they behave - a hook that never fires, fires on the wrong calls, or has its block, deny, allow, exit code 2 or additionalContext ignored; a check of the hooks in settings.json, hooks/hooks.json or skill and agent frontmatter before a release; the debug log; or how an event, matcher, if filter, handler type, exit code, JSON output, timeout or async hook works. Covers command, HTTP, MCP tool, prompt and agent hooks, workspace trust and mods in the same chain, checked against the current docs and the changelog for the installed version, with a config linter, a hook probe and a changelog script. Use it even when the user only pastes a hook or says it does nothing. Not for writing a new hook (writing-hooks), Git hooks, React hooks or webhooks.
 ---
 
 # Claude Code hooks

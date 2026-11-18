@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-18
+
+### Changed
+
+- `hook-development` now loads when you audit, review or debug a hook, or ask how hooks behave, and no longer competes with `writing-hooks` when you ask for a new hook. The `hook-engineer` agent says it audits, debugs or writes a hook from a complete task message and reports back, and that writing a hook with you is `writing-hooks`' job. Nothing else changes in how the plugin works.
+
 ## [0.3.0] - 2026-11-15
 
 ### Added
@@ -70,7 +76,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Helper scripts: a linter for hooks configuration files, a probe that predicts how Claude Code reads a command hook's result, and a changelog script that lists the hook-related entries newer than your installed version.
 - The `claude-code-docs` MCP server (`https://code.claude.com/docs/mcp`), so Claude reads the official hooks pages instead of recalling them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.1...HEAD
+[0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.0
 [0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.6
 [0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.5

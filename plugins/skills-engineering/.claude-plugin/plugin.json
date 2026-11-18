@@ -1,0 +1,37 @@
+{
+  "name": "skills-engineering",
+  "displayName": "Skills Engineering",
+  "version": "0.1.0",
+  "engines": {
+    "claude-code": ">=2.1.304"
+  },
+  "description": "Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills learns your goal and setup, agrees a plan with you and builds the skill from the current official docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/skills-engineering#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/skills-engineering#readme",
+  "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
+  "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "agent-skills",
+    "skill-audit",
+    "skill-authoring",
+    "code-review",
+    "best-practices",
+    "subagents",
+    "testing"
+  ],
+  "metadata": {
+    "category": "testing",
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}

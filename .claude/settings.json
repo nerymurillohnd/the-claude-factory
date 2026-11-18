@@ -8,7 +8,17 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_ENABLE_TASKS": "1",
-    "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1"
+    "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1",
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "0",
+    "CLAUDE_AUTO_BACKGROUND_TASKS": "1",
+    "CLAUDE_CODE_AUTO_MODE_MODEL": "claude-opus-5-5",
+    "CLAUDE_CODE_BASH_EDIT_DIFF": "1",
+    "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS": "120000",
+    "CLAUDE_CODE_GLOB_HIDDEN": "true",
+    "CLAUDE_CODE_GLOB_NO_IGNORE": "true",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000",
+    "BASH_MAX_OUTPUT_LENGTH": "150000",
+    "CLAUDE_CODE_AUTO_CONNECT_IDE": "true"
   },
   "permissions": {
     "allow": [
@@ -31,9 +41,21 @@
       "AskUserQuestion",
       "Grep",
       "Bash(rg *)",
+      "Bash(grep *)",
+      "Bash(python3 *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(ruff *)",
+      "Bash(basedpyright *)",
+      "Bash(awk *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(uv *)",
+      "Bash(uvx *)",
+      "Bash(jq *)",
       "Bash(tree *)",
       "Bash(kill *)",
-      "Bash(git commit *)",
+      "Bash(git *)",
       "mcp__Claude_Code_Docs__*",
       "mcp__Context7__*",
       "Skill(*)",
@@ -47,10 +69,15 @@
       "ToolSearch",
       "WebSearch(*)",
       "WebFetch(*)",
-      "Agent(*)"
+      "Agent(*)",
+      "Read",
+      "Edit",
+      "Write",
+      "Bash"
     ],
     "ask": [
       "Bash(git push*)",
+      "Bash(git *--no-verify*)",
       "Bash(gh pr create*)",
       "Bash(gh pr merge*)",
       "Bash(gh workflow run*)",
@@ -136,8 +163,10 @@
     "tailwind-development@synced": false,
     "pdf-viewer@synced": false,
     "mcp-server-dev@claude-plugins-official": true,
-    "skill-diagnostics@the-claude-factory": true,
-    "plugin-engineering@the-claude-factory": true
+    "skill-diagnostics@the-claude-factory": false,
+    "plugin-engineering@the-claude-factory": true,
+    "skills-engineering@the-claude-factory": true,
+    "work-lifecycle@the-claude-factory": true
   },
   "autoMemoryEnabled": true,
   "extraKnownMarketplaces": {
