@@ -43,7 +43,7 @@ Add an item only when all of these hold:
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on 31 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on 25 Biome findings in plugin files | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -179,7 +179,7 @@ Add an item only when all of these hold:
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** none.
 
-### DEBT-006 — npm run lint:js fails on 31 Biome findings in plugin files
+### DEBT-006 — npm run lint:js fails on 25 Biome findings in plugin files
 
 | Field | Value |
 | --- | --- |
@@ -199,6 +199,7 @@ Add an item only when all of these hold:
   - Rechecked 2026-11-15 on `main` at ceecd50: Biome checks 721 files and finds 31 errors. The tag `github-operations--v0.8.0` now exists on the remote, so the github-operations fix no longer waits on that release.
   - Update, 2026-11-16, after #110 (merged as a55cd4e): Validate's `Checks` job now runs `pr-checks.sh biome-changed`, Biome on the files a pull request changes, so a new finding in a changed file blocks the merge. `npm run check:pr` runs the same step locally and the pre-push hook runs it before every push. Rechecked on `main` at a55cd4e: Biome checks 714 files and finds 31 errors, the same ones.
   - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:js` checks 695 files and finds 31 errors, exit 1.
+  - Update, 2026-11-18, on branch `ccr-74c453c5-5x0jvi`: renaming `claude-github-actions` to `cc-github-actions` made its two reference files changed files, so `biome-changed` blocked the push. Their 5 `useFencedCodeLanguage` findings were fixed by tagging the fences `bash`, and `biome check --write` fixed the format of `plugins/github-operations/README.md`. `npm run lint:js` now checks 705 files and finds 25 errors, exit 1.
 - **Inferences:** none.
 - **Open questions:** none.
 
