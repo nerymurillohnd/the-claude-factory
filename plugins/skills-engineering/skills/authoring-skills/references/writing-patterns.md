@@ -140,6 +140,16 @@ An instruction with no way to act or check:
 Make sure the data is valid before you continue.
 ```
 
+Freedom matched to each step's fragility, from many valid approaches to one exact sequence:
+
+```markdown
+Review the line items for amounts that look out of place, and list each with the reason.
+
+Run `python3 scripts/to_csv.py [input-pdf] [output-csv]`, where `[input-pdf]` is the invoice and `[output-csv]` the file to write.
+
+Run exactly `python3 scripts/post_journal.py --dry-run`. Don't add flags.
+```
+
 ## Examples and snippets
 
 Add an example only where the output depends on seeing it: a tone, a level of detail, a format. An example shows the style and level of detail you want more clearly than a description does.

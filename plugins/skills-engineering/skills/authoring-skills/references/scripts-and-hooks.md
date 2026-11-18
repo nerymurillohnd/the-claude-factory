@@ -22,7 +22,23 @@ Say in the body whether the model runs the script or reads it:
 - **Run** it for its result, the usual case: "Run `python3 scripts/split_pages.py scan.pdf` to get one image per page."
 - **Read** it when its logic is the knowledge: "Read `scripts/tax_rounding.py` for how each country rounds tax lines."
 
-List every script the skill bundles in the body, each with a one-line purpose, its output format when structured, and its command beneath it, so the model never browses `scripts/` to find one.
+List every script the skill bundles in the body, each with a one-line purpose, its output format when structured, and its command beneath it, so the model never browses `scripts/` to find one. In `SKILL.md` of a Claude Code skill:
+
+````markdown
+**Scripts** (requires Python 3.10 or later)
+
+- `to_csv.py`: extracts an invoice's line items; writes CSV.
+
+  ```bash
+  python3 ${CLAUDE_SKILL_DIR}/scripts/to_csv.py [input-pdf] [output-csv]
+  ```
+
+- `check_totals.py`: checks that the line items add up to the invoice total; prints one line per mismatch.
+
+  ```bash
+  python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py [output-csv]
+  ```
+````
 
 A command the model can type correctly from memory needs no script; write it in the body.
 
@@ -95,6 +111,14 @@ In Claude Code, an injected command runs when the skill loads and its output rep
 - Inject only commands that must succeed for the skill to make sense. Any non-zero exit aborts the skill, except exit 1 from a search or comparison command such as `grep` or `diff`. Append `|| true` to any other command that can legitimately exit non-zero, such as a check that reports problems.
 - Pre-approve each injected command in `allowed-tools`.
 - Write the body so it still works, or says clearly what is missing, where the command didn't run.
+
+The exclamation mark runs a command only at a line's start or after a space, and `|| true` keeps a check that reports problems from aborting the skill:
+
+```markdown
+Inert, the mark follows a character: KEY=!`git branch --show-current`
+Runs, the mark follows a space: - Branch: !`git branch --show-current`
+Runs without aborting on findings: - Totals: !`python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py out.csv || true`
+```
 
 ## Skill hooks
 
