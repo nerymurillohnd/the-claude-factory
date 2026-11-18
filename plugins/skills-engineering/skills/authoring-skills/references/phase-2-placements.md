@@ -2,6 +2,8 @@
 
 Decide the surfaces the skill must run on, the subagent that runs it and how, and who invokes it, and the layout of a single skill at a plugin root.
 
+A skill can be several of these at once; apply every section that fits.
+
 ## A skill that leaves Claude Code
 
 claude.ai, the Skills API and other Agent Skills clients run the skill without Claude Code's processing. Write it for the strictest surface it must run on, and tell the requester each Claude Code feature that leaves out.

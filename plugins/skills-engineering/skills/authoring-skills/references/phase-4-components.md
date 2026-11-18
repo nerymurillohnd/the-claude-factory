@@ -2,6 +2,8 @@
 
 How to write the skill's dependencies and state as phase 2 decided: naming MCP tools and other skills, stating each dependency, keeping configuration, and what keeps the skill from surprising its users.
 
+Tool permissions are frontmatter fields, decided in phase 3.
+
 ## MCP tools
 
 - Name each tool fully qualified: in Claude Code, in the form its tool list shows, such as `mcp__postgres__run_query`; on other surfaces, as `ServerName:tool_name`, such as `Postgres:run_query`. A bare tool name can resolve to the wrong server, or to none.
