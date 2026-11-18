@@ -15,7 +15,7 @@ Everything here comes from the official pages "Plugin loading reference", "Troub
 
 ## When to run it
 
-Run this skill every time, without weighing whether it is needed: right after a plugin is created, and again after every edit to a plugin, its components or its dependencies, before you report the work as done.
+Run this skill every time, without weighing whether it is needed: right after a plugin is created, and again after every edit to a plugin, its components or its dependencies, before you report the work as done. Each of these runs is the validation and tests that cost nothing; start an eval or any other run that spends the user's usage only after the user approves it.
 
 Before the first step, load `cli-commands-guide`, this plugin's reference for every plugin command, if it isn't loaded yet, and work with both together: this skill decides what to test and how to diagnose, and `cli-commands-guide` gives the exact flags, messages, JSON fields and exit codes of each command it runs. Where the two disagree on a command, follow the newer official source, as "Version and source check" says.
 

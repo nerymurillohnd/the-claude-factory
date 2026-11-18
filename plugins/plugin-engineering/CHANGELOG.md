@@ -10,9 +10,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- **Breaking:** `public-marketplace-dev` now runs only when you call it with `/plugin-engineering:public-marketplace-dev`. Claude no longer loads it on its own, and it costs no context until you call it. Its description now says what it is for: setting up a new public marketplace on GitHub from scratch, once, with every folder it will need. If you relied on Claude loading it for other plugin work, call it yourself.
+- **Breaking:** `public-marketplace-dev` now runs only when you call it with `/plugin-engineering:public-marketplace-dev`. Claude no longer loads it on its own, and it costs no context until you call it. Its description now says what it is for: setting up a new public marketplace on GitHub from scratch, once, with every folder it will need. Other plugin work no longer goes through it: `cli-commands-guide` and `plugin-testing-and-debugging` cover it.
 - `cli-commands-guide` now says when it applies at the start of its description: all work on plugins, their components, dependencies and marketplaces, on every surface and distribution method. Before the first step of a task, it has Claude review the available skills and load each specialized one alongside it. When the task is setting up a new marketplace, it asks you to run `/plugin-engineering:public-marketplace-dev`.
-- `plugin-testing-and-debugging` now runs every time a plugin is created, and after every change to a plugin, its components or its dependencies, before the work is reported as done. It loads `cli-commands-guide` for the exact commands if it isn't loaded yet.
+- `plugin-testing-and-debugging` now runs every time a plugin is created, and after every change to a plugin, its components or its dependencies, before the work is reported as done. These runs are the checks that cost nothing: an eval that spends your usage still starts only after you approve it. It loads `cli-commands-guide` for the exact commands if it isn't loaded yet.
 
 ## [0.3.1] - 2026-11-15
 
