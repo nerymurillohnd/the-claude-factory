@@ -7,7 +7,7 @@ Claude Code reads frontmatter only when `---` is the file's first line. It ignor
 ## Fields every surface accepts
 
 - **`name`**: the skill's identifier and, in Claude Code, its command. Set it on every skill. Its rules are in phase-3-design-and-plan.md.
-- **`description`**: what the skill does and when to use it. Set it on every skill. How to write it is in phase-3-design-and-plan.md.
+- **`description`**: what the skill does and when to use it. Set it on every skill. How to write it is in phase-3-descriptions.md.
 - **`license`**: the license name, or the name of a license file in the folder. Set it on a skill distributed on its own; leave it out when a plugin or repository already states the license.
 - **`compatibility`**: what the skill needs from its environment, in up to 500 characters, such as `Requires git and network access`. Set it only when the skill fails without something a surface may lack.
 - **`metadata`**: a map of string keys to string values for your own tooling, such as `version`. Set it only when a tool of yours reads it, and never reuse a field name as a key.

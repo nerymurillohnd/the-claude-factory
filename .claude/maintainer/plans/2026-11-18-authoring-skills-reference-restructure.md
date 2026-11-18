@@ -92,7 +92,7 @@ Each task ends with a signed commit and no push. Each task's verification, and t
      - No reference is listed under two phases.
      - Body size is under 5,000 tokens (estimate).
 - [x] 9b. **Teach the pattern.** Add to phase-3-design-and-plan.md, step 8 (one phase and one topic per reference in a phased skill, named with its phase and topic, and a topic two phases use split by phase) and step 9 (list each phase's files under that phase in step order, with step and condition, and say to read them in that order). Cite the official bases (focused files, organize by domain or feature, descriptive names, say when to load each file) and mark the phase prefix and explicit order as the owner's convention. Verify: the inventory, the checks, and that the rule text matches the structure this restructure produced.
-- [ ] 10. **Full verification.**
+- [x] 10. **Full verification.**
     - Inventory against the baseline: missing equals exactly the two approved duplicates.
     - Link checker: no broken links, no nested links.
     - A table of contents in every file over 100 lines.

@@ -39,3 +39,5 @@ invoice-export.zip
     ├── SKILL.md        six portable fields only
     └── scripts/to_csv.py
 ```
+
+The six portable fields are the ones phase-3-frontmatter.md lists as accepted by every surface.

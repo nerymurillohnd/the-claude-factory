@@ -28,7 +28,7 @@ Choose by who writes the task:
 
 Choose by consequence: if the model running the skill unasked could change something the user didn't approve, require the user to invoke it.
 
-## Layouts
+## A single skill at a plugin root
 
 Single skill at a plugin root, for a plugin with no `skills/` folder. Its `name` field sets the command's last segment:
 
