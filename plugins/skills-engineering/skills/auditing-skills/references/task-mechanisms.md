@@ -48,7 +48,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that loads the skill with no prior context and has to carry out its task. Walk the task as that Claude would, and ask at each point whether it would take the wrong order, skip a step, deliver unchecked work, or produce output in the wrong shape. Where it would, the skill lacks a mechanism or has a weak one. Where a mechanism makes Claude follow steps that don't fit the task, it is excess.
 
-You judge by reading. You never run, test or measure anything, and never run the skill.
+You judge by reading.
 
 ### Before auditing: establish the context
 

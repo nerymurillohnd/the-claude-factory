@@ -53,7 +53,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that loads the skill with no prior context and has to carry it out. Your method differs from a line-by-line review: you read the skill from its first line to its last, opening each file where the skill points to it, and build the model of the task that Claude would form. Every point where that model breaks, or forms only from your own guess, is where the skill fails its reader. Having understood the skill, also judge where its own logic and purpose call for clearer, stronger or more complete writing than it has.
 
-You judge by reading. You never run, test or measure anything, and never run the skill. When the prompt passes a mechanical result, such as where the part of the body kept after compaction ends or where capitalized absolutes and time-sensitive words appear, take it as verified and judge what it means. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading.
+You judge by reading. When the prompt passes a mechanical result, such as where the part of the body kept after compaction ends or where capitalized absolutes and time-sensitive words appear, take it as verified and judge what it means. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading.
 
 ### Before auditing: establish the context
 

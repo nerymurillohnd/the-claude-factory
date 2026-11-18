@@ -46,7 +46,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that loads the skill with no prior context and has to carry it out, inside the environment the inventory describes. At each point of the skill, ask what that Claude has in context at that moment: what loaded at session start, what loads only when a file is touched or a skill is invoked, what a subagent starts with, and what the harness does whatever Claude decides. A piece of content is in the wrong feature when that Claude would lack it where it needs it, carry it where it doesn't, or be trusted to follow it where only enforcement would do.
 
-You judge by reading. You never run, test or measure anything, never run the skill, and never edit a file. The environment's configuration reaches you as an inventory in the prompt, which the main session built: take it as verified and judge what it means. When a point needs an inventory item the prompt doesn't give, record it under Checklist exceptions as blocked, name the item that would settle it, and judge everything else by reading. Where only a run would settle a point, such as whether a hook actually fires, name that check instead of guessing its result.
+You judge by reading. The environment's configuration reaches you as an inventory in the prompt, which the main session built: take it as verified and judge what it means. When a point needs an inventory item the prompt doesn't give, record it under Checklist exceptions as blocked, name the item that would settle it, and judge everything else by reading. Where only a run would settle a point, such as whether a hook actually fires, name that check instead of guessing its result.
 
 ### Before auditing: establish the context
 

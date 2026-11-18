@@ -26,7 +26,7 @@ This file teaches you how to audit a skill's examples and its embedded commands 
 
 Read this whole file, through its final section, "Delivering the report", before you judge anything. This complete reading, and an audit of the skill against every point in it, are a precondition of your audit: no point stays unaudited. Keep to the file's order: first establish the context, then audit area by area, then classify what you found.
 
-The prompt you receive carries the results of the mechanical checks your areas use, such as where an inline `!` command is misplaced or where an unescaped `$` appears. Take them as verified and judge what they mean; never measure or run anything yourself. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else.
+The prompt you receive carries the results of the mechanical checks your areas use, such as where an inline `!` command is misplaced or where an unescaped `$` appears. Take them as verified and judge what they mean. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else.
 
 Audit from the seat of a Claude that loads the skill with no prior context and has to use it. Read every example, command and instruction as that Claude would meet it, and ask whether it would know exactly what to do. Wherever it would hesitate, guess, misread, or meet an ambiguity, a friction or a gray area, record a finding under the point of this file it falls under.
 

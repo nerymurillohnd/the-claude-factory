@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
+- The reviewers no longer forbid themselves to run or measure anything; they take the mechanical results from the audit and keep strictly to auditing, treating any change to your files as a serious defect of the audit.
 - The nine reviewers now keep only their model, effort level and denied tools in their settings: they load your `CLAUDE.md` files like any subagent and have no turn limit or color of their own.
 - The nine `auditing-skills` reviewers no longer list their tools: each inherits every tool your session has, MCP tools included, except `Agent`, `Edit` and `Write`, so it reaches your Claude Code docs server whatever its name. Before, they listed one docs server name, and a session whose server had another name gave them none of its tools.
 - `authoring-skills` now warns that a subagent running in the background keeps the Skill and ToolSearch tools and every MCP tool but only part of the built-in tools, so a skill a subagent loads names each tool it relies on and what to do without it.
