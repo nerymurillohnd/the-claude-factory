@@ -128,28 +128,20 @@ Decide what the skill is, where it loads and what it contains. Both scenarios ar
 
 1. Type and location: decide the kind of skill, who invokes it and where it loads from.
    - Read [references/phase-2-type-and-location.md](references/phase-2-type-and-location.md) before you decide.
-2. Components: decide which of these the skill needs, and the folders and files that follow from them.
-   - Body mechanisms: a workflow, a checklist, a validation loop, an output template, gotchas.
-   - References and assets: depth only some runs need, and files the output starts from.
-   - Scripts: an operation that must give the same result every time.
-   - Hooks: a check or an action that must happen on an event.
-   - Subagents: a subagent that runs the skill or reads it.
-   - Tools and other skills: MCP tools, other skills or plugin dependencies the skill relies on.
-   - Configuration and state: facts the skill keeps between runs.
-   - Read [references/phase-2-directory.md](references/phase-2-directory.md) before you decide.
-3. Component details: for each component you chose, read its file and decide its specifics.
-   - Read [references/phase-2-body.md](references/phase-2-body.md) for body mechanisms.
-   - Read [references/phase-2-scripts.md](references/phase-2-scripts.md) for scripts and injected commands.
-   - Read [references/phase-2-hooks.md](references/phase-2-hooks.md) for hooks.
-   - Read [references/phase-2-subagents.md](references/phase-2-subagents.md) for subagents.
-   - Read [references/phase-2-tools-and-skills.md](references/phase-2-tools-and-skills.md) for tools, other skills and dependencies.
-   - Read [references/phase-2-config-and-security.md](references/phase-2-config-and-security.md) for configuration and state, and for what the skill must never do.
-4. Writing patterns: learn how each part goes into the skill before you write anything.
+2. Components: decide which of these the skill needs, and the folders and files that follow from them. Read [references/phase-2-directory.md](references/phase-2-directory.md) before you decide. For each component you choose, read its file and decide its specifics.
+   - Body mechanisms: a workflow, a checklist, a validation loop, an output template, gotchas. Read [references/phase-2-body.md](references/phase-2-body.md).
+   - References and assets: depth only some runs need, and files the output starts from. The directory file covers them.
+   - Scripts: an operation that must give the same result every time. Read [references/phase-2-scripts.md](references/phase-2-scripts.md).
+   - Hooks: a check or an action that must happen on an event. Read [references/phase-2-hooks.md](references/phase-2-hooks.md).
+   - Subagents: a subagent that runs the skill or reads it. Read [references/phase-2-subagents.md](references/phase-2-subagents.md).
+   - Tools and other skills: MCP tools, other skills or plugin dependencies the skill relies on. Read [references/phase-2-tools-and-skills.md](references/phase-2-tools-and-skills.md).
+   - Configuration and state: facts the skill keeps between runs. Read [references/phase-2-config-and-security.md](references/phase-2-config-and-security.md), which also says what every skill must never do.
+3. Writing patterns: learn how each part goes into the skill before you write anything.
    - Read [references/phase-2-writing-patterns.md](references/phase-2-writing-patterns.md) before you decide how to write the text.
    - Read [references/phase-2-embedding.md](references/phase-2-embedding.md) before you decide how to embed code, commands, templates, schemas and Markdown.
-5. Frontmatter: decide the fields the type, the location and the components need.
+4. Frontmatter: decide the fields the type, the location and the components need.
    - Read [references/phase-2-frontmatter.md](references/phase-2-frontmatter.md) before you decide.
-6. Name and description: decide both from everything above.
+5. Name and description: decide both from everything above.
    - Read [references/phase-2-name-and-description.md](references/phase-2-name-and-description.md) before you decide.
 
 Exit: you know what the skill contains and how each part is written, and each one has a purpose tied to the goal.
