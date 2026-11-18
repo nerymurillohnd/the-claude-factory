@@ -46,7 +46,7 @@ Move a long branch or variant into its own file, and point to it from the decisi
 
 Two tools for two failures.
 
-**A progress checklist**, which the model copies into its reply and ticks as it works. Use it for a long workflow with dependencies or gates, where the model would lose its place among long tool outputs. Skip it for a short task: it adds ceremony and protects nothing.
+**A progress checklist**, which the model copies into its reply and ticks as it works. Use it for a long workflow with dependencies or gates, where the model would lose its place among long tool outputs. Skip it for a short task: it adds ceremony and protects nothing. Track progress with this copied checklist, not the task tools (`TaskCreate` and the rest): Claude Code provides those by default only on older models and in background and cloud sessions, so a skill that depends on them fails silently in other local sessions.
 
 ````markdown
 Copy this checklist and check off each step as you finish it:

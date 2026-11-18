@@ -137,6 +137,7 @@ hooks:
 Naming the interpreter as the command, with the script in `args`, passes the path as one argument and spares the script a shebang.
 
 - **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. It doesn't resolve `CLAUDE_SKILL_DIR`, so a project skill's hook reaches its script through the project root, and a personal skill's hook through its home path in a `command` with no `args`, such as `python3 ~/.claude/skills/[name]/scripts/check.py`, where `[name]` is the skill's folder: only the shell expands `~`.
+- **Subagents**: the docs don't say whether a skill's hooks register when a subagent preloads the skill or runs it with `context: fork`. Put a check that must hold inside a subagent in that subagent's own `hooks` frontmatter, which runs while the subagent runs.
 - **Once**: set `once: true` on a hook that must run a single time, such as a setup check; Claude Code removes it after its first successful run.
 
 Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.
