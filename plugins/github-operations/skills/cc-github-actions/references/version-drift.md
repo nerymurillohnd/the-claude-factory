@@ -78,7 +78,7 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
 3. **Resolve the ref.**
    - A full 40-character SHA is the commit. A successful fetch doesn't prove it is upstream's: GitHub also serves the heads of pull requests anyone can open. It is an upstream commit only when it is on the default branch's history or a release tag points to it. In one shell call:
 
-     ```
+     ```bash
      TMP=$(mktemp -d) && echo "$TMP"
      git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none https://github.com/anthropics/claude-code-action refs/heads/main:refs/remotes/upstream/main
      git -C "$TMP" merge-base --is-ancestor <sha> upstream/main; echo "on main: $?"
@@ -88,7 +88,7 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
      `on main: 0` or a `release tag:` line means upstream. Anything else, `fatal: remote error: upload-pack: not our ref <sha>` included, is not an upstream commit: treat it exactly like step 2. Reuse the folder for the comparison, and delete it at the end.
    - A tag or branch, such as `v1` or `v1.0.275`:
 
-     ```
+     ```bash
      git ls-remote https://github.com/anthropics/claude-code-action <ref> '<ref>^{}'
      ```
 
@@ -100,7 +100,7 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
 
 Use this when a patch pins or bumps the action. It needs git 2.18 or later and no clone. It keeps only exact `vX.Y.Z` tags, sorts them by version, and prints the newest with its commit, taking the `^{}` line for an annotated tag:
 
-```
+```bash
 git ls-remote --tags --sort=-v:refname https://github.com/<owner>/<action> | awk '$2 ~ /^refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+(\^\{\})?$/ { t=$2; sub(/\^\{\}$/,"",t); if (!seen) { seen=t } if (t==seen) { sha=$1; if ($2 ~ /\^\{\}$/) peeled=$1 } } END { print seen, (peeled?peeled:sha) }'
 ```
 
@@ -117,7 +117,7 @@ Do this for the commit from [Find the commit a step runs](#find-the-commit-a-ste
 
 **With git** (Claude Code with a shell):
 
-```
+```bash
 TMP=$(mktemp -d) && echo "$TMP"
 git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none --depth=1 https://github.com/anthropics/claude-code-action <snapshot> <pin>
 git -C "$TMP" diff --name-only <snapshot> <pin> -- action.yml base-action/action.yml base-action/package.json base-action/src src scripts docs/security.md
