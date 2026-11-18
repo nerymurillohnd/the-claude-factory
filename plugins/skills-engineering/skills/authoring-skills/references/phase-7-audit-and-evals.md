@@ -1,44 +1,18 @@
-# Next step and evals
+# Phase 7: Audit and evals
 
-What to do after step 5 of phase-5-self-review-and-deliver.md: ask the requester how to proceed, and run the evals when they choose them.
+How to run the audit and the evals the requester chose in phase 6, and the final checks after them.
 
 ## Contents
 
-- [Phase 1: ask how to proceed](#phase-1-ask-how-to-proceed)
-- [Phase 2: evals](#phase-2-evals)
-- [Phase 3: final checks](#phase-3-final-checks)
+- [Audit](#audit)
+- [Evals](#evals)
+- [Final checks](#final-checks)
 
-## Phase 1: ask how to proceed
+## Audit
 
-### Gotchas
+Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, then follow that skill from there. When the requester chose the evals too, run the audit first.
 
-- An AskUserQuestion call holds 1 to 4 questions, each with 2 to 4 options and a header of up to 12 characters. The tool always adds an "Other" choice where the requester types free text.
-- A question that times out submits only the options already selected. Treat a timed-out question here as no answer: report the options and stop.
-- Without the tool, ask the same question in the reply, list the same options, and stop until the requester answers.
-
-### The question
-
-Ask it every time a skill is finished; never skip it or continue on your own. Leave out the audit option when `skills-engineering:auditing-skills` isn't installed. Name the evals by the skill type you identified when you read the environment.
-
-```text
-Question: The skill [name] is finished and self-reviewed. How do you want to proceed? You can choose more than one, or type anything else under Other.
-Header: Next step
-Multiple selection: yes
-Options:
-- Keep it as is (Recommended): The skill is done as delivered.
-- Run the audit: Load auditing-skills and run its full battery of reviewer agents on the skill.
-- Build evals: [Plugin evals, run with claude plugin eval. | Evals for skills, run in clean subagents.]
-```
-
-### Act on the answer
-
-- Keep it as is: go to Phase 3.
-- Run the audit: load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill. Follow that skill from there.
-- Build evals: go to Phase 2.
-- The audit and the evals together: run the audit first, then Phase 2.
-- Text under Other: do what the requester wrote.
-
-## Phase 2: evals
+## Evals
 
 ### Gotchas
 
@@ -204,10 +178,11 @@ The difference between the arms is what the evals measure, so set each arm to wh
    - Stop here: report the results as they are, with the HTML report.
 6. Continue with whatever remains according to the context, what the requester decides and what the results showed.
 
-## Phase 3: final checks
+## Final checks
 
-When everything the requester chose in Phase 1 is done, check the final skill:
+When the audit and the evals the requester chose are done, check the final skill:
 
-1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase-5-self-review-and-deliver.md, and each linter, validator or script the environment provides for skills.
+1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 5, and each linter, validator or script the environment provides for skills.
 2. Fix each finding, and run every check again until all of them pass.
 3. Report each check with its exact command and raw output. The skill is done when every check passes.
+4. Go back to phase 6 and ask again how to proceed.

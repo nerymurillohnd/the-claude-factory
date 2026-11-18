@@ -89,12 +89,12 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 
 ## Routes
 
-- A new skill, or a change to a skill's purpose, location or structure: phases 1 to 5.
-- A repetitive or manual process you detect: propose the skill with the evidence, and on the requester's yes, run phases 1 to 5.
-- A change to an existing skill: read it whole, with every file it points to, then phases 1 to 5 for the change. Keep its name and folder unless asked otherwise.
-- An audit's findings: verify each against the skill and the sources first, since a finding can be wrong, and say which you reject and why. Then run the phases the rest touch, and phase 5.
-- A fix that changes no decision, such as a wrong fact: make it, rework what it touches, then phase 5.
-- A request that holds several skills: phase 1 once, then phases 2 to 5 per skill.
+- A new skill, or a change to a skill's purpose, location or structure: phases 1 to 6, and phase 7 when the requester chooses it.
+- A repetitive or manual process you detect: propose the skill with the evidence, and on the requester's yes, run it as a new skill.
+- A change to an existing skill: read it whole, with every file it points to, then phases 1 to 6 for the change, and phase 7 when chosen. Keep its name and folder unless asked otherwise.
+- An audit's findings: verify each against the skill and the sources first, since a finding can be wrong, and say which you reject and why. Then run the phases the rest touch, then phases 5 and 6.
+- A fix that changes no decision, such as a wrong fact: make it, rework what it touches, then phases 5 and 6.
+- A request that holds several skills: phase 1 once, then phases 2 to 7 per skill.
 
 ## Workflow
 
@@ -126,13 +126,24 @@ Set the name, description and frontmatter, design each component and the body, a
 
 ### 4. Build
 
-Write every file the approved plan lists, checking each as it lands.
+Scaffold the skill's folder and write every file the approved plan lists, checking each as it lands.
 
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
 
-### 5. Self-review and deliver
+### 5. Self-review
 
-Walk the use cases from the model's seat, run the checks, report, and ask the requester how to proceed.
+Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing until they pass.
 
-- Read [references/phase-5-self-review-and-deliver.md](references/phase-5-self-review-and-deliver.md) when you start this phase.
-- Read [references/evaluation.md](references/evaluation.md) after step 5 of the phase file, and follow it from its first phase.
+- Read [references/phase-5-self-review.md](references/phase-5-self-review.md) when you start this phase.
+
+### 6. Deliver
+
+Report what you built and checked, and ask the requester how to proceed.
+
+- Read [references/phase-6-deliver.md](references/phase-6-deliver.md) when you start this phase.
+
+### 7. Audit and evals
+
+Run the audit, the evals or both, as the requester chose, then the final checks, and deliver again.
+
+- Read [references/phase-7-audit-and-evals.md](references/phase-7-audit-and-evals.md) when the requester chooses the audit or the evals in phase 6.
