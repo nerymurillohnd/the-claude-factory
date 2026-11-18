@@ -1,12 +1,6 @@
 # Components
 
-How to write a skill that relies on more than its own files and scripts: tool permissions, MCP tools, other skills, configuration and state, and what keeps it from surprising its users.
-
-## Tool permissions
-
-- **`allowed-tools`** lets the model use the listed tools without asking, during the turn that invokes the skill. It grants; it never removes a tool. Set it only when the body tells the model to run specific commands on every run, and asking each time would interrupt a flow the user already chose by invoking the skill.
-- Write the narrowest rule that matches the exact command in the body, such as `Bash(git add *) Bash(git commit *)`. Never grant a bare `Bash` or `Bash(*)`: a skill shared in a repository grants itself that access on every machine that runs it.
-- **`disallowed-tools`** removes tools while the skill is active. Use it, not `allowed-tools`, to keep the model away from a tool.
+How to write a skill that relies on more than its own files and scripts: MCP tools, other skills, configuration and state, and what keeps it from surprising its users. Tool permissions are frontmatter fields, decided in phase 3.
 
 ## MCP tools
 
@@ -18,7 +12,7 @@ How to write a skill that relies on more than its own files and scripts: tool pe
 ## Other skills
 
 - Name another skill by its exact name, with its plugin prefix when it comes from a plugin, and say when to load it and what to take from it.
-- The other skill must not be restricted to its users; read `special-placements.md` for why.
+- The other skill must not set `disable-model-invocation: true`: neither the model nor another skill can load a skill that sets it.
 - When the other skill may be missing, say what to do without it. A skill for third parties works on its own, with other skills as optional help.
 - Write the skill to coexist with others in the same session: keep its rules scoped to its task, and don't redefine terms other skills use.
 

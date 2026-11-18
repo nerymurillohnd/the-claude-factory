@@ -18,11 +18,16 @@ Decide each point from the goal, without waiting for the requester to ask, and r
    When it isn't a skill, say which feature fits and why, and stop unless the requester still wants one. Split a request with several needs by trigger and task.
 
 4. **The discipline.** Name the kind of work the skill serves and the disciplines that govern it, and derive from them the knowledge, methods, tools, failure modes and quality criteria the skill must carry. The higher the cost of an error in that domain, the more evidence, verification and human control the skill must require.
-5. **Where it lives and how it runs**, by who must get it:
-   - only the requester, on this machine: `~/.claude/skills/<name>/`;
-   - everyone working in a repository: `.claude/skills/<name>/`, committed;
-   - users who install a plugin: the plugin's `skills/<name>/`, or its root for a single-skill plugin;
-   - a claude.ai account or the Skills API: an upload.
+5. **Where it lives and how it runs**, by who must get it and in which sessions:
+   - only the requester, in local Claude Code sessions on this machine: `~/.claude/skills/<name>/`. Cowork and cloud sessions don't read it;
+   - the requester in Cowork, cloud sessions and claude.ai: their claude.ai account, through an upload;
+   - everyone working in a repository: `.claude/skills/<name>/`, committed. Cloud threads in a Claude project don't load it;
+   - work in one part of a monorepo: `<subdir>/.claude/skills/<name>/`, which loads once Claude works on files there;
+   - every user on the organization's managed machines: the managed settings directory's `.claude/skills/<name>/`;
+   - users who install a plugin: the plugin's `skills/<name>/`, or its root for a single-skill plugin. claude.ai and Cowork don't install a plugin that has a `bin/` folder;
+   - an application on the Claude API: an upload to the Skills API.
+
+   Never name the skill's folder `synced` or `anthropic-skills`: Claude Code reserves both outside plugins and skips the skill. Before choosing, consult https://code.claude.com/docs/en/skills#choose-where-skills-load for the current list.
 
 6. **Architecture.** Start from `SKILL.md` alone, and add each component only for a need: a reference for depth some runs need, a script for an operation that must give the same result every run, an asset the output starts from, a hook for a check on every event, a subagent that consumes the skill, and the tools, skills or MCP servers the task relies on.
 

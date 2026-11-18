@@ -54,7 +54,7 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 - Verify every platform fact against the current official sources, never from memory; where they disagree, the one that owns the target surface wins:
   - https://code.claude.com/docs/en/skills and the Claude Code changelog;
   - https://agentskills.io;
-  - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview;
+  - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview and its best-practices page;
   - Anthropic's "The Complete Guide to Building Skills for Claude".
 - Assume nothing you can check: what exists, what the target surface supports and which tools are in reach.
 - Teach, don't only instruct: give each decision its criterion and its reason.
@@ -112,7 +112,7 @@ Decide what you can do here, what exists, whether a skill is the answer, the dis
 
 - Read [references/phase-2-environment-and-architecture.md](references/phase-2-environment-and-architecture.md) when you start this phase.
 - Read [references/special-placements.md](references/special-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
-- Read [references/components.md](references/components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or needs tool permissions.
+- Read [references/components.md](references/components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or acts beyond its own folder.
 
 ### 3. Design and plan
 
@@ -120,7 +120,7 @@ Set the name, description and frontmatter, design each component and the body, a
 
 - Read [references/phase-3-design-and-plan.md](references/phase-3-design-and-plan.md) when you start this phase.
 - Read [references/writing-patterns.md](references/writing-patterns.md) before you write the description and the body.
-- Read [references/frontmatter.md](references/frontmatter.md) before you set any field beyond `name` and `description`.
+- Read [references/frontmatter.md](references/frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
 - Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) when the skill has a script, a hook or an injected command.
 - Read [references/task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
 

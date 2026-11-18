@@ -30,7 +30,7 @@ Choose by who must reach it, and where the skill travels:
 
 - **Inside the skill folder** (`scripts/`): travels with the skill to every copy and upload. The default for a script one skill uses.
 - **At the plugin level**, shared by several skills of one plugin: reached through the plugin root. The skill then works only inside its plugin.
-- **In the plugin's `bin/`**: Claude Code puts it on the shell's PATH while the plugin is enabled, so the body calls the tool by name. Use it for a command-line tool several skills or the user call.
+- **In the plugin's `bin/`**: Claude Code puts it on the shell's PATH while the plugin is enabled, so the body calls the tool by name. Use it for a command-line tool several skills or the user call, and only for a plugin that never needs claude.ai or Cowork: neither installs a plugin that has a `bin/` folder.
 - **In the user's project**: only for a project skill, or when the skill states the project must provide it.
 - **Outside the plugin**: never. Installing a plugin copies only its own folder, so a path above the plugin root doesn't exist on users' machines.
 
@@ -92,7 +92,7 @@ In Claude Code, an injected command runs when the skill loads and its output rep
 
 - Inject only commands that must succeed for the skill to make sense. Append `|| true` to one that can legitimately exit non-zero, such as a check that reports problems.
 - Pre-approve each injected command in `allowed-tools`.
-- Write the body so it still works, or says clearly what is missing, where the command didn't run.
+- Write the body so it still works, or says clearly what is missing, where the command didn't run: Claude Code doesn't run injected commands in skills synced from claude.ai, and the `disableSkillShellExecution` setting replaces them with a notice.
 
 ## Skill hooks
 
@@ -108,4 +108,10 @@ hooks:
           args: ["${CLAUDE_PLUGIN_ROOT}/scripts/check_output.py"]
 ```
 
-Naming the interpreter as the command, with the script in `args`, passes the path as one argument and spares the script a shebang. Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.
+Naming the interpreter as the command, with the script in `args`, passes the path as one argument and spares the script a shebang.
+
+- **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`, each with a dollar sign and braces. It doesn't resolve `CLAUDE_SKILL_DIR`, so a skill hook outside a plugin reaches its script through the project root.
+- **Once**: set `once: true` on a hook that must run a single time, such as a setup check; Claude Code removes it after its first successful run.
+- **Where it holds**: when an organization locks hooks to plugins, only plugin skills keep their frontmatter hooks. Put a hook that must always hold in a plugin skill.
+
+Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.

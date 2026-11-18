@@ -2,12 +2,12 @@
 
 How to design the skill and plan it: its name, description and frontmatter, each component in detail, the body, and the plan the requester approves.
 
-1. **Name.** Name the activity the skill gives, in lowercase letters, digits and hyphens, at most 64 characters, matching its folder, and without "anthropic" or "claude" if it may be uploaded. Prefer the gerund form, such as `exporting-invoices`, unless sibling skills follow another pattern. Avoid names that say nothing (`helper`) or cover too much (`data`). Propose it with alternatives and the reason.
+1. **Name.** Name the activity the skill gives, in lowercase letters, digits and hyphens, at most 64 characters, matching its folder, with no hyphen at the start or end and no two in a row, and without "anthropic" or "claude" if it may be uploaded. Prefer the gerund form, such as `exporting-invoices`, unless sibling skills follow another pattern. Avoid names that say nothing (`helper`) or cover too much (`data`). Propose it with alternatives and the reason.
 2. **Description.** Write it by the rules in writing-patterns.md, then judge it from the model's seat: list the requests that should load it and the near-misses that shouldn't, and check it picks right for each.
 3. **Other frontmatter.** Add a field beyond `name` and `description` only when the skill's type and intent need it, knowing first every field that type accepts and its gotchas.
 
 4. **Components in detail.** For each component phase 2 chose, decide its specifics: each hook's events and how many; each script's language, inputs, outputs and what it checks; each template's shape; each mechanism the task needs.
-5. **What earns a line.** Keep a line only if the model would get the task wrong without it: the domain's procedure and reasons, the conventions, facts that defy assumptions, the exact tool, the corrections from phase 1. Cut what any capable model knows. A platform fact earns a line only if it changes what the model writes or does; otherwise write "When [case], consult [page]", or leave it out.
+5. **What earns a line.** Apply the line test in SKILL.md's Mission and perspective to every line. Lines that pass it: the domain's procedure and reasons, the conventions, facts that defy assumptions, the exact tool, the corrections from phase 1. Cut what any capable model knows. A platform fact earns a line only if it changes what the model writes or does; otherwise write "When [case], consult [page]", or leave it out.
 6. **The form matches the failure** each line prevents:
    - output in the wrong shape: a template, or an input and output example;
    - an element the model can't infer: the fact where it applies, or a gotcha;
