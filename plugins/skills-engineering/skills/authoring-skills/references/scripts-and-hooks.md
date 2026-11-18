@@ -92,7 +92,7 @@ In Claude Code, an injected command runs when the skill loads and its output rep
 
 - Inject only commands that must succeed for the skill to make sense. Append `|| true` to one that can legitimately exit non-zero, such as a check that reports problems.
 - Pre-approve each injected command in `allowed-tools`.
-- Write the body so it still works, or says clearly what is missing, where the command didn't run: Claude Code doesn't run injected commands in skills synced from claude.ai, and the `disableSkillShellExecution` setting replaces them with a notice.
+- Write the body so it still works, or says clearly what is missing, where the command didn't run.
 
 ## Skill hooks
 
@@ -112,6 +112,5 @@ Naming the interpreter as the command, with the script in `args`, passes the pat
 
 - **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`, each with a dollar sign and braces. It doesn't resolve `CLAUDE_SKILL_DIR`, so a skill hook outside a plugin reaches its script through the project root.
 - **Once**: set `once: true` on a hook that must run a single time, such as a setup check; Claude Code removes it after its first successful run.
-- **Where it holds**: when an organization locks hooks to plugins, only plugin skills keep their frontmatter hooks. Put a hook that must always hold in a plugin skill.
 
 Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.
