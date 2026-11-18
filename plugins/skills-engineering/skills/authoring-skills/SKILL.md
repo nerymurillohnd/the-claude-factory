@@ -85,24 +85,12 @@ In the `SKILL.md` you write, though not in its other files, Claude Code changes 
 - A `CLAUDE_` variable in a dollar sign and braces becomes its value; to mention one, write its bare name.
 - An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Describe such commands in words.
 
-Where a skill loads, by location:
-
-| Location | Loads in |
-| :-- | :-- |
-| Managed settings directory, `.claude/skills/<name>/` | Every session on the machines where the organization deploys it |
-| `~/.claude/skills/<name>/` | Claude Code sessions on the user's machine only; never claude.ai, Cowork or cloud sessions |
-| A repository's `.claude/skills/<name>/` | Every Claude Code session in that repository, local or cloud, except Claude project threads |
-| `<subdir>/.claude/skills/<name>/` in a repository | The same sessions, once Claude works on files in `<subdir>` or the session starts there |
-| `.claude/skills/<name>/` in a directory added with `--add-dir` | That session |
-| A plugin's `skills/<name>/`, or `SKILL.md` at its root, installed from a marketplace into the plugin cache | Sessions on the machine where the plugin is installed and enabled; cloud sessions don't install the plugins a repository declares |
-| The user's claude.ai account, alone or in a plugin turned on there | claude.ai, Cowork, cloud sessions, project threads, and Claude Code on the user's machine unless the session doesn't sign in with that account or `syncClaudeAiSkills` or `syncClaudeAiPlugins` is `false` |
-
 A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
 
 ## Routes
 
 - A new skill, or a change to a skill's purpose, location or structure: phases 1 to 6, and phase 7 when the requester chooses it.
-- A repetitive or manual process you detect: propose the skill with the evidence, and on the requester's yes, run it as a new skill.
+- A repetitive or manual process you detect: Phase 1, Scenario B.
 - A change to an existing skill: read it whole, with every file it points to, then phases 1 to 6 for the change, and phase 7 when chosen. Keep its name and folder unless asked otherwise.
 - An audit's findings: verify each against the skill and the sources first, since a finding can be wrong, and say which you reject and why. Then run the phases the rest touch, then phases 5 and 6.
 - A fix that changes no decision, such as a wrong fact: make it, rework what it touches, then phases 5 and 6.
@@ -110,7 +98,7 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 
 ## Workflow
 
-Run the phases in order, each to its exit. Read each phase's file in full when you start the phase, and again whenever it is no longer in your context. Within a phase, read its files in the order listed, each at the step it names, and apply it before you move on. When a later phase shows a gap in an earlier one, go back to it.
+Run the phases in order, each to its exit. Read each file at the step that names it, and again whenever it is no longer in your context. When a later phase shows a gap in an earlier one, go back to it.
 
 ### Phase 1: Intent
 
@@ -134,49 +122,80 @@ Understand what the user wants before you design anything. This skill applies in
 3. Value: explain what the skill gives: the same result every time, and the work it saves.
 4. Answer: wait for the user. If they say no, drop the skill. If they say yes, or add comments, continue with their comments and go to Phase 2.
 
-### 2. Environment and architecture
+### Phase 2: Design
 
-Decide what you can do here, what exists, whether a skill is the answer, the discipline it serves, where it lives and how it runs, and its architecture, from current official sources.
+Decide what the skill is, where it loads and what it contains. Both scenarios arrive here with the intent clear. Not every skill needs every component: first learn what is available, then decide what this skill needs.
 
-- Read [references/phase-2-environment-and-architecture.md](references/phase-2-environment-and-architecture.md) when you start this phase.
-- At step 5, read [references/phase-2-placements.md](references/phase-2-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
-- At step 6, read [references/phase-2-scripts-and-hooks.md](references/phase-2-scripts-and-hooks.md) when a script, an injected command or a hook is a candidate.
-- At step 6, read [references/phase-2-components.md](references/phase-2-components.md) when the skill relies on MCP tools or other skills, or keeps configuration or state.
+1. Type and location: decide the kind of skill, who invokes it and where it loads from.
+   - Read [references/phase-2-type-and-location.md](references/phase-2-type-and-location.md) before you decide.
+2. Components: decide which of these the skill needs, and the folders and files that follow from them.
+   - Body mechanisms: a workflow, a checklist, a validation loop, an output template, gotchas.
+   - References and assets: depth only some runs need, and files the output starts from.
+   - Scripts: an operation that must give the same result every time.
+   - Hooks: a check or an action that must happen on an event.
+   - Subagents: a subagent that runs the skill or reads it.
+   - Tools and other skills: MCP tools, other skills or plugin dependencies the skill relies on.
+   - Configuration and state: facts the skill keeps between runs.
+   - Read [references/phase-2-directory.md](references/phase-2-directory.md) before you decide.
+3. Component details: for each component you chose, read its file and decide its specifics.
+   - Read [references/phase-2-body.md](references/phase-2-body.md) for body mechanisms.
+   - Read [references/phase-2-scripts.md](references/phase-2-scripts.md) for scripts and injected commands.
+   - Read [references/phase-2-hooks.md](references/phase-2-hooks.md) for hooks.
+   - Read [references/phase-2-subagents.md](references/phase-2-subagents.md) for subagents.
+   - Read [references/phase-2-tools-and-skills.md](references/phase-2-tools-and-skills.md) for tools, other skills and dependencies.
+   - Read [references/phase-2-config-and-security.md](references/phase-2-config-and-security.md) for configuration and state, and for what the skill must never do.
+4. Writing patterns: learn how each part goes into the skill before you write anything.
+   - Read [references/phase-2-writing-patterns.md](references/phase-2-writing-patterns.md) before you decide how to write the text.
+   - Read [references/phase-2-embedding.md](references/phase-2-embedding.md) before you decide how to embed code, commands, templates, schemas and Markdown.
+5. Frontmatter: decide the fields the type, the location and the components need.
+   - Read [references/phase-2-frontmatter.md](references/phase-2-frontmatter.md) before you decide.
+6. Name and description: decide both from everything above.
+   - Read [references/phase-2-name-and-description.md](references/phase-2-name-and-description.md) before you decide.
 
-### 3. Design and plan
+Exit: you know what the skill contains and how each part is written, and each one has a purpose tied to the goal.
 
-Set the name, description and frontmatter, design each component and the body, and get the requester's approval of the plan.
+### Phase 3: Plan
 
-- Read [references/phase-3-design-and-plan.md](references/phase-3-design-and-plan.md) when you start this phase.
-- At step 2, read [references/phase-3-descriptions.md](references/phase-3-descriptions.md) before you write the description.
-- At step 3, read [references/phase-3-frontmatter.md](references/phase-3-frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
-- At step 4, read [references/phase-3-scripts-and-hooks.md](references/phase-3-scripts-and-hooks.md) when phase 2 chose a script or a hook.
-- At step 4, read [references/phase-3-task-mechanisms.md](references/phase-3-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
+Draft the plan from the design and get the user's approval before you build.
 
-### 4. Build
+1. Draft: write the plan in this shape.
+
+   ```text
+   Goal: [one sentence]
+   Use cases: [trigger and checkable result for each]
+   Type and location: [kind, who invokes it, where it loads, why, and any difference from what the user asked]
+   Files: [each path, what it holds, when the model reads or runs it]
+   Components: [each script, hook, subagent, tool and mechanism, with its reason]
+   Frontmatter: [each field and value, with its reason]
+   Name: [proposed name], because [reason]; alternatives: [names]
+   Description: [full text]
+   Assumptions: [each one still open]
+   ```
+
+2. Present: show it to the user and wait for their answer.
+3. Approval: if they approve, go to Phase 4. If they comment, adjust the plan and present it again.
+
+Exit: the user approves the plan.
+
+### Phase 4: Build
 
 Scaffold the skill's folder and write every file the approved plan lists, checking each as it lands.
 
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
-- Read [references/phase-4-writing-patterns.md](references/phase-4-writing-patterns.md) before you write any text of the skill.
-- Read [references/phase-4-task-mechanisms.md](references/phase-4-task-mechanisms.md) when the plan has a workflow, a checklist, a validation loop, a plan file, an output template or gotchas.
-- Read [references/phase-4-scripts-and-hooks.md](references/phase-4-scripts-and-hooks.md) when the plan has a script, a hook or an injected command.
-- Read [references/phase-4-components.md](references/phase-4-components.md) when the plan has MCP tools, other skills, configuration or state, or actions beyond the skill's own folder.
-- Read [references/phase-4-placements.md](references/phase-4-placements.md) when the plan places the skill outside Claude Code, in a subagent, or where only its users invoke it.
 
-### 5. Self-review
+### Phase 5: Self-review
 
 Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing until they pass.
 
 - Read [references/phase-5-self-review.md](references/phase-5-self-review.md) when you start this phase.
 
-### 6. Deliver
+### Phase 6: Deliver
 
 Report what you built and checked, and ask the requester how to proceed.
 
 - Read [references/phase-6-deliver.md](references/phase-6-deliver.md) when you start this phase.
 
-### 7. Audit and evals
+### Phase 7: Audit and evals
 
 Run the audit, the evals or both, as the requester chose, then the final checks, and deliver again.
 

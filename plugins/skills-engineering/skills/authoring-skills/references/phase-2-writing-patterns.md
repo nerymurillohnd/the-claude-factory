@@ -1,25 +1,23 @@
-# Phase 4: Writing patterns
+# Phase 2: Writing patterns
 
-How to write the skill's body: pointers, register, instructions, examples and snippets, and the anti-patterns to avoid, with correct and incorrect pairs and the reason each difference matters.
+Learn how to write the text of a skill before you write anything. This file covers:
+
+- [Pointers to files](#pointers-to-files)
+- [Register](#register)
+- [Instructions](#instructions)
+- [Examples](#examples)
+- [Anti-patterns](#anti-patterns)
 
 Write your own examples from the skill's domain: an example taken from documentation teaches its domain, not the skill's.
 
-## Contents
+## Pointers to files
 
-- Pointers
-- Register
-- Instructions
-- Examples and snippets
-- Anti-patterns
+A pointer goes on its own line, at the step that needs the file, with a verb and a condition the model can check. Point to a file, never to a folder, and don't use an at-mention: it loads the file on every run. In a skill that works in phases, list each phase's files under that phase, in the order its steps read them.
 
-## Pointers
-
-Correct: on its own line, at the step that needs it, with its verb and a condition the model can check:
+Correct:
 
 ```markdown
 Read [references/rate-limits.md](references/rate-limits.md) if the API answers 429.
-
-Run `python3 scripts/check_totals.py out/` after every export, and fix each row it reports before you continue.
 
 Fill in [assets/summary.md](assets/summary.md) for the final summary.
 ```
@@ -46,11 +44,11 @@ Read [tokens.md](tokens.md)    ← in auth.md
 ## Register
 
 - Use the imperative: one action per line, with its condition and fallback, and concrete names instead of categories.
-- In a step that asks the model to judge, give the reason behind it, so the model can decide the cases the line doesn't name. In a fixed step, say what to do without narrating why.
+- Give a reason only where the model must judge, so it can decide the cases the line doesn't name. In a fixed step, say what to do without narrating why.
 - No narration, and no capitals for emphasis.
 - Use one term per concept and no time-sensitive wording.
 - State each fact in one file only.
-- State a prohibition as one sentence beside the instruction it limits, or as a gotcha, never as a correct and incorrect pair: the pairs in this file teach authors, not the model running a skill.
+- State a prohibition as one sentence beside the instruction it limits, or as a gotcha. Don't write it as a correct and incorrect pair: the pairs in this file teach authors, not the model running a skill.
 
 ## Instructions
 
@@ -69,7 +67,7 @@ Dates can be written in many formats around the world. It's important to parse d
 A default with its exception:
 
 ```markdown
-Export with the accounting system's CSV importer. For systems without one, write the journal file from assets/journal.csv.
+Export with the accounting system's CSV importer. For systems without one, write the journal file from [assets/journal.csv](assets/journal.csv).
 ```
 
 A menu, which the model resolves differently on each run:
@@ -81,7 +79,7 @@ You could use the CSV importer, the API, a manual journal entry or a spreadsheet
 An action with its condition and fallback:
 
 ```markdown
-Run `python3 scripts/check_totals.py invoices.csv`. If it fails, the error names the row and the column: fix that value and run it again.
+Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py invoices.csv`. If it fails, the error names the row and the column: fix that value and run it again.
 ```
 
 An instruction with no way to act or check:
@@ -95,26 +93,18 @@ Freedom matched to each step's fragility, from many valid approaches to one exac
 ```markdown
 Review the line items for amounts that look out of place, and list each with the reason.
 
-Run `python3 scripts/to_csv.py [input-pdf] [output-csv]`, where `[input-pdf]` is the invoice and `[output-csv]` the file to write.
+Run `python3 ${CLAUDE_SKILL_DIR}/scripts/to_csv.py [input-pdf] [output-csv]`, where `[input-pdf]` is the invoice and `[output-csv]` the file to write.
 
-Run exactly `python3 scripts/post_journal.py --dry-run`. Don't add flags.
+Run exactly `python3 ${CLAUDE_SKILL_DIR}/scripts/post_journal.py --dry-run`. Don't add flags.
 ```
 
-## Examples and snippets
+## Examples
 
-Add an example only where the output depends on seeing it: a tone, a level of detail, a format. An example shows the style and level of detail you want more clearly than a description does.
+Add an example only where the output depends on seeing it: a tone, a level of detail, a format.
 
 - Show input and output pairs, then a rule line that says what to imitate.
+- Give two or three examples that differ where the output varies, so the model learns the pattern and not one instance.
 - When the output drifts across runs, sharpen the instruction that allows it instead of adding an example for the case that failed.
-- Give two or three examples that differ where the output varies, so the model learns the pattern rather than one instance.
-- Put commands in a fenced block with the language tag and versions pinned, and explain each placeholder, written in square brackets, on the line after the block:
-
-  ```bash
-  python3 scripts/to_csv.py [input-pdf] [output-csv]
-  ```
-
-  `[input-pdf]` is the invoice to read; `[output-csv]` is the file to write.
-- Show code only as long as the pattern needs: the call and its arguments, not a whole program.
 - Keep an example inline when it is short and every run needs it. Put it in a file when it is long or only some runs need it, with a pointer that says when to read it.
 
 ````markdown
@@ -136,8 +126,6 @@ Follow this style: past-tense verb, what changed for the user, one line, no PR j
 ````
 
 ## Anti-patterns
-
-Each with what to write instead.
 
 General knowledge:
 
@@ -187,3 +175,7 @@ Emphasis instead of a reason:
 Incorrect: ALWAYS CHECK THE TOTALS!!!
 Correct:   Check that the totals match before you export: a mismatch means a line item was missed.
 ```
+
+Read [Best practices for skill creators](https://agentskills.io/skill-creation/best-practices#patterns-for-effective-instructions) when you need more instruction patterns.
+
+Read [Common patterns](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#common-patterns) when you need the examples pattern.
