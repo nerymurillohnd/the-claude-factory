@@ -33,7 +33,7 @@ The work is done when every fact you state or write comes from one of these file
 
 Copy this checklist and tick each item as you complete it:
 
-```
+```text
 Task Progress:
 - [ ] Step 1: Pick the files for the task (the file index in this `SKILL.md`)
 - [ ] Step 2: Read each file's `## Contents`, then the sections the task needs
