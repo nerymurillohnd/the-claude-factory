@@ -135,7 +135,7 @@ Set the name, description and frontmatter, design each component and the body, a
 - Read [references/phase-4-writing-patterns.md](references/phase-4-writing-patterns.md) before you write the description and the body.
 - Read [references/phase-3-frontmatter.md](references/phase-3-frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
 - Read [references/phase-4-scripts-and-hooks.md](references/phase-4-scripts-and-hooks.md) when the skill has a script, a hook or an injected command.
-- Read [references/phase-4-task-mechanisms.md](references/phase-4-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
+- Read [references/phase-3-task-mechanisms.md](references/phase-3-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
 
 ### 4. Build
 
@@ -144,6 +144,7 @@ Scaffold the skill's folder and write every file the approved plan lists, checki
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
 - Read [references/phase-4-placements.md](references/phase-4-placements.md) when the plan places the skill outside Claude Code, in a subagent, or where only its users invoke it.
 - Read [references/phase-4-components.md](references/phase-4-components.md) when the plan has MCP tools, other skills, configuration or state, or actions beyond the skill's own folder.
+- Read [references/phase-4-task-mechanisms.md](references/phase-4-task-mechanisms.md) when the plan has a workflow, a checklist, a validation loop, a plan file, an output template or gotchas.
 
 ### 5. Self-review
 
