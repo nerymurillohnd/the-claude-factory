@@ -134,6 +134,7 @@ Set the name, description and frontmatter, design each component and the body, a
 - Read [references/phase-3-design-and-plan.md](references/phase-3-design-and-plan.md) when you start this phase.
 - At step 2, read [references/phase-3-descriptions.md](references/phase-3-descriptions.md) before you write the description.
 - At step 3, read [references/phase-3-frontmatter.md](references/phase-3-frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
+- At step 4, read [references/phase-3-scripts-and-hooks.md](references/phase-3-scripts-and-hooks.md) when phase 2 chose a script or a hook.
 - At step 4, read [references/phase-3-task-mechanisms.md](references/phase-3-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
 
 ### 4. Build

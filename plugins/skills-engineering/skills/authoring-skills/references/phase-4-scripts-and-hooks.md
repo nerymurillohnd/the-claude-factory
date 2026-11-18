@@ -1,13 +1,12 @@
 # Phase 4: Scripts and hooks
 
-How to write the scripts, injected commands and hooks phase 2 chose: how the body names and calls each script, how it starts, the interface and dependencies it needs, the rules for injected commands, and how a skill hook is configured.
+How to write the scripts, injected commands and hooks phase 2 chose and phase 3 designed: how the body names and calls each script, how it starts, the dependencies it states, the rules for injected commands, and how a skill hook is configured.
 
 ## Contents
 
 - Run or read, and the script list
 - How the body reaches it
 - How it starts
-- The interface the model meets
 - Dependencies
 - Injected commands
 - Skill hooks
@@ -57,28 +56,11 @@ Run `python3 ${CLAUDE_SKILL_DIR}/scripts/render_chart.py sales.csv` to render th
 - **Called by path, from `bin/`, or by a hook that names the file**: it needs a shebang through `/usr/bin/env`, such as `#!/usr/bin/env python3`, and mode 755. Without them the call fails, and a failing hook lets the action through unchecked.
 - **Call Python as `python3`.** It is the name macOS and most Linux systems guarantee; `python` may be missing.
 
-## The interface the model meets
-
-The model reads the script's output to choose its next step. Design for that reader:
-
-- No interactive prompts: the model can't answer one, and the run hangs. Take every input as an argument, flag, environment variable or standard input.
-- A `--help` that states the purpose, the arguments and one example.
-- Errors that say what failed, what was expected and what to do: "Column 'net_amount' not found in invoices.csv. Columns found: invoice_id, date, gross_amount, tax."
-- Results on standard output in a fixed shape (JSON, CSV or set lines); diagnostics on standard error.
-- Exit codes that mean something, listed in `--help`.
-- Errors handled inside the script, with a report of what it did, instead of a failure the model must interpret.
-- Safe to run twice, because the model retries.
-- A `--dry-run` for anything destructive, and an explicit flag to really do it.
-- Short output by default, with detail behind a flag or in a file.
-- A comment on each constant saying why it has that value.
-
 ## Dependencies
 
 - State in the body, where the script is introduced, every interpreter, package and tool it needs.
 - Pin versions in one-off commands, such as `uvx black@24.10.0 .`, so a new release doesn't change the result.
-- Prefer the standard library. For packages, declare them inside the script where the language allows it, such as inline metadata run with `uv run`.
 - Install nothing globally; install into the skill's or the project's environment.
-- Write shell scripts for bash or POSIX sh, with forward slashes. A skill that supports Windows runs them through Git Bash; state that requirement.
 
 ## Injected commands
 
