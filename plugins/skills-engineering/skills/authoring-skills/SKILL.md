@@ -85,11 +85,17 @@ In the `SKILL.md` you write, though not in its other files, Claude Code changes 
 - A `CLAUDE_` variable in a dollar sign and braces becomes its value; to mention one, write its bare name.
 - An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Describe such commands in words.
 
-Where a skill loads:
+Where a skill loads, by location:
 
-- `~/.claude/skills/` loads only in Claude Code sessions on the user's machine, never in claude.ai, Cowork or cloud sessions.
-- A repository's `.claude/skills/` loads in every Claude Code session that works in it, local or cloud, except threads of a Claude project.
-- Skills on the user's claude.ai account, alone or in plugins installed there, load everywhere: claude.ai, Cowork, cloud sessions, project threads and Claude Code on the user's machine. On the machine they're missing only when the session doesn't sign in with that account, or a setting turns sync off (`syncClaudeAiSkills` or `syncClaudeAiPlugins` set to `false`).
+| Location | Loads in |
+| :-- | :-- |
+| Managed settings directory, `.claude/skills/<name>/` | Every session on the machines where the organization deploys it |
+| `~/.claude/skills/<name>/` | Claude Code sessions on the user's machine only; never claude.ai, Cowork or cloud sessions |
+| A repository's `.claude/skills/<name>/` | Every Claude Code session in that repository, local or cloud, except Claude project threads |
+| `<subdir>/.claude/skills/<name>/` in a repository | The same sessions, once Claude works on files in `<subdir>` or the session starts there |
+| `.claude/skills/<name>/` in a directory added with `--add-dir` | That session |
+| A plugin's `skills/<name>/`, or `SKILL.md` at its root, installed from a marketplace into the plugin cache | Sessions on the machine where the plugin is installed and enabled; cloud sessions don't install the plugins a repository declares |
+| The user's claude.ai account, alone or in a plugin turned on there | claude.ai, Cowork, cloud sessions, project threads, and Claude Code on the user's machine unless the session doesn't sign in with that account or `syncClaudeAiSkills` or `syncClaudeAiPlugins` is `false` |
 
 A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
 
