@@ -7,7 +7,7 @@ Six steps, in order. Read the tools for each call in [ci-tooling.md](ci-tooling.
 1. **Start from what the user saw:** the repository, the event (a comment on issue #N, a review on pull request #N, a push) and roughly when.
 2. **List the runs for that event and time:** MCP `actions_list` with `list_workflow_runs`, or
 
-   ```
+   ```bash
    gh run list --event <event> --created '>=<YYYY-MM-DDTHH:MM:SSZ>' --json databaseId,attempt,workflowName,event,headSha,status,conclusion,displayTitle,createdAt
    ```
 

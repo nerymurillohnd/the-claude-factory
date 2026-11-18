@@ -43,7 +43,7 @@ Add an item only when all of these hold:
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on 31 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on 25 Biome findings in plugin files | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -159,7 +159,7 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - `npm run lint:frontmatter` on 2026-11-14, on branch `ccr-7fcd6ef3-rku7l1` after 50662ee, reports 53 files checked and 16 findings, exit 1:
-    - `plugins/github-operations`: FM-01 in the `description` of `agents/pr-lifecycle/pr-fixer.md`, `agents/pr-lifecycle/pr-tracker.md` and `agents/repo-hygiene/health-diagnostics.md`; FM-03 in the `argument-hint` of `commands/init-cleanup-and-debug.md`, `commands/init-pr-lifecycle.md` and the `auto-pr-lifecycle`, `claude-github-actions` and `cleanup-and-debug` skills.
+    - `plugins/github-operations`: FM-01 in the `description` of `agents/pr-lifecycle/pr-fixer.md`, `agents/pr-lifecycle/pr-tracker.md` and `agents/repo-hygiene/health-diagnostics.md`; FM-03 in the `argument-hint` of `commands/init-cleanup-and-debug.md`, `commands/init-pr-lifecycle.md` and the `auto-pr-lifecycle`, `cc-github-actions` and `cleanup-and-debug` skills.
     - `plugins/instruction-engineering`: FM-02 in the block-scalar `description` of `agents/reviewer.md`.
     - `plugins/plugin-test-bench`: FM-03 in the `argument-hint` of the `review-evals` and `test-install` skills.
     - `plugins/prompt-writer`: FM-02 in the hook `prompt` of the `prompt-writer` skill.
@@ -179,7 +179,7 @@ Add an item only when all of these hold:
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** none.
 
-### DEBT-006 — npm run lint:js fails on 31 Biome findings in plugin files
+### DEBT-006 — npm run lint:js fails on 25 Biome findings in plugin files
 
 | Field | Value |
 | --- | --- |
@@ -192,13 +192,14 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - `npx biome check --error-on-warnings --max-diagnostics=none .` (Biome 2.6.6) on 2026-11-14, on branch `ccr-7fcd6ef3-rku7l1`, checks 654 files and finds 26 errors, all under `plugins/`:
-    - Markdown, found once instruction Markdown is linted: `useFencedCodeLanguage` ×13 (github-operations `claude-github-actions/references/claude-step-diagnosis.md` and `version-drift.md`; plugin-engineering `public-marketplace-dev/SKILL.md`, `references/03-feature-references/mcp.md` and `skills.md`; skill-diagnostics `skills-best-practices/SKILL.md`; svelte-development `svelte-docs-and-autofixer/SKILL.md` and `svelte-lsp-intelligence/SKILL.md`), `useSingleTopLevelHeading` ×1 (skill-diagnostics `assets/brief-template.md`), `useTopLevelHeading` ×1 (skill-diagnostics `assets/reviewer-report.md`), `useConsistentHeadingLevel` ×1 (github-operations `cleanup-and-debug/assets/cleanup-plan.md`).
+    - Markdown, found once instruction Markdown is linted: `useFencedCodeLanguage` ×13 (github-operations `cc-github-actions/references/claude-step-diagnosis.md` and `version-drift.md`; plugin-engineering `public-marketplace-dev/SKILL.md`, `references/03-feature-references/mcp.md` and `skills.md`; skill-diagnostics `skills-best-practices/SKILL.md`; svelte-development `svelte-docs-and-autofixer/SKILL.md` and `svelte-lsp-intelligence/SKILL.md`), `useSingleTopLevelHeading` ×1 (skill-diagnostics `assets/brief-template.md`), `useTopLevelHeading` ×1 (skill-diagnostics `assets/reviewer-report.md`), `useConsistentHeadingLevel` ×1 (github-operations `cleanup-and-debug/assets/cleanup-plan.md`).
     - Code, already failing before this change: `noArrayForEach` ×4 (file-tree-pane `hooks/diff.ts`, model-trace `hooks/names.ts` ×2, tailwind-development `mcp/format.mjs`), `noNegatedArrayPredicate` ×4 (file-tree-pane `hooks/register.tsx`, project-maintainer `hooks/debt.ts` ×2, tailwind-development `mcp/config.mjs`), `noUselessLengthCheck` ×1 (project-maintainer `hooks/guard.ts`), and the format of `plugins/github-operations/README.md`.
   - No maintainer file has a Biome finding.
   - After merging `ccr-60dfcba3-fsbz16` on 2026-11-14, Biome checks 702 files and finds 31 errors: the 26 above plus `useTopLevelHeading` ×5 in plugin-engineering's new `plugin-testing-and-debugging/assets/` (`eval-case/prompt.md`, `eval-case/graders/result.md`, `eval-negative-case/prompt.md`, `eval-negative-case/graders/answered.md`, `mock-tool.md`). They are eval prompt templates, prompts rather than documents, so the owner chooses between adding the folder to the `useTopLevelHeading` override and adding a heading.
   - Rechecked 2026-11-15 on `main` at ceecd50: Biome checks 721 files and finds 31 errors. The tag `github-operations--v0.8.0` now exists on the remote, so the github-operations fix no longer waits on that release.
   - Update, 2026-11-16, after #110 (merged as a55cd4e): Validate's `Checks` job now runs `pr-checks.sh biome-changed`, Biome on the files a pull request changes, so a new finding in a changed file blocks the merge. `npm run check:pr` runs the same step locally and the pre-push hook runs it before every push. Rechecked on `main` at a55cd4e: Biome checks 714 files and finds 31 errors, the same ones.
   - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:js` checks 695 files and finds 31 errors, exit 1.
+  - Update, 2026-11-18, on branch `ccr-74c453c5-5x0jvi`: renaming `claude-github-actions` to `cc-github-actions` made its two reference files changed files, so `biome-changed` blocked the push. Their 5 `useFencedCodeLanguage` findings were fixed by tagging the fences `bash`, and `biome check --write` fixed the format of `plugins/github-operations/README.md`. `npm run lint:js` now checks 705 files and finds 25 errors, exit 1.
 - **Inferences:** none.
 - **Open questions:** none.
 

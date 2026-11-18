@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-18
+
+### Changed
+
+- **Breaking:** the `claude-github-actions` skill is now `cc-github-actions`, because claude.ai and the Claude API reject a skill name that contains `claude`. Anyone who runs `/github-operations:claude-github-actions` must run `/github-operations:cc-github-actions` instead. What the skill does is unchanged, and the other skills of the plugin point to the new name.
+
 ## [0.8.1] - 2026-11-15
 
 ### Fixed
@@ -270,7 +276,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.8.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.9.0...HEAD
+[0.9.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.0
 [0.8.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.1
 [0.8.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.0
 [0.7.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.3

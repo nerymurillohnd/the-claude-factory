@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 SCRIPT = (
     Path(__file__).resolve().parents[1]
     / "skills"
-    / "claude-md-and-rules"
+    / "cc-md-and-rules"
     / "scripts"
     / "check_instructions.py"
 )

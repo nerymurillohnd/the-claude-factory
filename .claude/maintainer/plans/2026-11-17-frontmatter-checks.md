@@ -192,7 +192,7 @@ Steps:
   - Step 3 holds one link with when to read it: "read it in full before running any check, and read it again whenever it is no longer in your context".
   - Each reviewer entry keeps its name, agent, domain sentence and its files: the agent, its reference, the report template and, as they land, its scripts. Each file is linked one level deep.
   - Step 4's "results of the mechanical checks that reviewer receives" points to the Receives section of `MECHANICAL-CHECKS.md`.
-- [ ] **Step 4:** Update the rule's sync points. "Receives entry and the step 3 command in `SKILL.md`" becomes "the Receives list and the command entry in `MECHANICAL-CHECKS.md`, and the reviewer's file list in `SKILL.md`". Add that `references/` holds only reviewer references and that the root `MECHANICAL-CHECKS.md` is the main session's playbook, which no reviewer reads. Load `instruction-engineering:claude-md-and-rules` first, as the repo requires for any rule edit.
+- [ ] **Step 4:** Update the rule's sync points. "Receives entry and the step 3 command in `SKILL.md`" becomes "the Receives list and the command entry in `MECHANICAL-CHECKS.md`, and the reviewer's file list in `SKILL.md`". Add that `references/` holds only reviewer references and that the root `MECHANICAL-CHECKS.md` is the main session's playbook, which no reviewer reads. Load `instruction-engineering:cc-md-and-rules` first, as the repo requires for any rule edit.
 - [ ] **Step 5:** Run `npm run lint:frontmatter`, `npx biome lint` on both Markdown files, `claude plugin validate --strict plugins/skills-engineering` and `plugin details` again. Expected:
   - `valid`;
   - an on-invoke estimate lower than Step 1's;

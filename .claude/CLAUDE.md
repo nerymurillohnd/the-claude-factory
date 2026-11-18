@@ -106,5 +106,5 @@ Use these skills for the project's upkeep: documents, records and handoffs.
 Use these skills for pull requests, workflows and the repository's GitHub files.
 
 - Use `github-operations:auto-pr-lifecycle` to open or drive a pull request.
-- Use `github-operations:claude-github-actions` to audit or fix a GitHub Actions workflow.
+- Use `github-operations:cc-github-actions` to audit or fix a GitHub Actions workflow.
 - Use `github-operations:github-files-setup` to write issue forms, discussion forms, PR templates, labels, CODEOWNERS or Dependabot configuration.
