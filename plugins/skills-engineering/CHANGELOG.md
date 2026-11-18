@@ -18,6 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `auditing-skills` now also checks the description of every subagent that preloads the skill or reads its files, weighing "use proactively" against how the subagent is launched. It no longer flags a base skill that is meant to load alongside its specialized siblings.
 - Where official sources disagree, `auditing-skills` now follows Anthropic's own documentation first, and names the disagreement.
 - `authoring-skills` writes descriptions by the same points: a "Use…" clause fitted to the skill, opening the description when the trigger is what tells the skill apart.
+- The `comprehension` reviewer now checks how a skill that works in phases organizes its files: it flags a reference that holds rules for more than one phase, so one phase's rules arrive late or never, and a phase that reads several files without saying in which order, and suggests putting the phase in each phase-specific file's name. Each finding comes with the split or the ordered list to apply.
 
 ## [0.1.0] - 2026-11-18
 
