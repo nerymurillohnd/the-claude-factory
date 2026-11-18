@@ -31,6 +31,8 @@
       "AskUserQuestion",
       "Grep",
       "Bash(rg *)",
+      "Bash(grep *)",
+      "Bash(python3 *)",
       "Bash(tree *)",
       "Bash(kill *)",
       "Bash(git commit *)",
