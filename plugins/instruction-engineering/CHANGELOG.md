@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the `claude-md-and-rules` skill is now `cc-md-and-rules`, because claude.ai and the Claude API reject a skill name that contains `claude`. Anyone who runs `/instruction-engineering:claude-md-and-rules` must run `/instruction-engineering:cc-md-and-rules` instead. What the skill does is unchanged, and the reviewer agent reads its files from the new folder.
+
 ## [0.1.5] - 2026-11-15
 
 ### Fixed

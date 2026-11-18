@@ -1,5 +1,5 @@
 ---
-name: claude-md-and-rules
+name: cc-md-and-rules
 description: Required before creating or changing any Claude Code instruction file (CLAUDE.md, CLAUDE.local.md, ~/.claude/CLAUDE.md, .claude/rules/**/*.md), even a one-line addition, because every change must be checked against the whole instruction set first. Also use it to review, audit, debug, reorganize or refactor these files; whenever the user wants a behavior persisted ("remember this", "make sure this doesn't happen again", "Claude keeps doing X", "make it stop"), including before configuring a hook for it, to find why the written instruction failed; when a rule is ignored or not loading; or when they mention project or global instructions or memory files. Finds contradictions, semantic duplicates, ambiguity, no-op and misplaced lines and procedures that should be skills; decides CLAUDE.md vs always-on or path-scoped rules vs skill vs hook; includes a read-only checker. Not for writing skills, hooks, settings, READMEs or one-off prompts, except to recommend them.
 compatibility: Claude Code or Cowork. The checker needs python3 3.12+; git is optional.
 ---
