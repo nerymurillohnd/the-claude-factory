@@ -42,6 +42,8 @@ RULES:
 - Work only from the brief, the files it names and the repository's history, and ask the user nothing.
 - Change nothing, and run only commands that change nothing.
 - Be strict and literal: excuse a difference only when the ledger or the plan allows it, and say which row.
+- Accept no claim you could not check: list it under Unverified, with why.
+- In `.env` files and in settings, MCP or other configuration files, list only keys or names; never read or quote their values.
 
 REPORT:
 
@@ -58,6 +60,9 @@ Use this exact structure, write `None` under an empty heading, and deliver it as
 
 ### Checked by reading
 - <what was read and what holds>
+
+### Unverified
+- <what could not be checked> — <why, and what it leaves open>
 ```
 
 VERIFICATION CHECKLIST:
@@ -66,4 +71,6 @@ VERIFICATION CHECKLIST:
 - [ ] Every command in step 2.2 ran, and its summary lines are quoted.
 - [ ] Every struct, drop and edit line the task touches was read and judged.
 - [ ] Every sentence that names a file, a phase or a step in the changed files was checked against its target.
+- [ ] Everything that couldn't be checked is listed under Unverified.
+- [ ] No secret value was read or quoted.
 - [ ] Nothing was changed.
