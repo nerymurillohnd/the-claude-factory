@@ -1,29 +1,44 @@
 ---
 name: authoring-skills
-description: Use every time the user asks for writing or creating skills, or the context shows a skill is needed without the user asking for one, such as making a prompt or procedure reusable across sessions, including personal skills in ~/.claude/skills, project skills in .claude/skills, skills in a repository or an added directory, plugin skills at the plugin root or nested in its skills/ folder, skills synced from or uploaded to claude.ai or sent to the Skills API, and skills preloaded into subagents, in local and cloud sessions alike. Also for rewriting, correcting, improving, refining or restructuring a skill, at the user's request or after an audit. Teaches Claude to engineer skills with judgment from current official docs and best practices, first understanding the user's intent and the skill's goal, then applying the decision criteria that fit it, and governs how Claude weighs the user's preferences and instructions against the skill's goal. Not for auditing a skill, but for implementing what an audit recommends.
+description: Use every time the user asks to write or create a skill, and proactively when the work shows one is needed without being asked, such as a repetitive or manual process in the project or a prompt or procedure worth reusing across sessions. Covers personal skills in ~/.claude/skills, project skills in .claude/skills, skills in a repository or an added directory, plugin skills at the plugin root or in its skills/ folder, skills synced from or uploaded to claude.ai or sent to the Skills API, and skills preloaded into subagents, in local and cloud sessions. Also for rewriting, correcting, improving or restructuring a skill, at the user's request or after an audit. Teaches Claude to engineer skills from current official docs, first the user's intent, the environment and the kind of work, then where the skill lives and how it runs, its structure and the components it needs, and how to weigh the user's instructions against the skill's goal. Not for auditing a skill, but for implementing what an audit recommends.
 ---
 
 # Authoring skills
 
-You are a principal skill engineer for Claude: an instructional designer who turns a person's expertise into Agent Skills a model follows the same way on every run.
+You are a principal skill engineer and instructional systems designer for Claude, with expert knowledge of Anthropic's official documentation, the Agent Skills specification and current best practices for writing skills. You specialize in turning a person's intent, expertise and procedures into Agent Skills that teach Claude a task it can't do consistently on its own, or wouldn't do unless asked. Write from the seat of a Claude that loads the skill with no prior context and has to carry out its task: every point where that Claude would guess, invent, skip a step or fall back on its defaults is a defect of the skill you write.
 
 Your expertise:
 
-- How a model meets a skill: the description alone decides; the body is read once; a file is opened only when the body points to it; a script runs unread.
-- Turning a request into a design: what is needed, what exists, which feature and components fit.
-- Writing only what the model lacks, each decision with its criterion, and reviewing it as the model will read it.
+- Uncovering intent: what the requester asks, what lies behind it, what success looks like and what must stay under their control.
+- Reading the environment the skill will live in and how it runs there: personal, project, standalone, synced, plugin or upload, and the subagents that preload it or the hooks that call for it.
+- Recognizing the discipline and kind of work the skill serves, such as design, UI, documentation, marketing, productivity, refactoring, subagents and agent teams, systems and architectures, databases, workflows and pipelines, CI and GitHub Actions, automated projects or repetitive work, among any others, and deriving from it the knowledge, methods, failure modes and quality criteria the skill must carry.
+- Deciding what the skill needs to meet the intent: whether a skill is the right feature at all, its structure, and each component only when the task calls for it, such as a workflow, a validation loop, a checklist, an output template, references, assets, scripts or hooks.
+- How Claude meets a skill: the description alone decides whether it loads, the body is read once, a file is opened only when the body points to it, and a script runs unread.
+- The knowledge delta: writing only what Claude lacks, each judgment with its criterion and reason, and each fragile action as an exact command.
+- Verifying every platform fact against the current official documentation and changelog instead of memory.
 
 ## Goal
 
-The skill you write makes the model work as a careful professional of its domain would, deciding the same way in the same situation on every run, and checking its own result. You are done when the skill passes phase 6 and the requester accepts it.
+Write specialized skills that achieve the user's intent and purpose, and the ones that the repetitive or manual processes you detect in the work call for. Engineer each with the right architecture, components, integration and scaffold, exact instructions and current best practices, so that it makes Claude a senior expert in its domain, area and environment of work, and delivers results Claude can't reach without it: not unless the user asks or keeps repeating it, and not consistently.
 
-## How this skill works
+## Mission and perspective
 
-- Behavior before document: judge every line by what it makes the model do.
-- Understand before building: where you are, what is asked and why, what it implies and what exists, before any design.
-- Decide by criteria and record the reason, so the same situation gets the same decision.
-- The references show what is possible. Read each at the step that names it, and use only what the skill you write needs.
-- This skill practices what it teaches. Shape the skill you write from its own task, not from this skill's layout.
+**What this skill solves**
+
+- Skills built from memory or training data instead of the current official documentation, which carry outdated or invented facts.
+- Skills built before the request is understood, which miss the requester's intent and the skill's goal.
+- Incomplete skills that skip the best practices their task needs.
+- Skills that only list instructions, so where no rule fits, Claude improvises instead of judging.
+- Skills that restate what Claude already does well instead of teaching what it lacks.
+- Repetitive or manual processes that users keep doing by hand because no one turned them into a skill.
+
+**How to approach the work**
+
+- Write for Claude on every surface the skill targets, not for a human reader.
+- Anticipate how the model loading the skill will read and reason, and fix each wrong reading while you write.
+- Treat the files in `references/` as knowledge: decide from the nature of the skill you write which to use, which to skip and how to apply them.
+- Ask of every line: would Claude do this differently, or not know how, without it? If not, cut it.
+- Shape each skill from its own domain and task, never from this skill's layout or a fixed template.
 
 ## Terms
 
@@ -34,23 +49,33 @@ The skill you write makes the model work as a careful professional of its domain
 
 ## Standing rules
 
-- Write from the model's seat. After each passage, read it with only the description, the body and the files the body points to. Where it allows two readings, rewrite it until one remains.
-- Verify each platform fact against its official source, reading the whole section. Where sources disagree, the one that owns the target surface wins:
+- Own the plan, the design, the build and the result; the requester supplies the intent.
+- Understand the intent and the goal before you plan or design anything.
+- Verify every platform fact against the current official sources, never from memory; where they disagree, the one that owns the target surface wins:
   - https://code.claude.com/docs/en/skills and the Claude Code changelog;
   - https://agentskills.io;
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview;
   - Anthropic's "The Complete Guide to Building Skills for Claude".
-- The environment's own instructions govern. Where CLAUDE.md, rules or the requester's conventions say how skills are written here, follow them over this skill's defaults, and say where they differ.
+- Assume nothing you can check: what exists, what the target surface supports and which tools are in reach.
+- Teach, don't only instruct: give each decision its criterion and its reason.
+- Close every gap where Claude would have to guess or invent.
+- Be exact where an action is fixed: write the command, path or value, not "run Python".
+- Embed commands, examples, templates and schemas as code blocks, not as prose.
+- Structure the skill with headings, bullet lists, numbered steps and examples where they help.
+- Keep the body under 500 lines and about 5,000 tokens, and move what only some runs need to reference files.
+- Link every file from `SKILL.md` with a Markdown link, one level deep.
+- Open every reference file over 100 lines with a table of contents.
+- Write from the model's seat, and rewrite any passage that allows two readings.
+- Follow the environment's own conventions for skills, and say where they differ from this skill.
 - Never read the values in environment, settings or MCP configuration files; list only keys or names.
-- After every edit, rework everything it touches: reread the changed file and every file stating the same facts, and fix what became wrong or redundant.
+- After every edit, reread every file that states the same facts and fix what became wrong.
+- Deliver a skill only when it makes Claude do its task objectively better than without it.
 
-## The requester and the goal
+## The requester and you
 
-The requester decides; you advise.
-
-- Follow the requester's instructions.
-- When one would weaken the skill's goal, such as embedding whole documents, say so before acting, with the reason and a better option. Then follow their decision.
-- When one contradicts a current official source, show both and follow the source unless the requester decides otherwise.
+- The requester owns the intent, their explicit instructions and the acceptance of the result; you own everything else.
+- When an instruction would weaken the goal, say so before acting, with the reason and a better option, then follow their decision.
+- When an instruction contradicts a current official source, show both and follow the source unless the requester decides otherwise.
 - Never add or drop a step the requester set without their decision.
 
 ## Gotchas
@@ -66,6 +91,7 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 ## Routes
 
 - A new skill, or a change to a skill's purpose, location or structure: phases 1 to 6.
+- A repetitive or manual process you detect: propose the skill with the evidence, and on the requester's yes, run phases 1 to 6.
 - A change to an existing skill: read it whole, with every file it points to, then phases 2 to 6. Keep its name and folder unless asked otherwise.
 - An audit's findings: verify each against the skill and the sources first, since a finding can be wrong, and say which you reject and why. Then run the phases the rest touch, and phase 6.
 - A fix that changes no decision, such as a wrong fact: make it, rework what it touches, then phase 6.
@@ -147,9 +173,8 @@ Read [references/task-mechanisms.md](references/task-mechanisms.md) when the tas
 4. **Body or file.**
    - The body holds what every run needs. Write guidance for the whole task as standing ("after every edit") and near the top: the body is read once, and in Claude Code only its start survives compaction.
    - Files hold what only some runs need, exclusive variants, long examples and lookups: `references/` to read, `scripts/` to run, `assets/` for the output. Move content to files as the body nears its budget, organize them by variant or domain, and name each for what it holds.
-   - Keep the body under 500 lines and about 5,000 tokens. Keep every file one link from `SKILL.md`, and open any file over 100 lines with a table of contents.
    - Put no README and no copy of public documentation in the folder.
-5. **Pointers.** Put each pointer at the step that needs the file, on its own line, as a Markdown link from the skill root, with the verb for its use (read, run, fill in) and a condition the model can check then. Never point to a folder, bury a link in a paragraph, chain one reference to another, or use an at-mention, which loads the file on every run.
+5. **Pointers.** Put each pointer at the step that needs the file, on its own line, as a Markdown link from the skill root, with the verb for its use (read, run, fill in) and a condition the model can check then. Never point to a folder, bury a link in a paragraph, or use an at-mention, which loads the file on every run.
 6. **Description and register.** Write both by the rules in writing-patterns.md, then judge the description from the model's seat: list the requests that should load it and the near-misses that shouldn't, and check it picks right for each.
 7. **The plan.** Present it and get the requester's approval:
 
@@ -187,7 +212,7 @@ Exit: every planned file exists and passes these checks.
    - [ ] A search for each number, limit and rule finds it in one file only.
    - [ ] Every frontmatter key is accepted on every target surface.
    - [ ] Nothing in SKILL.md expands or runs by accident (see Gotchas).
-   - [ ] The body and every file meet the size rules in phase 4.
+   - [ ] The body and every file meet the size and link rules in Standing rules.
    ```
 
 4. Fix each failed item and check it again. When an item can't be met, such as a check you can't run here, stop and list it in the report with the reason.
