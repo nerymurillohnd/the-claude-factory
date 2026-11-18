@@ -1,6 +1,6 @@
 # Phase 3: Task mechanisms
 
-Which mechanisms the skill's task needs, chosen from the parts of the task.
+Which mechanisms the skill's task needs, chosen from the parts of the task, including when to plan, validate and execute, and where the gotchas go.
 
 Each one costs attention: use only the ones the task needs, and remove any the model wouldn't need to do its step reliably.
 
@@ -17,6 +17,8 @@ Most skills mix parts, and each part calls for different mechanisms:
 ## Workflows
 
 Write numbered steps when the order matters: a step uses what an earlier one produced, or skipping one breaks a later one. Write goals and criteria instead when the order depends on what the model finds, as in a review or an investigation.
+
+Move a long branch or variant into its own file, and point to it from the decision point, so the model reads only the branch it takes.
 
 ## Checklists
 
@@ -36,6 +38,12 @@ Choose the validator by what can check the result:
 - **A document**, when the check is against written rules, such as a style guide.
 - **A self-check against stated criteria**, when only judgment can check it. "Review your work" alone checks nothing.
 
+## Plan, validate, execute
+
+For batch, destructive or costly work, have the model write the intended changes to a file, validate that file, and only then apply it.
+
+The plan can be fixed and checked again without touching the originals.
+
 ## Output templates
 
 Give a template when the output has a fixed shape: the model follows a template more reliably than a description of the format.
@@ -43,3 +51,9 @@ Give a template when the output has a fixed shape: the model follows a template 
 - **Strict** when a reader or a program depends on the exact shape: "Use exactly this structure."
 - **Flexible** when the shape should adapt to the content: "This is the default; adapt the sections to what you find."
 - **Inline** when it is short and every run uses it; **in `assets/`** when it is long or used only in some cases, with a pointer that says when to fill it in.
+
+## Gotchas
+
+A gotcha is a fact of the environment or domain that defies a reasonable assumption, so the model gets it wrong unless told. Examples: the export whose amounts are in cents, the sandbox API that accepts any key but never sends email, the column named `customer` that holds a supplier ID.
+
+- Put them in `SKILL.md`, before the steps they affect. The model must know them before it reaches the situation, and won't open a file about a mistake it doesn't know it is making.

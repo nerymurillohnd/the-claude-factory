@@ -1,6 +1,6 @@
 # Phase 4: Task mechanisms
 
-How to build each mechanism phase 3 chose: the steps and their controls, the checklists, the loop and its exit, the plan file, the template and the gotchas.
+How to build each mechanism phase 3 chose: the steps and their controls, the checklists, the loop and its exit, the steps of plan, validate, execute, the template and the gotchas.
 
 ## Contents
 
@@ -26,8 +26,6 @@ Build each step as one action, with its input, its command or method, and its ou
 
 - **An exit condition** for each phase of a long workflow: what must be true before moving on.
 - **A loop back** when a later step can reveal a gap: "If the totals don't match, return to step 2."
-
-Move a long branch or variant into its own file, and point to it from the decision point, so the model reads only the branch it takes.
 
 ## Checklists
 
@@ -82,7 +80,7 @@ When the bar is quality rather than a pass, add the rule that stops the loop: a 
 
 ## Plan, validate, execute
 
-For batch, destructive or costly work, have the model write the intended changes to a file, validate that file, and only then apply it:
+Build its steps:
 
 1. Analyze the input.
 2. Write the changes to a structured file, such as `changes.json`.
@@ -90,7 +88,7 @@ For batch, destructive or costly work, have the model write the intended changes
 4. Apply the changes.
 5. Verify the result.
 
-The plan can be fixed and checked again without touching the originals. Where the user must approve before anything changes, show them the plan file at step 3.
+Where the user must approve before anything changes, show them the plan file at step 3.
 
 ## Output templates
 
@@ -115,9 +113,6 @@ Write the incident note in this structure:
 
 ## Gotchas
 
-A gotcha is a fact of the environment or domain that defies a reasonable assumption, so the model gets it wrong unless told. Examples: the export whose amounts are in cents, the sandbox API that accepts any key but never sends email, the column named `customer` that holds a supplier ID.
-
-- Put them in `SKILL.md`, before the steps they affect. The model must know them before it reaches the situation, and won't open a file about a mistake it doesn't know it is making.
 - Write each as the fact and what to do about it, in one or two lines.
 - Add each correction its users have to make to the model.
 - Leave out general advice: it isn't a gotcha unless a capable model would get it wrong.
