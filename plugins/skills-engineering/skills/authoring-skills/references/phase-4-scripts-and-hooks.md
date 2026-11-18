@@ -1,11 +1,10 @@
-# Scripts and hooks
+# Phase 4: Scripts and hooks
 
-When a skill should run code, where the code lives so every user's machine finds it, how the body calls it, and when an injected command or a skill hook fits.
+How to write the scripts, injected commands and hooks phase 2 chose: how the body names and calls each script, how it starts, the interface and dependencies it needs, the rules for injected commands, and how a skill hook is configured.
 
 ## Contents
 
-- Script or instructions
-- Where the script lives
+- Run or read, and the script list
 - How the body reaches it
 - How it starts
 - The interface the model meets
@@ -13,9 +12,7 @@ When a skill should run code, where the code lives so every user's machine finds
 - Injected commands
 - Skill hooks
 
-## Script or instructions
-
-Write a script when the step is deterministic, when the work you extracted shows the model rewriting the same helper each time, or when a small slip breaks it: an exact sequence, a strict format, a destructive operation. Keep a step as instructions when it needs judgment, such as choosing, wording or reviewing: a script only hides the judgment.
+## Run or read, and the script list
 
 Say in the body whether the model runs the script or reads it:
 
@@ -39,27 +36,6 @@ List every script the skill bundles in the body, each with a one-line purpose, i
   python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py [output-csv]
   ```
 ````
-
-A command the model can type correctly from memory needs no script; write it in the body.
-
-## Where the script lives
-
-Choose by who must reach it, and where the skill travels:
-
-- **Inside the skill folder** (`scripts/`): travels with the skill to every copy and upload. The default for a script one skill uses.
-- **At the plugin level**, shared by several skills of one plugin: reached through the plugin root. The skill then works only inside its plugin.
-- **In the plugin's `bin/`**: Claude Code puts it on the shell's PATH while the plugin is enabled, so the body calls the tool by name. Use it for a command-line tool several skills or the user call, and only for a plugin that never needs claude.ai or Cowork: neither installs a plugin that has a `bin/` folder.
-- **In the user's project**: only for a project skill, or when the skill states the project must provide it.
-- **Outside the plugin**: never. Installing a plugin copies only its own folder, so a path above the plugin root doesn't exist on users' machines.
-
-Incorrect:
-
-```text
-my-plugin/skills/deploy/SKILL.md   →  Run `bash ../../../shared/deploy.sh`
-~/.claude/skills/report/SKILL.md   →  Run `python3 ~/work/tools/build_report.py`
-```
-
-The first breaks after installation; the second works only on its author's machine.
 
 ## How the body reaches it
 
@@ -106,8 +82,6 @@ The model reads the script's output to choose its next step. Design for that rea
 
 ## Injected commands
 
-In Claude Code, an injected command runs when the skill loads and its output replaces it in the body. Use one to hand the model current data it would otherwise fetch first, such as the diff, the branch or open pull requests.
-
 - Inject only commands that must succeed for the skill to make sense. Any non-zero exit aborts the skill, except exit 1 from a search or comparison command such as `grep` or `diff`. Append `|| true` to any other command that can legitimately exit non-zero, such as a check that reports problems.
 - Pre-approve each injected command in `allowed-tools`.
 - Write the body so it still works, or says clearly what is missing, where the command didn't run.
@@ -122,8 +96,6 @@ Runs without aborting on findings: - Totals: !`python3 ${CLAUDE_SKILL_DIR}/scrip
 
 ## Skill hooks
 
-A hook in the skill's `hooks` field registers when the skill is invoked and runs for the rest of the session. Use one for a check that must hold on every event once the skill is active, such as validating each file the model writes. A check that must hold whether or not the skill was invoked belongs in the plugin's hooks or in settings instead.
-
 ```yaml
 hooks:
   PostToolUse:
@@ -137,7 +109,6 @@ hooks:
 Naming the interpreter as the command, with the script in `args`, passes the path as one argument and spares the script a shebang.
 
 - **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. It doesn't resolve `CLAUDE_SKILL_DIR`, so a project skill's hook reaches its script through the project root, and a personal skill's hook through its home path in a `command` with no `args`, such as `python3 ~/.claude/skills/[name]/scripts/check.py`, where `[name]` is the skill's folder: only the shell expands `~`.
-- **Subagents**: the docs don't say whether a skill's hooks register when a subagent preloads the skill or runs it with `context: fork`. Put a check that must hold inside a subagent in that subagent's own `hooks` frontmatter, which runs while the subagent runs. A plugin's subagent ignores `hooks`, `mcpServers` and `permissionMode`, so a plugin puts such a check in its own hooks file, which applies to the whole session.
 - **Once**: set `once: true` on a hook that must run a single time, such as a setup check; Claude Code removes it after its first successful run.
 
 Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.
