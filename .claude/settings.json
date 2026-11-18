@@ -52,6 +52,7 @@
       "Bash(find *)",
       "Bash(uv *)",
       "Bash(uvx *)",
+      "Bash(jq *)",
       "Bash(tree *)",
       "Bash(kill *)",
       "Bash(git *)",
