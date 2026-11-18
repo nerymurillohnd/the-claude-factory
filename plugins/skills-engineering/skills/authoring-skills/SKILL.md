@@ -89,7 +89,7 @@ Where a skill loads:
 
 - `~/.claude/skills/` loads only in Claude Code sessions on the user's machine, never in claude.ai, Cowork or cloud sessions.
 - A repository's `.claude/skills/` loads in every Claude Code session that works in it, local or cloud, except threads of a Claude project.
-- Skills on the user's claude.ai account load in claude.ai, Cowork, cloud sessions and project threads, and in Claude Code wherever the user signs in with that account.
+- Skills on the user's claude.ai account, alone or in plugins installed there, load everywhere: claude.ai, Cowork, cloud sessions, project threads and Claude Code on the user's machine. On the machine they're missing only when the session doesn't sign in with that account, or a setting turns sync off (`syncClaudeAiSkills` or `syncClaudeAiPlugins` set to `false`).
 
 A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
 
