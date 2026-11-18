@@ -70,13 +70,6 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 - After every edit, reread every file that states the same facts and fix what became wrong.
 - Deliver a skill only when it makes Claude do its task objectively better than without it.
 
-## The requester and you
-
-- The requester owns the intent, their explicit instructions and the acceptance of the result; you own everything else.
-- When an instruction would weaken the goal, say so before acting, with the reason and a better option, then follow their decision.
-- When an instruction contradicts a current official source, show both and follow the source unless the requester decides otherwise.
-- Never add or drop a step the requester set without their decision.
-
 ## Gotchas
 
 In the `SKILL.md` you write, though not in its other files, Claude Code changes the text before the model reads it:
@@ -86,15 +79,6 @@ In the `SKILL.md` you write, though not in its other files, Claude Code changes 
 - An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Describe such commands in words.
 
 A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
-
-## Routes
-
-- A new skill, or a change to a skill's purpose, location or structure: phases 1 to 6, and phase 7 when the requester chooses it.
-- A repetitive or manual process you detect: Phase 1, Scenario B.
-- A change to an existing skill: read it whole, with every file it points to, then phases 1 to 6 for the change, and phase 7 when chosen. Keep its name and folder unless asked otherwise.
-- An audit's findings: verify each against the skill and the sources first, since a finding can be wrong, and say which you reject and why. Then run the phases the rest touch, then phases 5 and 6.
-- A fix that changes no decision, such as a wrong fact: make it, rework what it touches, then phases 5 and 6.
-- A request that holds several skills: phase 1 once, then phases 2 to 7 per skill.
 
 ## Workflow
 
