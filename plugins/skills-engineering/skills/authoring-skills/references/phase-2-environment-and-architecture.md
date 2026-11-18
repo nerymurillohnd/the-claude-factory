@@ -18,7 +18,7 @@ Decide each point from the goal, without waiting for the requester to ask, and r
    When it isn't a skill, say which feature fits and why, and stop unless the requester still wants one. Split a request with several needs by trigger and task.
 
 4. **The discipline.** Name the kind of work the skill serves and the disciplines that govern it, and derive from them the knowledge, methods, tools, failure modes and quality criteria the skill must carry. The higher the cost of an error in that domain, the more evidence, verification and human control the skill must require.
-5. **Where it lives and how it runs**, by who must get it and in which sessions they work, as the Gotchas in SKILL.md describe:
+5. **Where it lives and how it runs**, by who must get it and in which sessions they work, using the table in the Gotchas of SKILL.md:
    - only the requester, on this machine: `~/.claude/skills/<name>/`;
    - everyone working in a repository: `.claude/skills/<name>/`, committed;
    - users who install a plugin: the plugin's `skills/<name>/`, or its root for a single-skill plugin;
