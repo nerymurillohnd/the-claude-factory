@@ -31,7 +31,7 @@ Choose by who writes the task:
   - Never refer to "the user's request" or to the conversation that spawned it.
 - **A subagent may load it on its own**, as the main session does, when its tools include the Skill tool. Write such a skill to work without the main conversation's context.
 
-A skill run by a subagent can't count on asking the user mid-task. Give it the default to take, and what to report instead of asking.
+A skill run by a subagent can't ask the user anything: Claude Code removes the question tool from every subagent. Give it the default to take, and what to report instead of asking.
 
 ## A skill only its users invoke, or only the model
 
