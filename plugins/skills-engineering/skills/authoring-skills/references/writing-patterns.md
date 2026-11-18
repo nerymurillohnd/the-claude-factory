@@ -13,10 +13,15 @@ The rules for writing a skill's description and its instructions, with correct a
 
 ## Descriptions
 
-- Write what the skill does in its key use case first. Then "Use when", with the situations and the words its users actually say, including requests that never name the domain. Then the boundary with any sibling skill that shares its keywords.
-- Write it in the third person.
-- Leave out a summary of the workflow, which the model may follow instead of the body, and any claim of quality.
-- Keep it within 1,024 characters for a skill that may leave Claude Code. Claude Code's skill listing cuts the text at 1,536.
+The model reads only the description when it decides whether to load the skill, matching it against the user's request. Write it to that end:
+
+- Start with "Use when" in the imperative: the model is deciding whether to act, so tell it when to act.
+- Say both when to use the skill and what it does, with the key use case first: Claude Code's listing truncates long descriptions, and the end is lost first.
+- Describe what the user is trying to achieve, in the words users actually say, not the skill's internal mechanics: the model matches against the request, not against how the skill works.
+- Be insistent about its cases. List the contexts where it applies, including requests that never name the domain ("even if they don't mention 'invoice'"): models tend to skip a skill for a task they think they can handle alone.
+- Name the boundary with any sibling skill that shares its keywords.
+- Write in the third person, never "I can" or "you can": the description goes into the system prompt.
+- Keep it concise: a few sentences to a short paragraph, at most 1,024 characters for a skill that may leave Claude Code. Claude Code's listing cuts the description at 1,536.
 - Write placeholders in square brackets: angle brackets show as escaped text.
 
 Vague, so it triggers on everything or nothing:
@@ -25,10 +30,10 @@ Vague, so it triggers on everything or nothing:
 description: Handles invoices.
 ```
 
-Specific about what it does and when:
+Specific about when to use it and what it does:
 
 ```yaml
-description: Extracts line items, totals and tax from supplier invoices in PDF or image form and exports them to CSV. Use when the user shares an invoice, asks to digitize receipts, or needs invoice data in a spreadsheet.
+description: Use when the user shares a supplier invoice, asks to digitize receipts, or needs invoice data in a spreadsheet, even if they never say "invoice". Extracts line items, totals and tax from PDF or image invoices into CSV.
 ```
 
 Mechanics instead of intent, so it matches no request a user would type:
@@ -37,10 +42,10 @@ Mechanics instead of intent, so it matches no request a user would type:
 description: Runs parse_csv.py, then aggregate.py, then renders report.md from the template.
 ```
 
-Intent, in the users' words, including a request that never names the domain:
+Intent, in the users' words:
 
 ```yaml
-description: Builds the weekly sales report from the CRM export. Use when the user asks for this week's sales numbers, a sales summary or the regional report, even if they only paste a CSV.
+description: Use when the user asks for this week's sales numbers, a sales summary or the regional report, even if they only paste a CSV. Builds the weekly sales report from the CRM export.
 ```
 
 Overlapping a sibling skill, so the model picks either one:
@@ -52,7 +57,7 @@ description: Works with pull requests.
 With the boundary that separates it:
 
 ```yaml
-description: Reviews a pull request's code for bugs and style. Use when the user asks to review, check or comment on a PR. Not for merging or fixing CI, which pr-lifecycle does.
+description: Use when the user asks to review, check or comment on a pull request's code. Reviews it for bugs and style. Not for merging or fixing CI, which pr-lifecycle does.
 ```
 
 ## Pointers
