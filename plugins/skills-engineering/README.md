@@ -1,8 +1,8 @@
 <div align="center">
 
-# Skills Engineering
+# 🧰 Skills Engineering
 
-<p><strong>Writes and audits Claude skills wherever they live, from plugins, personal and project folders to claude.ai accounts and URLs: authoring-skills writes or changes a skill from the domain's own material and the current docs, and auditing-skills runs frontmatter checks, then specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.</strong></p>
+<p><strong>Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills learns your goal and setup, agrees a plan with you and builds the skill from the current official docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskills-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)

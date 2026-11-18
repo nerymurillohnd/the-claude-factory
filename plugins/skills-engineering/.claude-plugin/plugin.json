@@ -5,7 +5,7 @@
   "engines": {
     "claude-code": ">=2.1.304"
   },
-  "description": "Writes and audits Claude skills wherever they live, from plugins, personal and project folders to claude.ai accounts and URLs: authoring-skills writes or changes a skill from the domain's own material and the current docs, and auditing-skills runs frontmatter checks, then specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
+  "description": "Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills learns your goal and setup, agrees a plan with you and builds the skill from the current official docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
