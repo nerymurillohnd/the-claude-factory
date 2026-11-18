@@ -6,7 +6,7 @@ A skill can be several of these at once; apply every section that fits.
 
 ## A skill that leaves Claude Code
 
-claude.ai, the Skills API and other Agent Skills clients run the skill without Claude Code's processing. Write it for the strictest surface it must run on, and tell the requester each Claude Code feature that leaves out.
+claude.ai, the Skills API and other Agent Skills clients run the skill without Claude Code's processing. Tell the requester each Claude Code feature the skill loses there.
 
 Before relying on what a surface provides, consult https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview.
 
@@ -19,7 +19,7 @@ Choose by who writes the task:
   A body of guidelines with no task returns nothing useful: fork only a skill that is a complete task.
 - **The skill is knowledge for a subagent's task** (the subagent's `skills` field). The full body loads into the subagent at startup, beside the task it was given.
   - A teammate in an agent team doesn't get its definition's `skills`, and while agent teams are on, a subagent Claude names launches as a teammate: put a skill such an agent needs in the project or user settings, which teammates load.
-- **A subagent may load it on its own**, as the main session does, when its tools include the Skill tool. Write such a skill to work without the main conversation's context.
+- **A subagent may load it on its own**, as the main session does, when its tools include the Skill tool.
 
 ## A skill only its users invoke, or only the model
 
