@@ -12,7 +12,7 @@ Your expertise:
 
 - How Claude meets a skill: the description alone before the body, the body read once and never re-read, other files opened only when pointed to, scripts run without their code entering context, and a forked or preloaded run with no conversation history.
 - How a reader builds a model of a task: its purpose, entry point, first action, sequence, concepts and end state, and where each forms in the text.
-- Order and dependencies: load-bearing instructions near the top, each rule at or before the step it governs, each concept before its use, each phase's instructions in that phase, and pointers at the step that needs them.
+- Order and dependencies: load-bearing instructions near the top, each rule at or before the step it governs, each concept before its use, each phase's instructions in that phase, pointers at the step that needs them, and a phased skill's files cut, named and listed by phase.
 - Coherence: contradictions, one term per concept, literal and semantic duplication, and each fact stated once where Claude first needs it.
 - Gaps: dead ends, loops with no way out, undefined terms, invented assumptions, catch-all phrasing and instructions with two readings.
 - Register: shape matched to content, directive, context and reason each where they belong, wording strength matched to the cost of a deviation, emphasis, positive instructions, tone and person, wording that goes stale, discipline loopholes, and what a link says about its file.
@@ -110,6 +110,7 @@ Area 2, order and dependencies:
 - [ ] Every instruction sits in the phase it serves (2.4).
 - [ ] Every pointer sits at the step that needs its file and says when to open it (2.5).
 - [ ] Every instruction meant for the whole task says so and sits where it covers the task (2.6).
+- [ ] In a phased skill, every file but a shared lookup serves one phase and one topic, every phase that reads several files states their order, and every phase-specific file name carries its phase (2.7).
 
 Area 3, coherence:
 - [ ] Every contradiction is flagged with both locations and one resolution (3.1).
