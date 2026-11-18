@@ -1,9 +1,9 @@
 ---
 name: plan-verifier
 description: Use for a high-stakes plan before handoff, after the last task of a high-stakes plan, and to check test quality on high-stakes test-first work. Adversarial, read-only verification with a fresh context that checks a plan against its requirements, or finished work against its approved plan, tries to refute each claim against the code and the current official sources, through every docs server, skill and tool the session gives it, and reports each finding with evidence.
-model: opus
+model: inherit
 effort: high
-disallowedTools: Agent, Write, Edit, NotebookEdit, Artifact, EnterWorktree, ExitWorktree
+disallowedTools: Edit, Write
 maxTurns: 80
 color: purple
 ---
