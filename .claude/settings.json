@@ -17,7 +17,8 @@
     "CLAUDE_CODE_GLOB_HIDDEN": "true",
     "CLAUDE_CODE_GLOB_NO_IGNORE": "true",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000",
-    "BASH_MAX_OUTPUT_LENGTH": "150000"
+    "BASH_MAX_OUTPUT_LENGTH": "150000",
+    "CLAUDE_CODE_AUTO_CONNECT_IDE": "true"
   },
   "permissions": {
     "allow": [
