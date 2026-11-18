@@ -142,6 +142,7 @@ Set the name, description and frontmatter, design each component and the body, a
 Scaffold the skill's folder and write every file the approved plan lists, checking each as it lands.
 
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
+- Read [references/phase-4-placements.md](references/phase-4-placements.md) when the plan places the skill outside Claude Code, in a subagent, or where only its users invoke it.
 
 ### 5. Self-review
 

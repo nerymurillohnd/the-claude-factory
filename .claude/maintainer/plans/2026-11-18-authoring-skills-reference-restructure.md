@@ -74,7 +74,7 @@ Each task ends with a signed commit and no push. Each task's verification, and t
      - No broken links, no nested links.
      - All checks match the baseline.
 - [x] 3. **Split scripts-and-hooks** into phase-2 and phase-4 by the ledger. Each new file gets a one-line purpose, and a table of contents if it exceeds 100 lines. Verify: inventory 0 missing, plus the checks.
-- [ ] 4. **Split special-placements** into phase-2 and phase-4. Drop duplicates 1 and 2. Verify: the inventory reports exactly those two lines missing, and each one's surviving text is shown by grep.
+- [x] 4. **Split special-placements** into phase-2 and phase-4. Drop duplicates 1 and 2. Verify: the inventory reports exactly those two lines missing, and each one's surviving text is shown by grep.
 - [ ] 5. **Split components** into phase-2 and phase-4. Verify as in task 3.
 - [ ] 6. **Split task-mechanisms** into phase-3 and phase-4. Verify as in task 3.
 - [ ] 7. **Split writing-patterns** into phase-3-descriptions and phase-4-writing-patterns. Verify as in task 3.
@@ -91,6 +91,7 @@ Each task ends with a signed commit and no push. Each task's verification, and t
      - Every reference is listed exactly once.
      - No reference is listed under two phases.
      - Body size is under 5,000 tokens (estimate).
+- [ ] 9b. **Teach the pattern.** Add to phase-3-design-and-plan.md, step 8 (one phase and one topic per reference in a phased skill, named with its phase and topic, and a topic two phases use split by phase) and step 9 (list each phase's files under that phase in step order, with step and condition, and say to read them in that order). Cite the official bases (focused files, organize by domain or feature, descriptive names, say when to load each file) and mark the phase prefix and explicit order as the owner's convention. Verify: the inventory, the checks, and that the rule text matches the structure this restructure produced.
 - [ ] 10. **Full verification.**
     - Inventory against the baseline: missing equals exactly the two approved duplicates.
     - Link checker: no broken links, no nested links.
