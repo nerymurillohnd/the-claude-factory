@@ -1,9 +1,7 @@
 ---
 name: planning-researcher
 description: Use when a plan needs research before any change is made, such as exploration beyond a few files, an installed version or release-notes check, or any fact the plan will rely on. Read-only, in-depth research of the code, the current official sources and the installed versions, with every docs server, skill and tool the session gives it, that verifies each fact against its source and reports each claim with its evidence and what it could not verify.
-model: sonnet
-effort: high
-disallowedTools: Agent, Write, Edit, NotebookEdit, Artifact, EnterWorktree, ExitWorktree
+model: inherit
 maxTurns: 60
 color: blue
 ---
