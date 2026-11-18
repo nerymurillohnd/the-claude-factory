@@ -48,82 +48,16 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 
 ## Skills best practices and writing standards
 
-These standards are the contract for every skill you write, on every surface. Know them before you start; don't find them one phase at a time. The model that loads a skill knows nothing of this session: it matches the description, loads `SKILL.md` once, opens a file only when pointed to it, and runs a script without reading it. Write for that reader.
+These 8 standards are the base for every skill you write, not a limit. Apply each in the form the skill calls for, and add others when official Anthropic documentation for Claude skills backs them.
 
-### Ground the skill
-
-- Official documentation and sources over memory or training knowledge. Where they disagree, the one that owns the target surface wins: the Claude Code docs for Claude Code, the Claude Platform docs for the API and claude.ai, and the Agent Skills specification for other clients.
-  - [Claude Code skills](https://code.claude.com/docs/en/skills) and the [Claude Code changelog](https://code.claude.com/docs/en/changelog)
-  - [Agent Skills specification](https://agentskills.io/specification)
-  - [Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) and its [best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
-  - Anthropic's "The Complete Guide to Building Skills for Claude"
-- Start from real expertise: the user's corrections, the steps that worked, their formats, runbooks, schemas and review history. General knowledge alone yields vague procedures.
-- Understand the user's goal, the skill to build and everything that implies before you design or plan.
-- Assume nothing you can check: what exists, what the target surface supports, which tools are in reach.
-
-### Cover one coherent unit
-
-- A skill is one unit of work, like a function. Too narrow: several skills load for one task. Too broad: it activates imprecisely.
-- Moderate detail: concise steps and a working example beat exhaustive documentation. Leave edge cases to Claude's judgment unless it gets them wrong.
-
-### Write for what Claude lacks
-
-- Ask of every line: would Claude get this wrong without it? If not, cut it. If unsure, test it.
-- Keep what Claude can't know: project conventions, domain procedures, non-obvious edge cases, the exact tools and APIs.
-
-```text
-Cut:  PDF files contain text and images, so you need a library.
-Keep: Use pdfplumber for text. For scanned files, fall back to pdf2image with pytesseract.
-```
-
-- Write for Claude and Claude Code, not for a human reader. Documentation that collaborates with the user, such as a README, is the exception.
-
-### Disclose progressively
-
-- `SKILL.md` is the contract and the base procedure: the rules, the guidance and the phases, in order. Reference files hold how to carry out each procedure. Keep `SKILL.md` under 500 lines and under 5,000 tokens.
-- Put each kind of content where it belongs:
-  - Body: what every run needs, including gotchas.
-  - `references/`: depth only some runs need, and how to carry out a procedure.
-  - `assets/`: files the output starts from, such as templates and schemas.
-  - `scripts/`: code that must give the same result every run, or logic the model keeps reinventing.
-  - Hooks: a rule that must hold every time. A skill is advice; a hook enforces.
-- Link every file from `SKILL.md`, one level deep, and say when to load it: "Read references/api-errors.md if the API returns a non-200 status", not "see references/". Open every reference over 100 lines with a table of contents.
-
-### Calibrate control
-
-- Where many approaches work, give freedom and say why. Where an operation is fragile or a sequence must be followed, be exact: write the command, path or value, not "run Python".
-- Judgment steps get the criterion and its reason. Fixed steps get what to do.
-- Give one default and mention alternatives briefly, never a menu.
-- Teach how to approach a class of problems, not the output for one instance.
-- Close every gap where Claude would have to guess, invent or choose between two readings.
-
-### Use patterns when the task needs them
-
-- Gotchas: environment facts that defy reasonable assumptions, as concrete corrections. Put them in `SKILL.md` before the steps they affect.
-- Output templates: more reliable than describing the format. Short ones inline; long or occasional ones in `assets/`, with a pointer that says when to read.
-- Checklists, for multi-step workflows with dependencies or gates.
-- Validation loops: do, validate with a script, a checklist or a self-check, fix, repeat until it passes.
-- Plan-validate-execute, for batch or destructive operations.
-
-### Write the text
-
-- Clear structure: headings, bullets, numbered steps, in a style that teaches Claude how to do the job and the task the skill targets.
-- Use examples where they help. Embed commands, templates, schemas and examples as code blocks, and follow best practice when referencing files and stating commands.
-- One term per concept.
-
-### When a subagent reads or runs the skill
-
-- Preloaded by a subagent: the full content loads at startup. Write it as reference content, with no mention of the user's request or the conversation.
-- Run as a subagent's task: it sees none of the conversation. Open with the task, carry every input, end with what to return.
-- A subagent can't ask the user: give the default to take.
-
-### Verify and deliver
-
-- Follow the environment's own conventions for skills, and say where they differ from this skill.
-- Never read the values in environment, settings or MCP configuration files; list only keys or names.
-- After every edit, reread every file that states the same facts and fix what became wrong.
-- Own the plan, the design, the build and the result; the user supplies the intent.
-- Deliver a skill only when it makes Claude do its task objectively better than without it.
+1. OFFICIAL SOURCES FIRST: write from official documentation instead of memory or training cut-off knowledge. Search and read Anthropic's documentation for Claude skills and Agent Skills, and this skill's reference files. When sources disagree, follow the one that owns the target surface.
+2. UNDERSTAND FIRST: before you design or plan, understand the user's intent and goal, where the skill will load from, what it will need, and the best practices that apply.
+3. WRITE FOR WHAT CLAUDE LACKS: include what Claude can't know or wouldn't do consistently. Before each line, ask whether Claude gets it wrong without it. If not, cut it. If unsure, test it.
+4. OPTIMIZED FOR CLAUDE: read Anthropic's current prompting guides for Claude models and write as they recommend, in a tone and format built for the model that loads the skill. Tell Claude what to do. Keep human-oriented writing for documentation that collaborates with the user, such as a README.
+5. PROGRESSIVE DISCLOSURE: keep `SKILL.md` as the contract that governs the skill's structure, under 500 lines and 5,000 tokens. Delegate procedures, assets and depth to files linked from it, one level deep, and open each reference over 100 lines with a table of contents.
+6. CONTENT IN ITS PLACE: body for what every run needs, references for depth and how-to, assets for files the output starts from, scripts for code that must run the same every time, hooks for rules that must always hold.
+7. CALIBRATED CONTROL: be exact where an operation is fragile and free where many approaches work. Give judgment steps their criterion and reason, fixed steps the action, and every instruction one reading, with one default instead of a menu.
+8. PATTERNS WHEN NEEDED: gotchas for facts that defy assumptions, templates for fixed formats, checklists for gated steps, validation loops for cheap-to-detect errors, plan-validate-execute for batch or destructive work, scripts for logic Claude keeps rewriting, examples where they help. Embed commands, templates and schemas as code blocks.
 
 ## Gotchas
 
