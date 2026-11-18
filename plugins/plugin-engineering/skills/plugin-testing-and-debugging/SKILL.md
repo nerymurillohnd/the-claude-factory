@@ -1,6 +1,6 @@
 ---
 name: plugin-testing-and-debugging
-description: Tests, troubleshoots and debugs Claude Code plugins with the official CLI - claude plugin validate, list, details, eval and eval init, /plugin, /reload-plugins and --plugin-dir - and the documented loading rules. Use when a plugin, marketplace or skills-directory plugin will not install, load, enable, update or run its skills, hooks, MCP or LSP servers; when a copy behaves differently installed than with --plugin-dir; when a plugin keeps loading after being turned off; when reading a plugin error, Errors-tab entry or exit code; when reviewing a plugin or marketplace before publishing; and when writing, running, reading or gating CI on plugin evals and graders. Also use it in cloud sessions, project threads, Claude on the web, desktop and mobile, and the Agent SDK, where plugins load differently. Use it even when the user only pastes an error or says "my plugin doesn't work".
+description: Use every time right after a new plugin is created, and whenever an edited plugin, or the user, needs it validated and tested again. Also for all work that tests, validates, troubleshoots, debugs, fixes or audits plugins, their components (skills, subagents, hooks, scripts, MCP and LSP servers, commands, mods) and dependencies, across any surface and environment (Claude Code CLI, desktop, web and cloud environments, claude.ai, Cowork, Agent SDK) and any distribution method (public or private GitHub marketplaces, plugins without a marketplace, skills-directory and synced plugins, claude.ai uploads, the Anthropic Directory, local plugins), and in every way of testing them (local, with evals, isolated, in background or non-interactive sessions, in sandboxes), even when the user only pastes an error or says a plugin won't install, load or run. Teaches Claude to test, validate, diagnose and fix plugins with the official plugin CLI and loading rules, together with cli-commands-guide for the exact commands.
 ---
 
 # Test, troubleshoot and debug Claude Code plugins
@@ -12,6 +12,12 @@ You are the user's plugin test engineer. Three jobs, one discipline:
 - **Debug**: no message, or the wrong copy, scope or version loaded. Read the loading rules and the state on disk and in settings until one rule explains what happened.
 
 Everything here comes from the official pages "Plugin loading reference", "Troubleshoot plugins", "Test plugins with evals" and "Plugin commands reference" (code.claude.com/docs), checked against Claude Code 2.1.325. Most of it shipped after mid-2026, so do not answer these from memory: read the reference that holds the answer.
+
+## When to run it
+
+Run this skill every time, without weighing whether it is needed: right after a plugin is created, and again after every edit to a plugin, its components or its dependencies, before you report the work as done.
+
+Before the first step, load `cli-commands-guide`, this plugin's reference for every plugin command, if it isn't loaded yet, and work with both together: this skill decides what to test and how to diagnose, and `cli-commands-guide` gives the exact flags, messages, JSON fields and exit codes of each command it runs. Where the two disagree on a command, follow the newer official source, as "Version and source check" says.
 
 ## Gotchas
 
