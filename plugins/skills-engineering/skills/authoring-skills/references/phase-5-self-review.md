@@ -3,7 +3,7 @@
 How to review the skill from the model's seat and run its checks before you deliver it.
 
 1. Walk each use case from the model's seat: from the description, through the body and the pointers it follows, to its result, naming what the model decides at each step. Rewrite wherever it would decide wrong.
-2. Run the mechanical check: `claude plugin validate [path]`, where `[path]` is the plugin or skills folder, wherever the Claude Code CLI exists; for an upload, check the skill against the rules for a skill that leaves Claude Code, which you applied in phase 2.
+2. Run the mechanical check: `claude plugin validate [path]`, where `[path]` is the plugin or skills folder, wherever the Claude Code CLI exists; for an upload, check the skill against the rules for a skill that leaves Claude Code, which phase 2 chose and phase 4 applied.
 3. Copy this checklist and check the skill you write against it:
 
    ```text
