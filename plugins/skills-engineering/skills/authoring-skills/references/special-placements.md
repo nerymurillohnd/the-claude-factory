@@ -11,8 +11,6 @@ claude.ai, the Skills API and other Agent Skills clients run the skill without C
 - **Scripts**: the Claude API runs them with no network and no package installs, and claude.ai's access depends on its settings. Write scripts that use only the standard library or packages the surface already provides, and state each one the skill needs.
 - **Copies**: an upload doesn't sync back. A skill built in Claude Code reaches claude.ai or the API only when someone uploads it, and each copy is kept separately.
 
-When the skill also needs Claude Code features, keep a Claude Code version beside the portable one, or leave the features out.
-
 Before relying on what a surface provides, consult https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview.
 
 ## A skill run by a subagent

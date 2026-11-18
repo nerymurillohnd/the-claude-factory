@@ -94,9 +94,9 @@ Read [tokens.md](tokens.md)    ← in auth.md
 ## Register
 
 - Use the imperative: one action per line, with its condition and fallback, and concrete names instead of categories.
-- Give the reason only where it decides a case the line doesn't name.
+- In a step that asks the model to judge, give the reason behind it, so the model can decide the cases the line doesn't name. In a fixed step, say what to do without narrating why.
 - No narration, and no capitals for emphasis.
-- Use one term per concept, no time-sensitive wording, and lists over tables.
+- Use one term per concept and no time-sensitive wording.
 - State each fact in one file only.
 
 ## Instructions
@@ -139,7 +139,7 @@ Make sure the data is valid before you continue.
 
 ## Examples and snippets
 
-Add an example only where the output depends on seeing it: a tone, a level of detail, a format. The model imitates examples closely, including their accidents.
+Add an example only where the output depends on seeing it: a tone, a level of detail, a format. An example shows the style and level of detail you want more clearly than a description does.
 
 - Show input and output pairs, then a rule line that says what to imitate.
 - Give two or three examples that differ where the output varies, so the model learns the pattern rather than one instance.

@@ -146,7 +146,7 @@ Read [references/task-mechanisms.md](references/task-mechanisms.md) when the tas
 3. **Freedom matches fragility.** Give criteria where many approaches work, a preferred pattern where one way is better, and an exact command where a deviation breaks something. Give one default with its exception as its own condition, never a menu. Teach the class of problem, not the answer for one instance.
 4. **Body or file.**
    - The body holds what every run needs. Write guidance for the whole task as standing ("after every edit") and near the top: the body is read once, and in Claude Code only its start survives compaction.
-   - Files hold what only some runs need, exclusive variants, long examples and lookups: `references/` to read, `scripts/` to run, `assets/` for the output. Split them by variant or domain, never by size, and name each for what it holds.
+   - Files hold what only some runs need, exclusive variants, long examples and lookups: `references/` to read, `scripts/` to run, `assets/` for the output. Move content to files as the body nears its budget, organize them by variant or domain, and name each for what it holds.
    - Keep the body under 500 lines and about 5,000 tokens. Keep every file one link from `SKILL.md`, and open any file over 100 lines with a table of contents.
    - Put no README and no copy of public documentation in the folder.
 5. **Pointers.** Put each pointer at the step that needs the file, on its own line, as a Markdown link from the skill root, with the verb for its use (read, run, fill in) and a condition the model can check then. Never point to a folder, bury a link in a paragraph, chain one reference to another, or use an at-mention, which loads the file on every run.

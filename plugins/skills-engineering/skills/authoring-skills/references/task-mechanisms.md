@@ -1,18 +1,16 @@
 # Task mechanisms
 
-When a skill needs a workflow, a checklist, a validation loop, a plan checked before acting, an output template, a gotchas list or a flowchart, and how to build each so it changes what the model does. Each one costs attention: use only the ones the task needs.
+When a skill needs a workflow, a checklist, a validation loop, a plan checked before acting, an output template, or a gotchas list, and how to build each so it changes what the model does. Each one costs attention: use only the ones the task needs.
 
 ## Contents
 
 - Name the task's parts
 - Workflows
-- Flowcharts
 - Checklists
 - Validation loops
 - Plan, validate, execute
 - Output templates
 - Gotchas
-- Progress tracking
 - Choose the smallest set
 
 ## Name the task's parts
@@ -44,10 +42,6 @@ Build each step as one action, with its input, its command or method, and its ou
 - **A loop back** when a later step can reveal a gap: "If the totals don't match, return to step 2."
 
 Move a long branch or variant into its own file, and point to it from the decision point, so the model reads only the branch it takes.
-
-## Flowcharts
-
-Draw a flowchart only for a decision the model gets wrong in prose, or a loop it leaves too early. Write everything else as lists: steps as numbered lists, reference material as bullets, code as code blocks. Label every node with what it means, never "step 3".
 
 ## Checklists
 
@@ -154,11 +148,6 @@ A gotcha is a fact of the environment or domain that defies a reasonable assumpt
 - Write each as the fact and what to do about it, in one or two lines.
 - Add each correction its users have to make to the model.
 - Leave out general advice: it isn't a gotcha unless a capable model would get it wrong.
-
-## Progress tracking
-
-- Let the model track progress with the tools its surface offers; don't require a task tool that may not exist everywhere. A progress checklist in the reply works on every surface.
-- Ask for a plan before acting only where a person or a validator checks it.
 
 ## Choose the smallest set
 
