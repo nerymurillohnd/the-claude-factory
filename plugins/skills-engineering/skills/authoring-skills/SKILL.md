@@ -98,125 +98,41 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 
 ## Workflow
 
-Run the phases in order, each to its exit. When a later phase shows a gap in an earlier one, go back to it.
+Run the phases in order, each to its exit. Read each phase's file in full when you start the phase, and again whenever it is no longer in your context. When a later phase shows a gap in an earlier one, go back to it.
 
 ### 1. Intent
 
-The requester's part is to say what they want; yours is to understand it fully and deliver a skill that achieves it.
+Capture the requester's full intent, goal and use cases, asking where anything is unclear, before anything is designed.
 
-1. Read the request and everything given with it, in full, even when it looks simple. Separate what is asked, what lies behind it, what it implies and covers (who, where, with what inputs, what must not change) and what success looks like.
-2. If the work was done in this conversation or exists in the project (runbooks, style guides, review comments), extract the corrections first, then the steps that worked, the formats accepted and the context supplied. Each correction becomes a rule or a gotcha.
-3. State the goal in one sentence: what the model must do, for whom, and why it doesn't do it well today.
-4. Write two or three use cases, each with a trigger, steps and a result someone can check, such as a file that exists or a count that matches. They guide the design and the self-review.
-5. Where any part of the intent is unclear, ask instead of filling the gap: with `AskUserQuestion`, or in your reply where it isn't available. Ask only for what the requester alone knows, such as who uses the skill, what goes wrong today, a good result, what stays under their control or which systems it touches, each with your recommended answer, in as many rounds as the intent needs and only where the answer changes what you build. Never ask design questions, such as which fields or what name: those are yours. Use the requester's words, and explain a term like "frontmatter" when they show no sign of knowing it.
-
-Exit: the requester confirms the goal and the use cases, and no open question would change what you build. Design nothing before this exit.
+- Read [references/phase-1-intent.md](references/phase-1-intent.md) when you start this phase.
 
 ### 2. Environment and architecture
 
-Decide each point from the goal, without waiting for the requester to ask, and record its reason for the plan. Aim for the simplest skill that does the job safely, stably and at the scale it will meet.
+Decide what you can do here, what exists, whether a skill is the answer, the discipline it serves, where it lives and how it runs, and its architecture, from current official sources.
 
-1. **What you can do here.** Note whether you can write files, run commands, start subagents and reach the web. If you can't write files, deliver each file's path and content in your reply.
-2. **What exists.** Inventory what the skill you write could duplicate, contradict or rely on: skills in your context and in the skill folders here, CLAUDE.md files, rules, subagents and hooks. Read names and descriptions, open a file in full only when the new skill must fit with it, and note the conventions for skills here.
-3. **Whether a skill is the answer**, by the failure it must fix:
-   - a task that won't repeat: do the task instead;
-   - something the model already does well: no skill;
-   - a fact every session needs: CLAUDE.md or a rule;
-   - a rule that must hold every time, or a constraint a check can enforce: a hook or the check;
-   - work that needs its own context and tools: a subagent, which a skill can supply with knowledge;
-   - access to an external system: an MCP server, with a skill only for how to use it;
-   - a procedure or knowledge the model needs for some tasks: a skill.
-
-   When it isn't a skill, say which feature fits and why, and stop unless the requester still wants one. Split a request with several needs by trigger and task.
-
-4. **The discipline.** Name the kind of work the skill serves and the disciplines that govern it, and derive from them the knowledge, methods, tools, failure modes and quality criteria the skill must carry. The higher the cost of an error in that domain, the more evidence, verification and human control the skill must require.
-5. **Where it lives and how it runs**, by who must get it:
-   - only the requester, on this machine: `~/.claude/skills/<name>/`;
-   - everyone working in a repository: `.claude/skills/<name>/`, committed;
-   - users who install a plugin: the plugin's `skills/<name>/`, or its root for a single-skill plugin;
-   - a claude.ai account or the Skills API: an upload.
-
-   Read [references/special-placements.md](references/special-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
-
-6. **Architecture.** Start from `SKILL.md` alone, and add each component only for a need: a reference for depth some runs need, a script for an operation that must give the same result every run, an asset the output starts from, a hook for a check on every event, a subagent that consumes the skill, and the tools, skills or MCP servers the task relies on.
-
-   Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) when a script, a hook or an injected command is a candidate.
-
-   Read [references/components.md](references/components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or needs tool permissions.
-
-7. **Current features.** Beyond the references, read the official sources for the surfaces, platforms and Claude versions the requester uses, and build on the current features they offer there.
-
-Exit: every piece has a purpose tied to the goal, and every platform fact behind a decision is verified.
+- Read [references/phase-2-environment-and-architecture.md](references/phase-2-environment-and-architecture.md) when you start this phase.
+- Read [references/special-placements.md](references/special-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
+- Read [references/components.md](references/components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or needs tool permissions.
 
 ### 3. Design and plan
 
-Read [references/writing-patterns.md](references/writing-patterns.md) before you write the description and the body.
+Set the name, description and frontmatter, design each component and the body, and get the requester's approval of the plan.
 
-Read [references/task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
-
-1. **Name.** Name the activity the skill gives, in lowercase letters, digits and hyphens, at most 64 characters, matching its folder, and without "anthropic" or "claude" if it may be uploaded. Prefer the gerund form, such as `exporting-invoices`, unless sibling skills follow another pattern. Avoid names that say nothing (`helper`) or cover too much (`data`). Propose it with alternatives and the reason.
-2. **Description.** Write it by the rules in writing-patterns.md, then judge it from the model's seat: list the requests that should load it and the near-misses that shouldn't, and check it picks right for each.
-3. **Other frontmatter.** Add a field beyond `name` and `description` only when the skill's type and intent need it, knowing first every field that type accepts and its gotchas.
-
-   Read [references/frontmatter.md](references/frontmatter.md) before you set any other field, and the official docs for anything it lacks.
-
-4. **Components in detail.** For each component phase 2 chose, decide its specifics: each hook's events and how many; each script's language, inputs, outputs and what it checks; each template's shape; each mechanism the task needs.
-5. **What earns a line.** Keep a line only if the model would get the task wrong without it: the domain's procedure and reasons, the conventions, facts that defy assumptions, the exact tool, the corrections from phase 1. Cut what any capable model knows. A platform fact earns a line only if it changes what the model writes or does; otherwise write "When [case], consult [page]", or leave it out.
-6. **The form matches the failure** each line prevents:
-   - output in the wrong shape: a template, or an input and output example;
-   - an element the model can't infer: the fact where it applies, or a gotcha;
-   - an action that depends on a condition: the condition and both branches;
-   - a judgment made inconsistently: the criterion and its reason;
-   - a rule skipped under pressure: the rule, each shortcut around it named and closed, and a hook if it must always hold;
-   - code rewritten on every run: a script.
-7. **Freedom matches fragility.** Give criteria where many approaches work, a preferred pattern where one way is better, and an exact command where a deviation breaks something. Give one default with its exception as its own condition, never a menu. Teach the class of problem, not the answer for one instance.
-8. **Body or file.**
-   - The body holds what every run needs. Write guidance for the whole task as standing ("after every edit") and near the top: the body is read once, and in Claude Code only its start survives compaction.
-   - Files hold what only some runs need, exclusive variants, long examples and lookups: `references/` to read, `scripts/` to run, `assets/` for the output. Move content to files as the body nears its budget, organize them by variant or domain, and name each for what it holds.
-   - Put no README and no copy of public documentation in the folder.
-9. **Pointers.** Put each pointer at the step that needs the file, on its own line, as a Markdown link from the skill root, with the verb for its use (read, run, fill in) and a condition the model can check then. Never point to a folder, bury a link in a paragraph, or use an at-mention, which loads the file on every run.
-10. **The register.** Write the body in the register writing-patterns.md sets for its task.
-11. **The plan.** Present it and get the requester's approval:
-
-   ```text
-   Goal: [one sentence]
-   Use cases: [trigger and checkable result for each]
-   Location and surfaces: [where it lives, where it runs]
-   Name: [proposed name], because [reason]; alternatives: [names]
-   Description: [full text]
-   Other frontmatter: [each field and value, with its reason]
-   Files: [each path, what it holds, when the model reads or runs it]
-   Components: [each hook, script, template and mechanism, with its specifics and reason]
-   Assumptions: [each one still open]
-   ```
-
-Exit: an approved plan you can build without another design decision.
+- Read [references/phase-3-design-and-plan.md](references/phase-3-design-and-plan.md) when you start this phase.
+- Read [references/writing-patterns.md](references/writing-patterns.md) before you write the description and the body.
+- Read [references/frontmatter.md](references/frontmatter.md) before you set any field beyond `name` and `description`.
+- Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) when the skill has a script, a hook or an injected command.
+- Read [references/task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
 
 ### 4. Build
 
-Write each file the plan lists. As each lands, check that its links resolve, that it reaches nothing outside its folder except through a path variable, and that it reads right from the model's seat. Record each deviation from the plan and its reason.
+Write every file the approved plan lists, checking each as it lands.
 
-Exit: every planned file exists and passes these checks.
+- Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
 
 ### 5. Self-review and deliver
 
-1. Walk each use case from the model's seat: from the description, through the body and the pointers it follows, to its result, naming what the model decides at each step. Rewrite wherever it would decide wrong.
-2. Run the mechanical check: `claude plugin validate` on a plugin or skills folder where the Claude Code CLI exists; for an upload, the rules for a skill that leaves Claude Code in [references/special-placements.md](references/special-placements.md).
-3. Copy this checklist and check the skill you write against it:
+Walk the use cases from the model's seat, run the checks, report, and ask the requester how to proceed.
 
-   ```text
-   - [ ] Each use case walks to its result with no step where the model would decide wrong.
-   - [ ] Each section prevents a failure you can name from a use case or a correction.
-   - [ ] The description carries every use case's trigger words and the boundary with each sibling skill from phase 2, within every target's limit.
-   - [ ] Every supporting file is linked from SKILL.md on its own line, with its verb and condition.
-   - [ ] A search for each number, limit and rule finds it in one file only.
-   - [ ] Every frontmatter key is accepted on every target surface.
-   - [ ] Nothing in SKILL.md expands or runs by accident (see Gotchas).
-   - [ ] The body and every file meet the size and link rules in Standing rules.
-   ```
-
-4. Fix each failed item and check it again. When an item can't be met, such as a check you can't run here, stop and list it in the report with the reason.
-5. Report what you built and what each file holds, each decision and its reason, what you checked and how, what you couldn't check and why, and the assumptions still open. Never report a check you didn't run as passed.
-6. Ask the requester how to proceed: keep the skill as it is, run the audit, build evals, or anything else they type. This step is mandatory every time a skill is delivered; never skip it or continue on your own.
-
-   Read [references/evaluation.md](references/evaluation.md) after step 5, and follow it from its first phase.
+- Read [references/phase-5-self-review-and-deliver.md](references/phase-5-self-review-and-deliver.md) when you start this phase.
+- Read [references/evaluation.md](references/evaluation.md) after step 5 of the phase file, and follow it from its first phase.

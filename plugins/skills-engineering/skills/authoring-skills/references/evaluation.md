@@ -1,6 +1,6 @@
 # Next step and evals
 
-What to do after step 5 of phase 5 in SKILL.md: ask the requester how to proceed, and run the evals when they choose them.
+What to do after step 5 of phase-5-self-review-and-deliver.md: ask the requester how to proceed, and run the evals when they choose them.
 
 ## Contents
 
@@ -208,6 +208,6 @@ The difference between the arms is what the evals measure, so set each arm to wh
 
 When everything the requester chose in Phase 1 is done, check the final skill:
 
-1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 5 in SKILL.md, and each linter, validator or script the environment provides for skills.
+1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase-5-self-review-and-deliver.md, and each linter, validator or script the environment provides for skills.
 2. Fix each finding, and run every check again until all of them pass.
 3. Report each check with its exact command and raw output. The skill is done when every check passes.

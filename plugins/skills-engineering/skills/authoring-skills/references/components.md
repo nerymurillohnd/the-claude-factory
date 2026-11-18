@@ -18,7 +18,7 @@ How to write a skill that relies on more than its own files and scripts: tool pe
 ## Other skills
 
 - Name another skill by its exact name, with its plugin prefix when it comes from a plugin, and say when to load it and what to take from it.
-- The other skill must not be restricted to its users; read [special-placements.md](special-placements.md) for why.
+- The other skill must not be restricted to its users; read `special-placements.md` for why.
 - When the other skill may be missing, say what to do without it. A skill for third parties works on its own, with other skills as optional help.
 - Write the skill to coexist with others in the same session: keep its rules scoped to its task, and don't redefine terms other skills use.
 
