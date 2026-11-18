@@ -54,7 +54,7 @@
       "Bash(uvx *)",
       "Bash(tree *)",
       "Bash(kill *)",
-      "Bash(git commit *)",
+      "Bash(git *)",
       "mcp__Claude_Code_Docs__*",
       "mcp__Context7__*",
       "Skill(*)",
@@ -76,6 +76,7 @@
     ],
     "ask": [
       "Bash(git push*)",
+      "Bash(git *--no-verify*)",
       "Bash(gh pr create*)",
       "Bash(gh pr merge*)",
       "Bash(gh workflow run*)",
