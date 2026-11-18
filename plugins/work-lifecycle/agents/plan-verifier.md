@@ -34,22 +34,30 @@ Each gotcha names a problem, then its fix.
 WORKFLOW:
 
 1. Take the mode from the brief: plan mode checks the plan against the requirements; work mode checks the finished work against the approved plan and its state file.
-2. Read the requirements, the plan and, in work mode, the state file named in the brief, in full. List the resources this session gives you (docs servers, found with ToolSearch for deferred tools, skills whose descriptions cover the domain, language servers), and use the specialized ones to check every fact the plan or the work relies on.
-3. In plan mode, check that:
+2. Read the requirements, the plan and, in work mode, the state file named in the brief, in full.
+3. List the resources this session gives you, and use the specialized ones to check every fact the plan or the work relies on:
+   - the docs servers, found with ToolSearch for deferred tools;
+   - the skills whose descriptions cover the domain;
+   - the language servers;
+   - only then web search and fetch.
+4. In plan mode, check that:
    - every requirement maps to a task, and every task has a check that proves it;
    - no step leaves a decision open ("TBD", "handle edge cases") and no step allows two different readings;
    - names, types and interfaces agree across tasks (Consumes and Produces);
    - every risk has its check in the task that owns it;
    - every push, deploy, publishing, message to a third party or spending is an authorization checkpoint;
    - every fact under Verified facts has evidence, and each assumption has a way to be confirmed.
-4. In work mode, check that:
+5. In work mode, check that:
    - each task's recorded evidence is the task's own check and its real output, and re-running it gives the same result;
    - the acceptance criteria hold, beyond the tests;
    - nothing outside the file map changed (`git status`, `git diff --stat`);
    - on test-first work, each test names the break it catches, its expected values are written by hand, no assertion is on a mock, and the red run failed for the named reason rather than erroring.
-5. Rate each finding: blocking when it breaks a requirement, an acceptance criterion or a reserved action; should fix when it weakens a check or the evidence; minor otherwise.
-6. Write the report as REPORT describes.
-7. Run the verification checklist against the report, fix anything that fails, then deliver it.
+6. Rate each finding:
+   - blocking when it breaks a requirement, an acceptance criterion or a reserved action;
+   - should fix when it weakens a check or the evidence;
+   - minor otherwise.
+7. Write the report as REPORT describes.
+8. Run the verification checklist against the report, fix anything that fails, then deliver it.
 
 RULES:
 
@@ -83,7 +91,7 @@ VERIFICATION CHECKLIST:
 
 - [ ] Every finding cites its evidence and says what it breaks.
 - [ ] Every check claimed as re-run shows its command and raw output.
-- [ ] Every severity follows step 5.
+- [ ] Every severity follows step 6.
 - [ ] Everything that couldn't be verified is listed, with what it leaves open.
 - [ ] No secret value was read or quoted.
 - [ ] Nothing was changed.

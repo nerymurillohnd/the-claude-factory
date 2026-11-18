@@ -24,7 +24,10 @@ Turn a goal into an approved plan that an implementer who has seen neither the c
 3. Subagents inherit plan mode, whatever their own settings say. A probe that needs to write can't run during planning, even in a worktree: make it Task 0, run after approval.
 4. `EnterPlanMode` is not always there: subagents don't have it, `denyInsteadOfPrompting` removes it, and the Claude app has no plan mode. Check before calling it, and say when the guardrail is off.
 5. Never choose where the plan is saved. In plan mode Claude Code stores it in its own plan file and tells you the path; elsewhere the plan goes in the reply.
-6. `/goal` has limits: the condition holds at most 4,000 characters, so it references the plan by path; its evaluator reads only the conversation, runs no commands and reads no files, so "Done when" names evidence you print. Only the user can type it, one goal per session, and it's unavailable in the Claude app and when hooks are disabled.
+6. `/goal` has limits:
+   - The condition holds at most 4,000 characters, so it references the plan by path.
+   - Its evaluator reads only the conversation, runs no commands and reads no files, so "Done when" names evidence you print.
+   - Only the user can type it, one goal per session, and it's unavailable in the Claude app and when hooks are disabled.
 7. One option of the plan approval menu starts auto mode, or bypass permissions when that is enabled, and stops asking before reserved actions. Recommend manual approval ("Yes, manually approve edits") unless `permissions.ask` rules cover the reserved actions.
 8. The task tools may be missing; some models don't have them by default. Track progress in the progress checklist and the state file, never only in task tools.
 9. A subagent's report is a set of claims until you check them. Re-verify every claim the plan depends on before writing it as a fact.
@@ -73,9 +76,14 @@ Planning progress:
 
 1. Read the current official sources for every library, tool or service the plan touches, and check the installed versions and their release notes. Current sources outrank memory.
 2. Read the code the change touches: its callers, its tests, its configuration.
-3. When the scope goes beyond a few files, delegate exploration to the `work-lifecycle:planning-researcher` agent, one brief per question, and send the briefs for independent questions in one message so they run in parallel. The brief says what to find, the scope, and what the answer decides; the agent already knows its report contract.
+3. When the scope goes beyond a few files, delegate exploration to the `work-lifecycle:planning-researcher` agent:
+   - Write one brief per question, and send the briefs for independent questions in one message so they run in parallel.
+   - Each brief says what to find, the scope, and what the answer decides; the agent already knows its report contract.
 4. Treat a claim without evidence as unverified. Re-check yourself every claim the plan depends on before writing it under Verified facts.
-5. Treat research done earlier in this session, before this skill loaded or for another purpose, as leads: a fact from it counts once you re-check it against its source, or when its evidence (file and line, command and raw output, or URL with its date) is quoted in this session. It never replaces the step 3 delegation when the scope goes beyond a few files.
+5. Treat research done earlier in this session, before this skill loaded or for another purpose, as leads:
+   - A fact from it counts once you re-check it against its source.
+   - It counts without a re-check only when its evidence (file and line, command and raw output, or URL with its date) is quoted in this session.
+   - It never replaces the step 3 delegation when the scope goes beyond a few files.
 
 ### 3. De-risk
 
@@ -92,7 +100,9 @@ Planning progress:
    - `references/examples/intermediate.md`: a feature with interfaces between tasks and a Task 0 spike.
    - `references/examples/complex.md`: a phased migration with rollback, authorization checkpoints and subagent execution.
    - `references/examples/non-code.md`: operations or content work, with acceptance checks instead of tests.
-4. For each code task, mark whether it is test-first. A test-first task names its test, the assertion and the failure message expected before the code exists. It is carried out with the `work-lifecycle:testing-before-implementation` skill, which records two runs: `red`, the test failing for the named reason before the code exists, and `green`, the same test passing after the code.
+4. For each code task, mark whether it is test-first. A test-first task:
+   - names its test, the assertion and the failure message expected before the code exists;
+   - is carried out with the `work-lifecycle:testing-before-implementation` skill, which records two runs: `red`, the test failing for the named reason before the code exists, and `green`, the same test passing after the code.
 
 ### 5. Self-review
 
@@ -107,7 +117,14 @@ Run this loop before any handoff, every time:
 
 ### 6. Independent review
 
-For high-stakes plans only (production, data, deployments, security, anything published to third parties, such as a public plugin or marketplace, or anything costly to redo), brief the `work-lifecycle:plan-verifier` agent in plan mode. It can't see this conversation, so the brief carries the plan's file path, or the plan's full text when it is only in the reply, and the requirements written out: the user's goal, their answers to your questions and their constraints. Resolve each blocking finding before handoff. For other plans, write why the review was not needed.
+For high-stakes plans only (production, data, deployments, security, anything published to third parties, such as a public plugin or marketplace, or anything costly to redo):
+
+1. Brief the `work-lifecycle:plan-verifier` agent in plan mode. It can't see this conversation, so the brief carries:
+   - the plan's file path, or the plan's full text when it is only in the reply;
+   - the requirements written out: the user's goal, their answers to your questions and their constraints.
+2. Resolve each blocking finding before handoff.
+
+For other plans, write why the review was not needed.
 
 ### 7. Handoff
 
@@ -128,7 +145,11 @@ For high-stakes plans only (production, data, deployments, security, anything pu
 
 ## Execution
 
-These rules apply once the user approves the plan. If the session was resumed or its context cleared since this skill was invoked, invoke it again before going on, so the gate is registered. After invoking it again on a resumed session, ask the user to run `/hooks` and confirm that a Stop hook running `plan-gate.py` is listed; if it isn't, say that the gate is off for this session and that completion rests on the final report.
+These rules apply once the user approves the plan. If the session was resumed or its context cleared since this skill was invoked:
+
+1. Invoke this skill again before going on, so the gate is registered.
+2. On a resumed session, ask the user to run `/hooks` and confirm that a Stop hook running `plan-gate.py` is listed.
+3. If it isn't listed, say that the gate is off for this session and that completion rests on the final report.
 
 Without the state file (see What this session has), skip "Start: the state file" and every instruction about `status` and validation, and keep each task's command and real output for the final report.
 
@@ -137,9 +158,17 @@ Without the state file (see What this session has), skip "Start: the state file"
 1. Run `python3 --version`. If it fails or reports a version older than 3.12, say that the plan gate and the validator can't run on this machine and that completion rests on the final report, then continue without the state file.
 2. Create the folder `${CLAUDE_PROJECT_DIR}/.work-lifecycle/` if it is missing, with a `.gitignore` file there that holds the single line `*`, so nothing in it reaches the repository.
 3. Find this plan's state file before creating one, so a resume or a clear never loses recorded evidence:
-   - If `${CLAUDE_PROJECT_DIR}/.work-lifecycle/${CLAUDE_SESSION_ID}.json` exists and its `plan` names this plan and its `status` isn't `done`, keep it: never copy the template over it. If it belongs to a finished plan or another plan, rename it to `${CLAUDE_SESSION_ID}-previous-<n>.json`, with the first free number, and go on below.
-   - Otherwise, if the folder holds exactly one state file whose `plan` names this plan's file path and whose `status` isn't `done`, it is this plan's record from before a context clear: rename it to `${CLAUDE_SESSION_ID}.json` and keep its evidence. If several match, or the plan is only in the reply (`plan` is `reply`, which can't tell plans apart), ask the user before adopting a file.
-   - Otherwise copy `assets/plan-state.json` to `${CLAUDE_PROJECT_DIR}/.work-lifecycle/${CLAUDE_SESSION_ID}.json`. Use exactly its structure, because the gate parses it: set `plan` to the plan file's path, or `reply`; set `status` to `executing`; and replace both sample tasks with one task per plan task, in plan order, each with its `id`, `title` and `check`, `test_first` true for test-first tasks, and `evidence`, `red` and `green` null. Keep a Task 0 only when the plan has one: a leftover sample can never gain evidence and holds the gate.
+   - If `${CLAUDE_PROJECT_DIR}/.work-lifecycle/${CLAUDE_SESSION_ID}.json` exists:
+     - When its `plan` names this plan and its `status` isn't `done`, keep it: never copy the template over it.
+     - When it belongs to a finished plan or another plan, rename it to `${CLAUDE_SESSION_ID}-previous-<n>.json`, with the first free number, and go on below.
+   - Otherwise, look in the folder for this plan's record from before a context clear, a state file whose `plan` names this plan's file path and whose `status` isn't `done`:
+     - When exactly one matches, rename it to `${CLAUDE_SESSION_ID}.json` and keep its evidence.
+     - When several match, or the plan is only in the reply (`plan` is `reply`, which can't tell plans apart), ask the user before adopting a file.
+   - Otherwise copy `assets/plan-state.json` to `${CLAUDE_PROJECT_DIR}/.work-lifecycle/${CLAUDE_SESSION_ID}.json`, and use exactly its structure, because the gate parses it:
+     - Set `plan` to the plan file's path, or `reply`.
+     - Set `status` to `executing`.
+     - Replace both sample tasks with one task per plan task, in plan order, each with its `id`, `title` and `check`, `test_first` true for test-first tasks, and `evidence`, `red` and `green` null.
+     - Keep a Task 0 only when the plan has one: a leftover sample can never gain evidence and holds the gate.
 4. Validate it with this skill's script, fix what the output names, and repeat until it reports the file valid:
 
    ```bash
