@@ -3,7 +3,7 @@ name: comprehension-reviewer
 description: Use for auditing whether a Claude skill can be understood and followed from its text alone (whether a Claude reading it top to bottom forms the right picture of the task, finds each rule and concept before it needs it, meets no contradiction, drifting term or duplicate, is never left to guess at a dead end, loop, undefined term or second reading, and reads each passage in the register its job needs), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: orange

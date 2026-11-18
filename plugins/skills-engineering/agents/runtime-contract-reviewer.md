@@ -3,7 +3,7 @@ name: runtime-contract-reviewer
 description: Use for auditing whether a Claude skill's files resolve, package, load and are discovered on every surface it targets (paths and variable substitution, plugin layout and cache, symlinks, discovery and precedence, subagent consumption, tool pre-approval, hooks and composition with other skills), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 120
 color: cyan

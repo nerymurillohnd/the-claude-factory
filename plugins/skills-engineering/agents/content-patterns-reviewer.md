@@ -3,7 +3,7 @@ name: content-patterns-reviewer
 description: Use for auditing a Claude skill's examples and its embedded commands and code against current best practices, whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-sonnet-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: yellow

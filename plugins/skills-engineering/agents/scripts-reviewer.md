@@ -3,7 +3,7 @@ name: scripts-reviewer
 description: Use for auditing the scripts a Claude skill bundles and how the skill uses them, as code Claude runs without reading (whether each should be a script, where it lives and who shares it across the skill, its plugin, `bin/` and hooks, its interface, exit codes and output, failure handling, declared and pinned dependencies against each surface, portability, secrets, network and writes, and its tests), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: purple

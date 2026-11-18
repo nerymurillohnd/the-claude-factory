@@ -3,7 +3,7 @@ name: frontmatter-description-reviewer
 description: Use for auditing a Claude skill's frontmatter, name and description (whether the frontmatter parses, whether each field is valid and right for the skill on every surface it targets, whether the name is valid and clear, whether the description makes Claude choose the skill for the requests it serves and pass it over for the rest, and whether its trigger tests are sound), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: red

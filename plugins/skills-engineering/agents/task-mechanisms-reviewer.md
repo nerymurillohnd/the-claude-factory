@@ -3,7 +3,7 @@ name: task-mechanisms-reviewer
 description: Use for auditing whether a Claude skill controls its task with the right mechanisms for the kind of task it executes or teaches (marked workflows, checklists, validation loops, output templates, and planning or progress tracking), judging each present one against what the task needs and recommending each missing one the task calls for, whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: blue

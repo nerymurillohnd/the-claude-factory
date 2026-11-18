@@ -3,7 +3,7 @@ name: size-limits-and-budgets-reviewer
 description: Use for auditing whether a Claude skill stays within every length, size, count and context budget on each surface it targets (frontmatter fields, SKILL.md body, supporting files, upload and install size, active skills, script output, hook budgets), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted evidence and its exact fix.
 model: claude-sonnet-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: green

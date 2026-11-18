@@ -3,7 +3,7 @@ name: knowledge-delta-reviewer
 description: Use for auditing whether every passage of a Claude skill gives Claude something it lacks without the skill, flagging general knowledge, default behavior, instructions written for older models, content Claude can find on its own, repetition and passages that make Claude worse, while keeping new facts, gotchas and the reasons behind judgments, and recommending what Claude lacks that the skill should add, whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: purple

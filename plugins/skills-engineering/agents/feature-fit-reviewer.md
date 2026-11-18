@@ -3,7 +3,7 @@ name: feature-fit-reviewer
 description: Use for auditing whether what a Claude skill contains belongs in a skill, given the project or environment it lives in (whether each piece would work better as CLAUDE.md, a path-scoped rule, a hook or permission rule, a subagent, an MCP server or an output style, whether the skill duplicates, contradicts or fights its CLAUDE.md files, rules, other skills, subagents and hooks, and which environment content belongs in the skill or should become a skill), whenever a skill is audited or reviewed and right after any of its files is written or edited. Reports every finding with quoted file-and-line evidence and its exact fix.
 model: claude-opus-5-5
 effort: high
-disallowedTools: Edit, Write
+disallowedTools: Agent, Edit, Write
 omitClaudeMd: true
 maxTurns: 80
 color: pink
