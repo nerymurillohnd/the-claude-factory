@@ -75,6 +75,7 @@ Planning progress:
 2. Read the code the change touches: its callers, its tests, its configuration.
 3. When the scope goes beyond a few files, delegate exploration to the `work-lifecycle:planning-researcher` agent, one brief per question, and send the briefs for independent questions in one message so they run in parallel. The brief says what to find, the scope, and what the answer decides; the agent already knows its report contract.
 4. Treat a claim without evidence as unverified. Re-check yourself every claim the plan depends on before writing it under Verified facts.
+5. Treat research done earlier in this session, before this skill loaded or for another purpose, as leads: a fact from it counts once you re-check it against its source, or when its evidence (file and line, command and raw output, or URL with its date) is quoted in this session. It never replaces the step 3 delegation when the scope goes beyond a few files.
 
 ### 3. De-risk
 
