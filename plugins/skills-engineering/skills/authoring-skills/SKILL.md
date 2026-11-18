@@ -192,10 +192,6 @@ Exit: every planned file exists and passes these checks.
 
 4. Fix each failed item and check it again. When an item can't be met, such as a check you can't run here, stop and list it in the report with the reason.
 5. Report what you built and what each file holds, each decision and its reason, what you checked and how, what you couldn't check and why, and the assumptions still open. Never report a check you didn't run as passed.
-6. Offer the next step, recommending the first unless the requester asked otherwise:
-   1. Keep the skill as it is.
-   2. Give observations to apply.
-   3. Build evals for it.
-   4. Audit it with `skills-engineering:auditing-skills`, if installed.
+6. Ask the requester how to proceed: keep the skill as it is, run the audit, build evals, or anything else they type. This step is mandatory every time a skill is delivered; never skip it or continue on your own.
 
-   If they choose evals, consult https://agentskills.io/skill-creation/evaluating-skills, or use `claude plugin eval` for a skill in a plugin.
+   Read [references/evaluation.md](references/evaluation.md) after step 5, and follow it from its first phase.
