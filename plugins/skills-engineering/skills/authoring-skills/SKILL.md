@@ -112,11 +112,27 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 
 Run the phases in order, each to its exit. Read each phase's file in full when you start the phase, and again whenever it is no longer in your context. Within a phase, read its files in the order listed, each at the step it names, and apply it before you move on. When a later phase shows a gap in an earlier one, go back to it.
 
-### 1. Intent
+### Phase 1: Intent
 
-Capture the requester's full intent, goal and use cases, asking where anything is unclear, before anything is designed.
+Understand what the user wants before you design anything. This skill applies in two scenarios:
 
-- Read [references/phase-1-intent.md](references/phase-1-intent.md) when you start this phase.
+- Scenario A, user request: the user asks for a skill, or what they ask for is a skill even if they never say the word.
+- Scenario B, repeated task: you have noticed a manual task that is worth turning into a skill. It can come from this session or from several, or be something you just did that will probably come back.
+
+#### Scenario A: user request
+
+1. Understand: read the request, and the related work already done in this conversation or the project, to work out what the user means beyond the words: what they are really trying to achieve, and what it implies and covers.
+2. Ask: if something is missing or unclear, ask the user for the context you need. Never ask technical questions, such as how to build it, what to name it or which fields it needs: those are yours.
+3. Challenge: if part of the request doesn't apply, is deficient, or there is a better way to reach the same goal, tell the user and propose it. The decision is theirs. Don't build something just because it was asked.
+4. No one to ask: in a subagent, or a run with nobody to answer, state each assumption in your reply and go on.
+5. Move on: go to Phase 2 only when you can state the goal, what the skill is, what it must achieve or teach Claude, and why it should exist.
+
+#### Scenario B: repeated task
+
+1. Propose: tell the user what you noticed, based on the work already done, and propose a skill for it.
+2. Reason: explain what you saw, and why it will repeat.
+3. Value: explain what the skill gives: the same result every time, and the work it saves.
+4. Answer: wait for the user. If they say no, drop the skill. If they say yes, or add comments, continue with their comments and go to Phase 2.
 
 ### 2. Environment and architecture
 
