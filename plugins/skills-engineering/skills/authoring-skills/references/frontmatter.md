@@ -15,6 +15,7 @@ Claude Code reads frontmatter only when `---` is the file's first line. It ignor
   - Set it only when the body tells the model to run specific commands on every run, and asking each time would interrupt a flow the user already chose by invoking the skill.
   - Write the narrowest rule that matches the exact command in the body, such as `Bash(git add *) Bash(git commit *)`. Never grant a bare `Bash` or `Bash(*)`: a skill shared in a repository grants itself that access on every machine that runs it.
   - An organization that allows only managed permission rules makes Claude Code ignore it in personal and project skills, so the body must still work when each command prompts.
+  - A scheduled task or `/loop` asks before running a skill that declares `allowed-tools` or `hooks`. For a skill meant to run unattended, tell its users to add `Skill([name])` to `permissions.allow`.
 
 ## Fields only Claude Code accepts
 
