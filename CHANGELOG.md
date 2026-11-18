@@ -12,6 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **github-operations** 0.9.0 — **Breaking:** the `claude-github-actions` skill is now `cc-github-actions`, because claude.ai and the Claude API reject a skill name that contains `claude`; run `/github-operations:cc-github-actions` instead. What the skill does is unchanged.
+- **instruction-engineering** 0.2.0 — **Breaking:** the `claude-md-and-rules` skill is now `cc-md-and-rules`, for the same reason; run `/instruction-engineering:cc-md-and-rules` instead. What the skill does is unchanged.
 - **hook-engineering** 0.3.1 — `hook-development` loads for auditing, debugging and questions about hooks, and no longer competes with `writing-hooks` when you ask for a new hook; the `hook-engineer` agent says which tasks it takes.
 
 ## 2026-11-15
