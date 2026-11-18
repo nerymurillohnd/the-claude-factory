@@ -15,7 +15,7 @@ The rules for writing a skill's description and its instructions, with correct a
 
 The model reads only the description when it decides whether to load the skill, matching it against the user's request. Write it to that end:
 
-- Start with "Use when" in the imperative: the model is deciding whether to act, so tell it when to act.
+- Open with an imperative "Use…" clause that says when to use the skill, such as "Use when…", "Use for…" or "Use every time…": the model is deciding whether to act, so tell it when to act. The words "this skill" are not needed. A skill with `disable-model-invocation: true` is the exception: its description is read by the user picking the command, not by the model.
 - Say both when to use the skill and what it does, with the key use case first: Claude Code's listing truncates long descriptions, and the end is lost first.
 - Describe what the user is trying to achieve, in the words users actually say, not the skill's internal mechanics: the model matches against the request, not against how the skill works.
 - Be insistent about its cases. List the contexts where it applies, including requests that never name the domain ("even if they don't mention 'invoice'"): models tend to skip a skill for a task they think they can handle alone.

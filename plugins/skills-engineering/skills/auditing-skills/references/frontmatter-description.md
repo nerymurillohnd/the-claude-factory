@@ -40,6 +40,7 @@ This file teaches you how to audit a skill's frontmatter, its name and its descr
   - 4.7 XML tags and angle brackets
   - 4.8 `when_to_use`
   - 4.9 Descriptions across a set of skills
+  - 4.10 Descriptions of subagents that use the skill
 - 5. Activation and trigger tests
   - 5.1 What automatic activation depends on
   - 5.2 Whether the skill targets tasks Claude needs it for
@@ -323,6 +324,8 @@ When you audit:
 
 ## 4. The description
 
+Some examples in this section quote official sources or illustrate one point, and open with the capabilities. Judge each example only on the point it illustrates, and hold the description under audit to the opening rule in 4.2.
+
 ### 4.1 The description is the router
 
 Before Claude decides whether to load a skill, it has only the skill's name and description. The body, its references and its scripts reach Claude only after that decision. Claude matches the user's request against the descriptions of every skill it can see, possibly a hundred or more, and picks the ones that fit. So the description is a router, not a summary or a title. If it doesn't match the request, a skill with an excellent body never runs. If it matches the wrong requests, its instructions load where they don't belong. A skill that installs and loads proves nothing about how it routes.
@@ -343,7 +346,9 @@ When you audit:
 - Flag a description that states capabilities or a topic but no condition of use: present but wrong. Both the standard and the platform require what and when.
 - Flag a description that states only a condition, such as "Use when working with data", with no capabilities: present but wrong. Claude can't tell which of several data skills it is.
 - Flag implementation mechanics that fill the description in place of intents: present but wrong. Recommend moving them to the body, and environment requirements to `compatibility`.
-- Don't impose one template or order. A description can open with "Use when…" or with the capabilities, and can end with a "Not for…" clause or have none. It meets the sources when what and when are both there and clear.
+- Flag a description that doesn't open with an imperative "Use…" clause saying when to use the skill: present but wrong, Medium. The Agent Skills guide asks for imperative phrasing, "Use this skill when…" rather than "This skill does…", because Claude is deciding whether to act. Any opening that tells Claude when to act meets it, such as "Use when…", "Use for…", "Use every time…", "Use whenever…" or "Use this skill when…"; the words "this skill" are not required. The what follows in the third person ("Builds…", "Teaches Claude…"), and a closing "Not for…" clause is optional.
+- Don't apply that opening rule to a skill with `disable-model-invocation: true`: its description is not in Claude's context and is read by the user picking the command (4.1).
+- Flag a description whose key use case comes after other content, such as long lists of surfaces or capabilities: present but improvable. Claude Code shortens descriptions in the listing when many skills are installed, so what comes last is what gets cut.
 
 Recognize the difference:
 
@@ -357,7 +362,7 @@ Write the description in the third person. It is injected into the system prompt
 When you audit:
 
 - Flag first person ("I can help…", "We provide…") and second person addressed to the user ("You can use this to…"): present but wrong. Recommend the third-person form ("Processes…", "Generates…").
-- Don't flag a "Use when…" or "Use this skill when…" clause. The platform's own examples use it, and the Agent Skills guidance recommends that imperative framing because Claude is deciding whether to act. It is compatible with a third-person "what".
+- Don't flag the opening "Use…" clause that 4.2 requires as a change of point of view. It is the imperative framing the Agent Skills guidance recommends, and it is compatible with a third-person "what".
 - Don't flag a capability list in the bare verb form ("Extract text and tables…") as a change of point of view. The platform's own examples use it.
 
 Recognize the difference:
@@ -452,6 +457,7 @@ When you audit:
 - For each pair, ask which request both would claim. If one request fits both and the skills would do different or conflicting work with it, flag both descriptions as present but wrong. Recommend that each state what separates it (the input, the stage of the work, the target, the outcome), with a boundary that sends the other request to its sibling.
 - Don't flag overlap between skills meant to load together for one task, such as a brand-guidelines skill and a document-creation skill. Each does a different part of the work.
 - Flag an umbrella description that covers its siblings' territory ("Use for any work on X" beside narrower X skills): present but wrong. It takes their requests.
+- Don't flag a base skill whose description and body say it loads together with its specialized siblings, such as a command reference every task of the set needs: it supplies one part of every task, and its siblings lead their own parts. Flag it only when it also claims the work those siblings lead.
 - Flag sibling descriptions that restate the plugin's overall purpose instead of their own job: present but wrong. The plugin name can't separate them either: Claude Code adds it to every sibling's description alike.
 - Where only a run can settle which sibling loads, name the check: each sibling's near-misses run with every sibling installed, recording which skill loads.
 
@@ -459,6 +465,16 @@ Recognize the difference (two skills in one GitHub plugin):
 
 - Competing: both say `Use when the user asks for a code review.`
 - Separated: one says `Reviews an open pull request on GitHub, its checks and review threads. Use when the user names a PR or asks why one is blocked.` The other says `Reviews the uncommitted changes in the working tree before a commit. Use when the user asks to check their diff or local changes. Not for pull requests already on GitHub.`
+
+### 4.10 Descriptions of subagents that use the skill
+
+A subagent's `description` tells Claude when to delegate to it, so it routes the same way a skill's description does. When a subagent preloads the skill in its `skills` field, or its prompt tells it to load the skill or read one of the skill's files, its description decides when the skill's content runs.
+
+When you audit:
+
+- Find those subagents: search the plugin's `agents/` folder and the project's `.claude/agents/` for the skill's name and the names of its files.
+- Flag a subagent description that doesn't open with an imperative "Use…" clause saying when to delegate to it: present but wrong, Medium, as 4.2 sets for skills.
+- Judge the rest of its description by 4.2 to 4.7 as they apply to a subagent: what it does, when to delegate, the users' words and its boundary with the skill and with sibling subagents.
 
 ---
 
@@ -611,7 +627,7 @@ Classify each defect into one of four levels by its actual consequence. The exam
 
 - **Critical.** The skill is rejected, doesn't load, or can never be chosen on a target it is meant for. For example: frontmatter that doesn't open on line 1; a Claude Code-only field in a skill that is uploaded; a reserved or refused name; a missing `description` on an upload target; frontmatter that doesn't parse.
 - **High.** The skill loads, but Claude chooses it wrongly, or a field does the opposite of what the author meant. For example: a side-effect skill with no `disable-model-invocation: true`; `user-invocable: false` relied on to keep Claude away; a description with no condition of use, or one that claims a sibling's requests; use conditions only in the body; a misspelled field that silently does nothing; a trigger test that can't fail.
-- **Medium.** Valid and routed, but less precise or less consistent than it should be. For example: a description in the author's terms instead of the user's; a needed near-miss boundary that is missing, or one that separates nothing; a field set with no reason the skill shows; a name that breaks its set's pattern; a trigger set without near-misses or judged on one run.
+- **Medium.** Valid and routed, but less precise or less consistent than it should be. For example: a skill's or subagent's description that doesn't open with a "Use…" clause; a description in the author's terms instead of the user's; a needed near-miss boundary that is missing, or one that separates nothing; a field set with no reason the skill shows; a name that breaks its set's pattern; a trigger set without near-misses or judged on one run.
 - **Low.** A minor weakness with no real consequence. For example: an unquoted value that every parser the skill meets accepts; a vague but harmless `metadata` key.
 
 Tie-breaks:
