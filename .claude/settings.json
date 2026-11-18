@@ -129,7 +129,17 @@
       "Bash(uv pip *)",
       "Edit(/uv.lock)",
       "Edit(/package-lock.json)",
-      "mcp__Github_MCP_Server__delete_repository"
+      "mcp__Github_MCP_Server__delete_repository",
+      "mcp__*Gmail__*",
+      "mcp__*Google_Drive__*",
+      "mcp__*Google_Calendar__*",
+      "mcp__*Google_Sheets__*",
+      "mcp__*Google_Docs__*",
+      "mcp__*Astro_docs__*",
+      "mcp__*cloudflare__*",
+      "mcp__*Cloudflare__*",
+      "mcp__*svelte__*",
+      "mcp__*Svelte__*"
     ]
   },
   "deniedMcpServers": [
@@ -137,9 +147,55 @@
       "serverName": "claude.ai Gmail"
     },
     {
+      "serverName": "claude.ai Google Drive"
+    },
+    {
       "serverName": "claude.ai Google Calendar"
+    },
+    {
+      "serverName": "claude.ai Google Sheets"
+    },
+    {
+      "serverName": "claude.ai Google Docs"
+    },
+    {
+      "serverName": "claude.ai Astro docs"
+    },
+    {
+      "serverName": "claude.ai Cloudflare"
+    },
+    {
+      "serverName": "claude.ai Svelte"
+    },
+    {
+      "serverName": "Gmail"
+    },
+    {
+      "serverName": "Google_Drive"
+    },
+    {
+      "serverName": "Google_Calendar"
+    },
+    {
+      "serverName": "Google_Sheets"
+    },
+    {
+      "serverName": "Google_Docs"
+    },
+    {
+      "serverName": "Astro_docs"
+    },
+    {
+      "serverName": "cloudflare"
+    },
+    {
+      "serverName": "svelte"
     }
   ],
+  "skillOverrides": {
+    "anthropic-skills:google-workspace": "off",
+    "anthropic-skills:morning": "off"
+  },
   "enableWorkflows": true,
   "enabledPlugins": {
     "plugin-evals@the-claude-factory": true,
