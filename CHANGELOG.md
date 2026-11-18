@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-18
+
+### Added
+
+- **skills-engineering** 0.1.0 — a new plugin to write and audit Claude skills wherever they live: `authoring-skills` learns your goal and setup, asks only for context, agrees a plan with you, builds the skill from the current official docs and reviews it the way Claude will read it; `auditing-skills` runs frontmatter checks and nine specialized reviewer agents in parallel, each with quoted evidence, severity, an exact fix and a verdict, and asks before auditing a skill you didn't ask it to review.
+
 ## 2026-11-15
 
 ### Added
