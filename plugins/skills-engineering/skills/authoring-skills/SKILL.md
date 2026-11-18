@@ -124,7 +124,7 @@ Decide what you can do here, what exists, whether a skill is the answer, the dis
 
 - Read [references/phase-2-environment-and-architecture.md](references/phase-2-environment-and-architecture.md) when you start this phase.
 - Read [references/phase-2-placements.md](references/phase-2-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
-- Read [references/phase-4-components.md](references/phase-4-components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or acts beyond its own folder.
+- Read [references/phase-2-components.md](references/phase-2-components.md) when the skill relies on MCP tools or other skills, or keeps configuration or state.
 - Read [references/phase-2-scripts-and-hooks.md](references/phase-2-scripts-and-hooks.md) when a script, an injected command or a hook is a candidate.
 
 ### 3. Design and plan
@@ -143,6 +143,7 @@ Scaffold the skill's folder and write every file the approved plan lists, checki
 
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
 - Read [references/phase-4-placements.md](references/phase-4-placements.md) when the plan places the skill outside Claude Code, in a subagent, or where only its users invoke it.
+- Read [references/phase-4-components.md](references/phase-4-components.md) when the plan has MCP tools, other skills, configuration or state, or actions beyond the skill's own folder.
 
 ### 5. Self-review
 

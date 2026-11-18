@@ -75,7 +75,7 @@ Each task ends with a signed commit and no push. Each task's verification, and t
      - All checks match the baseline.
 - [x] 3. **Split scripts-and-hooks** into phase-2 and phase-4 by the ledger. Each new file gets a one-line purpose, and a table of contents if it exceeds 100 lines. Verify: inventory 0 missing, plus the checks.
 - [x] 4. **Split special-placements** into phase-2 and phase-4. Drop duplicates 1 and 2. Verify: the inventory reports exactly those two lines missing, and each one's surviving text is shown by grep.
-- [ ] 5. **Split components** into phase-2 and phase-4. Verify as in task 3.
+- [x] 5. **Split components** into phase-2 and phase-4. Verify as in task 3.
 - [ ] 6. **Split task-mechanisms** into phase-3 and phase-4. Verify as in task 3.
 - [ ] 7. **Split writing-patterns** into phase-3-descriptions and phase-4-writing-patterns. Verify as in task 3.
 - [ ] 8. **Phase files.**

@@ -1,19 +1,16 @@
-# Components
+# Phase 4: Components
 
-How to write a skill that relies on more than its own files and scripts: MCP tools, other skills, configuration and state, and what keeps it from surprising its users. Tool permissions are frontmatter fields, decided in phase 3.
+How to write the skill's dependencies and state as phase 2 decided: naming MCP tools and other skills, stating each dependency, keeping configuration, and what keeps the skill from surprising its users.
 
 ## MCP tools
 
 - Name each tool fully qualified: in Claude Code, in the form its tool list shows, such as `mcp__postgres__run_query`; on other surfaces, as `ServerName:tool_name`, such as `Postgres:run_query`. A bare tool name can resolve to the wrong server, or to none.
 - State the dependency where the skill first needs it: which server, which tools, and what the user must connect.
-- Say what to do when the server isn't connected: tell the user what to connect and stop, or fall back to a stated alternative.
 - Teach the work across the tools: the order of calls, what passes from one to the next, and how to check the result. Leave each tool's parameters to the server's own descriptions.
 
 ## Other skills
 
 - Name another skill by its exact name, with its plugin prefix when it comes from a plugin, and say when to load it and what to take from it.
-- The other skill must not set `disable-model-invocation: true`: neither the model nor another skill can load a skill that sets it.
-- When the other skill may be missing, say what to do without it. A skill for third parties works on its own, with other skills as optional help.
 - Write the skill to coexist with others in the same session: keep its rules scoped to its task, and don't redefine terms other skills use.
 
 ## Configuration and state
@@ -22,14 +19,6 @@ When the skill needs facts about the user's setup that it can't infer, such as a
 
 1. Keep them in a config file the skill reads first.
 2. When the file is missing or a value is empty, ask the user for that value, save it, and continue; never ask again for a saved value. For a credential, save only the name of the environment variable that holds it.
-
-Keep the config and any state where updates don't erase them:
-
-- **Plugin skill**: the plugin's data folder, which `SKILL.md` reaches as `CLAUDE_PLUGIN_DATA` in a dollar sign and braces; Claude Code replaces it with the path. The plugin's install folder is replaced on every update.
-- **Personal or project skill**: the skill's folder, or the project when the state belongs to it, kept out of version control if private.
-- **claude.ai or the API**: don't rely on files from an earlier conversation; design the skill to work without saved state.
-
-For a history the skill learns from, such as earlier reports, append to a log in the same place and say when the model reads it.
 
 ## Least surprise
 
