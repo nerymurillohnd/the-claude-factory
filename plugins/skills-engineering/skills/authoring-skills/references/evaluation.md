@@ -6,6 +6,7 @@ What to do after step 5 of phase 6 in SKILL.md: ask the requester how to proceed
 
 - [Phase 1: ask how to proceed](#phase-1-ask-how-to-proceed)
 - [Phase 2: evals](#phase-2-evals)
+- [Phase 3: final checks](#phase-3-final-checks)
 
 ## Phase 1: ask how to proceed
 
@@ -31,7 +32,7 @@ Options:
 
 ### Act on the answer
 
-- Keep it as is: the skill is done.
+- Keep it as is: go to Phase 3.
 - Run the audit: load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill. Follow that skill from there.
 - Build evals: go to Phase 2.
 - The audit and the evals together: run the audit first, then Phase 2.
@@ -121,7 +122,14 @@ Before any case, map the skill: its use cases, its triggers, each rule and its b
 
 ### Study the cases against the skill
 
-1. Launch an agent without this session's context and without CLAUDE.md to study the cases against the skill. You learned things while building the skill that the skill may not say, so your own study would be biased.
+1. Launch a subagent to study the cases against the skill. You learned things while building the skill that the skill may not say, so your own study would be biased.
+   - Launch the built-in Explore subagent by its type, never a fork. A fork inherits this conversation; Explore starts without it, without the CLAUDE.md files and project rules, and without the git status.
+   - Know what still reaches it: managed policy files, and a subdirectory's CLAUDE.md or path-scoped rules for the files it reads. When the skill's folders carry any of them, tell the requester the study was not fully clean.
+   - Give it a brief:
+     - the exact folders and files it reads, the eval cases and the skill's folder, and that it reads nothing else;
+     - read each case, and answer it first from its own reasoning and knowledge, as Claude would without the skill;
+     - report, for each case, what the case tests that it already knows how to do without the skill and its files, and where the skill adds what it lacks.
+   - Wait for its report before you fix anything in step 3.
 2. The agent studies every case, from the same two perspectives: what the skill makes Claude do, and what Claude already does without it. For each case it reports where the skill is weak, where it would fail or score low, and the passage at fault.
 3. Fix the skill for each gap the agent finds, before running anything. Never wait for the evals to find what this study can catch. Correct with the same two perspectives.
 4. Tell the requester about each case Claude already passes without the skill, with the reason, so no usage is spent on it unless they keep it.
@@ -195,3 +203,11 @@ The difference between the arms is what the evals measure, so set each arm to wh
    - Re-run them: run only those cases, and deliver their HTML report. Never re-run a case that already gave the expected result.
    - Stop here: report the results as they are, with the HTML report.
 6. Continue with whatever remains according to the context, what the requester decides and what the results showed.
+
+## Phase 3: final checks
+
+When everything the requester chose in Phase 1 is done, check the final skill:
+
+1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 6 in SKILL.md, and each linter, validator or script the environment provides for skills.
+2. Fix each finding, and run every check again until all of them pass.
+3. Report each check with its exact command and raw output. The skill is done when every check passes.
