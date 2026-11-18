@@ -106,17 +106,18 @@ Run this loop before any handoff, every time:
 
 ### 6. Independent review
 
-For high-stakes plans only (production, data, deployments, security, or anything costly to redo), brief the `work-lifecycle:plan-verifier` agent in plan mode. It can't see this conversation, so the brief carries the plan's file path, or the plan's full text when it is only in the reply, and the requirements written out: the user's goal, their answers to your questions and their constraints. Resolve each blocking finding before handoff. For other plans, write why the review was not needed.
+For high-stakes plans only (production, data, deployments, security, anything published to third parties, such as a public plugin or marketplace, or anything costly to redo), brief the `work-lifecycle:plan-verifier` agent in plan mode. It can't see this conversation, so the brief carries the plan's file path, or the plan's full text when it is only in the reply, and the requirements written out: the user's goal, their answers to your questions and their constraints. Resolve each blocking finding before handoff. For other plans, write why the review was not needed.
 
 ### 7. Handoff
 
 1. In plan mode, request approval through the native menu (`ExitPlanMode`). Recommend manual approval, or auto mode only when `permissions.ask` rules cover the reserved actions. Outside plan mode, ask for approval in the reply and wait.
-2. End the plan's Handoff section with this line, word for word, because a resumed or cleared session loses the gate and these rules: "Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section."
-3. Name how completion is proven:
+2. When the user asks for changes instead of approving, rewrite the plan in full with the changes merged into it, run the phase 5 self-review again, and phase 6 again on a high-stakes plan, then ask for approval of the full plan again. Never execute an approved list of changes: the implementer, often a new session, sees only the plan text.
+3. End the plan's Handoff section with this line, word for word, because a resumed or cleared session loses the gate and these rules: "Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section."
+4. Name how completion is proven:
    - With the state file, always the plan gate, as described under Execution.
    - Also `/goal`, for a plan in Claude Code with more than one task and one measurable end state. Read `references/goal-handoff.md` and give the ready-to-paste condition.
    - Without the state file, the final report with each task's evidence.
-4. When hooks are disabled, say that the gate won't run and that completion rests on the final report.
+5. When hooks are disabled, say that the gate won't run and that completion rests on the final report.
 
 ## Execution
 
