@@ -23,21 +23,20 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 
 ## Mission and perspective
 
-**What this skill solves**
+**What this skill promotes**
 
-- Skills built from memory or training data instead of the current official documentation, which carry outdated or invented facts.
-- Skills built before the request is understood, which miss the requester's intent and the skill's goal.
-- Incomplete skills that skip the best practices their task needs.
-- Skills that only list instructions, so where no rule fits, Claude improvises instead of judging.
-- Skills that restate what Claude already does well instead of teaching what it lacks.
-- Repetitive or manual processes that users keep doing by hand because no one turned them into a skill.
+- Skills built from the current official documentation, never from memory or training data.
+- Skills built after the user's intent is understood: the goal, the purpose and what it implies.
+- Complete skills that apply the best practices their task needs.
+- Skills that teach Claude to judge, so where no rule fits, Claude decides instead of improvising.
+- Skills that teach what Claude lacks, not what it already does well.
+- Skills for the repetitive or manual processes you detect, so users stop doing them by hand.
 
 **How to approach the work**
 
 - Write for Claude on every surface the skill targets, not for a human reader.
 - Anticipate how the model loading the skill will read and reason, and fix each wrong reading while you write.
 - Treat the files in `references/` as knowledge: decide from the nature of the skill you write which to use, which to skip and how to apply them.
-- Ask of every line: would Claude do this differently, or not know how, without it? If not, cut it.
 - Shape each skill from its own domain and task, never from this skill's layout or a fixed template.
 
 ## Terms
@@ -49,22 +48,23 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 
 ## Standing rules
 
-- Own the plan, the design, the build and the result; the requester supplies the intent.
-- Understand the intent and the goal before you plan or design anything.
-- Verify every platform fact against the current official sources, never from memory; where they disagree, the one that owns the target surface wins:
-  - https://code.claude.com/docs/en/skills and the Claude Code changelog;
-  - https://agentskills.io;
-  - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview and its best-practices page;
-  - Anthropic's "The Complete Guide to Building Skills for Claude".
-- Assume nothing you can check: what exists, what the target surface supports and which tools are in reach.
-- Teach, don't only instruct: give each decision its criterion and its reason.
+- Progressive disclosure first. `SKILL.md` is the contract and the base procedure: it holds the rules, the guidance and the phases, in order. Reference files hold how to carry out each procedure. Keep `SKILL.md` under 500 lines and under 5,000 tokens, and move to references whatever only some runs need or whatever explains how to do a procedure.
+- Link every file from `SKILL.md` with a Markdown link, one level deep. Open every reference file over 100 lines with a table of contents.
+- Official documentation and sources over memory or training knowledge. Where they disagree, the one that owns the target surface wins: the Claude Code docs for Claude Code, the Claude Platform docs for the API and claude.ai, and the Agent Skills specification for other clients.
+  - [Claude Code skills](https://code.claude.com/docs/en/skills) and the [Claude Code changelog](https://code.claude.com/docs/en/changelog)
+  - [Agent Skills specification](https://agentskills.io/specification)
+  - [Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) and its [best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+  - Anthropic's "The Complete Guide to Building Skills for Claude"
+- Understand the user's goal, the skill to build and everything that implies before you design or plan anything.
+- Write for what Claude lacks, not for what it already knows. Ask of every line: would Claude do this differently, or not know how, without it? If not, cut it.
+- Write for Claude and Claude Code, not for a human reader: language and format optimized for the model that loads the skill. The exception is documentation that collaborates with the user, such as a README.
+- Write with a clear structure and style that teaches Claude how to do the job and the task the skill targets.
+- Teach where Claude must judge: give the criterion and its reason. In a fixed step, say what to do.
+- Use examples where they help. Embed commands, templates, schemas and examples as code blocks, and apply best practice when referencing files and stating commands.
 - Close every gap where Claude would have to guess, invent or choose between two readings.
 - Be exact where an action is fixed: write the command, path or value, not "run Python".
-- Embed commands, examples, templates and schemas as code blocks, not as prose.
-- Structure the skill with headings, bullet lists, numbered steps and examples where they help.
-- Keep the body under 500 lines and about 5,000 tokens, and move what only some runs need to reference files.
-- Link every file from `SKILL.md` with a Markdown link, one level deep.
-- Open every reference file over 100 lines with a table of contents.
+- Own the plan, the design, the build and the result; the user supplies the intent.
+- Assume nothing you can check: what exists, what the target surface supports and which tools are in reach.
 - Follow the environment's own conventions for skills, and say where they differ from this skill.
 - Never read the values in environment, settings or MCP configuration files; list only keys or names.
 - After every edit, reread every file that states the same facts and fix what became wrong.
