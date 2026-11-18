@@ -26,7 +26,11 @@ Decide each point from the goal, without waiting for the requester to ask, and r
 
    When the skill needs another location, consult https://code.claude.com/docs/en/skills#choose-where-skills-load.
 
+   Decide the surfaces it runs on, the subagent that runs it and who invokes it by phase-2-placements.md.
+
 6. **Architecture.** Start from `SKILL.md` alone, and add each component only for a need: a reference for depth some runs need, a script for an operation that must give the same result every run, an asset the output starts from, a hook for a check on every event, a subagent that preloads the skill through its `skills` field, and the tools, skills or MCP servers the task relies on.
+
+   Decide each script, injected command and hook by phase-2-scripts-and-hooks.md, and what the skill does without a dependency and where its state lives by phase-2-components.md.
 
 7. **Current features.** Beyond the files in `references/`, read the official sources for the surfaces, platforms and Claude versions the requester uses, and build on the current features they offer there.
 

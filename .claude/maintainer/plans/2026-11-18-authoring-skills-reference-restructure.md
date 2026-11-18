@@ -78,7 +78,7 @@ Each task ends with a signed commit and no push. Each task's verification, and t
 - [x] 5. **Split components** into phase-2 and phase-4. Verify as in task 3.
 - [x] 6. **Split task-mechanisms** into phase-3 and phase-4. Verify as in task 3.
 - [x] 7. **Split writing-patterns** into phase-3-descriptions and phase-4-writing-patterns. Verify as in task 3.
-- [ ] 8. **Phase files.**
+- [x] 8. **Phase files.**
    - phase-2 steps 5 and 6 name their references.
    - phase-3 steps 2–4 name theirs, and step 10 moves to phase-4.
    - phase-4-build lists the order in which its references apply.

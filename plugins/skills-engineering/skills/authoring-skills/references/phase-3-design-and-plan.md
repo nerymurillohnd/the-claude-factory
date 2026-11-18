@@ -4,9 +4,8 @@ How to design the skill and plan it: its name, description and frontmatter, each
 
 1. **Name.** Name the activity the skill gives, in lowercase letters, digits and hyphens, at most 64 characters, matching its folder, with no hyphen at the start or end and no two in a row, and without "anthropic" or "claude" if it may be uploaded. Prefer the gerund form, such as `exporting-invoices`, unless sibling skills follow another pattern. Avoid names that say nothing (`helper`) or cover too much (`data`). Propose it with alternatives and the reason.
 2. **Description.** Write it by the rules in phase-3-descriptions.md, then judge it from the model's seat: list the requests that should load it and the near-misses that shouldn't, and check it picks right for each.
-3. **Other frontmatter.** Add a field beyond `name` and `description` only when the skill's type and intent need it, knowing first every field that type accepts and its gotchas.
-
-4. **Components in detail.** For each component phase 2 chose, decide its specifics: each hook's events and how many; each script's language, inputs, outputs and what it checks; each template's shape; each mechanism the task needs.
+3. **Other frontmatter.** Add a field beyond `name` and `description` only when the skill's type and intent need it, knowing first every field that type accepts and its gotchas, from phase-3-frontmatter.md.
+4. **Components in detail.** For each component phase 2 chose, decide its specifics: each hook's events and how many; each script's language, inputs, outputs and what it checks; each template's shape; each mechanism the task needs, chosen by phase-3-task-mechanisms.md.
 5. **What earns a line.** Apply the line test in SKILL.md's Mission and perspective to every line. Lines that pass it: the domain's procedure and reasons, the conventions, facts that defy assumptions, the exact tool, the corrections from phase 1. Cut what any capable model knows. A platform fact earns a line only if it changes what the model writes or does; otherwise write "When [case], consult [page]", or leave it out.
 6. **The form matches the failure** each line prevents:
    - output in the wrong shape: a template, or an input and output example;
@@ -21,8 +20,7 @@ How to design the skill and plan it: its name, description and frontmatter, each
    - Files hold what only some runs need, exclusive variants, long examples and lookups: `references/` to read, `scripts/` to run, `assets/` for the output. Move content to files as the body nears its budget, organize them by variant or domain, and name each for what it holds.
    - Put no README and no copy of public documentation in the folder.
 9. **Pointers.** Put each pointer at the step that needs the file, on its own line, as a Markdown link from the skill root, with the verb for its use (read, run, fill in) and a condition the model can check then. Never point to a folder, bury a link in a paragraph, or use an at-mention, which loads the file on every run.
-10. **The register.** Write the body in the register phase-4-writing-patterns.md sets for its task.
-11. **The plan.** Present it and get the requester's approval:
+10. **The plan.** Present it and get the requester's approval:
 
    ```text
    Goal: [one sentence]
