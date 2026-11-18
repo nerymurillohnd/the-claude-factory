@@ -2,43 +2,42 @@
 paths:
   - ".claude/skills/**"
   - "plugins/*/skills/**"
+  - ".claude/agents/**"
+  - "plugins/*/agents/**"
 ---
 
-# Skill standards
+# Skill and subagent standards
 
-## Placement and names
+Write and edit every skill with `skills-engineering:authoring-skills`; these are the owner's criteria on top of it.
 
-- Write a project skill in `.claude/skills/` as a procedure that calls maintainer scripts through `npm run`; keep no scripts in its folder.
-- Keep the scripts a plugin skill runs inside its own folder: users receive only `plugins/<plugin>/`.
-- Name a project skill by its bare name in backticks, such as `docs-maintenance`, and a plugin skill with its prefix, such as `project-maintainer:write-records`.
-- Write `/name` only where you tell the user what to type.
-- Never set `disable-model-invocation: true` on a skill other skills load.
-- Cite another skill by name, never a path inside its folder.
+## Before and after an edit
 
-## Content
+- Before writing or editing a skill or subagent, understand what it is for: its goal, its users and how it is invoked.
+- Read each file you will edit in full before changing it, and read the whole file again after the change.
 
-- Add an instruction only where Claude would act differently without it; cut what Claude already does.
-- Put the gotchas in `SKILL.md`, before the instructions: environment-specific facts that defy reasonable assumptions. Add each correction you have to make to Claude to that list.
-- Leave out information that will become outdated, such as counts and "today"; put a deprecated method under an "Old patterns" section, if anywhere.
-- Where output quality depends on seeing examples, add an input and output pair for each case.
-- Use lists, not tables.
-- Use one term for each thing throughout the skill.
-- State each fact once, and keep each phase's instructions in that phase.
-- Base every fact on the official documentation. Where it lags, the installed binary (`--help`, real output) and the changelog win; mark each fact taken from them as such.
-- Put each CLI command, flag and message at the step that uses it, not in a separate list.
-- Use a script only for deterministic, repeated logic, such as a fixture run, and say whether Claude runs it or reads it; keep a judgment step as instructions.
+## Skills
 
-## Size and references
+- Prioritize progressive disclosure: keep in `SKILL.md` what every run needs, and move the rest to reference files linked directly from `SKILL.md`, one level deep.
+- Keep the `SKILL.md` body under about 5,000 tokens.
+- Use examples where they change the output, and embed each command, template, snippet or quote in its proper form: a fenced block with its language, a template file in `assets/`, a quote marked with its source.
+- Keep the scripts a plugin skill runs inside its own folder, because users receive only `plugins/<plugin>/`; write a project skill in `.claude/skills/` as a procedure that calls maintainer scripts through `npm run`.
+- Never set `disable-model-invocation: true` on a skill that other skills or subagents load.
 
-- Keep the `SKILL.md` body under 500 lines, and move detail to reference files.
-- Link every reference file directly from `SKILL.md`, one level deep, and say there what each file holds and when to read it.
-- Split reference files by domain or task, and give each one longer than 100 lines a table of contents at the top.
+## Descriptions
 
-## Description
+- State explicitly and specifically what the skill or subagent covers and does: the more precise, the better Claude triggers it.
+- Prefer opening with a "Use…" clause that says when to use it, for skills and subagents alike; write the rest in the third person.
 
-- Write it in third person, stating what the skill does and when to use it.
-- Put the key use case first, in the words users would naturally say: Claude Code cuts `description` plus `when_to_use` at 1,536 characters, and `description` takes at most 1,024.
+## Subagents
 
-## Checks
+- Write the body in plain language with a clear hierarchy, and no Markdown headings (`#`):
+  - open with the role and its areas of expertise, then the `GOAL:` section;
+  - mark every later section with an uppercase label, choosing the sections the subagent's kind of work needs;
+  - use numbered steps for a sequence, and bullets for separate actions or facts.
+- Model a new subagent on the `skills-engineering` reviewer agents.
 
+## Names and checks
+
+- In the frontmatter, write `name` as the bare name, with no backticks or plugin prefix: `name: write-records`.
+- In prose, cite a project skill by its name in backticks, such as `docs-maintenance`, and a plugin skill with its prefix, such as `project-maintainer:write-records`.
 - Run `npm run lint:skills -- <skill folder>` after each change, and report each defect to the owner, one question per rule id, before fixing it or recording it as debt.
