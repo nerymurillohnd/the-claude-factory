@@ -324,7 +324,7 @@ When you audit:
 
 ## 4. The description
 
-Some examples in this section quote official sources or illustrate one point, and open with the capabilities. Judge each example only on the point it illustrates, and hold the description under audit to the opening rule in 4.2.
+Some examples in this section quote official sources word for word, and open with the capabilities: those sources don't fix the order of what and when. Judge each example only on the point it illustrates. Where official sources disagree on a point of this section, give Anthropic's own documentation priority over agentskills.io: the Claude Code docs for a skill served by Claude Code, and the Claude Platform docs and Anthropic's guide to building skills for the other surfaces. Name the disagreement in the finding.
 
 ### 4.1 The description is the router
 
@@ -346,9 +346,12 @@ When you audit:
 - Flag a description that states capabilities or a topic but no condition of use: present but wrong. Both the standard and the platform require what and when.
 - Flag a description that states only a condition, such as "Use when working with data", with no capabilities: present but wrong. Claude can't tell which of several data skills it is.
 - Flag implementation mechanics that fill the description in place of intents: present but wrong. Recommend moving them to the body, and environment requirements to `compatibility`.
-- Flag a description that doesn't open with an imperative "Use…" clause saying when to use the skill: present but wrong, Medium. The Agent Skills guide asks for imperative phrasing, "Use this skill when…" rather than "This skill does…", because Claude is deciding whether to act. Any opening that tells Claude when to act meets it, such as "Use when…", "Use for…", "Use every time…", "Use whenever…" or "Use this skill when…"; the words "this skill" are not required. The what follows in the third person ("Builds…", "Teaches Claude…"), and a closing "Not for…" clause is optional.
-- Don't apply that opening rule to a skill with `disable-model-invocation: true`: its description is not in Claude's context and is read by the user picking the command (4.1).
-- Flag a description whose key use case comes after other content, such as long lists of surfaces or capabilities: present but improvable. Claude Code shortens descriptions in the listing when many skills are installed, so what comes last is what gets cut.
+- Don't impose one template or order, and don't fix a severity for the form of the condition of use: weigh these points against the skill's nature and how it is invoked, and set any severity by the consequence on Claude's choice ("Classifying findings").
+  - The condition of use reads best as an imperative "Use…" clause. The Agent Skills guide asks for "Use this skill when…" rather than "This skill does…", because Claude is deciding whether to act. A description with no condition of use at all is covered above.
+  - The form of the clause should fit the skill: "Use when…" for a skill Claude picks by the request, "Use only when…" for a skill meant for narrow cases, "Use every time…" for a step that must always run, "Use for…" for a base skill that covers a whole kind of work.
+  - Where the clause goes is a judgment, because the official sources differ. The Claude Code docs ask to "put the key use case first" and to "lead with words a request would contain"; Anthropic's guide to building skills shows "[What it does] + [When to use it]". For a skill served by Claude Code, opening with the "Use…" clause follows the Claude Code docs, and it matters most when the trigger is what tells the skill apart from its siblings. When what the skill does is what tells it apart, opening with that is sound. Recommend moving the clause when the key use case comes late, for example after long lists of surfaces or capabilities.
+  - A skill with `disable-model-invocation: true` is outside these points: Claude never reads its description, and the user reads it while picking the command (4.1).
+  - Each listing entry, `description` plus `when_to_use`, is cut at 1,536 characters in Claude Code, so what comes last is what is lost from a long entry. When the listing exceeds its budget, Claude Code drops whole descriptions, starting with the skills invoked least, so order within a description doesn't help there.
 
 Recognize the difference:
 
@@ -362,7 +365,7 @@ Write the description in the third person. It is injected into the system prompt
 When you audit:
 
 - Flag first person ("I can help…", "We provide…") and second person addressed to the user ("You can use this to…"): present but wrong. Recommend the third-person form ("Processes…", "Generates…").
-- Don't flag the opening "Use…" clause that 4.2 requires as a change of point of view. It is the imperative framing the Agent Skills guidance recommends, and it is compatible with a third-person "what".
+- Don't flag a "Use…" clause as a change of point of view, wherever it sits. It is the imperative framing the Agent Skills guide recommends, and it is compatible with a third-person "what".
 - Don't flag a capability list in the bare verb form ("Extract text and tables…") as a change of point of view. The platform's own examples use it.
 
 Recognize the difference:
@@ -473,8 +476,11 @@ A subagent's `description` tells Claude when to delegate to it, so it routes the
 When you audit:
 
 - Find those subagents: search the plugin's `agents/` folder and the project's `.claude/agents/` for the skill's name and the names of its files.
-- Flag a subagent description that doesn't open with an imperative "Use…" clause saying when to delegate to it: present but wrong, Medium, as 4.2 sets for skills.
-- Judge the rest of its description by 4.2 to 4.7 as they apply to a subagent: what it does, when to delegate, the users' words and its boundary with the skill and with sibling subagents.
+- Judge each description by 4.2 to 4.7 as they apply to a subagent: what it does, when to delegate to it, the users' words, and its boundary with the skill and with sibling subagents. The Claude Code docs ask for "a clear description so Claude knows when to use it", kept short.
+- Weigh the form of its condition of use against how the subagent is launched, and set any severity by the consequence:
+  - The Claude Code docs suggest phrases like "use proactively" to encourage proactive delegation. It is a suggestion, not a rule, and it fits only a subagent Claude should start on its own.
+  - A subagent that only a skill or an orchestrator launches, or that runs only when a user-invoked skill runs, should say so ("Launched only by…"), not invite proactive use. A subagent for narrow cases reads best as "Use only when…".
+  - The official examples put the condition of use after the role ("Expert code reviewer. Use proactively after code changes."). Subagent descriptions have no per-entry character cap like skills, so where the clause sits matters less than whether it routes right.
 
 ---
 
@@ -627,7 +633,7 @@ Classify each defect into one of four levels by its actual consequence. The exam
 
 - **Critical.** The skill is rejected, doesn't load, or can never be chosen on a target it is meant for. For example: frontmatter that doesn't open on line 1; a Claude Code-only field in a skill that is uploaded; a reserved or refused name; a missing `description` on an upload target; frontmatter that doesn't parse.
 - **High.** The skill loads, but Claude chooses it wrongly, or a field does the opposite of what the author meant. For example: a side-effect skill with no `disable-model-invocation: true`; `user-invocable: false` relied on to keep Claude away; a description with no condition of use, or one that claims a sibling's requests; use conditions only in the body; a misspelled field that silently does nothing; a trigger test that can't fail.
-- **Medium.** Valid and routed, but less precise or less consistent than it should be. For example: a skill's or subagent's description that doesn't open with a "Use…" clause; a description in the author's terms instead of the user's; a needed near-miss boundary that is missing, or one that separates nothing; a field set with no reason the skill shows; a name that breaks its set's pattern; a trigger set without near-misses or judged on one run.
+- **Medium.** Valid and routed, but less precise or less consistent than it should be. For example: a description in the author's terms instead of the user's; a needed near-miss boundary that is missing, or one that separates nothing; a field set with no reason the skill shows; a name that breaks its set's pattern; a trigger set without near-misses or judged on one run.
 - **Low.** A minor weakness with no real consequence. For example: an unquoted value that every parser the skill meets accepts; a vague but harmless `metadata` key.
 
 Tie-breaks:
