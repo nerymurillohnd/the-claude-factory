@@ -227,11 +227,11 @@ Section 2.4 keeps each phase's instructions in that phase; the same holds for th
 
 When you audit:
 
-- Apply this section only to a skill that works in phases and keeps phase content in supporting files.
-- Map each file to the phases whose steps use its content. Flag every file whose content serves more than one phase, quoting a passage for each phase, and recommend splitting it into one file per phase, with each passage's destination and every pointer updated. A lookup that every phase consults on purpose, such as a glossary, a table of values or a template, is not a mixed file.
-- Flag every phase that reads more than one file without stating their order, and recommend listing the files under that phase in the order of the steps that read them, each with its condition and the step that reads it, followed by one line telling Claude to read them in that order.
+- Apply this section only to a skill that works in phases and keeps phase content in supporting files. A file serves a phase when that phase's steps apply its content; deciding something in one phase and writing it in a later one are two phases. A phase's own file, such as `phase-3-design-and-plan.md`, counts among the files that phase reads, first.
+- Map each file to the phases whose steps use its content. Flag every file whose content serves more than one phase, quoting a passage for each phase, even a single rule when a step of the other phase decides or writes with it and none of that phase's files states it, and recommend moving each passage to a file of the phase it serves, splitting the file when each phase holds a section of it, with each passage's destination and every pointer updated. A passage the steps of two phases both apply goes once in the earlier phase's file, and the later step points back to it. A lookup that every phase consults on purpose, such as a glossary, a table of values or a template, is not a mixed file. Flag a rule stated in the files of two phases as a duplicate under 3.3.
+- Flag every phase that reads more than one file without stating their order, and recommend listing the files under that phase in the order of the steps that read them, each with its condition and, where the phase's steps are numbered, the step that reads it, and one line telling Claude to read them in that order, under the phase or once as a standing instruction that covers every phase.
 - Record a phase-specific file whose name doesn't carry its phase as an improvement opportunity, not a defect, and recommend the name `phase-<n>-<topic>.md`, with every pointer to it updated. Judge whether the name says what the file holds under 5.9.
-- Judge a file that makes Claude apply a rule after the step it governs as 2.2 does. Judge a missing order as a defect when the order of the files changes the result, and as an improvement opportunity otherwise.
+- Judge a file that makes Claude apply a rule after the step it governs as 2.2 does. Judge a missing order as a defect when the order of the files changes the result, because one file's rule decides how Claude applies another's, and as an improvement opportunity otherwise.
 
 ---
 
