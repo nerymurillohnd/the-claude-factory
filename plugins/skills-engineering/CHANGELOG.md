@@ -10,9 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- `auditing-skills` now reports a skill description that doesn't open with a "Use…" clause saying when to use the skill as a Medium defect. Any such clause counts, such as "Use when…", "Use for…" or "Use every time…". Skills that only you can invoke are exempt, because Claude never reads their description. It also flags a description whose key use case comes late, where Claude Code's listing can cut it.
-- `auditing-skills` now applies the same rule to the description of every subagent that preloads the skill or reads its files, and no longer flags a base skill that is meant to load alongside its specialized siblings.
-- `authoring-skills` writes descriptions by the same rule: any opening "Use…" clause, not only "Use when".
+- `auditing-skills` now weighs how a description states when to use the skill: an imperative "Use…" clause whose form fits how the skill is invoked ("Use when…", "Use only when…", "Use every time…"), and whether it comes first, as the Claude Code docs ask for the key use case. It sets any severity by the consequence on Claude's choice, not by the form alone, and leaves out skills that only you can invoke.
+- `auditing-skills` now also checks the description of every subagent that preloads the skill or reads its files, weighing "use proactively" against how the subagent is launched. It no longer flags a base skill that is meant to load alongside its specialized siblings.
+- Where official sources disagree, `auditing-skills` now follows Anthropic's own documentation first, and names the disagreement.
+- `authoring-skills` writes descriptions by the same points: a "Use…" clause fitted to the skill, opening the description when the trigger is what tells the skill apart.
 
 ## [0.1.0] - 2026-11-18
 
