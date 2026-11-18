@@ -110,7 +110,7 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 
 ## Workflow
 
-Run the phases in order, each to its exit. Read each phase's file in full when you start the phase, and again whenever it is no longer in your context. When a later phase shows a gap in an earlier one, go back to it.
+Run the phases in order, each to its exit. Read each phase's file in full when you start the phase, and again whenever it is no longer in your context. Within a phase, read its files in the order listed, each at the step it names, and apply it before you move on. When a later phase shows a gap in an earlier one, go back to it.
 
 ### 1. Intent
 
@@ -123,19 +123,18 @@ Capture the requester's full intent, goal and use cases, asking where anything i
 Decide what you can do here, what exists, whether a skill is the answer, the discipline it serves, where it lives and how it runs, and its architecture, from current official sources.
 
 - Read [references/phase-2-environment-and-architecture.md](references/phase-2-environment-and-architecture.md) when you start this phase.
-- Read [references/phase-2-placements.md](references/phase-2-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
-- Read [references/phase-2-components.md](references/phase-2-components.md) when the skill relies on MCP tools or other skills, or keeps configuration or state.
-- Read [references/phase-2-scripts-and-hooks.md](references/phase-2-scripts-and-hooks.md) when a script, an injected command or a hook is a candidate.
+- At step 5, read [references/phase-2-placements.md](references/phase-2-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
+- At step 6, read [references/phase-2-scripts-and-hooks.md](references/phase-2-scripts-and-hooks.md) when a script, an injected command or a hook is a candidate.
+- At step 6, read [references/phase-2-components.md](references/phase-2-components.md) when the skill relies on MCP tools or other skills, or keeps configuration or state.
 
 ### 3. Design and plan
 
 Set the name, description and frontmatter, design each component and the body, and get the requester's approval of the plan.
 
 - Read [references/phase-3-design-and-plan.md](references/phase-3-design-and-plan.md) when you start this phase.
-- Read [references/phase-3-descriptions.md](references/phase-3-descriptions.md) before you write the description.
-- Read [references/phase-3-frontmatter.md](references/phase-3-frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
-- Read [references/phase-4-scripts-and-hooks.md](references/phase-4-scripts-and-hooks.md) when the skill has a script, a hook or an injected command.
-- Read [references/phase-3-task-mechanisms.md](references/phase-3-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
+- At step 2, read [references/phase-3-descriptions.md](references/phase-3-descriptions.md) before you write the description.
+- At step 3, read [references/phase-3-frontmatter.md](references/phase-3-frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
+- At step 4, read [references/phase-3-task-mechanisms.md](references/phase-3-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
 
 ### 4. Build
 
@@ -143,9 +142,10 @@ Scaffold the skill's folder and write every file the approved plan lists, checki
 
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
 - Read [references/phase-4-writing-patterns.md](references/phase-4-writing-patterns.md) before you write any text of the skill.
-- Read [references/phase-4-placements.md](references/phase-4-placements.md) when the plan places the skill outside Claude Code, in a subagent, or where only its users invoke it.
-- Read [references/phase-4-components.md](references/phase-4-components.md) when the plan has MCP tools, other skills, configuration or state, or actions beyond the skill's own folder.
 - Read [references/phase-4-task-mechanisms.md](references/phase-4-task-mechanisms.md) when the plan has a workflow, a checklist, a validation loop, a plan file, an output template or gotchas.
+- Read [references/phase-4-scripts-and-hooks.md](references/phase-4-scripts-and-hooks.md) when the plan has a script, a hook or an injected command.
+- Read [references/phase-4-components.md](references/phase-4-components.md) when the plan has MCP tools, other skills, configuration or state, or actions beyond the skill's own folder.
+- Read [references/phase-4-placements.md](references/phase-4-placements.md) when the plan places the skill outside Claude Code, in a subagent, or where only its users invoke it.
 
 ### 5. Self-review
 

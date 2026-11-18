@@ -84,7 +84,7 @@ Each task ends with a signed commit and no push. Each task's verification, and t
    - phase-4-build lists the order in which its references apply.
    - phase-5 and phase-6 get the updated names.
    - Verify: inventory, and that each step names exactly the files SKILL.md lists for that phase.
-- [ ] 9. **SKILL.md workflow.**
+- [x] 9. **SKILL.md workflow.**
    - Under each phase, one bullet per file, in step order, each with its step and condition.
    - Add the line "Within a phase, read its files in the order listed, each at the step it names, and apply it before you move on."
    - Verify:
