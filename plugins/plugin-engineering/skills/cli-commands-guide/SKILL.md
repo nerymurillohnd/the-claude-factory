@@ -13,7 +13,7 @@ Every plugin task, not only the ones that run a command. A plugin's design, its 
 
 This skill is the base of that work, not all of it. Before the first step of the task:
 
-1. Review every skill available in this session, by name and description, and pick each one specialized in the task or in a task tied to it, such as building, testing, debugging, releasing or migrating a plugin, or writing one of its skills, hooks, agents or MCP servers. In this plugin, `plugin-testing-and-debugging` and `public-marketplace-dev` are such skills.
+1. Review every skill available in this session, by name and description, and pick each one specialized in the task or in a task tied to it, such as building, testing, debugging, releasing or migrating a plugin, or writing one of its skills, hooks, agents or MCP servers. In this plugin, `plugin-testing-and-debugging` is one. Its sibling `public-marketplace-dev`, which sets up a new public marketplace on GitHub, runs only when the user invokes it: when the task is setting one up, ask the user to run `/plugin-engineering:public-marketplace-dev`, and don't build the marketplace from this skill alone.
 2. Load every skill you picked now, and work with them and this one together: each specialized skill leads its own part of the task, and this one supplies the commands and their behavior to all of them. Where a specialized skill and this one disagree on a command, follow the newer official source, as the next section says.
 3. Work from this skill alone only when no available skill is specialized in the task.
 

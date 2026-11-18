@@ -1,6 +1,7 @@
 ---
 name: public-marketplace-dev
 description: Use only when a new public plugin marketplace hosted on GitHub must be set up from scratch, once, at its start, whenever the user asks to create, establish, build or scaffold one, or the task needs a marketplace repository that does not exist yet, even when the user only says they want to publish or distribute plugins to other people. Builds the complete operating environment and architecture the marketplace will need, ready for its first plugin, including the repository's folders and subfolders, the marketplace catalog, the plugins folder layout, versioning and releases, validation, user instructions, CI/CD workflows, repository files and the folders for its maintenance. Teaches Claude to build it with cli-commands-guide for the exact commands, and to run plugin-testing-and-debugging on the result before reporting the work as done. Not for writing a plugin or its components, testing or debugging a plugin on its own, or maintaining a marketplace that already exists.
+disable-model-invocation: true
 ---
 
 # Public marketplace development
