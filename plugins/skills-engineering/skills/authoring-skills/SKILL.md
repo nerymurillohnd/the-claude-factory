@@ -85,6 +85,12 @@ In the `SKILL.md` you write, though not in its other files, Claude Code changes 
 - A `CLAUDE_` variable in a dollar sign and braces becomes its value; to mention one, write its bare name.
 - An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Describe such commands in words.
 
+Where a skill loads:
+
+- `~/.claude/skills/` loads only in Claude Code sessions on the user's machine, never in claude.ai, Cowork or cloud sessions.
+- A repository's `.claude/skills/` loads in every Claude Code session that works in it, local or cloud, except threads of a Claude project.
+- Skills on the user's claude.ai account load in claude.ai, Cowork, cloud sessions and project threads, and in Claude Code wherever the user signs in with that account.
+
 A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
 
 ## Routes
