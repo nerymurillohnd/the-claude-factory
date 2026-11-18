@@ -10,7 +10,7 @@ How to run the audit and the evals the requester chose in phase 6, and the final
 
 ## Audit
 
-Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, then follow that skill from there. When the requester chose the evals too, run the audit first.
+Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. Apply its findings as SKILL.md's Routes say for an audit's findings, then run phase 5 again. When the requester chose the evals too, run the audit first.
 
 ## Evals
 
@@ -25,7 +25,7 @@ Load `skills-engineering:auditing-skills` and run its full battery, with all its
 - With plugin evals, the plugin's MCP servers are replaced by mocks; a real server starts only with `--allow-real-servers` or `--mocks off`.
 - With evals for skills, set the model and effort in each subagent you spawn.
 - Every eval run, and every judge that grades one, spends the requester's usage. Never run without the requester's approval, and never take it by default.
-- Each question in this phase is its own AskUserQuestion call, because each depends on the step before it.
+- Ask each step's questions in their own AskUserQuestion call, after the step before it is done: each depends on what came before.
 
 ### Choose the runner by skill type
 
@@ -174,9 +174,9 @@ The difference between the arms is what the evals measure, so set each arm to wh
    - Stop here: Keep the results as they are.
    ```
 
-   - Re-run them: run only those cases, and deliver their HTML report. Never re-run a case that already gave the expected result.
+   - Re-run them: run only those cases, and deliver their HTML report. Never re-run a case the correction didn't affect that already gave the expected result.
    - Stop here: report the results as they are, with the HTML report.
-6. Continue with whatever remains according to the context, what the requester decides and what the results showed.
+6. When the results meet the target, go to Final checks. When they don't, report the gap and ask whether to make another correction pass or stop.
 
 ## Final checks
 

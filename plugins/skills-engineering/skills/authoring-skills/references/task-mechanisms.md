@@ -99,7 +99,7 @@ Give the loop its exit:
 4. Continue only when it passes.
 ```
 
-When the bar is quality rather than a pass, add the rule that stops the loop: a number of rounds, or no gain over the last round.
+When the bar is quality rather than a pass, add the rule that stops the loop: a number of rounds, or no gain over the last round. When the same error returns after a fix, stop and report it instead of looping.
 
 ## Plan, validate, execute
 

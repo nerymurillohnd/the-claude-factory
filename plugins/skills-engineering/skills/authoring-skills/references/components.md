@@ -21,11 +21,11 @@ How to write a skill that relies on more than its own files and scripts: MCP too
 When the skill needs facts about the user's setup that it can't infer, such as an account ID or a channel name:
 
 1. Keep them in a config file the skill reads first.
-2. When the file is missing or a value is empty, ask the user for that value, save it, and continue; never ask again for a saved value.
+2. When the file is missing or a value is empty, ask the user for that value, save it, and continue; never ask again for a saved value. For a credential, save only the name of the environment variable that holds it.
 
 Keep the config and any state where updates don't erase them:
 
-- **Plugin skill**: the plugin's data folder, `CLAUDE_PLUGIN_DATA` written with a dollar sign and braces. The plugin's install folder is replaced on every update.
+- **Plugin skill**: the plugin's data folder, which `SKILL.md` reaches as `CLAUDE_PLUGIN_DATA` in a dollar sign and braces; Claude Code replaces it with the path. The plugin's install folder is replaced on every update.
 - **Personal or project skill**: the skill's folder, or the project when the state belongs to it, kept out of version control if private.
 - **claude.ai or the API**: don't rely on files from an earlier conversation; design the skill to work without saved state.
 

@@ -45,7 +45,7 @@ The first breaks after installation; the second works only on its author's machi
 
 ## How the body reaches it
 
-- **In Claude Code**, write the path with the variable for its location, so it resolves from any working directory: `CLAUDE_SKILL_DIR` for the skill's folder, `CLAUDE_PLUGIN_ROOT` for the plugin's, `CLAUDE_PROJECT_DIR` for the project's. Write each with a dollar sign and braces.
+- **In Claude Code**, write the path with the variable for its location, so it resolves from any working directory: `CLAUDE_SKILL_DIR` for the skill's folder, `CLAUDE_PLUGIN_ROOT` for the plugin's, `CLAUDE_PROJECT_DIR` for the project's. Write each with a dollar sign and braces, in `SKILL.md` only: Claude Code replaces them there, and a reference file gives paths relative to the skill root instead.
 - **Outside Claude Code**, write the path relative to the skill root, with forward slashes.
 - **To run without a permission prompt**, write the command in the body exactly as the `allowed-tools` rule writes it, the same variable in both:
 
@@ -110,7 +110,7 @@ hooks:
 
 Naming the interpreter as the command, with the script in `args`, passes the path as one argument and spares the script a shebang.
 
-- **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. It doesn't resolve `CLAUDE_SKILL_DIR`, so a skill hook outside a plugin reaches its script through the project root.
+- **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. It doesn't resolve `CLAUDE_SKILL_DIR`, so a project skill's hook reaches its script through the project root, and a personal skill's hook through its home path in a `command` with no `args`, such as `python3 ~/.claude/skills/[name]/scripts/check.py`: only the shell expands `~`.
 - **Once**: set `once: true` on a hook that must run a single time, such as a setup check; Claude Code removes it after its first successful run.
 
 Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.

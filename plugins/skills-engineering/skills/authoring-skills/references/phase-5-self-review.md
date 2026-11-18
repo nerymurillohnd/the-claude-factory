@@ -16,6 +16,6 @@ How to review the skill from the model's seat and run its checks before you deli
    - [ ] The body and every file meet the size and link rules in SKILL.md's Standing rules.
    ```
 
-4. Fix each failed item and check it again. When an item can't be met, such as a check you can't run here, stop and list it in the report with the reason.
+4. Fix each failed item and check it again. When an item can't be met, such as a check you can't run here, leave it unmet and list it in the report with the reason.
 
 Exit: every checklist item and check passes, or each one that can't is listed with its reason for the report.

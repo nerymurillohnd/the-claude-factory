@@ -5,7 +5,7 @@ How to decide, from the intent and current official sources, what you can do her
 Decide each point from the goal, without waiting for the requester to ask, and record its reason for the plan. Aim for the simplest skill that does the job safely, stably and at the scale it will meet.
 
 1. **What you can do here.** Note whether you can write files, run commands, start subagents and reach the web. If you can't write files, deliver each file's path and content in your reply.
-2. **What exists.** Inventory what the skill you write could duplicate, contradict or rely on: skills in your context and in the skill folders here, CLAUDE.md files, rules, subagents and hooks. Read names and descriptions, open a file in full only when the new skill must fit with it, and note the conventions for skills here.
+2. **What exists.** Inventory what the skill you write could duplicate, contradict or rely on: skills in your context and in the skill folders here, CLAUDE.md files, rules, subagents and hooks. Read names and descriptions, open a file in full only when the new skill must fit with it, and note the conventions for skills here. When an existing skill already covers the need, propose extending it instead of writing a new one.
 3. **Whether a skill is the answer**, by the failure it must fix:
    - a task that won't repeat: do the task instead;
    - something the model already does well: no skill;
@@ -26,8 +26,8 @@ Decide each point from the goal, without waiting for the requester to ask, and r
 
    When the skill needs another location, consult https://code.claude.com/docs/en/skills#choose-where-skills-load.
 
-6. **Architecture.** Start from `SKILL.md` alone, and add each component only for a need: a reference for depth some runs need, a script for an operation that must give the same result every run, an asset the output starts from, a hook for a check on every event, a subagent that consumes the skill, and the tools, skills or MCP servers the task relies on.
+6. **Architecture.** Start from `SKILL.md` alone, and add each component only for a need: a reference for depth some runs need, a script for an operation that must give the same result every run, an asset the output starts from, a hook for a check on every event, a subagent that preloads the skill through its `skills` field, and the tools, skills or MCP servers the task relies on.
 
-7. **Current features.** Beyond the references, read the official sources for the surfaces, platforms and Claude versions the requester uses, and build on the current features they offer there.
+7. **Current features.** Beyond the files in `references/`, read the official sources for the surfaces, platforms and Claude versions the requester uses, and build on the current features they offer there.
 
 Exit: every piece has a purpose tied to the goal, and every platform fact behind a decision is verified.

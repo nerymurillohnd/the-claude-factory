@@ -4,7 +4,7 @@ What changes in the writing when a skill leaves Claude Code, runs in a subagent,
 
 ## A skill that leaves Claude Code
 
-claude.ai, the Skills API and other Agent Skills clients run the skill without Claude Code's processing. Write it for the strictest surface it must run on:
+claude.ai, the Skills API and other Agent Skills clients run the skill without Claude Code's processing. Write it for the strictest surface it must run on, and tell the requester each Claude Code feature that leaves out:
 
 - **Frontmatter**: only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`. Any other field makes the upload fail.
 - **Body**: no argument placeholders, `CLAUDE_` variables, injected commands or at-mentions. They reach the model as literal text there. Refer to bundled files by paths relative to the skill root.
