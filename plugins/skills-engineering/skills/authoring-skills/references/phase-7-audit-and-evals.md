@@ -20,7 +20,7 @@ Load `skills-engineering:auditing-skills` and run its full battery, with all its
 - With plugin evals, the model is set per case, and effort can't be set per case.
 - With plugin evals, running one arm or both is set for the whole command.
 - With plugin evals, a grader's arm setting changes only how that grader is scored.
-- With plugin evals, a run removes Bash, Write, Edit, WebFetch and WebSearch unless they are granted with `--allow-tools`, and that grant applies to every run, in both arms.
+- With plugin evals, a run removes Bash, Write, Edit, WebFetch and WebSearch unless they are granted with `--allow-tools`.
 - With plugin evals, a granted Bash runs in a sandbox whose network reaches only the domains granted with `WebFetch(domain:...)`.
 - With plugin evals, the plugin's MCP servers are replaced by mocks; a real server starts only with `--allow-real-servers` or `--mocks off`.
 - With evals for skills, set the model and effort in each subagent you spawn.
@@ -104,7 +104,7 @@ Before any case, map the skill: its use cases, its triggers, each rule and its b
      - read each case, and answer it first from its own reasoning and knowledge, as Claude would without the skill;
      - report, for each case, what the case tests that it already knows how to do without the skill and its files, and where the skill adds what it lacks.
    - Wait for its report before you fix anything in step 3.
-2. The agent studies every case, from the same two perspectives: what the skill makes Claude do, and what Claude already does without it. For each case it reports where the skill is weak, where it would fail or score low, and the passage at fault.
+2. The agent studies every case from the two perspectives in Define the cases. For each case it reports where the skill is weak, where it would fail or score low, and the passage at fault.
 3. Fix the skill for each gap the agent finds, before running anything. Never wait for the evals to find what this study can catch. Correct with the same two perspectives.
 4. Tell the requester about each case Claude already passes without the skill, with the reason, so no usage is spent on it unless they keep it.
 
@@ -170,7 +170,7 @@ The difference between the arms is what the evals measure, so set each arm to wh
    Header: Re-run
    Multiple selection: no
    Options:
-   - Re-run them: Run only those cases again.
+   - Re-run them: Run those cases again.
    - Stop here: Keep the results as they are.
    ```
 

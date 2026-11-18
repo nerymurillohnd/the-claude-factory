@@ -21,8 +21,7 @@ How to write a skill that relies on more than its own files and scripts: MCP too
 When the skill needs facts about the user's setup that it can't infer, such as an account ID or a channel name:
 
 1. Keep them in a config file the skill reads first.
-2. When the file is missing or a value is empty, ask the user for that value once, save it, and continue.
-3. Never ask again for a value that is saved.
+2. When the file is missing or a value is empty, ask the user for that value, save it, and continue; never ask again for a saved value.
 
 Keep the config and any state where updates don't erase them:
 

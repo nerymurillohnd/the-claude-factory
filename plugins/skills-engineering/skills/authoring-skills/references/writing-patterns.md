@@ -18,7 +18,7 @@ The model reads only the description when it decides whether to load the skill, 
 - Write the condition of use as an imperative "Use…" clause: the model is deciding whether to act, so tell it when to act. Fit its form to the skill: "Use when…" for a skill picked by the request, "Use only when…" for narrow cases, "Use every time…" for a step that must always run, "Use for…" for a base skill. The words "this skill" are not needed.
 - Decide where the clause goes. For a skill served by Claude Code, open with it when the trigger is what tells the skill apart: the Claude Code docs ask to put the key use case first and lead with words a request would contain. When what the skill does is what tells it apart, open with that, as Anthropic's guide to building skills shows. Never bury the key use case behind long lists.
 - A skill with `disable-model-invocation: true` is read by the user picking the command, not by the model: write its description for that reader.
-- Say both when to use the skill and what it does, with the key use case first: Claude Code's listing truncates long descriptions, and the end is lost first.
+- Say both when to use the skill and what it does: Claude Code's listing truncates long descriptions, and the end is lost first.
 - Describe what the user is trying to achieve, in the words users actually say, not the skill's internal mechanics: the model matches against the request, not against how the skill works.
 - Be insistent about its cases. List the contexts where it applies, including requests that never name the domain ("even if they don't mention 'invoice'"): models tend to skip a skill for a task they think they can handle alone.
 - Name the boundary with any sibling skill that shares its keywords.

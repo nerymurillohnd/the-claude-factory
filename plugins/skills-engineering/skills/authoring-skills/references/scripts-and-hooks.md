@@ -110,7 +110,7 @@ hooks:
 
 Naming the interpreter as the command, with the script in `args`, passes the path as one argument and spares the script a shebang.
 
-- **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`, each with a dollar sign and braces. It doesn't resolve `CLAUDE_SKILL_DIR`, so a skill hook outside a plugin reaches its script through the project root.
+- **Paths**: a hook resolves `CLAUDE_PROJECT_DIR`, and in a plugin `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. It doesn't resolve `CLAUDE_SKILL_DIR`, so a skill hook outside a plugin reaches its script through the project root.
 - **Once**: set `once: true` on a hook that must run a single time, such as a setup check; Claude Code removes it after its first successful run.
 
 Before writing the hook's script, consult https://code.claude.com/docs/en/hooks for the event's input and the decisions it can return.

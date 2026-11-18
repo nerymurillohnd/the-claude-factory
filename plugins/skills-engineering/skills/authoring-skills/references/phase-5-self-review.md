@@ -7,7 +7,6 @@ How to review the skill from the model's seat and run its checks before you deli
 3. Copy this checklist and check the skill you write against it:
 
    ```text
-   - [ ] Each use case walks to its result with no step where the model would decide wrong.
    - [ ] Each section prevents a failure you can name from a use case or a correction.
    - [ ] The description carries every use case's trigger words and the boundary with each sibling skill from phase 2, within every target's limit.
    - [ ] Every supporting file is linked from SKILL.md on its own line, with its verb and condition.

@@ -151,12 +151,9 @@ A gotcha is a fact of the environment or domain that defies a reasonable assumpt
 
 ## Choose the smallest set
 
-Start from the task's parts and add only what each needs:
+Start from the task's parts above and add only what each needs. Two combinations the parts don't give on their own:
 
-- Knowledge only: rules and gotchas.
 - A short task: steps, gotchas and a final check.
 - A long task with dependencies: steps with gates, a progress checklist, and validation loops at the fragile steps.
-- Output in a fixed shape: a template or examples, and a verification checklist.
-- Destructive or batch work: plan, validate, execute, with a dry run and the user's confirmation.
 
 Then walk each use case: if the model would do a step reliably without its mechanism, remove the mechanism.
