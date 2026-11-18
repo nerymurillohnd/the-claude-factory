@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-18
+
+### Changed
+
+- **Breaking:** `public-marketplace-dev` now runs only when you call it with `/plugin-engineering:public-marketplace-dev`. Claude no longer loads it on its own, and it costs no context until you call it. Its description now says what it is for: setting up a new public marketplace on GitHub from scratch, once, with every folder it will need. If you relied on Claude loading it for other plugin work, call it yourself.
+- `cli-commands-guide` now says when it applies at the start of its description: all work on plugins, their components, dependencies and marketplaces, on every surface and distribution method. Before the first step of a task, it has Claude review the available skills and load each specialized one alongside it. When the task is setting up a new marketplace, it asks you to run `/plugin-engineering:public-marketplace-dev`.
+- `plugin-testing-and-debugging` now runs every time a plugin is created, and after every change to a plugin, its components or its dependencies, before the work is reported as done. It loads `cli-commands-guide` for the exact commands if it isn't loaded yet.
+
 ## [0.3.1] - 2026-11-15
 
 ### Removed
@@ -76,7 +84,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.0
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.3
