@@ -26,6 +26,7 @@ Choose by who writes the task:
 - **The skill is knowledge for a subagent's task** (the subagent's `skills` field). The full body loads into the subagent at startup, beside the task it was given.
   - Write it as reference content the subagent applies to whatever it was asked.
   - Never refer to "the user's request" or to the conversation that spawned it.
+  - A teammate in an agent team doesn't get its definition's `skills`, and while agent teams are on, a subagent Claude names launches as a teammate: put a skill such an agent needs in the project or user settings, which teammates load.
 - **A subagent may load it on its own**, as the main session does, when its tools include the Skill tool. Write such a skill to work without the main conversation's context.
   - A subagent runs in the background by default, and there it keeps the Skill and ToolSearch tools and every MCP tool, but only a fixed set of built-in tools. Name each tool the skill relies on, and what to do when one is missing.
 
