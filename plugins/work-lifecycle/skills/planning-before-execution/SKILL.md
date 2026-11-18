@@ -111,7 +111,13 @@ For high-stakes plans only (production, data, deployments, security, anything pu
 ### 7. Handoff
 
 1. In plan mode, request approval through the native menu (`ExitPlanMode`). Recommend manual approval, or auto mode only when `permissions.ask` rules cover the reserved actions. Outside plan mode, ask for approval in the reply and wait.
-2. When the user asks for changes instead of approving, rewrite the plan in full with the changes merged into it, run the phase 5 self-review again, and phase 6 again on a high-stakes plan, then ask for approval of the full plan again. Never execute an approved list of changes: the implementer, often a new session, sees only the plan text.
+2. When the user comments on or corrects the presented plan instead of approving it:
+   1. Check each point against the code and the official sources, and decide whether to apply it, with the reason. For a point you don't apply, say why and recommend an alternative.
+   2. Present the changes you propose and wait for the user's decision.
+   3. Once the user approves them, rewrite the plan in full with every change merged into it, never as a separate list. Run the phase 5 self-review again, and phase 6 again on a high-stakes plan.
+   4. Present the full plan for approval again. Repeat these steps for each new round of comments.
+
+   Only the full plan, approved as written, starts execution. An approved list of changes is not an approved plan: the implementer, often a new session, sees only the plan text.
 3. End the plan's Handoff section with this line, word for word, because a resumed or cleared session loses the gate and these rules: "Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section."
 4. Name how completion is proven:
    - With the state file, always the plan gate, as described under Execution.
