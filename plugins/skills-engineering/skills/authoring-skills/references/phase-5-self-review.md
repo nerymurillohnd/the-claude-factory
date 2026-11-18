@@ -14,7 +14,7 @@ How to review the skill from the model's seat and run its checks before you deli
    - [ ] Every frontmatter key is accepted on every target surface.
    - [ ] Every shown command pins its versions and explains its placeholders, every bundled script is listed in SKILL.md with its purpose, and no path variable sits in a reference file.
    - [ ] Nothing in SKILL.md expands or runs by accident (see Gotchas in SKILL.md).
-   - [ ] The body and every file meet the size and link rules in SKILL.md's Standing rules.
+   - [ ] The body and every file meet the size and link rules in the "Disclose progressively" section of this skill's `SKILL.md`.
    ```
 
 4. Fix each failed item and check it again. When an item can't be met, such as a check you can't run here, leave it unmet and list it in the report with the reason.
