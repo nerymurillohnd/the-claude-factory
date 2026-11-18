@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-18
+
 ### Changed
 
 - `planning-researcher` and `plan-verifier` now use your session's documentation servers, skills and other MCP tools to check facts, instead of fetching web pages only, and say when to use them at the start of their descriptions. `planning-researcher` now runs with every tool, the model and the effort level of your session, and is told to change nothing; `plan-verifier` still lacks the file-editing tools and can't start other agents, publish artifacts or enter worktrees.
@@ -21,5 +23,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - Initial release. Requires Claude Code 2.1.325 or later and python3 3.12 or later.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/work-lifecycle--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/work-lifecycle--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/work-lifecycle--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/work-lifecycle--v0.1.0
