@@ -1,6 +1,6 @@
 # Task mechanisms
 
-When a skill needs a workflow, a checklist, a validation loop, a plan checked before acting, an output template, or a gotchas list, and how to build each so it changes what the model does. Each one costs attention: use only the ones the task needs.
+When a skill needs a workflow, a checklist, a validation loop, a plan checked before acting, an output template, or a gotchas list, and how to build each so it changes what the model does. Each one costs attention: use only the ones the task needs, and remove any the model wouldn't need to do its step reliably.
 
 ## Contents
 
@@ -11,7 +11,6 @@ When a skill needs a workflow, a checklist, a validation loop, a plan checked be
 - Plan, validate, execute
 - Output templates
 - Gotchas
-- Choose the smallest set
 
 ## Name the task's parts
 
@@ -148,12 +147,3 @@ A gotcha is a fact of the environment or domain that defies a reasonable assumpt
 - Write each as the fact and what to do about it, in one or two lines.
 - Add each correction its users have to make to the model.
 - Leave out general advice: it isn't a gotcha unless a capable model would get it wrong.
-
-## Choose the smallest set
-
-Start from the task's parts above and add only what each needs. Two combinations the parts don't give on their own:
-
-- A short task: steps, gotchas and a final check.
-- A long task with dependencies: steps with gates, a progress checklist, and validation loops at the fragile steps.
-
-Then walk each use case: if the model would do a step reliably without its mechanism, remove the mechanism.
