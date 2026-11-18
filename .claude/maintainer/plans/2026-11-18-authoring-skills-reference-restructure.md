@@ -51,22 +51,22 @@ Progress: each task is ticked here when its commit lands.
 Each task ends with a signed commit and no push. Each task's verification, and the background verifier's report on that task, must pass before the next task starts.
 
 - [x] -1. **Save the plan first.** Copy this plan to `.claude/maintainer/plans/2026-11-18-authoring-skills-reference-restructure.md`, as `.claude/rules/architecture/claude-dir.md` requires for plans, and commit it alone. Then tick each task in that file as its commit lands.
-- [ ] 0. **Baseline and block inventory.**
+- [x] 0. **Baseline and block inventory.**
    - Record HEAD.
    - Copy the skill to the scratchpad as the baseline.
    - Write `scratchpad/inventory.py`. It extracts every non-empty content line of the 13 references and SKILL.md, normalized for whitespace and list markers, and reports each baseline line that is missing from a given folder.
    - Write `scratchpad/blocks.py`. For every file it gives the total line count and every block with its exact line range and line count: each `##` section and each `###` subsection, plus the intro before the first heading. Fenced code blocks are tracked as part of their section and never split. Save the baseline block table as `scratchpad/blocks-baseline.md`.
    - Save the raw output of biome, `lint:frontmatter`, `claude plugin validate` and `npm run lint:skills` on the baseline.
    - Verify: the inventory runs against the baseline itself and reports 0 missing, and the block ranges of each file add up to its total line count.
-- [ ] 0b. **Background verifier.** Before task 1, launch one background subagent (general-purpose, Sonnet, read-only by instruction: never edits, writes or commits). Its brief: the baseline folder, `blocks-baseline.md`, `mapping.md` once it exists, the list of approved duplicates, and the two scripts.
+- [x] 0b. **Background verifier.** Before task 1, launch one background subagent (general-purpose, Sonnet, read-only by instruction: never edits, writes or commits). Its brief: the baseline folder, `blocks-baseline.md`, `mapping.md` once it exists, the list of approved duplicates, and the two scripts.
     - After each task's commit, I send it the task number and the commit. It reads the changed files in full, runs both scripts against the baseline, and checks every moved block against the ledger: the same lines, in the destination the ledger names, nothing dropped, nothing duplicated, nothing altered except the link and mention lines the task allows.
     - It reports PASS or a list of FLAGS, each with file, line and the baseline text.
     - I fix every flag and send the fix back for re-verification before the next task starts. Its reports are shown to the owner at the end.
-- [ ] 1. **Mapping ledger.**
+- [x] 1. **Mapping ledger.**
    - Write `scratchpad/mapping.md` from the block table. For each file being split, list every block (section or subsection, with its baseline line range and line count) and, inside a block that splits, every paragraph or bullet. Map each to its destination file and the phase step that uses it.
    - Verify: a script checks that every baseline line of the five files being split appears exactly once in the ledger, and that each destination's planned line count equals the sum of the blocks mapped to it.
    - **Re-validation in every later task:** before a move, re-run `blocks.py` on the source and confirm the ranges still match the ledger. After the move, confirm that each destination holds the planned lines and that the source's remaining lines equal its total minus the moved ones.
-- [ ] 2. **Renames only.**
+- [x] 2. **Renames only.**
    - `git mv` for: `frontmatter.md` → `phase-3-frontmatter.md`, and `writing-patterns`, `task-mechanisms`, `scripts-and-hooks`, `special-placements` and `components` to temporary phase-prefixed names. Update every link and plain mention: SKILL.md, the phase files, the references.
    - Verify:
      - `git diff -M` shows the renames, and only link or mention lines changed.

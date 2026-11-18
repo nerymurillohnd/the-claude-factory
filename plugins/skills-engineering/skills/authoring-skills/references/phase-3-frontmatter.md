@@ -28,6 +28,6 @@ An upload to claude.ai or the Skills API fails on any of these, so leave them ou
 - **`model`** and **`effort`**: the model and reasoning effort for the rest of the turn, or for the fork with `context: fork`. Set them only when the task needs a different capability or depth than the session's.
 - **`context`**: `fork` runs the skill in a new subagent, with the body as its task. Set it only as phase 2 decided for a skill run by a subagent.
 - **`agent`** and **`background`**: with `context: fork`, the subagent type to use, and whether to wait for its result (`background: false`).
-- **`hooks`**: hooks registered when the skill is invoked, for the rest of the session. Build them as scripts-and-hooks.md describes.
+- **`hooks`**: hooks registered when the skill is invoked, for the rest of the session. Build them as phase-4-scripts-and-hooks.md describes.
 - **`paths`**: file patterns that limit automatic loading to work on matching files, such as `src/api/**`. Set it when the skill applies only to certain files.
 - **`shell`**: `powershell` runs the skill's injected commands in PowerShell. Set it only for a Windows-only skill.

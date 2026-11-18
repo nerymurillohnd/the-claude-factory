@@ -123,18 +123,18 @@ Capture the requester's full intent, goal and use cases, asking where anything i
 Decide what you can do here, what exists, whether a skill is the answer, the discipline it serves, where it lives and how it runs, and its architecture, from current official sources.
 
 - Read [references/phase-2-environment-and-architecture.md](references/phase-2-environment-and-architecture.md) when you start this phase.
-- Read [references/special-placements.md](references/special-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
-- Read [references/components.md](references/components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or acts beyond its own folder.
+- Read [references/phase-2-placements.md](references/phase-2-placements.md) when the skill must work outside Claude Code, is preloaded by a subagent, or is invoked only by its users or only by the model.
+- Read [references/phase-4-components.md](references/phase-4-components.md) when the skill relies on MCP tools or other skills, keeps configuration or state, or acts beyond its own folder.
 
 ### 3. Design and plan
 
 Set the name, description and frontmatter, design each component and the body, and get the requester's approval of the plan.
 
 - Read [references/phase-3-design-and-plan.md](references/phase-3-design-and-plan.md) when you start this phase.
-- Read [references/writing-patterns.md](references/writing-patterns.md) before you write the description and the body.
-- Read [references/frontmatter.md](references/frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
-- Read [references/scripts-and-hooks.md](references/scripts-and-hooks.md) when the skill has a script, a hook or an injected command.
-- Read [references/task-mechanisms.md](references/task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
+- Read [references/phase-4-writing-patterns.md](references/phase-4-writing-patterns.md) before you write the description and the body.
+- Read [references/phase-3-frontmatter.md](references/phase-3-frontmatter.md) before you set any field beyond `name` and `description`, tool permissions included.
+- Read [references/phase-4-scripts-and-hooks.md](references/phase-4-scripts-and-hooks.md) when the skill has a script, a hook or an injected command.
+- Read [references/phase-4-task-mechanisms.md](references/phase-4-task-mechanisms.md) when the task has ordered steps, a fixed output, destructive actions or a quality bar to iterate to.
 
 ### 4. Build
 
