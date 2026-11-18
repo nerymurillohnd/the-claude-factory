@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **skills-engineering** 0.1.0 — a new plugin to write and audit Claude skills wherever they live: `authoring-skills` learns your goal and setup, asks only for context, agrees a plan with you, builds the skill from the current official docs and reviews it the way Claude will read it; `auditing-skills` runs frontmatter checks and nine specialized reviewer agents in parallel, each with quoted evidence, severity, an exact fix and a verdict, and asks before auditing a skill you didn't ask it to review.
 
+### Changed
+
+- **hook-engineering** 0.3.1 — `hook-development` loads for auditing, debugging and questions about hooks, and no longer competes with `writing-hooks` when you ask for a new hook; the `hook-engineer` agent says which tasks it takes.
+
 ## 2026-11-15
 
 ### Added
