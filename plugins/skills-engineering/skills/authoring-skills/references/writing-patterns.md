@@ -100,6 +100,7 @@ Read [tokens.md](tokens.md)    ← in auth.md
 - No narration, and no capitals for emphasis.
 - Use one term per concept and no time-sensitive wording.
 - State each fact in one file only.
+- State a prohibition as one sentence beside the instruction it limits, or as a gotcha, never as a correct and incorrect pair: the pairs in this file teach authors, not the model running a skill.
 
 ## Instructions
 
@@ -144,8 +145,15 @@ Make sure the data is valid before you continue.
 Add an example only where the output depends on seeing it: a tone, a level of detail, a format. An example shows the style and level of detail you want more clearly than a description does.
 
 - Show input and output pairs, then a rule line that says what to imitate.
+- When the output drifts across runs, sharpen the instruction that allows it instead of adding an example for the case that failed.
 - Give two or three examples that differ where the output varies, so the model learns the pattern rather than one instance.
-- Put commands in a fenced block with the language tag, versions pinned, and each placeholder in square brackets saying what goes there: `python3 scripts/to_csv.py [invoice.pdf] [out.csv]`.
+- Put commands in a fenced block with the language tag and versions pinned, and explain each placeholder, written in square brackets, on the line after the block:
+
+  ```bash
+  python3 scripts/to_csv.py [input-pdf] [output-csv]
+  ```
+
+  `[input-pdf]` is the invoice to read; `[output-csv]` is the file to write.
 - Show code only as long as the pattern needs: the call and its arguments, not a whole program.
 - Keep an example inline when it is short and every run needs it. Put it in a file when it is long or only some runs need it, with a pointer that says when to read it.
 

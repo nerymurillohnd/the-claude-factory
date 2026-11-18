@@ -4,7 +4,7 @@ How to write a skill that relies on more than its own files and scripts: MCP too
 
 ## MCP tools
 
-- Name each tool by its server and tool name, in the form the tool list shows, such as `mcp__postgres__run_query`. A bare tool name can resolve to the wrong server, or to none.
+- Name each tool fully qualified: in Claude Code, in the form its tool list shows, such as `mcp__postgres__run_query`; on other surfaces, as `ServerName:tool_name`, such as `Postgres:run_query`. A bare tool name can resolve to the wrong server, or to none.
 - State the dependency where the skill first needs it: which server, which tools, and what the user must connect.
 - Say what to do when the server isn't connected: tell the user what to connect and stop, or fall back to a stated alternative.
 - Teach the work across the tools: the order of calls, what passes from one to the next, and how to check the result. Leave each tool's parameters to the server's own descriptions.

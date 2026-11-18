@@ -14,7 +14,7 @@ Claude Code reads frontmatter only when `---` is the file's first line. It ignor
 - **`allowed-tools`**: tools the model may use without asking, during the turn that invokes the skill; the grant clears at the user's next message. It grants and never removes a tool.
   - Set it only when the body tells the model to run specific commands on every run, and asking each time would interrupt a flow the user already chose by invoking the skill.
   - Write the narrowest rule that matches the exact command in the body, such as `Bash(git add *) Bash(git commit *)`. Never grant a bare `Bash` or `Bash(*)`: a skill shared in a repository grants itself that access on every machine that runs it.
-  - A scheduled task or `/loop` asks before running a skill that declares `allowed-tools` or `hooks`. For a skill meant to run unattended, tell its users to add `Skill([name])` to `permissions.allow`.
+  - A scheduled task or `/loop` asks before running a skill that declares `allowed-tools` or `hooks`. For a skill meant to run unattended, tell its users to add `Skill([name])` to `permissions.allow`, where `[name]` is the skill's name.
 
 ## Fields only Claude Code accepts
 

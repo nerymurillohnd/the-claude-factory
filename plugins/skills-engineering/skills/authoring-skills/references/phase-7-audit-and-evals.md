@@ -30,7 +30,7 @@ Load `skills-engineering:auditing-skills` and run its full battery, with all its
 ### Choose the runner by skill type
 
 - A skill in a plugin: plugin evals.
-  - Run `claude plugin eval` on the plugin root (Claude Code 2.1.269 or later). It runs each case in an isolated session with the plugin, again with no plugin loaded, and scores the case's graders.
+  - Run `claude plugin eval .` from the plugin root (Claude Code 2.1.269 or later). It runs each case in an isolated session with the plugin, again with no plugin loaded, and scores the case's graders.
   - Read [Plugin evals](https://code.claude.com/docs/en/plugin-evals) for the suite layout, graders and commands.
   - Load `plugin-engineering:plugin-testing-and-debugging` and use it, when available. When it isn't, look for another specialized skill you have for plugin evals and use it. When none exists, proceed with the documentation above.
 - A personal or project skill: evals for skills, the Agent Skills method.
