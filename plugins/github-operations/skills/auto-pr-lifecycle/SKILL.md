@@ -38,7 +38,7 @@ argument-hint: "[PR number or URL]"
 
 - Setting up or updating a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. It hands its finished files back to this skill as a pull request.
 - Auditing a repository, cleaning up branches, stashes or worktrees, recovering lost work, or finding the commit that introduced a bug: load `github-operations:cleanup-and-debug`.
-- Auditing, hardening or repairing GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI: load `github-operations:claude-github-actions`. Hand it the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
+- Auditing, hardening or repairing GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI: load `github-operations:cc-github-actions`. Hand it the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
 - A request only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
 - A one-off question about a pull request, such as its status: read it yourself, or deploy pr-tracker alone.
 

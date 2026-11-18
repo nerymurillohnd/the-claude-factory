@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the `claude-github-actions` skill is now `cc-github-actions`, because claude.ai and the Claude API reject a skill name that contains `claude`. Anyone who runs `/github-operations:claude-github-actions` must run `/github-operations:cc-github-actions` instead. What the skill does is unchanged, and the other skills of the plugin point to the new name.
+
 ## [0.8.1] - 2026-11-15
 
 ### Fixed

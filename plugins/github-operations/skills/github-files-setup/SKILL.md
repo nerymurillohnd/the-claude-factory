@@ -25,7 +25,7 @@ description: Writes a GitHub repository's pull request templates, issue forms, d
 
 - Opening, fixing or merging a pull request, this setup's own pull request included: load `github-operations:auto-pr-lifecycle`.
 - Auditing or cleaning up a repository: load `github-operations:cleanup-and-debug`.
-- Auditing, hardening or fixing GitHub Actions workflows: load `github-operations:claude-github-actions`.
+- Auditing, hardening or fixing GitHub Actions workflows: load `github-operations:cc-github-actions`.
 - Filing, triaging or answering an individual issue or discussion: this skill writes the forms, not the posts.
 - CONTRIBUTING, SECURITY, SUPPORT, code of conduct or README files: this skill has no models for them.
 

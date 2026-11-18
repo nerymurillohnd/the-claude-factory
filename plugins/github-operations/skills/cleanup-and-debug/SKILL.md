@@ -26,7 +26,7 @@ argument-hint: "[repository path]"
 
 - Opening, watching, fixing or merging a pull request, including an open pull request's checks and review comments: load `github-operations:auto-pr-lifecycle`.
 - Writing a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. This skill reports a missing or broken one as a finding; that skill writes it.
-- Auditing, hardening or fixing a GitHub Actions workflow file: load `github-operations:claude-github-actions`. This skill reports failed or stuck runs and workflow-file risks as findings; that skill fixes the workflow.
+- Auditing, hardening or fixing a GitHub Actions workflow file: load `github-operations:cc-github-actions`. This skill reports failed or stuck runs and workflow-file risks as findings; that skill fixes the workflow.
 - Reviewing code quality or documentation: no skill of this plugin does that.
 
 ## Overview
