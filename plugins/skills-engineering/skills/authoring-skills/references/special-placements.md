@@ -28,6 +28,7 @@ Choose by who writes the task:
   - Write it as reference content the subagent applies to whatever it was asked.
   - Never refer to "the user's request" or to the conversation that spawned it.
 - **A subagent may load it on its own**, as the main session does, when its tools include the Skill tool. Write such a skill to work without the main conversation's context.
+  - A subagent runs in the background by default, and there it keeps the Skill and ToolSearch tools and every MCP tool, but only a fixed set of built-in tools. Name each tool the skill relies on, and what to do when one is missing.
 
 A skill run by a subagent can't ask the user anything: Claude Code removes the question tool from every subagent. Give it the default to take, and what to report instead of asking.
 
