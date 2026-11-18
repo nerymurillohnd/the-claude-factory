@@ -8,6 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [0.2.0] - 2026-11-18
 
+### Added
+
+- `restructuring-documents` skill: reorganizes documentation, such as splitting a long guide by topic, moving sections between files or renaming files other documents point to, without losing a line. It freezes a copy of the original, maps every line to its destination in a ledger you approve, moves the content task by task, and checks after each task, with a bundled script, that no line was lost, duplicated or altered and that no pointer names a stale file.
+- `migration-verifier` agent: a read-only reviewer that runs in the background for the whole restructure, checks each task against the original and the ledger, and reports PASS or each problem with its file, line and original text.
+
 ### Changed
 
 - `planning-before-execution` now delegates its research, before writing the plan, to one or more `planning-researcher` subagents in parallel, sized to the breadth of the work, and briefs each subagent, `plan-verifier` included, with the research resources your session has for the task: docs servers, connectors, skills and plugins. It no longer imposes worktree isolation: Claude decides where a probe or a parallel task runs from what the session and your settings allow.
