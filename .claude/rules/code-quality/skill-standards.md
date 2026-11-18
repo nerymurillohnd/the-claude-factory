@@ -1,9 +1,7 @@
 ---
 paths:
-  - ".claude/skills/**"
-  - "plugins/*/skills/**"
-  - ".claude/agents/**"
-  - "plugins/*/agents/**"
+  - "**/skills/**"
+  - "**/agents/**"
 ---
 
 # Skill and subagent standards
