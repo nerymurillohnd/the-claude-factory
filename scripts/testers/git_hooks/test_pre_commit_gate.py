@@ -197,6 +197,18 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage(probe, 'export const one: number = "one"\n')
         self.assert_blocks(self.box.gate(), "tsc")
 
+    def test_mod_tsx_uses_its_tsconfig(self) -> None:
+        """A mod's .tsx file is formatted, linted and type-checked like a .ts file."""
+        mod = "plugins/macos-grep-guard"
+        self.box.write(f"{mod}/tsconfig.json", MOD_TSCONFIG)
+        probe = f"{mod}/hooks/gate-probe.tsx"
+        self.box.stage(probe, "export const one: number = 1\n")
+        self.assert_passes(self.box.gate())
+        self.box.stage(probe, 'export const one: number = "one"\n')
+        self.assert_blocks(self.box.gate(), "tsc")
+        self.box.stage(probe, "export const one: number = 1;;\n")
+        self.assert_blocks(self.box.gate(), "biome")
+
     def test_only_staged_files_are_checked(self) -> None:
         """A broken file that is not staged does not block the commit."""
         self.box.write("scripts/validators/gate_broken.py", "import os\n")

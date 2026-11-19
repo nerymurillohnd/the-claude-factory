@@ -4,8 +4,8 @@
 # it; `git commit --no-verify` (-n) skips it, as Git documents for every pre-commit hook.
 #
 # What it checks, by staged file type:
-#   .ts .mjs .md .json   Biome (biome.jsonc), formatting and lint
-#   .ts .mjs             tsc --noEmit with the root tsconfig.json, or a mod's generated one
+#   .ts .tsx .mjs .md .json   Biome (biome.jsonc), formatting and lint
+#   .ts .tsx .mjs             tsc --noEmit with the root tsconfig.json, or a mod's generated one
 #   .py .pyi             ruff check, ruff format --check (ruff.toml), basedpyright (pyrightconfig)
 #   .sh                  shfmt -d (.editorconfig), shellcheck (.shellcheckrc, SHELLCHECK_OPTS)
 # Other types, and deleted files, are not checked here; Validate's Checks job still checks them.
@@ -40,7 +40,7 @@ sh_files=()
 partial=()
 while IFS= read -r -d '' file; do
   case "${file}" in
-    *.ts | *.mjs) biome_files+=("${file}") ts_files+=("${file}") ;;
+    *.ts | *.tsx | *.mjs) biome_files+=("${file}") ts_files+=("${file}") ;;
     *.md | *.json) biome_files+=("${file}") ;;
     *.py | *.pyi) py_files+=("${file}") ;;
     *.sh) sh_files+=("${file}") ;;
