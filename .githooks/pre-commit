@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Git runs this before every commit once core.hooksPath points at .githooks (npm's prepare script
+# sets it). The gate checks the staged files; git commit --no-verify skips it.
+set -euo pipefail
+root="$(git rev-parse --show-toplevel)"
+exec bash "${root}/scripts/validators/pre-commit-gate.sh"
