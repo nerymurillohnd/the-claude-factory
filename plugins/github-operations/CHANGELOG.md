@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The instructions of the `pr-tracker`, `pr-fixer`, `pr-finalizer` and `health-diagnostics` agents now open with their role, their expertise and a goal that sums up their existing rules, and mark each section with a plain label instead of a Markdown heading. Their instructions keep everything they said.
+
 ## [0.9.0] - 2026-11-18
 
 ### Changed
