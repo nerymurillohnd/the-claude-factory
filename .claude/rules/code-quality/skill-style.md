@@ -20,6 +20,6 @@ Structure every file of a skill, in a plugin or in `.claude/skills/`, this way, 
 
 ## Reference layout
 
-- Order a reference file as: the `#` title; one sentence on what the file holds; `## Contents` with links to its sections when the file is over 100 lines; `## Gotchas`; the procedure sections; `## Official sources` last.
+- Order a reference file as: the `#` title; one sentence on what the file holds; `## Contents` with links to its sections when the file is over 100 lines; `## Gotchas`; the procedure sections; `## Official sources`; `## Exit` last, with the condition that closes the file and a return to the step list in `SKILL.md`.
 - Open `## Official sources` with "This file condenses these pages. Read the page whose condition holds before you decide", then one bullet per page: "Read [Title](url#anchor) when [condition]. It gives [what the page adds]." Check each anchor against the page before you commit it.
 - Show examples as 3 or 4 weak and strong pairs in one fenced block, each labeled with a Weak or Strong comment that says why, in the block's own comment syntax: `<!-- Weak: … -->` in Markdown, where a `#` line reads as a heading, and `# Weak: …` in YAML or shell.
