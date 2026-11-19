@@ -46,6 +46,7 @@ Add an item only when all of these hold:
 | DEBT-006 | npm run lint:js fails on 25 Biome findings in plugin files | 🟠 Blocked |
 | DEBT-007 | Fourteen plugin subagents use Markdown headings instead of the house agent format | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
+| DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 
 ## 📂 Open items
 
@@ -264,6 +265,34 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the redesign's scope waits on the owner's decisions: setup only, the maintenance folders, and how much of the gnuenz redesign to port.
 - **Next action:** the owner decides the scope; then port the redesign from 5ade49e onto `main` with `skills-engineering:authoring-skills` and release it.
 - **Review condition:** the released body sets up a new marketplace as the description says.
+- **Related records:** [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
+
+### DEBT-009 — authoring-skills' SKILL.md is over the 5,000-token budget
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🔴 Risk accepted |
+| **Category** | quality |
+| **Owner** | skills-engineering |
+| **Logged** | 2026-11-19 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `claude --plugin-dir plugins/skills-engineering plugin details skills-engineering` estimates `authoring-skills` at about 5.7k tokens on invoke, on 2026-11-19, on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
+  - Its `SKILL.md` body is 17,560 characters.
+  - `.claude/rules/code-quality/skill-standards.md` sets the `SKILL.md` body under about 5,000 tokens, and the skill's own standard 5 sets the same limit.
+  - The skill's `phase-2-body.md` gotcha states that after compaction Claude keeps only the first 5,000 tokens of each invoked skill.
+  - The owner accepted the overage for this release on 2026-11-19.
+- **Inferences:** in a long session that compacts, Phases 6 and 7 at the end of `SKILL.md` can drop from context, so the closing question, the audit and the evals may be skipped.
+- **Open questions:** how much of the estimate is the frontmatter description, which `plugin details` counts with the body.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** after compaction, Claude can lose the end of the workflow and finish without the report, the question or the audit.
+- **Why it is not fixed now:** the owner chose to release this version as it is.
+- **Next action:** cut restatements, such as "Your expertise" and "What this skill promotes", or move the long Phase 2 and Phase 3 text into references, until `plugin details` shows under 5,000 tokens on invoke.
+- **Review condition:** the next change to `authoring-skills`' `SKILL.md`, or a run where Claude skips Phase 6 or 7 after compaction.
 - **Related records:** [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
 
 <!--
