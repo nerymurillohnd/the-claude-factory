@@ -30,6 +30,7 @@
 **Formatting, linting and type checking**
 
 - Run `npx biome check --write <file>` to format and lint a TypeScript, JavaScript, JSON, YAML or Markdown file after each edit; on Markdown Claude reads as instructions, run `npx biome lint <file>` instead.
+- Run `npm run lint:agents -- <file>` after each edit of a subagent in `plugins/*/agents/` or `.claude/agents/`: it reports any Markdown heading outside the frontmatter and fenced blocks.
 - Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
 - Run `shfmt -w <file>`, then `shellcheck <file>`, which takes its options from `SHELLCHECK_OPTS` and `.shellcheckrc`, to format and lint a shell script after each edit.
 - Run `npx tsc -p tsconfig.json --noEmit` to type-check the maintainer JavaScript after each change to a `.mjs`, `.cjs` or `.js` file: the root `tsconfig.json` lists only those. Type-check a mod's `.ts` files with `npx tsc -p plugins/<mod> --noEmit`, through the `tsconfig.json` Claude Code writes into the mod when it loads it from `--plugin-dir` in an interactive session.
@@ -44,8 +45,9 @@
 **CI/CD**
 
 - Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
+- Run `npm run check:links -- <file>...` to check that the URLs in those files answer, or with no file for every tracked file; 404, 410 and no connection fail, other answers warn. List a URL that only works for a tool, or a documented example, in `scripts/checkers/live-urls.ignore`. Validate runs it on a pull request's changed files, and the weekly Links workflow on every file.
 - Run `npm run check:pr` before a push to run the checks of Validate's `Checks` job, or `npm run check:pr -- <step>` for one of them.
-- Expect each commit to run the Git pre-commit gate, which `npm ci` turns on through `prepare`: on the staged `.sh`, `.ts`, `.mjs`, `.md`, `.py`, `.pyi` and `.json` files only, it applies Biome's and Ruff's lint and format fixes and `shfmt -w`, stages those fixes, then runs Biome, Ruff, basedpyright, ShellCheck and `tsc --noEmit`, and it refuses a file with unstaged changes on top. Run `npm run check:staged` to run it before committing, and fix what it reports instead of committing with `--no-verify`.
+- Expect each commit to run the Git pre-commit gate, which `npm ci` turns on through `prepare`: on the staged `.sh`, `.ts`, `.mjs`, `.md`, `.py`, `.pyi` and `.json` files only, it applies Biome's and Ruff's lint and format fixes and `shfmt -w`, stages those fixes, then runs Biome, Ruff, basedpyright, ShellCheck, `tsc --noEmit` and, on subagent files, `agent-headings`, and it refuses a file with unstaged changes on top. Run `npm run check:staged` to run it before committing, and fix what it reports instead of committing with `--no-verify`.
 
 **Platforms**
 
@@ -71,7 +73,7 @@ Do every task, area, phase and function through the skill this section designate
 ### Skills
 
 - Use `skills-engineering:authoring-skills` to write or change any skill, in a plugin or in a project's `.claude/skills/`.
-- Use `skills-engineering:auditing-skills` to audit or review a skill, including one `authoring-skills` wrote, and run it only when the owner asks: each run launches a reviewer agent per selected domain.
+- Use `skills-engineering:auditing-skills` to audit, review or diagnose a skill, including one `authoring-skills` wrote; it launches a reviewer agent per selected domain, so confirm the reviewers with the owner before it launches them.
 
 ### Plugins
 

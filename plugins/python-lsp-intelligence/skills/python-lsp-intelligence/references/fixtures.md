@@ -24,4 +24,4 @@ rm -rf "$W"
 
 - A broken fixture without its expected code means the check is blind here: the project's configuration disables that rule, the tool is not the one you think, or it runs in another environment. Say which, and do not call code clean on that check.
 - A failing `clean_control` means the checks misfire in this project. Explain the findings before trusting any other result.
-- Fewer than four references after two matching results means the index is cold or the file is outside the working directory; see "Trusting a result" in SKILL.md.
+- Fewer than four references after three identical results means the index is cold or the file is outside the working directory; see "Trusting a result" in SKILL.md.

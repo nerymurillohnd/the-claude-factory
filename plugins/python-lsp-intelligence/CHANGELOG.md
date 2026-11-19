@@ -6,6 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-19
+
+### Added
+
+- **Breaking:** the first Python edit of a session now waits until Claude has loaded the `python-lsp-intelligence:python-lsp-intelligence` skill. A new `PreToolUse` hook denies that one Edit, Write or NotebookEdit call, once, with a message that tells Claude to load the skill and retry; every later edit goes through, so a session that can't load skills is never locked out. A subagent counts on its own, and after compaction the next edit asks for the skill again. The hook keeps its markers in the plugin's data folder and does nothing where Claude Code gives it none.
+- The skill now opens with a step that runs before the first Python file of the task: it checks that the language server is installed and that the `LSP` tool is available, starts the server with a first call, and switches to Grep and reading, reported as such, when either is missing, as in cloud sessions.
+
+### Changed
+
+- The skill's description now opens with the work it serves, before writing, editing, renaming or deleting Python code, even for a one-line fix, and says what it adds over a text search, so Claude loads it for everyday Python edits instead of only when asked.
+- The skill now trusts an `LSP` result only after three consecutive identical answers to the same call, at most six calls, instead of two out of three, and records a result as unstable when no three match.
+- The skill now says when a name is public API, which code outside the repository can import or run, and asks the user before renaming or deleting one.
+- The skill now gets callers and callees with `incomingCalls` and `outgoingCalls` on the function's position, using `prepareCallHierarchy` only to confirm the position.
+
 ## [0.3.4] - 2026-11-14
 
 ### Fixed
@@ -93,7 +107,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `python-lsp-intelligence` skill: navigates Python code with the language server; checks aliases, re-exports, entry points and dynamic consumers before a rename or deletion; fixes basedpyright and Ruff findings by validating untrusted data instead of casting, suppressing or weakening rules; and reports each check's status, the files covered and what stayed unverified.
 - Optional controls: a bundled runner checks basedpyright and Ruff against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.3.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.4.0
 [0.3.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.4
 [0.3.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.3
 [0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.2

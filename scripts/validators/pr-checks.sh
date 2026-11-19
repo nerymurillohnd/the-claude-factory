@@ -7,17 +7,18 @@
 #   failed. With steps, runs only those, in order.
 #
 # Steps: lint biome-changed typecheck test-scripts test-plugins validate mods consistency
-#        release-notes install debt-validate (debt-validate belongs to the Debt job, never to "all")
+#        release-notes install links debt-validate (debt-validate belongs to the Debt job, never to
+#        "all")
 #
-# CHECKS_BASE is the commit the branch is compared with for biome-changed and install; it defaults
-# to origin/main. Both read committed changes only, as CI sees them.
+# CHECKS_BASE is the commit the branch is compared with for biome-changed, install and links; it
+# defaults to origin/main. They read committed changes only, as CI sees them.
 set -Eeuo pipefail
 trap 'exit 1' ERR
 
 # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003): the Debt job
 # validates them strictly, and the Checks job installs them with `check:install --no-strict`.
 DEBT_003_PLUGINS="file-tree-pane model-trace project-maintainer tool-ledger turn-meter"
-ALL_STEPS="lint biome-changed typecheck test-scripts test-plugins validate mods consistency release-notes install"
+ALL_STEPS="lint biome-changed typecheck test-scripts test-plugins validate mods consistency release-notes install links"
 
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
@@ -29,6 +30,7 @@ is_debt_003() {
 
 step_lint() {
   # lint:js is held back by DEBT-006; biome-changed gates the files a branch changes instead.
+  npm run lint:agents
   npm run lint:python
   npm run lint:shell
   npm run lint:workflows
@@ -80,6 +82,21 @@ step_install() {
   if ((${#debt[@]} > 0)); then npm run check:install -- --from local --no-strict "${debt[@]}"; fi
 }
 
+step_links() {
+  # The live URLs of the files the branch adds or changes; the weekly Links workflow checks all.
+  local file names
+  local -a changed=()
+  names="$(git diff --name-only --diff-filter=ACMR "${base}...HEAD")"
+  while IFS= read -r file; do
+    if [[ -n ${file} ]]; then changed+=("${file}"); fi
+  done <<< "${names}"
+  if ((${#changed[@]} == 0)); then
+    echo "No file changed."
+    return 0
+  fi
+  bash scripts/checkers/live-urls.sh "${changed[@]}"
+}
+
 step_debt_validate() {
   local name status=0
   for name in ${DEBT_003_PLUGINS}; do
@@ -101,6 +118,7 @@ run_step() {
     consistency) npm run check:consistency -- --main ;;
     release-notes) step_release_notes ;;
     install) step_install ;;
+    links) step_links ;;
     debt-validate) step_debt_validate ;;
     *)
       echo "pr-checks: unknown step '$1'; steps: ${ALL_STEPS} debt-validate" >&2

@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-19
+
+### Changed
+
+- The instructions of the `pr-tracker`, `pr-fixer`, `pr-finalizer` and `health-diagnostics` agents now open with their role, their expertise and a goal that sums up their existing rules, and mark each section with a plain label instead of a Markdown heading. Their instructions keep everything they said.
+
 ## [0.9.0] - 2026-11-18
 
 ### Changed
@@ -276,7 +282,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.9.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.9.1...HEAD
+[0.9.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.1
 [0.9.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.0
 [0.8.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.1
 [0.8.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.0

@@ -1,0 +1,30 @@
+name: Links
+
+# Every week, checks that each http(s) URL in the repository's tracked files still answers, so a
+# page that moves or disappears is found even when no pull request touches its file. Validate
+# checks the URLs of the files each pull request changes. It needs only git and curl.
+
+on:
+  schedule:
+    - cron: "17 13 * * 1" # Mondays 13:17 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: links
+  cancel-in-progress: true
+
+jobs:
+  links:
+    name: Live URLs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check every URL
+        run: bash scripts/checkers/live-urls.sh

@@ -1,6 +1,6 @@
 ---
 name: auditing-skills
-description: Use every time the user or the task involves auditing, reviewing, checking, diagnosing, improving or refining a Claude Agent Skill, recommending changes to one, judging whether one is worth installing or finding why one misbehaves, and, right after a new skill is created or an existing one is edited, to ask the user whether to audit it, for every kind of skill, whether in a plugin, a personal, project or managed folder, a claude.ai account, a URL or a repository. Not for writing a new skill. Runs specialized reviewer agents in parallel, each bound to its own domain, against a curated collection of current best practices from the Claude Platform and Claude Code docs, Anthropic and the Agent Skills specification, and returns each one's complete report with explicit evidence for every finding, the corrections it needs and suggested improvements.
+description: Use when the user asks to review, audit, check or improve a Claude skill, or reports one that misbehaves, such as a skill Claude never uses or loads for the wrong requests, a weak or truncated description, frontmatter that fails, a skill that breaks on claude.ai or in a plugin, or one too long for its budget. Also to judge whether a skill is worth installing, and, right after a skill is written or edited, to offer the user an audit of it. Covers skills in plugins, personal, project and managed folders, claude.ai accounts, URLs and repositories, one skill or several at once. Not for writing a new skill. Runs only the specialized reviewers the request needs, such as one for the description alone, each as its own agent against current Anthropic and Agent Skills best practices, once the user confirms them, and returns each reviewer's full report with file-and-line evidence, the fix for every finding and suggested improvements.
 allowed-tools: Bash(python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py" *)
 argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [comprehension] [feature-fit] [scripts] [skill path, name or URL]"
 ---
@@ -59,10 +59,25 @@ Each reviewer carries its own expertise, reference, verification checklist and r
 
 This invocation's arguments: $ARGUMENTS
 
-1. Take every word that matches a reviewer name above as a selected reviewer, and the rest as the skill to audit.
-2. If no reviewer is named, select every reviewer: the audit runs complete.
+1. Take every word that matches a reviewer name above as a selected reviewer, and the rest as the skills to audit, one or several.
+2. If no reviewer is named, select them from what the request is about, because a narrow question answered by every reviewer costs the user an agent per domain for findings they didn't ask for:
+
+   | The request is about | Select |
+   | :-- | :-- |
+   | The description, the name, the frontmatter, or a skill Claude never uses or loads for the wrong requests | `frontmatter-description`, and `size-limits-and-budgets` when the description may be cut in the listing |
+   | A skill that doesn't load, breaks on one surface, or fails inside a plugin, a subagent or with its hooks | `runtime-contract` |
+   | Length, tokens or the listing budget | `size-limits-and-budgets` |
+   | Its scripts | `scripts` |
+   | Its examples or embedded commands | `content-patterns` |
+   | Whether it teaches Claude anything, or is worth installing | `knowledge-delta` and `feature-fit` |
+   | Whether it belongs in CLAUDE.md, a rule, a hook or another feature, or clashes with the environment | `feature-fit` |
+   | Instructions Claude misreads, skips or follows in the wrong order | `comprehension` and `task-mechanisms` |
+   | A general audit or review with no narrower subject | every reviewer: the audit runs complete |
+
 3. If a word looks like a reviewer name but matches none, list the valid names and ask the user which one they meant.
-4. If no skill is named, take the skill the user's request or the current task points to: the one just created or edited, or the one under discussion. Ask only if none is clear.
+4. If no skill is named, take the skills the user's request or the current task points to: the one just created or edited, or the ones under discussion. Ask only if none is clear.
+5. Unless the user named the reviewers, tell them, before step 3 of the workflow, which reviewers you selected for each skill and why, and that each one runs as its own agent, and wait for their confirmation or their changes.
+6. With several skills, run the workflow once per skill, in the order the user gave, with the reviewers confirmed for that skill.
 
 ## Workflow
 

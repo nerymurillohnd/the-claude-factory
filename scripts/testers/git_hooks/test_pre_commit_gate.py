@@ -29,6 +29,7 @@ CLEAN_MJS = "/** @param {number} value */\nexport const double = (value) => valu
 PROBE_PY = "scripts/validators/gate_probe.py"
 # A stand-in for the tsconfig.json Claude Code writes at a mod's root (git-ignored).
 MOD_TSCONFIG = '{"extends": "../../tsconfig.base.json", "compilerOptions": {"types": []}}\n'
+AGENT_HEAD = "---\nname: gate-probe\ndescription: A probe agent\n---\n\n"
 PADDED_TABLE = "# Probe\n\n| A   | B |\n| :-- | :-- |\n| 1   | 2 |\n"
 
 type Result = subprocess.CompletedProcess[str]
@@ -207,6 +208,28 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage(".claude/rules/gate-probe.md", PADDED_TABLE)
         self.assert_passes(self.box.gate())
         self.assertEqual(self.box.staged(".claude/rules/gate-probe.md"), PADDED_TABLE)
+
+    def test_agent_heading_blocks(self) -> None:
+        """A Markdown heading in a subagent's body, nested folder included, blocks the commit."""
+        self.box.stage(".claude/agents/testers/gate-probe.md", AGENT_HEAD + "## Goal\n\nWork.\n")
+        result = self.box.gate()
+        self.assert_blocks(result, "agent-headings")
+        self.assertIn("gate-probe.md:6: AH-01", result.stdout)
+
+    def test_agent_without_headings_passes(self) -> None:
+        """Uppercase labels pass, and a heading inside a fenced report template is allowed."""
+        body = "You are a probe.\n\nGOAL:\n\nWork.\n\n```markdown\n## Report\n```\n"
+        self.box.stage("plugins/hook-engineering/agents/gate-probe.md", AGENT_HEAD + body)
+        result = self.box.gate()
+        self.assert_passes(result)
+        self.assertIn("== pre-commit: agent-headings", result.stdout)
+
+    def test_markdown_outside_agents_skips_agent_headings(self) -> None:
+        """A heading in other Markdown, even in a folder named agents, is not checked."""
+        self.box.stage("plugins/hook-engineering/skills/s/agents/gate-probe.md", "# Fine\n")
+        result = self.box.gate()
+        self.assert_passes(result)
+        self.assertNotIn("agent-headings", result.stdout)
 
     def test_tsc_blocks(self) -> None:
         """A type error in a .mjs file the root tsconfig covers blocks the commit."""

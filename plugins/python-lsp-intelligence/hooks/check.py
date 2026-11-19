@@ -615,10 +615,99 @@ def changed_python(event: JsonObject) -> tuple[list[Path], str]:
     return [*verified, *loose], ""
 
 
+# The skill gate: the first edit of a Python file in a session, or in a subagent, waits until
+# Claude has loaded the plugin's skill. It denies that one edit, once, and lets every later edit
+# through, so a session that can't load skills is never locked out. The markers live in
+# ${CLAUDE_PLUGIN_DATA}/skill-loads; without that variable the gate does nothing.
+SKILL_NAMES = frozenset({PLUGIN, f"{PLUGIN}:{PLUGIN}"})
+GATE_DENIAL = (
+    f"{PLUGIN}: before the first Python edit of this session, load the {PLUGIN}:{PLUGIN} "
+    "skill with the Skill tool and apply it, then retry this edit. This check blocks only "
+    "the first edit; later edits go through."
+)
+
+
+def gate_marker(event: JsonObject, state: str) -> Path | None:
+    """The marker of state ("loaded" or "denied") for this session and agent, or None."""
+    data = os.environ.get("CLAUDE_PLUGIN_DATA", "")
+    session = text_at(event, "session_id")
+    if not data or not session:
+        return None
+    key = SESSION_UNSAFE.sub("_", f"{session}-{text_at(event, 'agent_id') or 'main'}")
+    return Path(data) / "skill-loads" / f"{key}.{state}"
+
+
+def touch_marker(marker: Path | None) -> None:
+    """Create marker, pruning markers older than NOTICE_MAX_AGE_S; a failure is ignored."""
+    if marker is None:
+        return
+    with contextlib.suppress(OSError):
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        expired = time.time() - NOTICE_MAX_AGE_S
+        for old in marker.parent.iterdir():
+            if old.is_file() and old.stat().st_mtime < expired:
+                old.unlink()
+        marker.touch()
+
+
+def edited_python(event: JsonObject) -> bool:
+    """True when the edit tool call targets a Python file, judging a new file by its content."""
+    tool_input = event.get("tool_input")
+    name = text_at(tool_input, "file_path") or text_at(tool_input, "notebook_path")
+    if not name:
+        return False
+    path = Path(name.replace("\\", "/"))
+    if path.suffix or path.is_file():
+        return is_python(path)
+    return SHEBANG.match(text_at(tool_input, "content").partition("\n")[0]) is not None
+
+
+def first_edit_denial(event: JsonObject) -> str:
+    """The deny JSON for the session's first Python edit before the skill loaded; else ""."""
+    loaded, denied = gate_marker(event, "loaded"), gate_marker(event, "denied")
+    if loaded is None or denied is None or loaded.is_file() or denied.is_file():
+        return ""
+    if not edited_python(event):
+        return ""
+    touch_marker(denied)
+    decision = {"permissionDecision": "deny", "permissionDecisionReason": GATE_DENIAL}
+    return json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", **decision}})
+
+
+def forget_skill(event: JsonObject) -> None:
+    """Drop the session's markers, so the next Python edit asks for the skill again."""
+    for state in ("loaded", "denied"):
+        marker = gate_marker(event, state)
+        if marker is not None:
+            with contextlib.suppress(OSError):
+                marker.unlink(missing_ok=True)
+
+
+def gate(event: JsonObject) -> bool:
+    """Handle the skill gate's events; False for an event the post-edit check owns."""
+    match text_at(event, "hook_event_name"):
+        case "PreToolUse":
+            _ = sys.stdout.write(first_edit_denial(event))
+        case "PostToolUse" if text_at(event, "tool_name") == "Skill":
+            if text_at(event, "tool_input", "skill").lstrip("/") in SKILL_NAMES:
+                touch_marker(gate_marker(event, "loaded"))
+        case "UserPromptExpansion":
+            if text_at(event, "command_name").lstrip("/") in SKILL_NAMES:
+                touch_marker(gate_marker(event, "loaded"))
+        case "PostCompact":
+            # Compaction can drop the skill's text, so the next Python edit asks for it again.
+            forget_skill(event)
+        case _:
+            return False
+    return True
+
+
 def main() -> int:
     """Entry point: exit 0 when clean or not applicable, 2 with findings or failures."""
     event = read_event()
     if event is None:
+        return 0
+    if gate(event):
         return 0
     files, arrival = changed_python(event)
     if not files:

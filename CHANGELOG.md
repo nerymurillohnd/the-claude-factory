@@ -14,6 +14,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **skill-diagnostics** 0.4.3 — the six audit agents take the same layout; their rules, methods and report templates are unchanged.
 - **svelte-development** 0.1.4 — `svelte-code-auditor` and `svelte-component-editor` take the same layout; their rules, steps and report formats are unchanged.
 - **tailwind-development** 0.3.5 — the four agents take the same layout; their steps and reports are unchanged.
+- **skills-engineering** 0.3.0 — **Breaking:** `auditing-skills` now picks the reviewers your request is about, such as only `frontmatter-description` for a question about a skill's description, and confirms them with you before it launches them, instead of launching all nine; a general audit still runs every reviewer, and it can now audit several skills in one request.
+- **python-lsp-intelligence** 0.4.0 — **Breaking:** the first Python edit of a session now waits, once, until Claude has loaded the plugin's skill; the skill now checks and starts the language server before the first file, trusts an LSP result after three identical answers, and says when a name is public API.
+- **bash-lsp-intelligence** 0.3.0 — **Breaking:** the first shell script edit of a session now waits, once, until Claude has loaded the plugin's skill; the skill takes the same opening step, three-identical rule and public API rule.
+- **typescript6-lsp-intelligence** 0.4.0 — **Breaking:** the first TypeScript or JavaScript edit of a session now waits, once, until Claude has loaded `ts-lifecycle`; the skill takes the same opening step and three-identical rule, and its description names TypeScript 6.
+- **typescript7-lsp-intelligence** 0.5.0 — **Breaking:** the same first-edit wait and opening step; the `ts-lifecycle` skill now carries the TypeScript 6 plugin's corrections, among them that `allowJs` alone doesn't type-check JavaScript.
+- **github-operations** 0.9.1 — the four agents open with their role, their expertise and their goal, and mark their sections with plain labels instead of Markdown headings; what they do is unchanged.
 
 ## 2026-11-18
 

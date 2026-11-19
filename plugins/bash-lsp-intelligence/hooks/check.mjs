@@ -778,10 +778,147 @@ function changedShell(event) {
   }
 }
 
+// The skill gate: the first edit of a shell file in a session, or in a subagent, waits until
+// Claude has loaded the plugin's skill. It denies that one edit, once, and lets every later edit
+// through, so a session that can't load skills is never locked out. The markers live in
+// ${CLAUDE_PLUGIN_DATA}/skill-loads; without that variable the gate does nothing.
+const SKILL_NAMES = new Set([PLUGIN, `${PLUGIN}:${PLUGIN}`])
+const GATE_DENIAL = `${PLUGIN}: before the first shell script edit of this session, load the ${PLUGIN}:${PLUGIN} skill with the Skill tool and apply it, then retry this edit. This check blocks only the first edit; later edits go through.`
+
+// The marker of state ('loaded' or 'denied') for this session and agent, or null.
+/**
+ * @param {Record<string, unknown>} event
+ * @param {'loaded' | 'denied'} state
+ * @returns {string | null}
+ */
+function gateMarker(event, state) {
+  const session = textAt(event, 'session_id')
+  if (!CLAUDE_PLUGIN_DATA || !session) {
+    return null
+  }
+  const key = `${session}-${textAt(event, 'agent_id') || 'main'}`.replace(/[^A-Za-z0-9_-]/g, '_')
+  return join(CLAUDE_PLUGIN_DATA, 'skill-loads', `${key}.${state}`)
+}
+
+// Create marker, pruning markers older than NOTICE_MAX_AGE_MS; a failure is ignored.
+/** @param {string | null} marker */
+function touchMarker(marker) {
+  if (marker === null) {
+    return
+  }
+  try {
+    const folder = dirname(marker)
+    mkdirSync(folder, { recursive: true })
+    const expired = Date.now() - NOTICE_MAX_AGE_MS
+    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+      const old = join(folder, entry.name)
+      if (entry.isFile() && statSync(old).mtimeMs < expired) {
+        unlinkSync(old)
+      }
+    }
+    writeFileSync(marker, '')
+  } catch {
+    // Without a marker the gate denies once more, then lets edits through.
+  }
+}
+
+// True when the edit tool call targets a shell file, judging a new file by its content.
+/**
+ * @param {Record<string, unknown>} event
+ * @returns {boolean}
+ */
+function editsShell(event) {
+  const name = textAt(event, 'tool_input', 'file_path').replaceAll('\\', sep)
+  if (name === '') {
+    return false
+  }
+  const base = name.slice(name.lastIndexOf(sep) + 1)
+  if (base.lastIndexOf('.') > 0 || existsSync(name)) {
+    return dialect(name) !== null
+  }
+  return SHEBANG_SHELL.test(textAt(event, 'tool_input', 'content').split('\n')[0] ?? '')
+}
+
+// The deny JSON for the session's first shell edit before the skill loaded; else ''.
+/**
+ * @param {Record<string, unknown>} event
+ * @returns {string}
+ */
+function firstEditDenial(event) {
+  const loaded = gateMarker(event, 'loaded')
+  const denied = gateMarker(event, 'denied')
+  if (loaded === null || denied === null || existsSync(loaded) || existsSync(denied)) {
+    return ''
+  }
+  if (!editsShell(event)) {
+    return ''
+  }
+  touchMarker(denied)
+  return JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'deny',
+      permissionDecisionReason: GATE_DENIAL,
+    },
+  })
+}
+
+// True when name, from the Skill tool or a typed command, is this plugin's skill.
+/**
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isOwnSkill(name) {
+  return SKILL_NAMES.has(name.startsWith('/') ? name.slice(1) : name)
+}
+
+// Drop the session's markers, so the next shell edit asks for the skill again.
+/** @param {Record<string, unknown>} event */
+function forgetSkill(event) {
+  for (const marker of [gateMarker(event, 'loaded'), gateMarker(event, 'denied')]) {
+    try {
+      if (marker !== null) {
+        unlinkSync(marker)
+      }
+    } catch {
+      // No marker, or one left behind: either way at most one more reminder.
+    }
+  }
+}
+
+// Handle the skill gate's events; false for an event the post-edit check owns.
+/**
+ * @param {Record<string, unknown>} event
+ * @returns {boolean}
+ */
+function gate(event) {
+  const name = textAt(event, 'hook_event_name')
+  if (name === 'PreToolUse') {
+    process.stdout.write(firstEditDenial(event))
+  } else if (name === 'PostToolUse' && textAt(event, 'tool_name') === 'Skill') {
+    if (isOwnSkill(textAt(event, 'tool_input', 'skill'))) {
+      touchMarker(gateMarker(event, 'loaded'))
+    }
+  } else if (name === 'UserPromptExpansion') {
+    if (isOwnSkill(textAt(event, 'command_name'))) {
+      touchMarker(gateMarker(event, 'loaded'))
+    }
+  } else if (name === 'PostCompact') {
+    // Compaction can drop the skill's text, so the next shell edit asks for it again.
+    forgetSkill(event)
+  } else {
+    return false
+  }
+  return true
+}
+
 /** @returns {number} */
 function main() {
   const event = readEvent()
   if (event === null) {
+    return 0
+  }
+  if (gate(event)) {
     return 0
   }
   const { shell, zsh, arrival } = changedShell(event)
