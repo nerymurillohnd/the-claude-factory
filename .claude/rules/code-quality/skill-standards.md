@@ -24,6 +24,7 @@ Write and edit every skill with `skills-engineering:authoring-skills`; these are
 ## Descriptions
 
 - State explicitly and specifically what the skill or subagent covers and does: the more precise, the better Claude triggers it.
+- Use the words a real user writes or says when asking for the task, such as the action verbs write, review, migrate or deploy, and avoid words and phrases that trigger nothing, such as any, anything, anytime, anywhere, whenever, wherever, whatever, everything, any kind of and all kinds of.
 - Prefer opening with a "Use…" clause that says when to use it, for skills and subagents alike; write the rest in the third person.
 
 ## Names and checks
