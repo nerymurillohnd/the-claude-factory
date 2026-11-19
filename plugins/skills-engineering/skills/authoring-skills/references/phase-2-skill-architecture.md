@@ -107,6 +107,8 @@ Claude Code replaces these variables only in `SKILL.md` and in the Bash rules of
 - Keep a file one skill uses inside that skill's folder, so it travels with every copy and upload. Put a file several skills of one plugin use at the plugin root.
 - Put a skill's few supporting files, such as a workflow, a checklist or a form guide, at its root next to `SKILL.md`. Move them to `references/` when they are many or group by domain or phase.
 - Name a supporting file at the root in capitals, such as `WORKFLOW.md`, `CHECKLIST.md` or `REFERENCE.md`, so they stand out beside `SKILL.md`, and the files in `references/` in lowercase. Write each link with the file name's exact case: Linux and cloud sessions treat `forms.md` and `FORMS.md` as different files.
+- Add another folder only for files of one kind that `references/`, `scripts/` and `assets/` don't describe, such as `examples/` for several input and output cases, or `evals/` for the eval cases, and link what Claude must read from `SKILL.md` with its condition.
+- Write what the skill produces for the user where the user asks for it, not in the skill's own folder: a plugin or synced copy is replaced on the next update. Keep the skill's own state where the configuration file of Phase 2 says.
 - In a skill whose work runs in phases, give each reference one phase and one topic, and name it with both, such as `phase-2-hooks.md`. A topic two phases use gets one file per phase, because a rule kept in another phase's file is applied late or not at all.
 
 ## Split the content
@@ -140,5 +142,5 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Available string substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions) when a file reaches another by a path variable. It defines each variable and where Claude Code replaces it.
 - Read [Find plugins on disk](https://code.claude.com/docs/en/plugins/loading#find-plugins-on-disk) when the skill reads or writes plugin files at run time. It shows where the installed version and the data folder live.
 - Read [Share files within a marketplace with symlinks](https://code.claude.com/docs/en/plugins/host-marketplace#share-files-within-a-marketplace-with-symlinks) when a plugin skill links to files outside its folder. It says which symlinks are kept, copied or dropped.
-- Read [Specification](https://agentskills.io/specification#optional-directories) when you need the conventions for `scripts/`, `references/` and `assets/`. It gives what each optional folder holds.
+- Read [Specification](https://agentskills.io/specification#optional-directories) when you need the conventions for `scripts/`, `references/` and `assets/`, or another folder. It gives what each optional folder holds, and that a skill may hold any other files and folders.
 - Read [How to create custom skills](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) when the skill is uploaded to claude.ai or the API. It gives the zip structure and how to package the folder.
