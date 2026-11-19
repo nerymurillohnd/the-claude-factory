@@ -6,9 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- **Breaking:** the first TypeScript or JavaScript edit of a session now waits until Claude has loaded the `typescript7-lsp-intelligence:ts-lifecycle` skill. A new `PreToolUse` hook denies that one Edit or Write call, once, with a message that tells Claude to load the skill and retry; every later edit goes through, so a session that can't load skills is never locked out. A subagent counts on its own, and after compaction the next edit asks for the skill again. The hook keeps its markers in the plugin's data folder and does nothing where Claude Code gives it none.
+- The skill now opens with a step that runs before the first TypeScript or JavaScript file of the task: it checks that the language server is installed and that the `LSP` tool is available, starts the server with a first call, and switches to Grep and reading, reported as such, when either is missing, as in cloud sessions.
+
 ### Changed
 
 - The `ts-lifecycle` description now opens with the work it serves and the file types it covers, even for a small change, and says it is for projects on the native TypeScript 7 compiler and not for TypeScript 6, so Claude loads it for everyday edits and tells it apart from the TypeScript 6 plugin's skill of the same name.
+- The skill now trusts an `LSP` result only after three consecutive identical answers to the same call, at most six calls, instead of two out of three, and records a result as unstable when no three match.
+
+### Fixed
+
+- The `ts-lifecycle` skill and its references now carry the corrections the TypeScript 6 plugin already had. Among them, `allowJs` alone no longer reads as type-checking JavaScript (only `checkJs` or `// @ts-check` does), research mode runs a project script only after confirming it writes nothing, and the public API, rename scope and tool-boundary rules are spelled out.
 
 ## [0.4.6] - 2026-11-14
 

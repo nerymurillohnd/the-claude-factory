@@ -27,7 +27,7 @@ Skip it in `research` mode, without an `LSP` tool, and without the Bash tool, wh
 
 1. Create `lsp-fixture-references/references.ts` at the root of the session's working directory with the Write tool, with the content of `assets/references.ts.fixture`. Write reaches the language server; a file copied from the shell may not. If that folder already exists, stop: it is not yours to overwrite.
 2. `hover` `target` at line 2, character 17, so the server loads the program.
-3. Run `findReferences` at the same position until two consecutive results match, at most three calls: the warm-up check under "Trusting a result" in SKILL.md.
+3. Run `findReferences` at the same position until three consecutive results are identical, at most six calls: the three-identical rule under "Before you start" in SKILL.md.
 4. Delete the folder from Bash with `rm -rf <working directory>/lsp-fixture-references`, even when a step failed. Write cannot delete.
 
 The table below explains the codes the script prints; when it differs from the script, the script wins and the table is the bug to report.
@@ -45,4 +45,4 @@ The table below explains the codes the script prints; when it differs from the s
 
 - A broken fixture without its expected code means the check is blind here: the owning config could not be read, or the compiler is not the one you think. Say which, and do not call code clean on that check.
 - A failing `clean_control` means the checks misfire in this program. Explain the errors before trusting any other result.
-- Fewer than four references in the two matching results means the index is cold, the file is not synchronized with the server, or it belongs to no loaded project; see "Trusting a result" in SKILL.md.
+- Fewer than four references in the three identical results means the index is cold, the file is not synchronized with the server, or it belongs to no loaded project; see "Trusting a result" in SKILL.md.

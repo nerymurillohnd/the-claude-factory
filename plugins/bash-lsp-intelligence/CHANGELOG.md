@@ -6,9 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- **Breaking:** the first shell script edit of a session now waits until Claude has loaded the `bash-lsp-intelligence:bash-lsp-intelligence` skill. A new `PreToolUse` hook denies that one Edit or Write call, once, with a message that tells Claude to load the skill and retry; every later edit goes through, so a session that can't load skills is never locked out. A subagent counts on its own, and after compaction the next edit asks for the skill again. The hook keeps its markers in the plugin's data folder and does nothing where Claude Code gives it none.
+- The skill now opens with a step that runs before the first shell script file of the task: it checks that the language server is installed and that the `LSP` tool is available, starts the server with a first call, and switches to Grep and reading, reported as such, when either is missing, as in cloud sessions.
+
 ### Changed
 
 - The skill's description now opens with the work it serves, before writing, editing or renaming code in a shell, hook or CI script, even for a one-line change, so Claude loads it for everyday script edits instead of only when asked.
+- The skill now trusts an `LSP` result only after three consecutive identical answers to the same call, at most six calls, instead of two out of three, and records a result as unstable when no three match.
+- The skill now says when a name is public API, which code outside the repository can import or run, and asks the user before renaming or deleting one.
 
 ## [0.2.9] - 2026-11-14
 

@@ -44,6 +44,21 @@ The table has one row for each of the four, plus two rows for what follows from 
 | Shell | No Bash tool in the session | No gate, fixture or probe can run. In `implementation` mode, apply the change with the edit tools, or give it as a diff when there are none | Implementation: not verified |
 | Every gate | No type check, lint or test can run, for any of the reasons above | In `implementation` mode, apply the change the user asked for and stop there: no further edit rests on an unverified one. Never run the user's scripts or entry points on synthetic data instead | Implementation: not verified |
 
+## Before you start: start the language server
+
+Do these steps once per session, before you read or edit the first TypeScript or JavaScript file of the task, and again after `/reload-plugins` or when every `LSP` call starts failing:
+
+1. Binary: run `command -v typescript-language-server`. When it prints nothing, the language server is not installed: tell the user to install it as the plugin README's Prerequisites says, and go to step 4.
+2. Tool: when the `LSP` tool is not loaded, load it with `ToolSearch` and the query `select:LSP`. When that finds nothing, this session runs no language servers, as in cloud sessions and in the Claude app's chat and Cowork: go to step 4.
+3. Start: call `documentSymbol` on a TypeScript or JavaScript file of the task, or on another one of the project when the task creates the first one, alone in its message; Claude Code starts the server on that first call. Repeat it until the three-identical rule below holds. When every call errors, the server can't start here: go to step 4.
+4. Without a language server: answer each `LSP` question in the table below with Grep and reading the files, apply the `LSP` tool row of "Requirements and fallbacks", and run the project's gates all the same.
+
+The rest of the toolchain, `tsc`, the project's lint and tests and web access, has its own rows in "Requirements and fallbacks".
+
+### Three identical results
+
+A language server can answer before it has indexed the project, and its first answers can be partial or wrong. Repeat every `LSP` operation you rely on, with the same arguments, until three consecutive results are identical, at most six calls. When no three match within six, record the result as unstable and confirm it with Grep and reading.
+
 ## Governing contract
 
 LSP owns questions about code structure; Grep owns questions about text. Route each question to its owner, and use both before deleting, renaming or changing a signature.
@@ -64,7 +79,7 @@ When Grep finds several symbols with the same name, search for the name together
 
 Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both. Raw `character` values count in the encoding the client and server negotiated (`positionEncoding`); UTF-16 is LSP's default and the only one this tool uses, so convert a UTF-8 or UTF-32 offset from another client before passing it.
 
-If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `select:LSP`. Send `LSP` calls in their own message, never in parallel with another tool; several `LSP` calls may share a message. The session's first `LSP` call goes alone: its answer can come from a server still loading the project, so pass the warm-up check below before grouping calls.
+Send `LSP` calls in their own message, never in parallel with another tool; several `LSP` calls may share a message. The session's first `LSP` call goes alone: its answer can come from a server still loading the project, so pass the warm-up check below before grouping calls.
 
 ### Discover and research the actual system
 
@@ -169,7 +184,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 When a result is the session's first `LSP` result, is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
 
 1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
-2. **Warm-up**: a session's first `LSP` calls can be partial or wrong, `goToDefinition` included (it may point at the import line). Repeat until two consecutive results match, with at most three calls in total. If no two match, record the result as unstable and use Grep plus reading. This match check is separate from the readiness retries in semantic-execution.md.
+2. **Warm-up**: the three-identical rule under "Before you start" holds for this result, `goToDefinition` included (an early answer may point at the import line). This match check is separate from the readiness retries in semantic-execution.md.
 3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
 4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting the references the server lists for them.
 5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
