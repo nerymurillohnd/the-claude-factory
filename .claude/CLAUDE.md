@@ -24,7 +24,7 @@
 **Runtimes**
 
 - Run `npm run setup` in the cloud after a lockfile changes or with `node_modules/` or `.venv/` missing: it runs `npm ci` and `uv sync --locked` and installs the tools.
-- Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins, with npm 12, before any npm command.
+- Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins, with npm 12, before any npm command; the cloud has no nvm and already runs that Node.
 - Run `uv sync --locked` to set up Python 3.15 and its dev dependencies before the first Python command of a session and after `uv.lock` changes.
 
 **Formatting, linting and type checking**
@@ -37,13 +37,14 @@
 
 **Tests and plugins**
 
-- Run `npm run test:scripts` (`unittest`) to test the maintainer scripts after each change under `scripts/`.
+- Run `npm run test:scripts` (`unittest`) to test the maintainer scripts after each change under `scripts/`; add `-- -p 'test_<name>.py'` for one file or `-- -k <test>` for one test.
 - Run `claude plugin test plugins/<plugin>` to test a mod after each change to it.
 - Run `npm run test:plugins` to run the hook scripts' standard-library tests after each change to a hook.
 
 **CI/CD**
 
 - Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
+- Run `npm run check:pr` before a push to run the checks of Validate's `Checks` job, or `npm run check:pr -- <step>` for one of them.
 
 **Platforms**
 
