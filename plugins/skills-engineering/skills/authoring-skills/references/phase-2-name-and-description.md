@@ -172,6 +172,7 @@ Before you settle the description, write the requests it must catch and the near
 
 - When a should-load request would miss, broaden the contexts. When a near-miss would load, state what the skill doesn't do.
 - Fix the category a request stands for, not its exact words.
+- When an existing skill didn't load for a real request it should have served, add that request to the should-load list, add the context it stands for to the description in the words the user wrote, and check the near-misses again.
 
 Running these requests as trigger evals belongs to Phase 7.
 
