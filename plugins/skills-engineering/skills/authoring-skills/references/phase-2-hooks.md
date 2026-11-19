@@ -42,7 +42,7 @@ Cloud sessions don't read the user's local `~/.claude/settings.json`.
 
 - The hook registers when the skill is invoked and keeps running for the rest of the session, on later turns too. `once: true` removes it after its first successful run, and only skill frontmatter honors it.
 - Under the managed setting `strictPluginOnlyCustomization`, a skill keeps its frontmatter hooks only if it is a plugin skill, a bundled skill or a skill in the managed settings directory. To keep them, ship the skill in a plugin.
-- Each source of skills may register at most 1,024 hooks and 16,384 characters of matchers (Claude Code 2.1.304 and later). Declare few hooks and short matchers.
+- Each source of skills may register at most 1,024 hooks and 16,384 characters of matchers. Declare few hooks and short matchers.
 - A check that must hold inside a subagent goes in that subagent's own `hooks` frontmatter. A plugin's subagent ignores `hooks`, so a plugin puts such a check in its own hooks file, which applies to the whole session.
 
 Read [Hooks in skills and agents](https://code.claude.com/docs/en/hooks#hooks-in-skills-and-agents) when the hook lives in frontmatter.

@@ -21,7 +21,7 @@ How to choose the skill's name and the command it becomes, check it against the 
 - `<` and `>` in `description` or `when_to_use` show as `&lt;` and `&gt;`. Write placeholders in square brackets, or move them to `argument-hint`.
 - A skill name with `claude` or `anthropic` loads in Claude Code, but its upload to claude.ai or the Claude API fails, so it never reaches the account.
 - A plugin name that starts with `claude-` or `anthropic-`, is `claude` or `claude-code`, or puts `official` beside either word fails `claude plugin validate`. Either word anywhere else in the name draws a warning. Every plugin skill's command carries the plugin name.
-- A personal, project, enterprise or added-directory skill named `verify` or `simplify` is run by Claude right before each commit (Claude Code 2.1.286 and later). Use those names only for that purpose.
+- A personal, project, enterprise or added-directory skill named `verify` or `simplify` is run by Claude right before each commit. Use those names only for that purpose.
 - A custom skill with the name of a bundled skill or a built-in command replaces that command in a local session, but not its aliases.
 - Capitalized emphasis and absolutes, such as CRITICAL, IMPORTANT, MUST, ALWAYS, "Only use this skill" or "If in doubt, use this skill", make current models load the skill for requests it doesn't fit. A plainly worded "Use when…" triggers as well.
 
@@ -73,7 +73,7 @@ name: reviewing-contracts   # Strong: the activity, in the gerund
 | Plugin `skills/` folder | `/<plugin>:` plus `name` | `billing/skills/close-month/` with `name: close-month` → `/billing:close-month` |
 | Single skill at a plugin root | `/<plugin>:` plus `name` | `billing/SKILL.md` with `name: close-month` → `/billing:close-month` |
 | Nested skill whose name is taken | Subfolder path, then `name` | `apps/web/.claude/skills/deploy/` → `/apps/web:deploy` |
-| Added-directory skill whose name is taken | Added folder's name, then `name` (2.1.309 and later) | `--add-dir ../cli` → `/cli:verify` |
+| Added-directory skill whose name is taken | Added folder's name, then `name` | `--add-dir ../cli` → `/cli:verify` |
 | Synced from claude.ai | `/anthropic-skills:` plus the account skill's name, or the short name while no other command uses it | `/anthropic-skills:send-report` |
 
 ## Resolve a name that is already taken
