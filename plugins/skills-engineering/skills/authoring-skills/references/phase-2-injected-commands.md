@@ -63,7 +63,7 @@ Write the body so it still works, or tells Claude what to fetch, where its comma
 ## Examples
 
 ```markdown
-<!-- Weak: the check exits 1 when it finds problems, so the skill aborts exactly when it is needed -->
+<!-- Weak: the check exits 1 on problems, so the skill aborts exactly when it is needed -->
 - Lint report: !`python3 ${CLAUDE_SKILL_DIR}/scripts/lint.py`
 
 <!-- Strong -->

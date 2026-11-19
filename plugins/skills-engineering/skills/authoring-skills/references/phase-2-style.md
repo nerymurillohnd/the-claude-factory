@@ -97,7 +97,7 @@ Before you fill a field, check it against the field rules file.
 <!-- Weak: in SKILL.md, only the root file is linked, so the field rules sit two levels deep -->
 Follow [Workflow](WORKFLOW.md) when you fill a PDF form.
 
-<!-- Strong: in SKILL.md, a root file and the reference it sends Claude to, each linked one level deep -->
+<!-- Strong: in SKILL.md, the root file and the file it sends Claude to, both one level deep -->
 Follow [Workflow](WORKFLOW.md) when you fill a PDF form.
 Read [Field rules](references/field-rules.md) when the workflow asks you to check a field.
 ```

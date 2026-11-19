@@ -32,7 +32,7 @@ Choose the type by these criteria, in order:
 Conventions, patterns, style guides or domain rules that Claude applies alongside the conversation. Write the rules as standing guidance for any work they touch, not as steps, and set `paths` when they apply only to certain files.
 
 ```markdown
-<!-- Weak: knowledge written as steps, so Claude runs it once instead of applying it to all billing work -->
+<!-- Weak: knowledge as steps, so Claude runs it once instead of applying it to all billing work -->
 1. Open the invoice code
 2. Check the amounts are in cents
 

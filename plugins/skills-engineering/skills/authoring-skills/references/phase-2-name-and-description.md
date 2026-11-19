@@ -52,7 +52,8 @@ name: close-month           # Strong: same as the folder
 
 # Plugin skill in billing/skills/reconciling-invoices/
 name: billing:reconciling-invoices   # Weak: carries the plugin prefix
-name: reconciling-invoices           # Strong: the bare name; the command is /billing:reconciling-invoices
+# Strong: the bare name; the command is /billing:reconciling-invoices
+name: reconciling-invoices
 
 # Single skill at the root of the billing plugin
 # Weak: no name, so a marketplace install names it after its cache folder
