@@ -167,6 +167,14 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage("docs/gate-probe.md", PADDED_TABLE)
         self.assert_blocks(self.box.gate(), "biome")
 
+    def test_markdown_goes_to_biome_only(self) -> None:
+        """Biome owns Markdown: a .md file with a Python block Ruff would reformat skips Ruff."""
+        self.box.stage("docs/gate-probe.md", "# Probe\n\n```python\nx=1\n```\n")
+        result = self.box.gate()
+        self.assert_passes(result)
+        self.assertIn("== pre-commit: biome", result.stdout)
+        self.assertNotIn("== pre-commit: ruff", result.stdout)
+
     def test_instruction_markdown_is_not_formatted(self) -> None:
         """Biome's override keeps instruction Markdown out of formatting, so padding passes."""
         self.box.stage(".claude/rules/gate-probe.md", PADDED_TABLE)

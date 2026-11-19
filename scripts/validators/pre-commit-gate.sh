@@ -156,6 +156,10 @@ fi
 if ((${#py_files[@]} > 0)); then
   find_tool ruff ruff
   if [[ -n ${ruff} ]]; then
+    # ruff-pre-commit's own hooks: ruff-check runs `ruff check --force-exclude` before ruff-format
+    # runs `ruff format --force-exclude`, on python and pyi files (Markdown stays Biome's, and
+    # ruff.toml excludes it). Both only check: a fix written during the commit would leave the file
+    # with unstaged changes; run `ruff check --fix` and `ruff format` before staging instead.
     run_tool "ruff check" "${ruff}" check --force-exclude "${py_files[@]}"
     run_tool "ruff format" "${ruff}" format --check --force-exclude "${py_files[@]}"
   fi
