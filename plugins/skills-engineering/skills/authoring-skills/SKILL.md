@@ -67,10 +67,10 @@ These 11 standards are the base for every skill you write, not a limit. Apply ea
 In the `SKILL.md` you write, though not in its other files, Claude Code changes the text before the model reads it:
 
 - A dollar sign before a digit, `ARGUMENTS` or a declared argument name becomes an argument; escape a literal one with a backslash.
-- A `CLAUDE_` variable in a dollar sign and braces becomes its value; to mention one, write its bare name.
-- An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Write the mark only where the command must run at load; to show or mention such a command, leave the mark out.
+- A `CLAUDE_` variable in a dollar sign and braces becomes its value where Claude Code substitutes it: the session, effort, skill-folder and project-folder variables in every skill, and the two plugin variables only in a plugin skill. A skill synced from claude.ai and run on the user's machine keeps the session and project variables as literal text. To mention one, write its bare name: a backslash doesn't stop the substitution.
+- An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Write the mark only where the command must run at load; to show or mention such a command, leave the mark out. It doesn't run where `disableSkillShellExecution` is on, which puts a placeholder in its place, in a skill synced from claude.ai on the user's machine, or when a `UserPromptSubmit` hook blocks the prompt.
 
-A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
+A skill under `~/.claude/skills/synced/` is a download: an edit there never reaches the claude.ai account, and the next sync can overwrite or remove it. A plugin skill runs from a cache folder per version: an update installs a new folder and deletes the old one 14 days later, and an update with an unchanged version keeps an edited copy as it is. In both cases, edit the source.
 
 ## Workflow
 

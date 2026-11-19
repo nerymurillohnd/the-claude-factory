@@ -15,7 +15,7 @@ How to lay out the text of every file of the skill: headings, lists, checklists,
 
 ## Gotchas
 
-- The skill's formatting steers the formatting of what Claude writes with it: a body full of bullets and bold gets output full of bullets and bold. Format the skill the way its output should look.
+- The skill's formatting can carry into what Claude writes with it: removing Markdown from a prompt reduces the Markdown in the output. Format the skill the way its output should look.
 - Claude may read only part of a file, such as its first lines, when it reaches the file through another reference instead of from `SKILL.md`, whether the file sits beside that reference or deeper. Link every file from `SKILL.md`, one level deep. The level counts the hops from `SKILL.md`, not the folders: `FORMS.md` at the skill's root and `references/forms.md` are both one level deep when `SKILL.md` links them.
 
 ## Headings and case

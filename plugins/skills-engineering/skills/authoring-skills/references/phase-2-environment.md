@@ -12,9 +12,9 @@ How to establish the environment you work in, and understand the project and eve
 ## Gotchas
 
 - The machine you run on may not be the user's. A cloud session runs in a fresh container: the user's `~/.claude/` and their machine's settings aren't there, so the personal folders you see aren't theirs.
-- The skill listing in your context is incomplete. It lists no skill with `disable-model-invocation: true`, and no skill in a `.claude/skills/` below the start folder until Claude touches a file there. With many skills, the listing also drops some descriptions. Search the skill folders as well.
-- Skills and subagents override by name: one definition wins per name. CLAUDE.md files, rules and hooks add up: every one loads or fires. A new skill can shadow an existing skill, or repeat a rule a hook already enforces.
-- A CLAUDE.md file in a subfolder, or a rule with `paths`, loads only when Claude works on matching files. A convention can govern the files the skill touches without being in your context yet. A session started in `foo/` loads `foo/CLAUDE.md` at launch, but `foo/bar/CLAUDE.md` only after Claude reads or edits a file in `foo/bar/`.
+- The skill listing in your context is incomplete. It lists no skill with `disable-model-invocation: true`, no skill from a nested `.claude/skills/` that hasn't loaded yet (the skill-location file of Phase 2 says when they load), and with many skills it keeps the names but drops the descriptions of the least-used ones. Search the skill folders as well.
+- Skills and subagents of the same name resolve by priority: enterprise over personal over project for skills, so a personal skill hides a new project skill of the same name; managed over CLI flag over project over user over plugin for subagents. A nested skill, a plugin skill, a skill from an added directory and a synced skill load beside it under a prefixed or full name. CLAUDE.md files, rules and hooks add up: every one loads or fires. A new skill can collide with an existing one, or repeat a rule a hook already enforces.
+- A CLAUDE.md file in a subfolder, or a rule with `paths`, loads only when Claude works on matching files. A convention can govern the files the skill touches without being in your context yet. A session started in `foo/` loads `foo/CLAUDE.md` at launch, but `foo/bar/CLAUDE.md` only after Claude reads, writes or edits a file in `foo/bar/`, a single-file `cat` or `head` included.
 
 ## 1. Establish the execution environment
 

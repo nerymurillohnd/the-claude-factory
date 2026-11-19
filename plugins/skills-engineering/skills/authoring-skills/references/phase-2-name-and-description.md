@@ -16,10 +16,10 @@ How to choose the skill's name and the command it becomes, check it against the 
 ## Gotchas
 
 - Claude Code cuts `description` plus `when_to_use` at 1,536 characters in the skill listing, and the end is lost first. With many skills, the listing budget (1% of the context window) drops whole descriptions, starting with the skills used least.
-- A value that breaks the YAML loads the skill with no fields set: `/name` still runs it, but Claude never matches its description, and other Agent Skills clients may skip the skill. An unquoted value breaks on `: ` or ` #`, and when it opens with `"`, `'`, `[`, `{`, `>`, `|`, `*`, `&`, `!`, `%`, `@` or a backtick.
+- A value that breaks the YAML loads the skill with no fields set: `/name` still runs it, but Claude never matches its description. An unquoted value breaks on `: ` or ` #`, and when it opens with `"`, `'`, `[`, `{`, `>`, `|`, `*`, `&`, `!`, `%`, `@` or a backtick. `claude plugin validate` reports the parse error.
 - `<` and `>` in `description` or `when_to_use` show as `&lt;` and `&gt;`. Write placeholders in square brackets, or move them to `argument-hint`.
-- A skill name with `claude` or `anthropic` loads in Claude Code, but its upload to claude.ai or the Claude API fails, so it never reaches the account.
-- A personal, project, enterprise or added-directory skill named `verify` or `simplify` is run by Claude right before each commit. Use those names only for that purpose.
+- A skill name with `claude` or `anthropic` loads in Claude Code, but its upload to claude.ai or the Claude API fails, so it never reaches the account. In Claude Code itself, a skill folder or `name` of `anthropic-skills`, or one in that namespace, doesn't load: it is reserved for skills synced from claude.ai.
+- A personal, project, enterprise or added-directory skill, or a `.claude/commands/` file, named `verify` or `simplify` is run by Claude right before each commit that changes more than docs or tests, as long as Claude can invoke it and the built-in git instructions are on. Plugin and synced skills don't count. Use those names only for that purpose.
 - A custom skill with the name of a bundled skill or a built-in command replaces that command in a local session, but not its aliases.
 - Capitalized emphasis and absolutes, such as CRITICAL, IMPORTANT, MUST, ALWAYS, "Only use this skill" or "If in doubt, use this skill", make current models load the skill for requests it doesn't fit. A plainly worded "Use when…" triggers as well.
 

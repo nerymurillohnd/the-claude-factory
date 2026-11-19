@@ -12,7 +12,7 @@ The folder layout a skill takes in each location, how its files reach each other
 
 ## Gotchas
 
-- A plugin installed from a marketplace is copied into Claude Code's cache, and nothing outside the plugin folder is copied with it. A path above the plugin root, such as `../shared`, isn't there at run time. A symlink is kept when it points inside the plugin, replaced by its target's content when it points elsewhere in the same marketplace, and dropped when it points outside it.
+- A plugin installed from a marketplace is copied into Claude Code's cache, and nothing outside the plugin folder is copied with it. A path above the plugin root, such as `../shared`, isn't there at run time. A symlink is kept when it points inside the plugin, replaced by its target's content when it points elsewhere in the same marketplace, and dropped when it points outside it. A plugin installed from a local path keeps only the symlinks that point inside it.
 - A plugin doesn't load a `CLAUDE.md` at its root. Put the instructions a plugin must give Claude in a skill.
 - A file in `.claude/commands/` still loads as a skill, but it holds no supporting files and takes neither `name` nor `paths`. Write a skill folder.
 

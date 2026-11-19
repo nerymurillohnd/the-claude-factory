@@ -14,10 +14,10 @@ Whether the skill injects commands as it loads, how to write each one so it runs
 
 ## Gotchas
 
-- A failed command aborts the whole invocation, not just its own line: Claude never sees the skill, and the user sees `Shell command failed for pattern "..."` with the command's output. Any non-zero exit fails, except exit 1 from `grep`, `rg`, `egrep`, `fgrep`, `find`, `diff`, `test`, `[`, `git diff` and `git grep`. Exit 2 or higher fails even for those.
-- An injected command never asks for permission. Outside auto mode, a command that no rule allows aborts the skill. `allowed-tools` doesn't override a deny or ask rule, doesn't apply where only managed rules count, and is ignored for a command with `git` when the closest repository looks bare.
+- A failed command aborts the whole invocation, not just its own line: Claude never sees the skill, and the user sees `Shell command failed for pattern "..."` with the command's output. Any non-zero exit fails, except exit 1 from `grep`, `rg`, `egrep`, `fgrep`, `find`, `diff`, `test`, `[`, `git diff` and `git grep`. Exit 2 or higher fails even for those. That list is for the default `bash` shell; with `shell: powershell` it includes `grep` and `git diff` but not `find` or `diff`. Append `|| true` to any other command you expect to exit non-zero.
+- An injected command never asks for permission. Outside auto mode, a command that no rule allows aborts the skill. `allowed-tools` doesn't override a deny or ask rule, and is ignored where the organization allows only managed permission rules.
 - In auto mode, a command that would need approval doesn't abort: the skill loads with an instruction to run it first. A forked skill that sets `agent` still aborts, and so does a session without the shell tool.
-- The inline form runs only when the exclamation mark opens the line or follows whitespace: in ``KEY=!`cmd` `` it stays literal text, and the command doesn't run.
+- An exclamation mark right after another character, as in ``KEY=!`cmd` ``, stays literal text, and the command doesn't run.
 
 ## Decide whether to inject a command
 

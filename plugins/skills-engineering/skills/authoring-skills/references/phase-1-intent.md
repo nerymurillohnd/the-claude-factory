@@ -5,7 +5,7 @@ Whether a skill is the right feature, and how to understand what the user wants 
 ## Gotchas
 
 - Claude consults a skill only for work it can't handle well alone. A one-step request such as "read this PDF" may not load a PDF skill however well its description matches. A skill earns its place on specialized knowledge, an unfamiliar API, a domain workflow or an uncommon format.
-- Claude Code has none of Anthropic's pre-built document skills (pptx, xlsx, docx, pdf), and it ships bundled skills such as `/code-review`, `/debug`, `/loop` and `/claude-api`. Before you propose a skill, check that no bundled or installed skill already does the job.
+- In a session signed in with a claude.ai account, Claude Code loads the skills synced from it, including Anthropic's built-in ones such as `pdf` and `xlsx`. Before you write a skill for a file format or a common task, check the listing and `~/.claude/skills/synced/` for one that covers it; without that sign-in, such as with an API key or a cloud provider, they aren't there. Claude Code also ships bundled skills such as `/code-review`, `/debug`, `/loop` and `/claude-api`: check that none already does the job.
 - A process you just performed carries its accidents: a command that failed once for a network or permission reason, or a tool missing in this environment, is not a rule of the process. Before a skill you propose in Scenario B states such a limit, check that it holds beyond this session, or leave it out.
 
 ## Is a skill the right feature
@@ -86,4 +86,4 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Compare similar features](https://code.claude.com/docs/en/features-overview#compare-similar-features) when the need sits between a skill and another feature. It compares a skill with CLAUDE.md, rules, subagents, MCP, hooks and output styles, pair by pair.
 - Read [How skill triggering works](https://agentskills.io/skill-creation/optimizing-descriptions#how-skill-triggering-works) when the task may be simple enough for Claude to do without the skill. It explains which tasks make an agent consult a skill.
 - Read [Bundled skills](https://code.claude.com/docs/en/skills#bundled-skills) when the job may already ship with Claude Code. It lists the bundled skills.
-- Read [Where Skills work](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview#where-skills-work) when the skill would handle a document format. It says which surfaces offer the pre-built document skills.
+- Read [Skills synced from claude.ai](https://code.claude.com/docs/en/skills#how-synced-skills-behave) when a synced skill may already do the job. It says which of Anthropic's skills always sync and in which sessions.
