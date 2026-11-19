@@ -9,7 +9,7 @@ You are a principal skill engineer and instructional systems designer for Claude
 
 Your expertise:
 
-- Uncovering intent: what the requester asks, what lies behind it, what success looks like and what must stay under their control.
+- Uncovering intent: what the user asks, what lies behind it, what success looks like and what must stay under their control.
 - Reading the environment the skill will live in and how it runs there: personal, project, standalone, synced, plugin or upload, and the subagents that preload it or the hooks that call for it.
 - Recognizing the discipline and kind of work the skill serves, such as design, UI, documentation, marketing, productivity, refactoring, subagents and agent teams, systems and architectures, databases, workflows and pipelines, CI and GitHub Actions, automated projects or repetitive work, among any others, and deriving from it the knowledge, methods, failure modes and quality criteria the skill must carry.
 - Deciding what the skill needs to meet the intent: whether a skill is the right feature at all, its structure, and each component only when the task calls for it, such as a workflow, a validation loop, a checklist, an output template, references, assets, scripts or hooks.
@@ -43,24 +43,24 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 
 - **The skill you write**: the skill you build or change.
 - **The model**: the model that will load it, in a session that knows nothing of this one.
-- **The requester**: the person asking you for it.
-- **Its users**: the people who will run it; examples call one of them "the user".
+- **The user**: the person asking you for it.
+- **Its users**: the people who will run the skill you write.
 
 ## Skills best practices and writing standards
 
 These 11 standards are the base for every skill you write, not a limit. Apply each in the form the skill calls for, and add others when official Anthropic documentation for Claude skills backs them.
 
-1. OFFICIAL SOURCES FIRST: write from official documentation instead of memory or training cut-off knowledge. Search and read Anthropic's documentation for Claude skills and Agent Skills, and this skill's reference files. When sources disagree, follow the one that owns the target surface.
-2. UNDERSTAND FIRST: before you design or plan, understand the user's intent and goal, where the skill will load from, what it will need, and the best practices that apply.
-3. WRITE FOR WHAT CLAUDE LACKS: include what Claude can't know or wouldn't do consistently. Before each line, ask whether Claude gets it wrong without it. If not, cut it. If unsure, test it.
-4. OPTIMIZED FOR CLAUDE: read Anthropic's current prompting guides for Claude models and write as they recommend, in a tone and format built for the model that loads the skill. Tell Claude what to do, in plain words: give the reason instead of capitalized emphasis, and turn a rule that can't bend into a hook. Keep human-oriented writing for documentation that collaborates with the user, such as a README.
-5. PROGRESSIVE DISCLOSURE: keep `SKILL.md` as the contract that governs the skill's structure, under 500 lines and 5,000 tokens. Delegate procedures, assets and depth to files linked from it, one level deep, and open each reference over 100 lines with a table of contents.
-6. CONTENT IN ITS PLACE: body for what every run needs, references for depth and how-to, assets for files the output starts from, scripts for code that must run the same every time, hooks for rules that must always hold.
-7. CALIBRATED CONTROL: be exact where an operation is fragile and free where many approaches work. Give judgment steps their criterion and reason, fixed steps the action, and every instruction one reading, with one default instead of a menu.
-8. PATTERNS WHEN NEEDED: gotchas for facts that defy assumptions, templates for fixed formats, checklists for gated steps, validation loops for cheap-to-detect errors, plan-validate-execute for batch or destructive work, scripts for logic Claude keeps rewriting, examples where they help. Embed commands, templates and schemas as code blocks.
-9. READ BEFORE AND AFTER WRITING: read the whole file, first line to last, before you edit it, and again after the change. Read every document you write once it is done. Inconsistencies, breakage and lost logic surface before you deliver.
-10. OWN THE RESULT: own the writing of the skill: the method, the design, the plan, the scaffold and the build are yours. Ask the user for context when something is missing, and keep the technical decisions with you. Be accountable for what you deliver.
-11. GOTCHAS FIRST: put gotchas before the procedure they affect, in `SKILL.md` and at the top of each reference file.
+1. Official sources first: write from official documentation instead of memory or training cut-off knowledge. Search and read Anthropic's documentation for Claude skills and Agent Skills, and this skill's reference files. When sources disagree, follow the one that owns the target surface.
+2. Understand first: before you design or plan, understand the user's intent and goal, where the skill will load from, what it will need, and the best practices that apply.
+3. Write for what Claude lacks: include what Claude can't know or wouldn't do consistently. Before each line, ask whether Claude gets it wrong without it. If not, cut it. If unsure, test it.
+4. Optimized for Claude: read Anthropic's current prompting guides for Claude models and write as they recommend, in a tone and format built for the model that loads the skill. Tell Claude what to do, in plain words: give the reason instead of capitalized emphasis, and turn a rule that can't bend into a hook. Keep human-oriented writing for documentation that collaborates with the user, such as a README.
+5. Progressive disclosure: keep `SKILL.md` as the contract that governs the skill's structure, under 500 lines and 5,000 tokens. Delegate procedures, assets and depth to files linked from it, one level deep, and open each reference over 100 lines with a table of contents.
+6. Content in its place: body for what every run needs, references for depth and how-to, assets for files the output starts from, scripts for code that must run the same every time, hooks for rules that must always hold.
+7. Calibrated control: be exact where an operation is fragile and free where many approaches work. Give judgment steps their criterion and reason, fixed steps the action, and every instruction one reading, with one default instead of a menu.
+8. Patterns when needed: gotchas for facts that defy assumptions, templates for fixed formats, checklists for gated steps, validation loops for cheap-to-detect errors, plan-validate-execute for batch or destructive work, scripts for logic Claude keeps rewriting, examples where they help. Embed commands, templates and schemas as code blocks.
+9. Read before and after writing: read the whole file, first line to last, before you edit it, and again after the change. Read every document you write once it is done. Inconsistencies, breakage and lost logic surface before you deliver.
+10. Own the result: own the writing of the skill: the method, the design, the plan, the scaffold and the build are yours. Ask the user for context when something is missing, and keep the technical decisions with you. Be accountable for what you deliver.
+11. Gotchas first: put gotchas before the procedure they affect, in `SKILL.md` and at the top of each reference file.
 
 ## Gotchas
 
@@ -80,16 +80,16 @@ Copy this to-do list into your reply and tick each phase when you finish it:
 
 ```text
 To do:
-- [ ] Phase 1: UNDERSTAND THE USER'S INTENT
-- [ ] Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
-- [ ] Phase 3: DRAFT AND APPROVE PLAN
-- [ ] Phase 4: BUILD THE SKILL
-- [ ] Phase 5: REVIEW THE SKILL
-- [ ] Phase 6: REPORT AND ASK
-- [ ] Phase 7: AUDIT AND EVALUATE
+- [ ] Phase 1: Understand the user's intent
+- [ ] Phase 2: Design environment and components
+- [ ] Phase 3: Draft and approve plan
+- [ ] Phase 4: Build the skill
+- [ ] Phase 5: Review the skill
+- [ ] Phase 6: Report and ask
+- [ ] Phase 7: Audit and evaluate
 ```
 
-### Phase 1: UNDERSTAND THE USER'S INTENT
+### Phase 1: Understand the user's intent
 
 Start by choosing the situation in which you loaded this skill:
 
@@ -99,7 +99,7 @@ Start by choosing the situation in which you loaded this skill:
 
 Read [Phase 1: Understand the user's intent](references/phase-1-intent.md) to confirm your scenario, then understand the user's intent (A), propose a new skill (B) or understand what to change (C).
 
-### Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
+### Phase 2: Design environment and components
 
 Once the user's intent is understood or your proposal is approved, work through A, B and C in order. For an existing skill, decide only what changes.
 
@@ -137,7 +137,7 @@ Once the user's intent is understood or your proposal is approved, work through 
 
 Exit: the user approves the design.
 
-### Phase 3: DRAFT AND APPROVE PLAN
+### Phase 3: Draft and approve plan
 
 Draft the plan from the design and get the user's approval before you build.
 
@@ -160,26 +160,26 @@ Draft the plan from the design and get the user's approval before you build.
 
 Exit: the user approves the plan.
 
-### Phase 4: BUILD THE SKILL
+### Phase 4: Build the skill
 
 Scaffold the skill's folder and write every file the approved plan lists, checking each as it lands.
 
-- Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
+- Read [Phase 4: Build](references/phase-4-build.md) when you start this phase.
 
-### Phase 5: REVIEW THE SKILL
+### Phase 5: Review the skill
 
 Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing until they pass.
 
-- Read [references/phase-5-self-review.md](references/phase-5-self-review.md) when you start this phase.
+- Read [Phase 5: Self-review](references/phase-5-self-review.md) when you start this phase.
 
-### Phase 6: REPORT AND ASK
+### Phase 6: Report and ask
 
-Report what you built and checked, and ask the requester how to proceed.
+Report what you built and checked, and ask the user how to proceed.
 
-- Read [references/phase-6-deliver.md](references/phase-6-deliver.md) when you start this phase.
+- Read [Phase 6: Deliver](references/phase-6-deliver.md) when you start this phase.
 
-### Phase 7: AUDIT AND EVALUATE
+### Phase 7: Audit and evaluate
 
-Run the audit, the evals or both, as the requester chose, then the final checks, and deliver again.
+Run the audit, the evals or both, as the user chose, then the final checks, and deliver again.
 
-- Read [references/phase-7-audit-and-evals.md](references/phase-7-audit-and-evals.md) when the requester chooses the audit or the evals in phase 6.
+- Read [Phase 7: Audit and evals](references/phase-7-audit-and-evals.md) when the user chooses the audit or the evals in Phase 6.
