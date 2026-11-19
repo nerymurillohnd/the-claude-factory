@@ -100,27 +100,41 @@ Read [Phase 1: Understand the user's intent](references/phase-1-intent.md) to co
 
 ### Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
 
-Decide what the skill is, where it loads and what it contains. Both scenarios arrive here with the intent clear. Not every skill needs every component: first learn what is available, then decide what this skill needs.
+Once the user's intent is understood or your proposal is approved, work through A, B and C in order. For an existing skill, decide only what changes.
 
-1. Type and location: decide the kind of skill, who invokes it and where it loads from.
-   - Read [references/phase-2-type-and-location.md](references/phase-2-type-and-location.md) before you decide.
-2. Components: decide which of these the skill needs, and the folders and files that follow from them. Read [references/phase-2-directory.md](references/phase-2-directory.md) before you decide. For each component you choose, read its file and decide its specifics.
-   - Body mechanisms: a workflow, a checklist, a validation loop, an output template, gotchas. Read [references/phase-2-body.md](references/phase-2-body.md).
-   - References and assets: depth only some runs need, and files the output starts from. The directory file covers them.
-   - Scripts: an operation that must give the same result every time. Read [references/phase-2-scripts.md](references/phase-2-scripts.md).
-   - Hooks: a check or an action that must happen on an event. Read [references/phase-2-hooks.md](references/phase-2-hooks.md).
-   - Subagents: a subagent that runs the skill or reads it. Read [references/phase-2-subagents.md](references/phase-2-subagents.md).
-   - Tools and other skills: MCP tools, other skills or plugin dependencies the skill relies on. Read [references/phase-2-tools-and-skills.md](references/phase-2-tools-and-skills.md).
-   - Configuration and state: facts the skill keeps between runs. Read [references/phase-2-config-and-security.md](references/phase-2-config-and-security.md), which also says what every skill must never do.
-3. Writing patterns: learn how each part goes into the skill before you write anything.
-   - Read [references/phase-2-writing-patterns.md](references/phase-2-writing-patterns.md) before you decide how to write the text.
-   - Read [references/phase-2-embedding.md](references/phase-2-embedding.md) before you decide how to embed code, commands, templates, schemas and Markdown.
-4. Frontmatter: decide the fields the type, the location and the components need.
-   - Read [references/phase-2-frontmatter.md](references/phase-2-frontmatter.md) before you decide.
-5. Name and description: decide both from everything above.
-   - Read [references/phase-2-name-and-description.md](references/phase-2-name-and-description.md) before you decide.
+**A. Identify environment and components**
 
-Exit: you know what the skill contains and how each part is written, and each one has a purpose tied to the goal.
+1. Identify and choose the skill type and location
+   - See [Phase 2: Skill types](references/phase-2-skill-types.md) to learn the different types of skills and choose the one this skill needs.
+   - See [Phase 2: Skill location](references/phase-2-skill-location.md) to learn where a skill can be served from and decide where this one loads.
+2. Decide the required components
+   - See [Phase 2: Components](references/phase-2-components.md) to learn the types of components and files a skill supports today, and choose the ones this skill needs.
+   - If a subagent runs the skill or reads it, see [Phase 2: Skills for subagents](references/phase-2-subagents.md) to choose whether the subagent runs it as its task or preloads it as knowledge, and what a subagent can't do.
+   - Then, for each component you chose:
+     - See [Phase 2: Scripts](references/phase-2-scripts.md) to choose where each script lives, its language and interface, how the body calls it, and any injected command.
+     - See [Phase 2: Hooks](references/phase-2-hooks.md) to choose a hook's event, matcher and handler type, and where it lives: skill, plugin or settings.
+     - See [Phase 2: Tools and other skills](references/phase-2-tools-and-skills.md) to choose how the skill names MCP tools and other skills, what it does when they are missing, and which plugin dependencies it declares.
+     - See [Phase 2: Configuration, state and security](references/phase-2-config-and-security.md) to choose where configuration and state live, which values the user provides, and the limits the skill keeps to its stated purpose.
+
+**B. Design before you plan**
+
+3. Design the directory and the body
+   - See [Phase 2: Directory](references/phase-2-directory.md) to learn and design the skill's directory: the layout for its location, the folders and files of the components you chose, and what is shared and what belongs to the skill.
+   - See [Phase 2: Body](references/phase-2-body.md) to learn and choose the mechanisms the task needs: workflow, validation loop, checklist, plan-validate-execute, output template and gotchas.
+   - See [Phase 2: Writing patterns](references/phase-2-writing-patterns.md) to learn and choose the content patterns and examples.
+   - See [Phase 2: Embedding](references/phase-2-embedding.md) to learn and choose how to embed text, schemas, templates, commands and code snippets in the body.
+4. Define the frontmatter, the name and the description
+   - See [Phase 2: Frontmatter](references/phase-2-frontmatter.md) to learn and choose the frontmatter fields, their accepted values and their order.
+   - See [Phase 2: Name and description](references/phase-2-name-and-description.md) to choose the name, its command and clashes, and to write the description.
+
+**C. Present the design**
+
+5. Present the design to the user
+   - Show the design as a proposal: the skill type and location, its components, the body, the frontmatter, the name and the description.
+   - Adjust it with the user's corrections until the whole idea is clear.
+   - When the user approves the design, go to Phase 3.
+
+Exit: the user approves the design.
 
 ### Phase 3: DRAFT AND APPROVE PLAN
 
