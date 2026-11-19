@@ -138,7 +138,6 @@
       "mcp__Github_MCP_Server__label_write"
     ],
     "deny": [
-      "Bash(git push --force*)",
       "Bash(gh repo delete*)",
       "Bash(pip *)",
       "Bash(pip3*)",
