@@ -2,12 +2,6 @@
 
 The components a skill can have, what each one is for, and which file of Phase 2 shows how to build it. Choose here which ones the skill needs.
 
-## Contents
-
-- [The components](#the-components)
-- [Choose the components](#choose-the-components)
-- [Official sources](#official-sources)
-
 ## The components
 
 A skill has its own files, mechanisms it declares in `SKILL.md`, and components outside it that it ships with or relies on.

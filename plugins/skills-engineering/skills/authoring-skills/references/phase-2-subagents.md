@@ -2,15 +2,6 @@
 
 Whether a subagent runs the skill as its task or preloads it as knowledge, what a subagent can't do, and how to write the body of a subagent the skill ships.
 
-## Contents
-
-- [Gotchas](#gotchas)
-- [The skill is the task](#the-skill-is-the-task)
-- [The skill is knowledge for a subagent](#the-skill-is-knowledge-for-a-subagent)
-- [Write the body of a subagent](#write-the-body-of-a-subagent)
-- [Subagents in a plugin](#subagents-in-a-plugin)
-- [Official sources](#official-sources)
-
 ## Gotchas
 
 - A subagent in the background, the default, keeps every MCP tool but only a fixed set of built-in tools. Name each tool the skill relies on, and say what to do when one is missing.
