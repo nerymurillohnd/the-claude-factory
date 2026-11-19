@@ -2,9 +2,14 @@
 
 Understand what the user wants, propose a skill for a repeated process, or understand what to change in an existing skill, before you design anything. This file covers:
 
+- Gotchas
 - Scenario A, user request
 - Scenario B, repeated process
 - Scenario C, existing skill
+
+## Gotchas
+
+- A process you just performed carries its accidents: a command that failed once for a network or permission reason, or a tool missing in this environment, is not a rule of the process. Before a skill you propose in Scenario B states such a limit, check that it holds beyond this session, or leave it out.
 
 ## Scenario A: user request
 
