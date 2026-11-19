@@ -26,11 +26,11 @@
 > [!TIP]
 > **TL;DR** — Ask Claude to write a skill, or type `/skills-engineering:authoring-skills`, and get a skill built from current official docs after you approve its design and plan. Type `/skills-engineering:auditing-skills` to get an audit from nine specialized reviewers, each finding backed by the exact file and line.
 
-Skills Engineering is two skills and nine reviewer agents for the whole life of a Claude skill. `authoring-skills` writes a new skill, or changes an existing one, wherever it lives: your personal folder, a project, a plugin, your claude.ai account, a Skills API upload or a subagent. It learns your goal and your setup first, researches what the skill acts on in the current official sources, and builds nothing until you approve the design and the plan. `auditing-skills` then checks the finished skill with reviewers that each own one domain, so you fix what is wrong before the skill reaches anyone else.
+Skills Engineering is two skills and nine reviewer agents for the whole life of a Claude skill. `authoring-skills` writes a new skill, or changes an existing one, wherever it lives: your personal folder, a project, a plugin, your claude.ai account, a Skills API upload or a subagent. It learns your goal and your setup first, researches the skill's domain in current primary sources, and builds nothing until you approve the design and the plan. `auditing-skills` then checks the finished skill with reviewers that each own one domain, so you fix what is wrong before the skill reaches anyone else.
 
 ## ✨ Why use it
 
-- **Skills built from sources, not memory** — before it designs anything, `authoring-skills` reviews the code, data or documents the skill will act on and reads the official sources of every technology the skill uses, at the version you run.
+- **Skills built from sources, not memory** — before it designs anything, `authoring-skills` reviews the code, data or documents the skill will act on, and reads the primary sources of everything the skill draws on, in any field, at the version you run: official documentation, standards, platform policies, repositories, release notes and the tools' own help.
 - **You approve before anything is built** — you review a versioned design document and then a plan. After each correction the design is shown again in full, so the plan starts from what you approved. When the skill is built, Claude asks how to go on and preselects no option.
 - **An audit you can check** — nine reviewers run in parallel, each on its own domain. Every finding quotes the file and the lines, gives a severity and an exact fix, and the reports reach you word for word.
 
@@ -253,7 +253,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 Write a skill that drafts our release notes from the pull requests merged since the last tag
 ```
 
-**Result:** Claude loads `authoring-skills`, learns your goal, your project and the instructions Claude already loads there, and researches what the skill acts on in current official sources. It shows you a design document, shows it again in full after each correction you make, then writes a plan for you to approve. Once you approve, it builds the skill, reviews it as the model that will load it, and asks how to go on: keep it, run `auditing-skills`, build evals, or something else.
+**Result:** Claude loads `authoring-skills`, learns your goal, your project and the instructions Claude already loads there, and researches the skill's domain in current primary sources. It shows you a design document, shows it again in full after each correction you make, then writes a plan for you to approve. Once you approve, it builds the skill, reviews it as the model that will load it, and asks how to go on: keep it, run `auditing-skills`, build evals, or something else.
 
 ### Audit a skill with every reviewer
 
