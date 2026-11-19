@@ -35,7 +35,7 @@ jobs:
       - id: setup
         uses: ./.github/actions/setup
       # Every check runs once the toolchain is in place, so one run reports each failing check. Each
-      # step runs its pr-checks.sh step, the source `npm run check:pr` and the pre-push hook share.
+      # step runs its pr-checks.sh step, the source it shares with `npm run check:pr`.
       - name: Lint (Python, shell, workflows, GitHub files)
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: bash scripts/validators/pr-checks.sh lint

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# The merge gate's checks, the single source for Validate's Checks job, `npm run check:pr` and the
-# pre-push hook, so a branch that passes here passes in CI.
+# The merge gate's checks, the single source for Validate's Checks job and `npm run check:pr`, so a
+# branch that passes here passes in CI.
 #
 # Usage: pr-checks.sh [step...]
 #   With no step, runs every step of the Checks job, keeps going after a failure, and exits 1 if any
