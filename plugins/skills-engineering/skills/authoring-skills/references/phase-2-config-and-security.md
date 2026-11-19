@@ -1,10 +1,6 @@
 # Phase 2: Configuration, state and security
 
-Decide where the skill keeps its configuration and state, and what it must never do. This file covers:
-
-- where configuration and state live
-- values the user provides
-- what the skill must never do
+Where the skill keeps its configuration and state, the values the user provides, and what the skill must never do.
 
 ## Where configuration and state live
 

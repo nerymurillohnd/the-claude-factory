@@ -1,6 +1,6 @@
 # Phase 7: Audit and evals
 
-How to run the audit and the evals the requester chose in phase 6, and the final checks after them.
+How to run the audit and the evals the user chose in phase 6, and the final checks after them.
 
 ## Contents
 
@@ -10,7 +10,7 @@ How to run the audit and the evals the requester chose in phase 6, and the final
 
 ## Audit
 
-Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. Apply its findings as SKILL.md's Routes say for an audit's findings, then run phase 5 again. When the requester chose the evals too, run the audit first.
+Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. Apply its findings as SKILL.md's Routes say for an audit's findings, then run phase 5 again. When the user chose the evals too, run the audit first.
 
 ## Evals
 
@@ -24,7 +24,7 @@ Load `skills-engineering:auditing-skills` and run its full battery, with all its
 - With plugin evals, a granted Bash runs in a sandbox whose network reaches only the domains granted with `WebFetch(domain:...)`.
 - With plugin evals, the plugin's MCP servers are replaced by mocks; a real server starts only with `--allow-real-servers` or `--mocks off`.
 - With evals for skills, set the model and effort in each subagent you spawn.
-- Every eval run, and every judge that grades one, spends the requester's usage. Never run without the requester's approval, and never take it by default.
+- Every eval run, and every judge that grades one, spends the user's usage. Never run without the user's approval, and never take it by default.
 - Ask each step's questions in their own AskUserQuestion call, after the step before it is done: each depends on what came before.
 
 ### Choose the runner by skill type
@@ -79,7 +79,7 @@ Before any case, map the skill: its use cases, its triggers, each rule and its b
      - [Designing trigger eval queries](https://agentskills.io/skill-creation/optimizing-descriptions#designing-trigger-eval-queries): for cases that test whether the skill loads, with should-trigger queries and near-miss should-not-trigger queries.
      - [Write and refine cases](https://code.claude.com/docs/en/plugin-evals#write-and-refine-cases) and [Grader types](https://code.claude.com/docs/en/plugin-evals#grader-types): for a plugin skill.
      - [Define success criteria and build evaluations](https://platform.claude.com/docs/en/test-and-evaluate/develop-tests): for measurable success criteria and how to grade them.
-3. Present the cases to the requester and ask:
+3. Present the cases to the user and ask:
 
    ```text
    Question: These are the eval cases for [name]: [each case: its prompt and the defect it must catch]. Do they work for you?
@@ -92,13 +92,13 @@ Before any case, map the skill: its use cases, its triggers, each rule and its b
 
    - Approve them: go to the next section.
    - I have observations: correct the cases, present them again, and ask again.
-4. Run none of the cases yet. Anticipate failures instead of spending the requester's usage to find them.
+4. Run none of the cases yet. Anticipate failures instead of spending the user's usage to find them.
 
 ### Study the cases against the skill
 
 1. Launch a subagent to study the cases against the skill. You learned things while building the skill that the skill may not say, so your own study would be biased.
    - Launch the built-in Explore subagent by its type, never a fork. A fork inherits this conversation; Explore starts without it, without the CLAUDE.md files and project rules, and without the git status.
-   - Know what still reaches it: managed policy files, and a subdirectory's CLAUDE.md or path-scoped rules for the files it reads. When the skill's folders carry any of them, tell the requester the study was not fully clean.
+   - Know what still reaches it: managed policy files, and a subdirectory's CLAUDE.md or path-scoped rules for the files it reads. When the skill's folders carry any of them, tell the user the study was not fully clean.
    - Give it a brief:
      - the exact folders and files it reads, the eval cases and the skill's folder, and that it reads nothing else;
      - read each case, and answer it first from its own reasoning and knowledge, as Claude would without the skill;
@@ -106,7 +106,7 @@ Before any case, map the skill: its use cases, its triggers, each rule and its b
    - Wait for its report before you fix anything in step 3.
 2. The agent studies every case from the two perspectives in Define the cases. For each case it reports where the skill is weak, where it would fail or score low, and the passage at fault.
 3. Fix the skill for each gap the agent finds, before running anything. Never wait for the evals to find what this study can catch. Correct with the same two perspectives.
-4. Tell the requester about each case Claude already passes without the skill, with the reason, so no usage is spent on it unless they keep it.
+4. Tell the user about each case Claude already passes without the skill, with the reason, so no usage is spent on it unless they keep it.
 
 ### The two arms
 
@@ -153,12 +153,12 @@ The difference between the arms is what the evals measure, so set each arm to wh
    ```
 
    - Model and arms: set them as chosen.
-   - Where: for CI, follow [Run evals in CI](https://code.claude.com/docs/en/plugin-evals#run-evals-in-ci). Adding or changing a CI workflow, and pushing it, needs the requester's approval.
+   - Where: for CI, follow [Run evals in CI](https://code.claude.com/docs/en/plugin-evals#run-evals-in-ci). Adding or changing a CI workflow, and pushing it, needs the user's approval.
    - Run them: run the evals.
    - Don't run: stop, and report the cases and the fixes made.
-2. Deliver the HTML report of every run, so the requester can see and check the results and the benchmark. Never report results only in text.
-   - A plugin skill: give the requester the `report.html` path, or its `Published:` URL, as [HTML report](https://code.claude.com/docs/en/plugin-evals#html-report) describes.
-   - A personal or project skill: build an HTML report from the workspace's grading and `benchmark.json`, and give the requester its path.
+2. Deliver the HTML report of every run, so the user can see and check the results and the benchmark. Never report results only in text.
+   - A plugin skill: give the user the `report.html` path, or its `Published:` URL, as [HTML report](https://code.claude.com/docs/en/plugin-evals#html-report) describes.
+   - A personal or project skill: build an HTML report from the workspace's grading and `benchmark.json`, and give the user its path.
 3. Read the results by runner, and compare the delta against the target:
    - A plugin skill: [Read the results](https://code.claude.com/docs/en/plugin-evals#read-the-results).
    - A personal or project skill: [Grading outputs](https://agentskills.io/skill-creation/evaluating-skills#grading-outputs), [Aggregating results](https://agentskills.io/skill-creation/evaluating-skills#aggregating-results) and [Reviewing results with a human](https://agentskills.io/skill-creation/evaluating-skills#reviewing-results-with-a-human).
@@ -183,7 +183,7 @@ The difference between the arms is what the evals measure, so set each arm to wh
 
 ## Final checks
 
-When the audit and the evals the requester chose are done, check the final skill:
+When the audit and the evals the user chose are done, check the final skill:
 
 1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 5, and each linter, validator or script the environment provides for skills.
 2. Fix each finding, and run every check again until all of them pass.

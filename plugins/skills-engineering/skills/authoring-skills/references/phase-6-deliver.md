@@ -1,6 +1,6 @@
 # Phase 6: Deliver
 
-How to hand the skill to the requester and ask how to proceed.
+How to hand the skill to the user and ask how to proceed.
 
 ## Contents
 
@@ -15,9 +15,9 @@ Report what you built and what each file holds, each decision and its reason, wh
 
 ## Gotchas
 
-- An AskUserQuestion call holds 1 to 4 questions, each with 2 to 4 options and a header of up to 12 characters. The tool always adds an "Other" choice where the requester types free text.
-- A question that times out submits the options already selected. Treat it here as unanswered even so: list the options in your reply and stop until the requester answers.
-- Without the tool, ask the same question in the reply, list the same options, and stop until the requester answers.
+- An AskUserQuestion call holds 1 to 4 questions, each with 2 to 4 options and a header of up to 12 characters. The tool always adds an "Other" choice where the user types free text.
+- A question that times out submits the options already selected. Treat it here as unanswered even so: list the options in your reply and stop until the user answers.
+- Without the tool, ask the same question in the reply, list the same options, and stop until the user answers.
 
 ## The question
 
@@ -37,6 +37,6 @@ Options:
 
 - Keep it as is, alone: the skill is done.
 - Run the audit, build evals, or both, with or without Keep it as is: go to phase 7 with what they chose.
-- Text under Other: do what the requester wrote. When it changed the skill, run phase 5 again, report what changed, then ask again.
+- Text under Other: do what the user wrote. When it changed the skill, run phase 5 again, report what changed, then ask again.
 
-Exit: the requester keeps the skill as it is, or chose phase 7.
+Exit: the user keeps the skill as it is, or chose phase 7.

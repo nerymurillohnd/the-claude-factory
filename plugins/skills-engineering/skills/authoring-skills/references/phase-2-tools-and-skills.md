@@ -1,10 +1,6 @@
 # Phase 2: Tools and other skills
 
-Decide what the skill relies on outside itself, and what it does when that is missing. This file covers:
-
-- MCP tools
-- other skills
-- plugin dependencies
+What the skill relies on outside itself, its MCP tools, other skills and plugin dependencies, and what it does when one is missing.
 
 ## MCP tools
 

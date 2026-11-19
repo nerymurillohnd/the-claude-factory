@@ -1,12 +1,6 @@
 # Phase 2: Hooks
 
-Decide whether the skill needs a hook, which event it uses and where the hook lives. This file covers:
-
-- hook or skill
-- how hooks work
-- where a hook lives
-- hooks in a skill
-- paths and scripts
+Whether a rule belongs in a hook or in the skill, how hooks work, where a hook lives, hooks declared in a skill, and the paths and scripts a hook calls.
 
 ## Hook or skill
 

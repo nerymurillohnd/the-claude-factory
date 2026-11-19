@@ -1,12 +1,6 @@
 # Phase 2: Directory
 
-Decide the folders and files the skill needs, and where each one goes. This file covers:
-
-- what each part is for
-- maps for each case
-- what is shared and what belongs to one skill
-- how to split content between `SKILL.md` and files
-- the layout of an upload
+The folders and files the skill needs and where each one goes: what each part is for, a map for each case, what is shared and what belongs to one skill, how content splits between `SKILL.md` and files, and the layout of an upload.
 
 ## What each part is for
 

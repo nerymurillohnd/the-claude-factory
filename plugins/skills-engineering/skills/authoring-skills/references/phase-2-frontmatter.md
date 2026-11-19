@@ -1,12 +1,6 @@
 # Phase 2: Frontmatter
 
-Decide the frontmatter fields the type, the location and the components need. This file covers:
-
-- how Claude Code reads frontmatter
-- the fields every surface accepts
-- the fields only Claude Code accepts
-- the fields by type of skill
-- the variables the body can use
+The frontmatter fields the skill's type, location and components need: how Claude Code reads frontmatter, the fields every surface accepts, the fields only Claude Code accepts, the fields by type of skill, and the variables the body can use.
 
 ## How Claude Code reads it
 

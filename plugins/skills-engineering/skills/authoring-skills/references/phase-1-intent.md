@@ -1,11 +1,6 @@
 # Phase 1: Understand the user's intent
 
-Understand what the user wants, propose a skill for a repeated process, or understand what to change in an existing skill, before you design anything. This file covers:
-
-- Gotchas
-- Scenario A, user request
-- Scenario B, repeated process
-- Scenario C, existing skill
+How to understand what the user wants (Scenario A), propose a skill for a repeated process (Scenario B), or understand what to change in an existing skill (Scenario C), before you design anything.
 
 ## Gotchas
 
