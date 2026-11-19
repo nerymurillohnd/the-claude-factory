@@ -4,7 +4,7 @@ The six types of skill, how to choose one, and what each type changes in the ski
 
 ## Gotchas
 
-- A skill with `disable-model-invocation: true` can't be loaded by Claude, another skill, a subagent's preload or a session-scoped scheduled task: choose another type for a step they must run.
+- A skill with `disable-model-invocation: true` runs only when the user invokes it, and Claude never loads it on its own: leave the field out of a skill Claude must load proactively.
 - A skill with `user-invocable: false` leaves the `/` menu and doesn't run when typed: only Claude loads it, from its description.
 - A forked skill that holds guidelines and no task returns nothing useful: fork only a complete task.
 

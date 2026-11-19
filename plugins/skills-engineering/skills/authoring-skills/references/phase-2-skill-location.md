@@ -4,8 +4,7 @@ Where a skill can live, which sessions load it from there, and when it loads.
 
 ## Gotchas
 
-- Cowork, cloud sessions and cloud scheduled tasks don't read `~/.claude/skills/`, so a cloud scheduled task reports such a skill as not found: enable the skill on the claude.ai account, or commit it to the repository's `.claude/skills/`.
-- A project's cloud thread doesn't load the repository's skills, and a cloud session doesn't load plugins declared in the repository's or the user's settings: enable the skill on the claude.ai account for those sessions.
+- A project's cloud thread doesn't load the repository's skills, and a cloud session doesn't load plugins declared in the repository's or the user's settings: tell the user to add the skill to their claude.ai account for those sessions, since only they can.
 - A `SKILL.md` at a plugin's root loads only when the plugin has no `skills/` folder and no `skills` key: use one layout or the other.
 
 ## The locations
@@ -29,7 +28,7 @@ Choose by who must get the skill and in which sessions:
 - Everyone who works in a repository: project scope. Write it for any of them, with no paths, names or settings of one person's machine.
 - One package of a monorepo: nested, so it loads with work on that package. A skill that must run before Claude touches the package belongs at the repository root.
 - Third parties, on their machines: a plugin in a marketplace.
-- The user in Cowork, cloud sessions or cloud scheduled tasks: the claude.ai account. Write and edit it on claude.ai, never in the local copy.
+- The user in Cowork, cloud sessions or cloud scheduled tasks: the claude.ai account. Deliver the skill folder, and tell the user to add it to their account; for a later change, deliver the folder again.
 - Every machine of an organization: enterprise. Deliver the skill folder, and tell the user their administrator installs it.
 
 Example: the user works on their laptop and in cloud scheduled tasks. The account skill reaches both; a skill in user scope fails in the cloud with "not found".

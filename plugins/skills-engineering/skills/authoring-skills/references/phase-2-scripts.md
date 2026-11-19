@@ -19,8 +19,8 @@ Whether the skill needs scripts, what each one does, where it lives, its languag
 - A bare `scripts/check.py` resolves from the session's working directory, which moves with each `cd`, resets to the project folder when a `cd` leaves the project, and isn't kept by a subagent: write the path with the variable of its location.
 - Path variables are replaced only in `SKILL.md` and in `allowed-tools`, never in a reference file or a script's environment: state each resolved path in `SKILL.md`, and pass it to the script as an argument.
 - `${CLAUDE_PLUGIN_ROOT}` changes with each plugin version, so what a script writes there is lost on update: write state to `${CLAUDE_PLUGIN_DATA}`.
-- claude.ai and Cowork don't install a plugin with a top-level `bin/`. A plugin that must reach them keeps its executables in `scripts/`.
-- An upload to the Claude API runs scripts with no network and only pre-installed packages, and on claude.ai network depends on the admin's settings: use the standard library or what the surface provides.
+- Claude, in the app or the browser, doesn't install a plugin that has a top-level `bin/`: keep the plugin's executables in `scripts/`.
+- A script's long output reaches Claude only as a file path and a short preview: print a short summary, and write the details to a file.
 
 ## Decide whether the skill needs a script
 
@@ -56,7 +56,7 @@ For a script that several skills of one plugin share, or that a hook also calls.
 
 **C. The plugin's `bin/`**
 
-For a tool Claude calls by name: Claude Code puts `bin/` on the Bash tool's `PATH` while the plugin is enabled, after the user's own entries, so it can't shadow a system command. Use it only for a plugin that never needs claude.ai or Cowork.
+For a tool Claude calls by name: Claude Code puts `bin/` on the Bash tool's `PATH` while the plugin is enabled, after the user's own entries, so it can't shadow a system command. Claude doesn't install a plugin that has one, so use it only for a plugin that runs in Claude Code alone.
 
 **D. Hook scripts**
 
