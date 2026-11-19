@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- `claude plugin validate --strict` no longer fails on this plugin with `TS5097: An import path can only end with a '.ts' extension`. The mod now imports its own files the way the mods docs show (`./file.js`), which Claude Code resolves to the same files.
+- If the compaction note or the commit reminder fails, the compaction or the command still goes on as asked, and a command never runs twice. Each of these hooks now says so in its own error handler, so `claude plugin validate` no longer lists it as a gating hook without `.catch`. Nothing changes in how the plugin works.
+
 ## [0.2.6] - 2026-11-06
 
 ### Changed
