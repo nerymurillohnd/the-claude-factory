@@ -7,7 +7,8 @@
 #   .ts .tsx .mjs .md .json   Biome (biome.jsonc), formatting and lint
 #   .ts .tsx .mjs             tsc --noEmit with the root tsconfig.json, or a mod's generated one
 #   .py .pyi             ruff check, ruff format --check (ruff.toml), basedpyright (pyrightconfig)
-#   .sh                  shfmt -d (.editorconfig), shellcheck (.shellcheckrc, SHELLCHECK_OPTS)
+#   shell scripts        shfmt -d (.editorconfig), shellcheck (.shellcheckrc, SHELLCHECK_OPTS):
+#                        .sh files, and any file shfmt -f finds by its shebang, such as a Git hook
 # Other types, and deleted files, are not checked here; Validate's Checks job still checks them.
 #
 # It runs every check, reports each failure, and exits 1 if any failed. A tool it needs and can't
@@ -33,6 +34,29 @@ trap 'rm -rf "${scratch}"' EXIT
 # The staged files, as Git records them: Added, Copied, Modified or Renamed, NUL-separated so any
 # file name survives (git-diff --cached --name-only --diff-filter=ACMR -z).
 git diff --cached --name-only --diff-filter=ACMR -z > "${scratch}/staged"
+# A shell script is found as npm run lint:shell finds it, with shfmt -f, which reads the extension
+# and the shebang; ShellCheck's own pre-commit hook selects files the same way (types: [shell]).
+# Without shfmt, a shell shebang on the first line marks one; shfmt's absence then blocks below.
+shfmt_detect=""
+if [[ -x node_modules/.bin/shfmt ]]; then
+  shfmt_detect="node_modules/.bin/shfmt"
+elif command -v shfmt > /dev/null 2>&1; then
+  shfmt_detect="$(command -v shfmt)"
+fi
+is_sh=0
+detect_shell() {
+  # detect_shell <file>: sets is_sh to 1 when the file is a shell script, else to 0.
+  local found="" first=""
+  is_sh=0
+  if [[ -n ${shfmt_detect} ]]; then
+    found="$("${shfmt_detect}" -f "$1" 2> /dev/null)" || found=""
+    [[ -z ${found} ]] || is_sh=1
+  else
+    IFS= read -r first < "$1" || first="${first:-}"
+    [[ ${first} != '#!'*sh* ]] || is_sh=1
+  fi
+}
+
 biome_files=()
 ts_files=()
 py_files=()
@@ -44,7 +68,11 @@ while IFS= read -r -d '' file; do
     *.md | *.json) biome_files+=("${file}") ;;
     *.py | *.pyi) py_files+=("${file}") ;;
     *.sh) sh_files+=("${file}") ;;
-    *) continue ;;
+    *)
+      detect_shell "${file}"
+      ((is_sh == 1)) || continue
+      sh_files+=("${file}")
+      ;;
   esac
   # The tools read the file in the work tree. If it differs from what is staged, they would check
   # text the commit doesn't hold, so the commit waits until the file is staged whole.

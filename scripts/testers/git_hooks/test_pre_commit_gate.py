@@ -152,6 +152,16 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage("scripts/gate-probe.sh", CLEAN_SH + "echo $UNQUOTED\n")
         self.assert_blocks(self.box.gate(), "shellcheck")
 
+    def test_extensionless_shell_script_is_checked(self) -> None:
+        """A shell script found by its shebang, like a Git hook, is checked as shfmt -f finds it."""
+        self.box.stage(".githooks/gate-probe", CLEAN_SH + "echo $UNQUOTED\n")
+        self.assert_blocks(self.box.gate(), "shellcheck")
+
+    def test_extensionless_text_file_is_skipped(self) -> None:
+        """A file with no extension and no shell shebang is not a shell script."""
+        self.box.stage("docs/GATE-PROBE", "Plain text, not a script: $UNQUOTED\n")
+        self.assert_passes(self.box.gate())
+
     def test_biome_blocks_javascript(self) -> None:
         """A Biome finding in a .mjs file blocks the commit."""
         self.box.stage("scripts/gate-probe.mjs", CLEAN_MJS + "var unused = 1\n")
