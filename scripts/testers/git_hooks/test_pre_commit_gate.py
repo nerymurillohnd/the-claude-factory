@@ -172,6 +172,17 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage("docs/GATE-PROBE", "Plain text, not a script: $UNQUOTED\n")
         self.assert_passes(self.box.gate())
 
+    def test_suppression_blocks(self) -> None:
+        """A staged file that silences a check blocks the commit, even when every tool passes."""
+        self.box.stage("scripts/gate-probe.mjs", "// @ts-nocheck\n" + CLEAN_MJS)
+        self.assert_blocks(self.box.gate(), "suppressions")
+
+    def test_cast_blocks(self) -> None:
+        """A typing.cast call is a suppression of the type checker."""
+        source = CLEAN_PY + "\n\nfrom typing import cast\n\nVALUE = cast('int', 1)\n"
+        self.box.stage(PROBE_PY, source)
+        self.assert_blocks(self.box.gate(), "suppressions")
+
     def test_shellcheck_reads_shellcheck_opts(self) -> None:
         """SHELLCHECK_OPTS reaches ShellCheck: its options change what the gate reports."""
         self.box.stage("scripts/gate-probe.sh", CLEAN_SH + "echo $UNQUOTED\n")

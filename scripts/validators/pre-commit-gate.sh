@@ -9,6 +9,7 @@
 #   .py .pyi             ruff check, ruff format --check --diff, basedpyright (pyproject.toml)
 #   shell scripts        shfmt -d (.editorconfig), shellcheck (.shellcheckrc, SHELLCHECK_OPTS):
 #                        .sh files, and any file shfmt -f finds by its shebang, such as a Git hook
+#   all of the above     inline suppressions (npm run lint:suppressions)
 # Other types, and deleted files, are not checked here; Validate's Checks job still checks them.
 #
 # It runs every check, reports each failure, and exits 1 if any failed. A tool it needs and can't
@@ -211,6 +212,17 @@ if ((${#sh_files[@]} > 0)); then
     # its command line itself; -S style and -a have no .shellcheckrc key, so they are passed as npm
     # run lint:shell does.
     run_tool shellcheck "${shellcheck}" -S style -a "${sh_files[@]}"
+  fi
+fi
+
+# Every staged file the gate covers is also searched for inline suppressions (noqa, type: ignore,
+# pyright: ignore, cast(), shellcheck disable, biome-ignore, @ts-ignore and the like): a check
+# silenced in the file is a check that did not run.
+gated=(${biome_files[@]+"${biome_files[@]}"} ${py_files[@]+"${py_files[@]}"} ${sh_files[@]+"${sh_files[@]}"})
+if ((${#gated[@]} > 0)); then
+  find_tool uv uv
+  if [[ -n ${uv} ]]; then
+    run_tool suppressions "${uv}" run --no-sync --quiet python scripts/validators/find-suppressions.py "${gated[@]}"
   fi
 fi
 
