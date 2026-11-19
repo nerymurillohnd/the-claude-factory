@@ -40,15 +40,14 @@ Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py invoices.csv`. When it 
 ## Defaults, not menus
 
 - Give one default, and the exception as its own condition.
-- Match the freedom to the step's fragility: criteria where many approaches work, a preferred pattern where one is better, the exact command where a deviation breaks something.
-- Calibrate each step on its own: most skills mix free steps with exact ones.
+- Match each step's freedom to its own fragility, since most skills mix free steps with exact ones: criteria where many approaches work, a preferred pattern where one is better, the exact command where a deviation breaks something.
 
 ```markdown
 <!-- Weak: a menu -->
 You could use the CSV importer, the API, a manual journal entry or a spreadsheet macro.
 
 <!-- Strong: a default with its exception -->
-Export with the accounting system's CSV importer. For a system without one, write the journal file from [Journal template](assets/journal.csv).
+Import with the accounting system's CSV importer. For a system without one, write the journal file from [Journal template](assets/journal.csv).
 
 <!-- Weak: a fragile step left free -->
 Migrate the ledger with the options that fit.
@@ -66,7 +65,7 @@ Teach the method for the whole class of tasks the skill serves, not the answer t
 Join `invoices` to `suppliers` on `supplier_id`, keep the rows from March, and sum `total`.
 
 <!-- Strong: the method for any report on the invoices -->
-1. Read the schema file to find the tables the request needs.
+1. Read `schema.yaml` to find the tables the request needs.
 2. Join the tables on their `_id` keys.
 3. Turn each filter of the request into a `WHERE` clause.
 4. Sum or count the columns the request names, and return a Markdown table.

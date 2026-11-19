@@ -1,6 +1,6 @@
 # Phase 2: Environment and project
 
-How to establish the environment you work in, understand the project and every instruction Claude loads in it so the skill duplicates and collides with nothing, and gather the project's material the skill is built from.
+How to establish the environment you work in, understand the project and every instruction Claude loads in it so the skill duplicates and collides with nothing, and gather the domain sources the skill is built from.
 
 ## Contents
 
@@ -95,7 +95,8 @@ Build the skill from the project's own material, not from general knowledge: a s
   - code review comments and issues, for the concerns that recur;
   - the version control history of fixes, for what really changed;
   - past failures and how they were resolved.
-- When the project's material and a general article differ, follow the project's, and tell the user about each difference that changes the skill.
+- When the project's material and a general article differ, follow the project's.
+- When the project's material contradicts the official documentation of the surface the skill runs on, tell the user, ask which prevails, and record the answer as in step 6 of section 2.
 
 ## Official sources
 

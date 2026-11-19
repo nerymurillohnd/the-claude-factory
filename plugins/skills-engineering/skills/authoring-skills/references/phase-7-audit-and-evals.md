@@ -10,7 +10,7 @@ How to run the audit and the evals the user chose in phase 6, and the final chec
 
 ## Audit
 
-Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. Apply its findings as SKILL.md's Routes say for an audit's findings, then run phase 5 again. When the user chose the evals too, run the audit first.
+Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. Apply its findings through Scenario C of the intent file of Phase 1, then run phase 5 again. When the user chose the evals too, run the audit first.
 
 ## Evals
 
@@ -159,13 +159,13 @@ The difference between the arms is what the evals measure, so set each arm to wh
 2. Deliver the HTML report of every run, so the user can see and check the results and the benchmark. Never report results only in text.
    - A plugin skill: give the user the `report.html` path, or its `Published:` URL, as [HTML report](https://code.claude.com/docs/en/plugin-evals#html-report) describes.
    - A personal or project skill: build an HTML report from the workspace's grading and `benchmark.json`, and give the user its path.
-3. Read the results by runner, and compare the delta against the target:
+3. Read the results by runner, and compare the delta against the target. When it already meets the target, go to Final checks:
    - A plugin skill: [Read the results](https://code.claude.com/docs/en/plugin-evals#read-the-results).
    - A personal or project skill: [Grading outputs](https://agentskills.io/skill-creation/evaluating-skills#grading-outputs), [Aggregating results](https://agentskills.io/skill-creation/evaluating-skills#aggregating-results) and [Reviewing results with a human](https://agentskills.io/skill-creation/evaluating-skills#reviewing-results-with-a-human).
 4. Make one correction pass, following [Iterating on the skill](https://agentskills.io/skill-creation/evaluating-skills#iterating-on-the-skill) and [Refine with real execution](https://agentskills.io/skill-creation/best-practices#refine-with-real-execution):
-   - Read every result, the passes too: what triggered a false positive, what was missed, and what could be cut. A case that passes only with the skill shows which instructions earn the delta: keep them.
+   - Read every result, the passes too: what passed that should have failed, what the skill missed, and which instructions no run needed, to cut them. A case that passes only with the skill shows which instructions earn the delta: keep them.
    - Fix for the general case. The skill will run on requests the cases never show, so change what the failures have in common, not the wording of each case, and give the reason instead of a narrow rule.
-   - Read each run's transcript, not only its output. Where the model spent steps on nothing, fix the cause: make a vague instruction exact, give an instruction that didn't apply to the case its condition, and give a set of options its default.
+   - Read each run's transcript, not only its output. Where the model took steps the result didn't use, fix the cause you find: a vague instruction, where it tried several approaches, becomes exact; an instruction that didn't apply to the case, which it followed anyway, gets its condition; options with no default get one.
    - Reword an instruction the model ignored: it is ambiguous. When the scores stop rising as rules are added, remove instructions and check that the results hold.
    - When several runs wrote the same helper or took the same steps, move that work into a script in `scripts/` and have the skill run it, as the scripts file of Phase 2 shows.
 5. Ask for approval before re-running:
@@ -180,10 +180,10 @@ The difference between the arms is what the evals measure, so set each arm to wh
    - Stop here: Keep the results as they are.
    ```
 
-   - Affected cases: run only those cases, and deliver their HTML report.
+   - Affected cases: run only those cases, judge the delta on their new results together with the earlier results of the rest, and deliver the HTML report.
    - All cases: run every case, and deliver the HTML report.
    - Stop here: report the results as they are, with the HTML report.
-6. When the results meet the target, go to Final checks. When they don't, report the gap and ask whether to make another correction pass or stop. Recommend stopping when a pass brought no real gain over the one before.
+6. When the results meet the target, go to Final checks. When they don't, report the gap and ask whether to make another correction pass or stop. Recommend stopping when a pass didn't raise the delta over the one before.
 
 ## Final checks
 

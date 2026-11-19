@@ -25,8 +25,8 @@ What the body of the skill must carry, and how to build its task: workflows, che
 
 - Name the kind of work the skill serves and the disciplines that govern it, and derive from them the knowledge, methods, tools, failure modes and quality criteria the skill must carry.
 - Ask of each line whether Claude would do this differently, or not know how, without it. Keep the domain's procedure and its reasons, conventions, facts that defy assumptions, exact tools and commands, and the corrections the user keeps making. Cut what any capable model knows, and point to a page for the rest.
-- Build the body from the steps, examples of input and output, and the edge cases Claude meets often. Leave the rare ones to Claude's judgment: an instruction that doesn't apply to a run still pulls Claude down paths that lead nowhere.
-- Prefer concise steps with one working example to exhaustive coverage.
+- Build the body from the steps, examples of input and output, and the edge cases Claude meets often and gets wrong. Leave the rest to Claude's judgment: an instruction that doesn't apply to a run still pulls Claude down paths that lead nowhere.
+- Prefer concise steps with a working example to exhaustive coverage.
 - The costlier an error in the domain, the more evidence, verification and human control the skill requires.
 - Use only the mechanisms below the task needs: each costs attention.
 
@@ -53,12 +53,12 @@ What the body of the skill must carry, and how to build its task: workflows, che
 - Move a long branch or variant to its own file, and point to it from the decision point, so Claude reads only the branch it takes.
 
 ```markdown
-<!-- Weak: no input, command or output, and nothing stops a bad export -->
+<!-- Weak: no input, command or output, and nothing stops a bad import -->
 1. Get the invoices.
 2. Process them.
-3. Export the results.
+3. Import the results.
 
-<!-- Strong: each step's input, command and output, and a gate before the export -->
+<!-- Strong: each step's command and what it gives, and a gate before the import -->
 1. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/extract.py invoices/`. It writes `lines.csv`.
 2. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py lines.csv`. Go on only when it passes.
 3. Import `lines.csv` with the accounting system's CSV importer.
@@ -73,7 +73,7 @@ What the body of the skill must carry, and how to build its task: workflows, che
 # Weak: progress items that name no action, so Claude can't tell which is done
 - [ ] Prepare the invoices
 - [ ] Process them
-# Strong: each progress item names its action and the script that does it
+# Strong: each progress item names its action, and its script where one does it
 Copy this checklist into your reply and tick each step as you finish it:
 - [ ] Step 1: Extract the lines (extract.py)
 - [ ] Step 2: Check the totals (check_totals.py)
@@ -101,7 +101,7 @@ Check the journal and fix any errors.
 <!-- Strong: the validator, the fix, the stop and the gate -->
 1. Write the entries to `journal.csv`.
 2. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_journal.py journal.csv`.
-3. When it fails, fix the rows it names and run it again, for at most 3 rounds. When the same error returns after a fix, stop and report it.
+3. When it fails, fix the rows it names and run it again. After 3 rounds, or when the same error returns after a fix, stop and report it.
 4. Import `journal.csv` only when the check passes.
 ```
 
@@ -127,8 +127,9 @@ The changes file can be fixed and checked again without touching the originals. 
 1. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/analyze_form.py input.pdf` to write `form_fields.json`.
 2. Write `field_values.json`, mapping each field name to its value.
 3. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/validate_fields.py form_fields.json field_values.json`.
-4. When it fails, fix `field_values.json` and run it again.
-5. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/fill_form.py input.pdf field_values.json output.pdf`.
+4. When it fails, fix `field_values.json` and run it again, for at most 3 rounds.
+5. Once it passes, run `python3 ${CLAUDE_SKILL_DIR}/scripts/fill_form.py input.pdf field_values.json out.pdf`.
+6. Open `out.pdf` and check that each field shows its value.
 ```
 
 ## Output templates
@@ -142,7 +143,7 @@ A gotcha is a fact of the environment or domain that defies a reasonable assumpt
 - Write each as the trap and then the fix, in one or two lines.
 - Put the gotchas in `SKILL.md`, before the steps they affect: Claude must know them before it reaches the situation.
 - Put a gotcha that affects only one variant in that variant's file, before the steps it affects, and give the pointer to that file a condition Claude can recognize: for a non-obvious trap, Claude may not see that the file applies.
-- When you correct Claude while you build or test the skill, add the correction as a gotcha.
+- When you correct Claude while you build or test the skill, add the correction to the skill: as a gotcha when it corrects a wrong assumption, as a rule otherwise.
 
 ```markdown
 <!-- Weak: general advice a capable model already follows -->

@@ -106,7 +106,7 @@ Once the user's intent is understood or your proposal is approved, work through 
 **A. Identify environment and components**
 
 1. Recognize the environment and the project
-   - See [Phase 2: Environment and project](references/phase-2-environment.md) to establish the environment you work in, inventory what the project and Claude already load, flag every overlap or friction with the new skill for the user to decide, and gather the project's material the skill is built from.
+   - See [Phase 2: Environment and project](references/phase-2-environment.md) to establish the environment you work in, inventory what the project and Claude already load, flag every overlap or friction with the new skill for the user to decide, and gather the domain sources the skill is built from.
 2. Identify and choose the skill type and location
    - See [Phase 2: Skill types](references/phase-2-skill-types.md) to choose which of the six types this skill is.
    - See [Phase 2: Skill location](references/phase-2-skill-location.md) to choose where the skill lives, from which sessions load it there and when.

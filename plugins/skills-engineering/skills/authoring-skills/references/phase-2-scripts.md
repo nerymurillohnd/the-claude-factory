@@ -16,7 +16,7 @@ Whether the skill needs scripts, what each one does, where it lives, its languag
 
 ## Gotchas
 
-- A bare `scripts/check.py` resolves from the session's working directory, which moves with each `cd`, returns to the project when a `cd` leaves it, and isn't kept by a subagent: write the path with the variable of its location.
+- A bare `scripts/check.py` resolves from the session's working directory, which moves with each `cd`, resets to the project folder when a `cd` leaves the project, and isn't kept by a subagent: write the path with the variable of its location.
 - Path variables are replaced only in `SKILL.md` and in `allowed-tools`, never in a reference file or a script's environment: state each resolved path in `SKILL.md`, and pass it to the script as an argument.
 - `${CLAUDE_PLUGIN_ROOT}` changes with each plugin version, so what a script writes there is lost on update: write state to `${CLAUDE_PLUGIN_DATA}`.
 - claude.ai and Cowork don't install a plugin with a top-level `bin/`. A plugin that must reach them keeps its executables in `scripts/`.
@@ -54,7 +54,7 @@ The default, for a script one skill uses. It travels with every copy of the skil
 
 **B. The plugin root's `scripts/`**
 
-For a script that several skills of one plugin share, or that a hook also calls. The body reaches it with `${CLAUDE_PLUGIN_ROOT}`, and the skill then works only inside its plugin. For a skill whose `SKILL.md` sits at the plugin root, `${CLAUDE_SKILL_DIR}` already names the plugin root, so either variable reaches its `scripts/`.
+For a script that several skills of one plugin share, or that a hook also calls. The body reaches it with `${CLAUDE_PLUGIN_ROOT}`, and the skill then works only inside its plugin. For a skill whose `SKILL.md` sits at the plugin root, `${CLAUDE_SKILL_DIR}` already names the plugin root: reach its `scripts/` with that variable.
 
 **C. The plugin's `bin/`**
 
