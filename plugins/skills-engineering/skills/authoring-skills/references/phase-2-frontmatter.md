@@ -36,8 +36,8 @@ Leave these out of a skill that must upload to claude.ai or the API.
 - `when_to_use`: extra trigger phrases appended to the description in the listing. It counts toward the same 1,536-character cut. Set it when the skill has more triggers than the description can carry.
 - `argument-hint`: the hint shown when the user types the command, such as `[issue-number]`. Set it when the skill takes arguments.
 - `arguments`: names for the positional arguments, so the body refers to each by name. Set it when the skill takes two or more.
-- `disable-model-invocation`: `true` lets only the user invoke the skill. Set it as decided in the type and location file.
-- `user-invocable`: `false` lets only the model invoke it. Set it as decided in the type and location file.
+- `disable-model-invocation`: `true` lets only the user invoke the skill. Set it as decided in Phase 2: Skill types.
+- `user-invocable`: `false` lets only the model invoke it. Set it as decided in Phase 2: Skill types.
 - `disallowed-tools`: tools removed while the skill is active, until the user's next message. Set it, not `allowed-tools`, when the skill must never call a tool, such as asking the user during an unattended run.
 - `model` and `effort`: the model and the reasoning effort for the rest of the turn, or for the fork with `context: fork`. Set them only when the task needs a different capability or depth than the session's.
 - `context`: `fork` runs the skill in a new subagent with the body as its task. Set it only for a skill that is a complete task.
