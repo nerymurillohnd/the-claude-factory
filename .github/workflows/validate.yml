@@ -27,6 +27,10 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
+    env:
+      # ruff check writes each finding as a GitHub annotation on its line of the pull request, as
+      # basedpyright does on its own when it detects GitHub Actions.
+      RUFF_OUTPUT_FORMAT: github
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
