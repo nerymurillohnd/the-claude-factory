@@ -1,9 +1,10 @@
 # Phase 1: Understand the user's intent
 
-Understand what the user wants, or propose a skill for a repeated process, before you design anything. This file covers:
+Understand what the user wants, propose a skill for a repeated process, or understand what to change in an existing skill, before you design anything. This file covers:
 
 - Scenario A, user request
 - Scenario B, repeated process
+- Scenario C, existing skill
 
 ## Scenario A: user request
 
@@ -41,3 +42,26 @@ The process can be a task that will repeat across sessions, or a procedure you j
 5. Act on the answer
    - If the user says yes, or adds comments, continue with their comments and go to Phase 2.
    - If the user says no, end here and leave this skill.
+
+## Scenario C: existing skill
+
+The request can be the user's own, or the improvements and corrections an audit recommended.
+
+1. Understand
+   - Read the existing skill whole, first line to last, with every file it points to.
+   - Unfold what the user asks to change, or what the audit recommended, and the goal of the change.
+2. Verify the findings
+   - When the request follows an audit, check each finding against the skill and the official sources, since a finding can be wrong.
+   - Tell the user which findings you reject and why.
+3. Ask
+   - Ask the user for the context you need when something is missing or unclear.
+   - Ask about context only. Decide the technical matters yourself.
+4. Challenge
+   - Tell the user when part of the request is deficient, or has a better way to reach the same goal, and propose it.
+   - The decision is theirs.
+   - Change only what serves the goal.
+5. No one to ask
+   - In a subagent, or a run with nobody to answer, state each assumption in your reply and go on.
+6. Move on
+   - Go to Phase 2 only when you can state what changes, why, and what stays.
+   - Keep the skill's name and folder unless the user asks otherwise.

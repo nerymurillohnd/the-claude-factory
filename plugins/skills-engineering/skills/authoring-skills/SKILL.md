@@ -93,9 +93,10 @@ To do:
 Start by choosing the situation in which you loaded this skill:
 
 - Scenario A: the user asked for a skill, or you understood they are implicitly asking you to create one.
-- Scenario B: you spotted a task that can be automated or is repetitive, within a session or across sessions, and a skill would help.
+- Scenario B: you spotted a task that can be automated, may repeat or must always be done the same way, within a session or across sessions, and a skill would help.
+- Scenario C: the user asked you to edit or improve an existing skill, or an audit of an existing skill recommended improvements and corrections.
 
-Read [Phase 1: Understand the user's intent](references/phase-1-intent.md) to confirm your scenario, then understand the user's intent (A) or propose a new skill (B).
+Read [Phase 1: Understand the user's intent](references/phase-1-intent.md) to confirm your scenario, then understand the user's intent (A), propose a new skill (B) or understand what to change (C).
 
 ### Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
 
