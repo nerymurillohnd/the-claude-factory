@@ -69,15 +69,32 @@ What the body of the skill must carry, and how to build its task: workflows, che
 - Progress checklist: Claude copies it into its reply and ticks each item as it works. Use it for a long workflow with dependencies or gates, where Claude would lose its place, with or without scripts. Name each item after its step, so Claude ticks the step it just finished.
 - Verification checklist: Claude checks its finished output against it. Use it when the output can be wrong in ways Claude doesn't notice while producing it. Each item names something observable and fails on a bad output.
 
-```text
-# Weak: progress items that name no action, so Claude can't tell which is done
-- [ ] Prepare the invoices
-- [ ] Process them
-# Strong: each progress item names its action, and its script where one does it
+```markdown
+<!-- Weak: items that name no step, so Claude can't tell which is done or where to return -->
+- [ ] Prepare the statement
+- [ ] Check it
+
+<!-- Strong: each item names a step detailed below, and the last step loops back with a limit -->
 Copy this checklist into your reply and tick each step as you finish it:
-- [ ] Step 1: Extract the lines (extract.py)
-- [ ] Step 2: Check the totals (check_totals.py)
-- [ ] Step 3: Import the CSV
+
+- [ ] Step 1: Collect the invoices
+- [ ] Step 2: Match each invoice to the statement
+- [ ] Step 3: Reconcile the totals
+
+**Step 1: Collect the invoices**
+
+Gather the supplier's invoices dated within the statement's period.
+
+**Step 2: Match each invoice to the statement**
+
+Pair each statement line with its invoice by number, and note each line that has none.
+
+**Step 3: Reconcile the totals**
+
+Compare the statement's total with the sum of the matched invoices. If they differ, return to Step 2, at most twice, then report the lines that still don't match.
+```
+
+```text
 # Weak: a verification item that passes whatever the output
 - [ ] All requirements are met.
 # Strong: a verification item that fails on a bad output
