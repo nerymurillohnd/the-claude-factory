@@ -56,3 +56,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Use examples effectively](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#use-examples-effectively) when you write the examples. It gives how many, how diverse, and the tags that set them apart.
 - Read [Examples pattern](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#examples-pattern) when the skill's output is a format such as a commit message. It shows input and output pairs in a skill.
 - Read [Structure prompts with XML tags](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#structure-prompts-with-xml-tags) when the examples sit among instructions and inputs. It shows how tags keep each kind of content apart.
+
+## Exit
+
+You decided whether the skill needs examples, and each one is written and placed. Then return to the step list in `SKILL.md`, and go on with the next file or step.

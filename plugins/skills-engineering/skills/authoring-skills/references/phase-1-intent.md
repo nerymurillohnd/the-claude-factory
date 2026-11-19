@@ -93,3 +93,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [How skill triggering works](https://agentskills.io/skill-creation/optimizing-descriptions#how-skill-triggering-works) when the task may be simple enough for Claude to do without the skill. It explains which tasks make an agent consult a skill.
 - Read [Bundled skills](https://code.claude.com/docs/en/skills#bundled-skills) when the job may already ship with Claude Code. It lists the bundled skills.
 - Read [Skills synced from claude.ai](https://code.claude.com/docs/en/skills#how-synced-skills-behave) when a synced skill may already do the job. It says which of Anthropic's skills always sync and in which sessions.
+
+## Exit
+
+You can state the goal, what the skill is and why it should exist (Scenario A); the user approved your proposal and confirmed what you extracted, or declined it (Scenario B); or you can state what changes, why and what stays (Scenario C). Then return to the step list in `SKILL.md`, and go on with the next file or step.

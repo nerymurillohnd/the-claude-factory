@@ -6,4 +6,6 @@ Create the skill's folder and the subfolders the plan lists, then write each fil
 
 Write each file as Phase 2 taught: reread the Phase 2 file that governs a part, such as the writing style for text or the scripts file for a script, when you reach it. If you can't write files, give each file's path and content in your reply.
 
-Exit: every planned file exists and passes the link and folder checks above and the plan's checks.
+## Exit
+
+Every planned file exists and passes the link and folder checks above and the plan's checks. Then return to the step list in `SKILL.md`, and go on with the next file or step.

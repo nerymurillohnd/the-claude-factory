@@ -12,6 +12,7 @@ How to lay out the text of every file of the skill, from headings, lists, checkl
 - [Links to web pages](#links-to-web-pages)
 - [Layout](#layout)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -131,3 +132,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Structure longer reference files with a table of contents](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#structure-longer-reference-files-with-table-of-contents) when a reference grows past 100 lines. It shows the contents list Claude uses to find a section.
 - Read [Avoid Windows-style paths](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#avoid-windows-style-paths) when the skill names paths. It gives the forward-slash rule and why it holds on every system.
 - Read [File references](https://agentskills.io/specification#file-references) when the skill must work in other Agent Skills clients. It gives the standard's rule for relative paths from the skill root.
+
+## Exit
+
+Each file's headings, lists, tables, pointers and links follow this layout, or the user's own conventions. Then return to the step list in `SKILL.md`, and go on with the next file or step.

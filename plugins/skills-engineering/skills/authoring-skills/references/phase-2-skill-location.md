@@ -48,3 +48,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [How to create a skill with Claude through conversation](https://academy.claude.com/tutorials/how-to-create-a-skill-with-claude-through-conversation) when you build the skill in a Claude conversation. It shows how the user saves the skill file Claude creates and asks for changes.
 - Read [Package your skill](https://claude.com/docs/skills/how-to#package-your-skill) when you deliver a ZIP for the user to upload. It gives the layout the upload requires and how to check the ZIP first.
 - Read [Provision and manage skills for your organization](https://support.claude.com/en/articles/13119606-provision-and-manage-skills-for-your-organization) when the skill goes to an organization on claude.ai. It gives how an owner provisions skills.
+
+## Exit
+
+You can name where the skill lives, which sessions load it from there, and how it reaches its users. Then return to the step list in `SKILL.md`, and go on with the next file or step.

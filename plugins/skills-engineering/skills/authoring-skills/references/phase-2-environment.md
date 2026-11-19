@@ -8,6 +8,7 @@ How to establish the environment you work in, and understand the project and eve
 - [1. Establish the execution environment](#1-establish-the-execution-environment)
 - [2. Understand the project and what Claude loads in it](#2-understand-the-project-and-what-claude-loads-in-it)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -99,3 +100,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [`enabledPlugins`](https://code.claude.com/docs/en/settings-reference#enabledplugins) when you must tell which plugins are on. It gives the setting's format and how each scope sets it.
 - Read [Control who invokes a skill](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill), [Load skills in monorepos and subdirectories](https://code.claude.com/docs/en/skills#discovery-from-parent-and-nested-directories) and [Skill descriptions are cut short](https://code.claude.com/docs/en/skills#skill-descriptions-are-cut-short) when a skill you expect is missing from your listing. Together they explain each reason a skill or its description stays out of it.
 - Read [See what loaded into context](https://code.claude.com/docs/en/debug-your-config#see-what-loaded-into-context) before you ask the user to run a command. It lists each command and what it shows them.
+
+## Exit
+
+You can state where you work and where the skill will run, and every overlap or friction you found has the user's decision. Then return to the step list in `SKILL.md`, and go on with the next file or step.

@@ -64,3 +64,7 @@ Read [Frontmatter reference](https://code.claude.com/docs/en/skills#frontmatter-
 Read [Using skill frontmatter outside Claude Code](https://code.claude.com/docs/en/skills#using-skill-frontmatter-outside-claude-code) when the skill uploads.
 
 Read [Available string substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions) when the body uses variables.
+
+## Exit
+
+Each field the skill sets is chosen, with its value, in its order. Then return to the step list in `SKILL.md`, and go on with the next file or step.

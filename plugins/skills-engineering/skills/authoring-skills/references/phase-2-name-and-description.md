@@ -12,6 +12,7 @@ How to choose the skill's name and the command it becomes, check it against the 
 - [Write the description](#write-the-description)
 - [Test the description by reasoning](#test-the-description-by-reasoning)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -198,3 +199,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Frontmatter reference](https://code.claude.com/docs/en/skills#frontmatter-reference) when you write `description` or `when_to_use`. It gives their exact limits, the fallback when `description` is missing, and how the two are joined in the listing.
 - Read [Skill descriptions are cut short](https://code.claude.com/docs/en/skills#skill-descriptions-are-cut-short) when the environment holds many skills. It says how the listing budget is computed, which descriptions it drops first, and the settings that raise it.
 - Read [Angle brackets in a skill description](https://code.claude.com/docs/en/skills#angle-brackets-in-a-skill-description) when the description needs a placeholder. It gives both fixes, and the upload limit on `argument-hint`.
+
+## Exit
+
+The name is valid on every target surface and clashes with no other, and the description picks right for every should-load and should-not-load request. Then return to the step list in `SKILL.md`, and go on with the next file or step.

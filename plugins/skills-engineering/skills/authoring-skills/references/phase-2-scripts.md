@@ -13,6 +13,7 @@ Whether the skill needs scripts, what each one does, where it lives, its languag
 - [How the body calls a script](#how-the-body-calls-a-script)
 - [Examples](#examples)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -165,3 +166,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Reference plugin paths and store data](https://code.claude.com/docs/en/plugins/components#path-variables-and-persistent-data) when a plugin script stores state or dependencies. It explains `${CLAUDE_PLUGIN_ROOT}` across updates and `${CLAUDE_PLUGIN_DATA}`, with a hook that installs packages.
 - Read [Node.js package dependencies](https://code.claude.com/docs/en/plugins/loading#node-js-package-dependencies) when a plugin script needs npm packages. It gives the lockfiles Claude Code reads and the limits of its install.
 - Read [Reference scripts by path](https://code.claude.com/docs/en/hooks#reference-scripts-by-path) when a hook calls a script. It gives the variables a hook resolves and when to use the exec form.
+
+## Exit
+
+Each script the skill needs has its location, language, interface, and the command the body runs it with, or you decided the skill needs none. Then return to the step list in `SKILL.md`, and go on with the next file or step.

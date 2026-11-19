@@ -11,6 +11,7 @@ Whether the skill injects commands as it loads, how to write each one so it runs
 - [Where an injected command doesn't run](#where-an-injected-command-doesnt-run)
 - [Examples](#examples)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -111,3 +112,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Permission checks on injected commands](https://code.claude.com/docs/en/skills#permission-checks-on-injected-commands) when you write the `allowed-tools` rules. It gives what aborts outside auto mode, the limits of pre-approval, and what changes in auto mode.
 - Read [Output limits](https://code.claude.com/docs/en/tools-reference#output-limits) when a command's output can be long or exit 1. It gives the inline ceilings, the file and preview past them, and the full list of commands whose exit 1 is a normal result.
 - Read [How Claude Code handles the body of a synced skill](https://code.claude.com/docs/en/skills#how-claude-code-handles-the-body-of-a-synced-skill) when the skill is synced from claude.ai. It gives what each surface does with its commands, `@` references and placeholders.
+
+## Exit
+
+Each injected command the skill uses is written so a failure can't abort the skill, and is pre-approved, or you decided the skill injects none. Then return to the step list in `SKILL.md`, and go on with the next file or step.

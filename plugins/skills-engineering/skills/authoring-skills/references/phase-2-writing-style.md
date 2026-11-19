@@ -11,6 +11,7 @@ How to word each instruction of the skill so Claude follows it the same way on e
 - [Terms and time](#terms-and-time)
 - [Emphasis and prohibitions](#emphasis-and-prohibitions)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Register
 
@@ -110,3 +111,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Use consistent terminology](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#use-consistent-terminology) and [Avoid time-sensitive information](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#avoid-time-sensitive-information) when you name a concept or a change over time. They show one term per concept and how to keep an old pattern.
 - Read [Favor procedures over declarations](https://agentskills.io/skill-creation/best-practices#favor-procedures-over-declarations) when a step answers one request instead of teaching the method. It shows a specific answer turned into a method that works for the whole class of tasks.
 - Read [What you can stop doing](https://code.claude.com/docs/en/best-practices#what-you-can-stop-doing) when emphasis seems the fix for a missed line. It says why IMPORTANT and ALL CAPS backfire and when a hook is the answer.
+
+## Exit
+
+Each instruction has one reading, a default wherever it offers a choice, and freedom matched to its fragility. Then return to the step list in `SKILL.md`, and go on with the next file or step.

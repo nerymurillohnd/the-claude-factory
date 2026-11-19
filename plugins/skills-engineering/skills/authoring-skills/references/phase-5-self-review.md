@@ -20,4 +20,6 @@ How to review the skill from the model's seat and run its checks before you deli
 
 4. Fix each failed item and check it again. After 3 rounds, or when the same item fails again after a fix, treat it as unmet. When an item can't be met, such as a check you can't run here, leave it unmet and list it in the report with the reason.
 
-Exit: every checklist item and check passes, or each one that can't is listed with its reason for the report.
+## Exit
+
+Every checklist item and check passes, or each one that can't is listed with its reason for the report. Then return to the step list in `SKILL.md`, and go on with the next file or step.

@@ -76,3 +76,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Environment variables](https://code.claude.com/docs/en/plugins/manifest-reference#environment-variables) when a plugin agent's body names a path. It tables where each path variable is replaced, agent content included.
 - Read [Frontmatter fields in plugin agents](https://code.claude.com/docs/en/plugins/components#frontmatter-fields-in-plugin-agents) when a plugin ships the subagent. It lists the fields a plugin agent honors and ignores.
 - Read [Subagent orchestration](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#subagent-orchestration) when the skill delegates work to subagents. It says when current models delegate and how to steer it.
+
+## Exit
+
+You know whether a subagent runs the skill as its task or preloads it as knowledge, and the body of each subagent the skill ships is designed. Then return to the step list in `SKILL.md`, and go on with the next file or step.

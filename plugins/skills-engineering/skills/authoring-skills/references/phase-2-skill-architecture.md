@@ -10,6 +10,7 @@ The folder layout a skill takes in each location, how its files reach each other
 - [Lay out the folders](#lay-out-the-folders)
 - [Split the content](#split-the-content)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -109,7 +110,7 @@ Claude Code replaces these variables only in `SKILL.md` and in the Bash rules of
 - Name a supporting file at the root in capitals, such as `WORKFLOW.md`, `CHECKLIST.md` or `REFERENCE.md`, so they stand out beside `SKILL.md`, and the files in `references/` in lowercase. Write each link with the file name's exact case: Linux and cloud sessions treat `forms.md` and `FORMS.md` as different files.
 - Add another folder only for files of one kind that `references/`, `scripts/` and `assets/` don't describe, such as `examples/` for several input and output cases, or `evals/` for the eval cases, and link what Claude must read from `SKILL.md` with its condition.
 - Write what the skill produces for the user where the user asks for it, not in the skill's own folder: a plugin or synced copy is replaced on the next update.
-- In a skill whose work runs in phases, give each reference one phase and one topic, and name it with both, such as `phase-2-hooks.md`. A topic two phases use gets one file per phase, because a rule kept in another phase's file is applied late or not at all.
+- In a skill whose work runs in phases, give each reference one phase and one topic, and name it with both, such as `phase-2-hooks.md`. A topic two phases use gets one file per phase, because a rule kept in another phase's file is applied late or not at all. End each phase file with its exit, the condition that closes it, and a return to the step list in `SKILL.md`, so Claude moves on in order instead of stopping or skipping ahead.
 
 ## Split the content
 
@@ -144,3 +145,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Share files within a marketplace with symlinks](https://code.claude.com/docs/en/plugins/host-marketplace#share-files-within-a-marketplace-with-symlinks) when a plugin skill links to files outside its folder. It says which symlinks are kept, copied or dropped.
 - Read [Specification](https://agentskills.io/specification#optional-directories) when you need the conventions for `scripts/`, `references/` and `assets/`, or another folder. It gives what each optional folder holds, and that a skill may hold any other files and folders.
 - Read [How to create custom skills](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) when the skill is uploaded to claude.ai or the API. It gives the zip structure and how to package the folder.
+
+## Exit
+
+The skill's folders are laid out for its location, its content is split between `SKILL.md` and its files, and each path uses the variable of its layout. Then return to the step list in `SKILL.md`, and go on with the next file or step.

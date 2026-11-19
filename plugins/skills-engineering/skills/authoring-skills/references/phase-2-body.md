@@ -14,6 +14,7 @@ What the body of the skill must carry, and how to build its task: workflows, che
 - [Output templates](#output-templates)
 - [Write the skill's gotchas](#write-the-skills-gotchas)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -190,3 +191,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Checklists for multi-step workflows](https://agentskills.io/skill-creation/best-practices#checklists-for-multi-step-workflows), [Validation loops](https://agentskills.io/skill-creation/best-practices#validation-loops) and [Plan-validate-execute](https://agentskills.io/skill-creation/best-practices#plan-validate-execute) when you build one of those mechanisms. They show each with a worked example.
 - Read [Gotchas sections](https://agentskills.io/skill-creation/best-practices#gotchas-sections) when you write the skill's gotchas. It says what a gotcha is and why it belongs before the situation.
 - Read [Calibrating control](https://agentskills.io/skill-creation/best-practices#calibrating-control) when you decide how strict a step is. It matches specificity to fragility.
+
+## Exit
+
+You know what the body carries, which mechanisms its task needs, and the skill's gotchas. Then return to the step list in `SKILL.md`, and go on with the next file or step.

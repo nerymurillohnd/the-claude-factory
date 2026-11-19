@@ -90,3 +90,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Control who invokes a skill](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill) when the skill is user-only or Claude-only. It tables who can invoke the skill and what loads into context for each field.
 - Read [Run skills in a subagent](https://code.claude.com/docs/en/skills#run-skills-in-a-subagent) when the skill runs forked. It covers the `agent` options and how a fork runs.
 - Read [Preload skills into subagents](https://code.claude.com/docs/en/sub-agents#preload-skills-into-subagents) when a subagent will carry the skill. It covers which skills can be preloaded.
+
+## Exit
+
+You can name the skill's type, and the reason for it by the three criteria. Then return to the step list in `SKILL.md`, and go on with the next file or step.

@@ -33,4 +33,6 @@ Options:
 - Text under Other: do what the user wrote. When it changed the skill, run phase 5 again, report what changed, then ask again.
 - After phase 7, report again and ask again: the user may run another audit or more evals, until they keep the skill as it is.
 
-Exit: the user keeps the skill as it is, or chose phase 7.
+## Exit
+
+The user keeps the skill as it is, or chose phase 7. Then return to `SKILL.md`: the work ends when the user keeps the skill, and goes on with Phase 7 when they chose it.

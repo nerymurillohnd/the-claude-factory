@@ -11,6 +11,7 @@ How to give a skill a hook once Phase 1 has decided that a rule belongs in a hoo
 - [Check the hook](#check-the-hook)
 - [Examples](#examples)
 - [Official sources](#official-sources)
+- [Exit](#exit)
 
 ## Gotchas
 
@@ -124,3 +125,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Block the action when a hook fails](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails) when the hook is a guard. It gives `onFailure` and the events it doesn't cover.
 - Read [Reload skills that a hook installs](https://code.claude.com/docs/en/hooks#reload-skills-that-a-hook-installs) when a `SessionStart` hook writes skill files. It gives the `reloadSkills` output.
 - Read [Hook not firing](https://code.claude.com/docs/en/hooks-guide#hook-not-firing) when the hook doesn't run. It gives the checks in order.
+
+## Exit
+
+Each hook the skill needs has its location, event, matcher, handler and check, or you decided the skill needs none. Then return to the step list in `SKILL.md`, and go on with the next file or step.

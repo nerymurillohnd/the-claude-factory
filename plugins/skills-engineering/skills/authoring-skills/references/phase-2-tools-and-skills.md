@@ -39,3 +39,7 @@ When a skill can't work without another plugin, declare it in the `dependencies`
 - When users load your plugin from claude.ai, tell them to turn the dependency on there too, or to install it from its marketplace.
 
 Read [Plugin dependencies](https://code.claude.com/docs/en/plugins/dependencies) when the plugin declares one.
+
+## Exit
+
+Each MCP tool and other skill the skill relies on is named in full, with what to do when it is missing, and each plugin dependency is declared. Then return to the step list in `SKILL.md`, and go on with the next file or step.

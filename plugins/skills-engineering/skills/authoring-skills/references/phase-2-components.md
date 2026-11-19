@@ -61,3 +61,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Inject dynamic context](https://code.claude.com/docs/en/skills#inject-dynamic-context) when the skill needs live data as it loads. It shows how injected commands run and what aborts the skill.
 - Read [Add components to a plugin](https://code.claude.com/docs/en/plugins/components) when the skill ships in a plugin with other components. It shows each component's folder and an example that validates.
 - Read [Compare similar features](https://code.claude.com/docs/en/features-overview#compare-similar-features) when a need could be met by a skill or by another component. It compares them pair by pair.
+
+## Exit
+
+Every component the skill needs is chosen, each with the failure it fixes. Then return to the step list in `SKILL.md`, and go on with the next file or step.

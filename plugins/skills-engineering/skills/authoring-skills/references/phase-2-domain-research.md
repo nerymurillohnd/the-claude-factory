@@ -62,3 +62,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 
 - Read [Start from real expertise](https://agentskills.io/skill-creation/best-practices#start-from-real-expertise) when you are about to write a skill from general knowledge. It explains why a skill built without the domain's own context comes out vague and generic.
 - Read [Synthesize from existing project artifacts](https://agentskills.io/skill-creation/best-practices#synthesize-from-existing-project-artifacts) when you gather the project's material. It lists the material that grounds a skill, and why it beats a general reference.
+
+## Exit
+
+Every area and technology the skill draws on is mapped with its version or edition, researched in its primary sources, and recorded for the Domain sources of the design. Then return to the step list in `SKILL.md`, and go on with the next file or step.

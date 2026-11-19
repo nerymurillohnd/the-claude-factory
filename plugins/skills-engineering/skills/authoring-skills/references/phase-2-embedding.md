@@ -76,3 +76,7 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Inject dynamic context](https://code.claude.com/docs/en/skills#inject-dynamic-context) when a command must run as the skill loads. It shows both forms, how they run, and what aborts the skill.
 - Read [Template pattern](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#template-pattern) and [Templates for output format](https://agentskills.io/skill-creation/best-practices#templates-for-output-format) when the output has a fixed shape. They show strict and flexible templates, inline and in `assets/`.
 - Read [Provide utility scripts](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#provide-utility-scripts) when the skill embeds a call to a bundled script. It shows how to say whether Claude runs a script or reads it.
+
+## Exit
+
+Each command, template and schema the skill shows is embedded in its form and its place. Then return to the step list in `SKILL.md`, and go on with the next file or step.
