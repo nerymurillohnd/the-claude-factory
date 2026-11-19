@@ -25,4 +25,4 @@ paths:
 - Write each npm script that runs maintainer Python as `uv run python scripts/<file>.py`, never bare `python3` or `.venv/bin/python`.
 - Add a package a maintainer script imports with `uv add --dev <package>`, and commit `pyproject.toml` and `uv.lock` together.
 - Run `uv sync --locked` before `npm run typecheck:python`: basedpyright reads `.venv` directly.
-- Pin ruff, basedpyright, zizmor and check-jsonschema in the `tools:install` npm script, then run `npm run tools:install`; install them with `uv tool install`, never `uv add --dev`.
+- Pin ruff, basedpyright, zizmor and check-jsonschema in the `tools:install` npm script, then run `npm run tools:install`; install them with `uv tool install`, never `uv add --dev`. Run `npm run check:tool-versions` to find a pin behind its PyPI release: Dependabot does not read `tools:install`.
