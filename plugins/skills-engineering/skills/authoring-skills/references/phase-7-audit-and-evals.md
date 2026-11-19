@@ -4,10 +4,25 @@ How to run the audit and the evals the user chose in phase 6, and the final chec
 
 ## Contents
 
+- [Gotchas](#gotchas)
 - [Audit](#audit)
 - [Evals](#evals)
 - [Final checks](#final-checks)
+- [Official sources](#official-sources)
 - [Exit](#exit)
+
+## Gotchas
+
+- Eval runs never inherit this session's context: give each case, in its prompt and its files, everything the run needs.
+- With plugin evals, the model is set per case, and effort can't be set per case.
+- With plugin evals, running one arm or both is set for the whole command.
+- With plugin evals, a grader's arm setting changes only how that grader is scored.
+- With plugin evals, a run removes Bash, Write, Edit, WebFetch and WebSearch unless they are granted with `--allow-tools`.
+- With plugin evals, a granted Bash runs in a sandbox whose network reaches only the domains granted with `WebFetch(domain:...)`.
+- With plugin evals, the plugin's MCP servers are replaced by mocks; a real server starts only with `--allow-real-servers` or `--mocks off`.
+- With evals for skills, set the model and effort in each subagent you spawn.
+- Every eval run, and every judge that grades one, spends the user's usage. Never run without the user's approval, and never take it by default.
+- Ask a step's questions only after the step before it is done, since each depends on what came before. The questions of one step share one AskUserQuestion call.
 
 ## Audit
 
@@ -19,19 +34,6 @@ Load `skills-engineering:auditing-skills` and run its full battery, with all its
 4. Run phase 5 again.
 
 ## Evals
-
-### Gotchas
-
-- Eval runs never inherit this session's context. Configure each run on purpose.
-- With plugin evals, the model is set per case, and effort can't be set per case.
-- With plugin evals, running one arm or both is set for the whole command.
-- With plugin evals, a grader's arm setting changes only how that grader is scored.
-- With plugin evals, a run removes Bash, Write, Edit, WebFetch and WebSearch unless they are granted with `--allow-tools`.
-- With plugin evals, a granted Bash runs in a sandbox whose network reaches only the domains granted with `WebFetch(domain:...)`.
-- With plugin evals, the plugin's MCP servers are replaced by mocks; a real server starts only with `--allow-real-servers` or `--mocks off`.
-- With evals for skills, set the model and effort in each subagent you spawn.
-- Every eval run, and every judge that grades one, spends the user's usage. Never run without the user's approval, and never take it by default.
-- Ask each step's questions in their own AskUserQuestion call, after the step before it is done: each depends on what came before.
 
 ### Choose the runner by skill type
 
@@ -198,6 +200,14 @@ When the audit and the evals the user chose are done, check the final skill:
 1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 5, and each linter, validator or script the environment provides for skills.
 2. Fix each finding and run every check again. After 3 rounds, or when the same failure returns after a fix, stop and report it with its output.
 3. Report each check with its exact command and raw output. The skill is done when every check passes.
+
+## Official sources
+
+This file condenses these pages. Read the page whose condition holds before you decide.
+
+- Read [Test plugins with evals](https://code.claude.com/docs/en/plugin-evals) when the skill ships in a plugin. It gives the suite layout, the graders, the mocks, the commands and the HTML report.
+- Read [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills) when the skill is a personal or project skill. It gives the workspace, the assertions, the grading and how to iterate on the results.
+- Read [Evaluate and iterate on a skill](https://code.claude.com/docs/en/skills#evaluate-and-iterate-on-a-skill) when you run the baseline in Claude Code. It says how to turn the skill off for the run without it.
 
 ## Exit
 

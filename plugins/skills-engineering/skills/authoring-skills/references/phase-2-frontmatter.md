@@ -1,12 +1,15 @@
 # Phase 2: Frontmatter
 
-The frontmatter fields the skill's type, location and components need: how Claude Code reads frontmatter, the fields every surface accepts, the fields only Claude Code accepts, the fields by type of skill, and the variables the body can use.
+The frontmatter fields the skill's type, location and components need: its traps, how Claude Code reads frontmatter, the fields every surface accepts, the fields only Claude Code accepts, the fields by type of skill, and the variables the body can use.
+
+## Gotchas
+
+- Frontmatter counts only when `---` is the file's first line: put nothing above it.
+- Claude Code ignores a field it doesn't recognize, with no error: spell each field exactly as the frontmatter reference does.
+- When the YAML doesn't parse, the skill still loads, with no fields set: quote a value that contains a colon followed by a space.
 
 ## How Claude Code reads it
 
-- Frontmatter counts only when `---` is the file's first line.
-- A field it doesn't recognize is ignored with no error, so spell every field exactly.
-- If the YAML doesn't parse, the skill still loads with no fields set. Quote a value that contains a colon followed by a space.
 - Booleans accept `true`, `false`, `yes`, `no`, `on`, `off`, `1` and `0`.
 - Leave a field out unless the design gives it a reason: its default is right for most skills.
 
@@ -57,13 +60,15 @@ Leave these out of a skill that must upload to claude.ai or the API.
 - `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PROJECT_DIR}`: the skill's folder and the project root.
 - `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`: the plugin's install folder and data folder, in plugin skills only.
 
-Claude Code replaces the path variables in the skill's content and in the Bash rules of `allowed-tools`.
+Claude Code replaces the path variables only in `SKILL.md` and in the Bash rules of `allowed-tools`.
 
-Read [Frontmatter reference](https://code.claude.com/docs/en/skills#frontmatter-reference) when you need a field's exact behavior.
+## Official sources
 
-Read [Using skill frontmatter outside Claude Code](https://code.claude.com/docs/en/skills#using-skill-frontmatter-outside-claude-code) when the skill uploads.
+This file condenses these pages. Read the page whose condition holds before you decide.
 
-Read [Available string substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions) when the body uses variables.
+- Read [Frontmatter reference](https://code.claude.com/docs/en/skills#frontmatter-reference) when you need a field's exact behavior. It gives every field, its values and its default.
+- Read [Using skill frontmatter outside Claude Code](https://code.claude.com/docs/en/skills#using-skill-frontmatter-outside-claude-code) when the skill uploads to claude.ai or the API. It gives the fields an upload accepts, and what happens to the others.
+- Read [Available string substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions) when the body uses variables. It defines each variable and where Claude Code replaces it.
 
 ## Exit
 

@@ -33,6 +33,12 @@ Options:
 - Text under Other: do what the user wrote. When it changed the skill, run phase 5 again, report what changed, then ask again.
 - After phase 7, report again and ask again: the user may run another audit or more evals, until they keep the skill as it is.
 
+## Official sources
+
+This file condenses this page. Read it when its condition holds.
+
+- Read [AskUserQuestion tool behavior](https://code.claude.com/docs/en/tools-reference#askuserquestion-tool-behavior) when you ask the question or a question times out. It gives how the user answers, and what the auto-continue timeout submits.
+
 ## Exit
 
 The user keeps the skill as it is, or chose phase 7. Then return to `SKILL.md`: the work ends when the user keeps the skill, and goes on with Phase 7 when they chose it.

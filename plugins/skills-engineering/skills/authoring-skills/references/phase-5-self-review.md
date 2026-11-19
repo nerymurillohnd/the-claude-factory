@@ -3,7 +3,7 @@
 How to review the skill from the model's seat and run its checks before you deliver it.
 
 1. Walk each use case from the model's seat: from the description, through the body and the pointers it follows, to its result, naming what the model decides at each step. Rewrite wherever it would decide wrong.
-2. Run the mechanical check: `claude plugin validate [path]`, where `[path]` is the plugin or skills folder, wherever the Claude Code CLI exists; for an upload, check the skill against the rules for a skill that leaves Claude Code, which Phase 2 describes.
+2. Run the mechanical check: `claude plugin validate [path]`, where `[path]` is the plugin or skills folder, wherever the Claude Code CLI exists; for an upload, check the skill against the fields every surface accepts, in the frontmatter file of Phase 2.
 3. Copy this checklist and check the skill you write against it:
 
    ```text
@@ -13,7 +13,7 @@ How to review the skill from the model's seat and run its checks before you deli
    - [ ] Every supporting file is linked from SKILL.md on its own line, with its verb and condition.
    - [ ] A search for each number, limit and rule finds it in one file only.
    - [ ] Every frontmatter key is accepted on every target surface.
-   - [ ] Every shown command pins its versions and explains its placeholders, every bundled script is listed in SKILL.md with its purpose, and no path variable sits in a reference file.
+   - [ ] Every shown command that installs or runs a package pins its version, every placeholder is explained, every bundled script is listed in SKILL.md with its purpose, and no path variable sits in a reference file.
    - [ ] Nothing in SKILL.md expands or runs by accident (see Gotchas in SKILL.md).
    - [ ] The body and every file meet the size and link rules of standard 5, Progressive disclosure, in this skill's `SKILL.md`.
    ```
