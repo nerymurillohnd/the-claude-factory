@@ -90,12 +90,12 @@ To do:
 
 ### Phase 1: UNDERSTAND THE USER'S INTENT
 
-This skill starts from one of two scenarios. Identify which one you are in, then follow its steps:
+Start by choosing the situation in which you loaded this skill:
 
-- Scenario A, user request: the user asks for a skill, or what they ask for is a skill even if they never say the word.
-- Scenario B, repeated process: you have detected a task that will repeat across sessions, or a procedure you just performed that is worth preserving as a skill for future cases.
+- Scenario A: the user asked for a skill, or you understood they are implicitly asking you to create one.
+- Scenario B: you spotted a task that can be automated or is repetitive, within a session or across sessions, and a skill would help.
 
-- Read [references/phase-1-intent.md](references/phase-1-intent.md) when you start this phase.
+Read [Phase 1: Understand the user's intent](references/phase-1-intent.md) to confirm your scenario, then understand the user's intent (A) or propose a new skill (B).
 
 ### Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
 
