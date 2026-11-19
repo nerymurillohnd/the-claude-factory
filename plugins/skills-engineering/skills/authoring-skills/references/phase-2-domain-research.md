@@ -27,7 +27,7 @@ When the skill serves a project or works on the user's material, read what it wi
 
 For each item on the map:
 
-1. Read the primary sources first: the domain's specialized tool, then the official documentation, standard, regulation, platform policy or peer-reviewed research that owns each fact. Use a web search to find their current pages.
+1. Read the primary sources first: the domain's specialized tool, then the official documentation, official repository, standard, regulation, platform policy or peer-reviewed research that owns each fact, and each tool's own `--help` or `--version` output. Use a web search to find their current pages.
 2. Then read recognized expert sources, such as practitioner guides, case studies and articles from established authorities, for the practice the primary sources don't cover.
 3. Read whole sections, and follow their links to the parts the skill depends on. Cover every dimension the task touches, and stop when the last two sources add no new fact.
 4. For a technology, check the release notes from the installed version to the latest for removals, renames, changed defaults and fixes that bear on the skill.
