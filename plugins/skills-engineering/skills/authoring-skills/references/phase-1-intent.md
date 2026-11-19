@@ -26,8 +26,9 @@ Match the need to the feature that meets it, before you design anything:
 
 - When the need isn't a skill, tell the user which feature fits and why, and stop unless they still want a skill.
 - When the request holds several needs, split it: each need gets its own feature or skill.
+- Scope each skill to one coherent unit of work. Too narrow, and one task loads several skills whose instructions can conflict; too broad, and the description can't say precisely when it applies.
 
-Example: "a skill so Claude never edits `.env`" is a hook. "A skill with our release checklist" is a skill. "A skill that formats code after each edit" is a hook that runs the formatter, plus a skill only if fixing what the formatter reports needs judgment.
+Example: "a skill so Claude never edits `.env`" is a hook. "A skill with our release checklist" is a skill. "A skill that formats code after each edit" is a hook that runs the formatter, plus a skill only if fixing what the formatter reports needs judgment. A skill that queries the ledger and formats the result is one unit; adding the ledger's administration makes it two.
 
 ## Scenario A: user request
 
@@ -60,8 +61,11 @@ The process can be a task that will repeat across sessions, or a procedure you j
 4. Wait for approval
    - Wait for the user's answer before you do anything else.
 5. Act on the answer
-   - If the user says yes, or adds comments, continue with their comments and go to Phase 2.
+   - If the user says yes, or adds comments, take their comments into step 6.
    - If the user says no, end here and leave this skill.
+6. Extract from the work done
+   - From the conversation, list the steps that worked, each correction the user made, the formats of the input and the output, and the facts and conventions the user supplied that you didn't know.
+   - Ask the user to fill the gaps and confirm the list, then go to Phase 2 with it. Each correction becomes a rule or a gotcha of the skill.
 
 ## Scenario C: existing skill
 
@@ -84,6 +88,8 @@ The request can be the user's own, or the improvements and corrections an audit 
 This file condenses these pages. Read the page whose condition holds before you decide.
 
 - Read [Compare similar features](https://code.claude.com/docs/en/features-overview#compare-similar-features) when the need sits between a skill and another feature. It compares a skill with CLAUDE.md, rules, subagents, MCP, hooks and output styles, pair by pair.
+- Read [Design coherent units](https://agentskills.io/skill-creation/best-practices#design-coherent-units) when you set what one skill covers. It weighs a skill scoped too narrowly against one scoped too broadly.
+- Read [Extract from a hands-on task](https://agentskills.io/skill-creation/best-practices#extract-from-a-hands-on-task) when you propose a skill for a process you just performed. It lists what to pull from the conversation.
 - Read [How skill triggering works](https://agentskills.io/skill-creation/optimizing-descriptions#how-skill-triggering-works) when the task may be simple enough for Claude to do without the skill. It explains which tasks make an agent consult a skill.
 - Read [Bundled skills](https://code.claude.com/docs/en/skills#bundled-skills) when the job may already ship with Claude Code. It lists the bundled skills.
 - Read [Skills synced from claude.ai](https://code.claude.com/docs/en/skills#how-synced-skills-behave) when a synced skill may already do the job. It says which of Anthropic's skills always sync and in which sessions.

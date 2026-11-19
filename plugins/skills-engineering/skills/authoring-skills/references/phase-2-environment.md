@@ -1,12 +1,13 @@
 # Phase 2: Environment and project
 
-How to establish the environment you work in, and understand the project and every instruction Claude loads in it, so that the skill you write duplicates nothing and collides with nothing.
+How to establish the environment you work in, understand the project and every instruction Claude loads in it so the skill duplicates and collides with nothing, and gather the project's material the skill is built from.
 
 ## Contents
 
 - [Gotchas](#gotchas)
 - [1. Establish the execution environment](#1-establish-the-execution-environment)
 - [2. Understand the project and what Claude loads in it](#2-understand-the-project-and-what-claude-loads-in-it)
+- [3. Gather the domain sources](#3-gather-the-domain-sources)
 - [Official sources](#official-sources)
 
 ## Gotchas
@@ -84,6 +85,18 @@ Which prevails?
   after the build to exempt release commits.
 ```
 
+## 3. Gather the domain sources
+
+Build the skill from the project's own material, not from general knowledge: a skill built from the team's runbooks and incident reports carries their schemas, failure modes and fixes, which a general article on the topic can't.
+
+- Read what the project holds on the skill's domain:
+  - runbooks, internal documentation and style guides;
+  - API specifications, schemas and configuration files;
+  - code review comments and issues, for the concerns that recur;
+  - the version control history of fixes, for what really changed;
+  - past failures and how they were resolved.
+- When the project's material and a general article differ, follow the project's, and tell the user about each difference that changes the skill.
+
 ## Official sources
 
 This file condenses these pages. Read the page whose condition holds before you decide: each holds the full rules, edge cases and version notes this file leaves out.
@@ -98,4 +111,5 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Auto memory](https://code.claude.com/docs/en/memory#auto-memory) when the project keeps auto memory. It says where Claude stores it and how it loads.
 - Read [`enabledPlugins`](https://code.claude.com/docs/en/settings-reference#enabledplugins) when you must tell which plugins are on. It gives the setting's format and how each scope sets it.
 - Read [Control who invokes a skill](https://code.claude.com/docs/en/skills#control-who-invokes-a-skill), [Load skills in monorepos and subdirectories](https://code.claude.com/docs/en/skills#discovery-from-parent-and-nested-directories) and [Skill descriptions are cut short](https://code.claude.com/docs/en/skills#skill-descriptions-are-cut-short) when a skill you expect is missing from your listing. Together they explain each reason a skill or its description stays out of it.
+- Read [Synthesize from existing project artifacts](https://agentskills.io/skill-creation/best-practices#synthesize-from-existing-project-artifacts) when you gather the domain sources. It lists the project material that grounds a skill, and why it beats a general reference.
 - Read [See what loaded into context](https://code.claude.com/docs/en/debug-your-config#see-what-loaded-into-context) before you ask the user to run a command. It lists each command and what it shows them.
