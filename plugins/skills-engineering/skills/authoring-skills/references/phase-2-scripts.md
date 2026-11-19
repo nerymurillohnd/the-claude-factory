@@ -25,7 +25,7 @@ Whether the skill needs scripts, what each one does, where it lives, its languag
 
 ## Decide whether the skill needs a script
 
-Write a script for a step that must give the same result every time, that Claude would rewrite on each run, or that a small slip breaks: an exact sequence, a strict format, a calculation, a destructive operation. Keep a step as instructions when it needs judgment, such as choosing, wording or reviewing meaning: a script only hides that judgment. A command Claude types correctly from memory needs no script; write it in the body. When an existing package already does the step, run it as a one-off command with its version pinned, such as `npx eslint@9.0.0 --fix .`, and move it into a script once it grows too complex to get right on the first try.
+Write a script for a step that must give the same result every time, that Claude would rewrite on each run, or that a small slip breaks: an exact sequence, a strict format, a calculation, a destructive operation. Keep a step as instructions when it needs judgment, such as choosing, wording or reviewing meaning: a script only hides that judgment. A command Claude types correctly from memory needs no script; write it in the body. When an existing package already does the step, run it as a one-off command with its version pinned, such as `npx eslint@9.0.0 --fix .`, and move it into a script once it grows too complex to get right on the first try. When evals or real runs show Claude writing the same helper or taking the same steps each time, that is the evidence: bundle that work as a script.
 
 | The step | What the script does |
 | :-- | :-- |
