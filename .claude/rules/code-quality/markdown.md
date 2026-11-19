@@ -9,4 +9,3 @@ paths:
 - Write tables in that Markdown compact, each cell as wide as its text, as `| Task | Command |` with `| :-- | :-- |` separators: padding cells to align the columns costs tokens and bytes on every load.
 - Add each new `.claude/` folder of instruction Markdown as a `*.md` pattern to the first `overrides` entry of `biome.jsonc`; never exclude a folder in `files.includes`.
 - Run `npm run lint:frontmatter -- <file>` after each edit of a skill's, agent's or command's frontmatter.
-- Read the file again after each edit of a README, CHANGELOG, policy document or user guide, because no hook runs Biome.
