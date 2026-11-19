@@ -162,7 +162,10 @@ The difference between the arms is what the evals measure, so set each arm to wh
 3. Read the results by runner, and compare the delta against the target:
    - A plugin skill: [Read the results](https://code.claude.com/docs/en/plugin-evals#read-the-results).
    - A personal or project skill: [Grading outputs](https://agentskills.io/skill-creation/evaluating-skills#grading-outputs), [Aggregating results](https://agentskills.io/skill-creation/evaluating-skills#aggregating-results) and [Reviewing results with a human](https://agentskills.io/skill-creation/evaluating-skills#reviewing-results-with-a-human).
-4. Make one correction pass, following [Iterating on the skill](https://agentskills.io/skill-creation/evaluating-skills#iterating-on-the-skill).
+4. Make one correction pass, following [Iterating on the skill](https://agentskills.io/skill-creation/evaluating-skills#iterating-on-the-skill):
+   - Fix for the general case. The skill will run on requests the cases never show, so change what the failures have in common, not the wording of each case, and give the reason instead of a narrow rule.
+   - Read each run's transcript, not only its output, and cut the parts of the skill that make the model spend steps on nothing.
+   - When several runs wrote the same helper or took the same steps, move that work into a script in `scripts/` and have the skill run it, as the scripts file of Phase 2 shows.
 5. Ask for approval before re-running:
 
    ```text
