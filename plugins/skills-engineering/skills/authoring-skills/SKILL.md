@@ -73,31 +73,31 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next
 
 ## Workflow
 
-Run the phases in order, each to its exit. Read each file at the step that names it, and again whenever it is no longer in your context. When a later phase shows a gap in an earlier one, go back to it.
+Follow this procedure to create a skill, applying each phase in order. In each phase, apply what the skill needs to reach its goal, and read every reference file at the step that names it, again whenever it is no longer in your context. Complete each phase to its exit, and when a later phase shows a gap in an earlier one, go back to it.
 
-### Phase 1: Intent
+Copy this to-do list into your reply and tick each phase when you finish it:
 
-Understand what the user wants before you design anything. This skill applies in two scenarios:
+```text
+To do:
+- [ ] Phase 1: UNDERSTAND THE USER'S INTENT
+- [ ] Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
+- [ ] Phase 3: DRAFT AND APPROVE PLAN
+- [ ] Phase 4: BUILD THE SKILL
+- [ ] Phase 5: REVIEW THE SKILL
+- [ ] Phase 6: REPORT AND ASK
+- [ ] Phase 7: AUDIT AND EVALUATE
+```
+
+### Phase 1: UNDERSTAND THE USER'S INTENT
+
+This skill starts from one of two scenarios. Identify which one you are in, then follow its steps:
 
 - Scenario A, user request: the user asks for a skill, or what they ask for is a skill even if they never say the word.
-- Scenario B, repeated task: you have noticed a manual task that is worth turning into a skill. It can come from this session or from several, or be something you just did that will probably come back.
+- Scenario B, repeated process: you have detected a task that will repeat across sessions, or a procedure you just performed that is worth preserving as a skill for future cases.
 
-#### Scenario A: user request
+- Read [references/phase-1-intent.md](references/phase-1-intent.md) when you start this phase.
 
-1. Understand: read the request, and the related work already done in this conversation or the project, to work out what the user means beyond the words: what they are really trying to achieve, and what it implies and covers.
-2. Ask: if something is missing or unclear, ask the user for the context you need. Never ask technical questions, such as how to build it, what to name it or which fields it needs: those are yours.
-3. Challenge: if part of the request doesn't apply, is deficient, or there is a better way to reach the same goal, tell the user and propose it. The decision is theirs. Don't build something just because it was asked.
-4. No one to ask: in a subagent, or a run with nobody to answer, state each assumption in your reply and go on.
-5. Move on: go to Phase 2 only when you can state the goal, what the skill is, what it must achieve or teach Claude, and why it should exist.
-
-#### Scenario B: repeated task
-
-1. Propose: tell the user what you noticed, based on the work already done, and propose a skill for it.
-2. Reason: explain what you saw, and why it will repeat.
-3. Value: explain what the skill gives: the same result every time, and the work it saves.
-4. Answer: wait for the user. If they say no, drop the skill. If they say yes, or add comments, continue with their comments and go to Phase 2.
-
-### Phase 2: Design
+### Phase 2: DESIGN ENVIRONMENT AND COMPONENTS
 
 Decide what the skill is, where it loads and what it contains. Both scenarios arrive here with the intent clear. Not every skill needs every component: first learn what is available, then decide what this skill needs.
 
@@ -121,7 +121,7 @@ Decide what the skill is, where it loads and what it contains. Both scenarios ar
 
 Exit: you know what the skill contains and how each part is written, and each one has a purpose tied to the goal.
 
-### Phase 3: Plan
+### Phase 3: DRAFT AND APPROVE PLAN
 
 Draft the plan from the design and get the user's approval before you build.
 
@@ -144,25 +144,25 @@ Draft the plan from the design and get the user's approval before you build.
 
 Exit: the user approves the plan.
 
-### Phase 4: Build
+### Phase 4: BUILD THE SKILL
 
 Scaffold the skill's folder and write every file the approved plan lists, checking each as it lands.
 
 - Read [references/phase-4-build.md](references/phase-4-build.md) when you start this phase.
 
-### Phase 5: Self-review
+### Phase 5: REVIEW THE SKILL
 
 Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing until they pass.
 
 - Read [references/phase-5-self-review.md](references/phase-5-self-review.md) when you start this phase.
 
-### Phase 6: Deliver
+### Phase 6: REPORT AND ASK
 
 Report what you built and checked, and ask the requester how to proceed.
 
 - Read [references/phase-6-deliver.md](references/phase-6-deliver.md) when you start this phase.
 
-### Phase 7: Audit and evals
+### Phase 7: AUDIT AND EVALUATE
 
 Run the audit, the evals or both, as the requester chose, then the final checks, and deliver again.
 
