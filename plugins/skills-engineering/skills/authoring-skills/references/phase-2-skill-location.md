@@ -28,7 +28,9 @@ Choose by who must get the skill and in which sessions:
 - Everyone who works in a repository: project scope. Write it for any of them, with no paths, names or settings of one person's machine.
 - One package of a monorepo: nested, so it loads with work on that package. A skill that must run before Claude touches the package belongs at the repository root.
 - Third parties, on their machines: a plugin in a marketplace.
-- The user in Cowork, cloud sessions or cloud scheduled tasks: the claude.ai account. Deliver the skill folder, and tell the user to add it to their account; for a later change, deliver the folder again.
+- The user in Claude, cloud sessions or cloud scheduled tasks: the claude.ai account.
+  - In a Claude conversation, deliver the skill file: the user saves it to their account from the conversation, and asks you there for each later change.
+  - In Claude Code, package the skill folder as a ZIP, laid out as the architecture file of Phase 2 shows, and tell the user to upload it on claude.ai; for a later change, package it again.
 - Every machine of an organization: enterprise. Deliver the skill folder, and tell the user their administrator installs it.
 
 Example: the user works on their laptop and in cloud scheduled tasks. The account skill reaches both; a skill in user scope fails in the cloud with "not found".
@@ -43,4 +45,6 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Use skills in Cowork and cloud sessions](https://code.claude.com/docs/en/skills#skills-in-cowork-and-cloud-sessions) when the skill must reach Cowork, cloud sessions or scheduled tasks. It says which locations those sessions read.
 - Read [Skills synced from claude.ai](https://code.claude.com/docs/en/skills#how-synced-skills-behave) when the skill lives on the claude.ai account. It covers how the sync works in each kind of session.
 - Read [Plugins synced from claude.ai](https://code.claude.com/docs/en/plugins/loading#synced-plugins) when the skill ships in a plugin that the account or the organization turns on. It says which sessions load synced plugins.
+- Read [How to create a skill with Claude through conversation](https://academy.claude.com/tutorials/how-to-create-a-skill-with-claude-through-conversation) when you build the skill in a Claude conversation. It shows how the user saves the skill file Claude creates and asks for changes.
+- Read [Package your skill](https://claude.com/docs/skills/how-to#package-your-skill) when you deliver a ZIP for the user to upload. It gives the layout the upload requires and how to check the ZIP first.
 - Read [Provision and manage skills for your organization](https://support.claude.com/en/articles/13119606-provision-and-manage-skills-for-your-organization) when the skill goes to an organization on claude.ai. It gives how an owner provisions skills.
