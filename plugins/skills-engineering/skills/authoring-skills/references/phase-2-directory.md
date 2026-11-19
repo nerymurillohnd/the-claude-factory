@@ -74,7 +74,7 @@ To keep skills in folders other than `skills/`, list them in the `skills` manife
 ## Split the content
 
 - The body holds what every run needs and stays under 500 lines and about 5,000 tokens. Move what only some runs need to files.
-- `SKILL.md` links every file directly, one level deep. A file that links to another file may be read only in part.
+- `SKILL.md` links every file directly, one level deep. A file Claude reaches only through another file may be read only in part.
 - A reference file over 100 lines opens with a table of contents.
 - Name each file for what it holds, in lowercase with forward slashes, and organize by domain or variant: `references/finance.md`, not `docs/file1.md`.
 - Put no README and no copy of public documentation in the folder.

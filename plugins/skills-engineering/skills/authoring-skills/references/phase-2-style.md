@@ -16,7 +16,7 @@ How to lay out the text of every file of the skill: headings, lists, checklists,
 ## Gotchas
 
 - The skill's formatting steers the formatting of what Claude writes with it: a body full of bullets and bold gets output full of bullets and bold. Format the skill the way its output should look.
-- A link from one reference to another makes Claude read the second file only in part, such as its first lines. Link every file from `SKILL.md`, one level deep.
+- Claude may read only part of a file, such as its first lines, when it reaches the file through another reference instead of from `SKILL.md`, whether the file sits beside that reference or deeper. Link every file from `SKILL.md`, one level deep.
 - A path written with backslashes instead of forward slashes fails on macOS and Linux. Write every path with forward slashes.
 - Padding table cells to align columns costs tokens and bytes on every load, and adds nothing for Claude.
 
@@ -77,7 +77,8 @@ Make sure everything is done.
 ## Pointers to files
 
 - Point to each file at the step that needs it, at the start of the sentence, with its verb and a condition Claude can check: `Read [Title](path) when…`, `See [Title](path) to…`, `Fill in [Title](path) for…`.
-- Keep each pointer on its own line. Use a Markdown link whose path is relative to the skill's folder and whose text is the file's title.
+- Keep each pointer on its own line in `SKILL.md`. Use a Markdown link whose path is relative to the skill's folder and whose text is the file's title.
+- In a reference file, name another file of the skill in plain text, such as "the hooks file of Phase 2", and only one that `SKILL.md` already links: Claude still reaches it in one step from `SKILL.md`, while a link would start a second one.
 - Point to a file, not a folder. Leave out an at-mention such as `@references/guide.md`: it loads the file on every run.
 
 ```markdown
@@ -86,6 +87,12 @@ For more details, see the references folder, and keep the [layouts guide](LAYOUT
 
 <!-- Strong -->
 Read [Invoice layouts](references/invoice-layouts.md) when an invoice is a scan or spans several pages.
+
+<!-- Weak: in references/forms.md, a link that reaches the field rules only through this file -->
+Before you fill a field, see [Field rules](field-rules.md).
+
+<!-- Strong: in references/forms.md, and SKILL.md links the field rules file -->
+Before you fill a field, check it against the field rules file.
 ```
 
 ## Links to web pages
