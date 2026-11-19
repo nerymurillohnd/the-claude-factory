@@ -48,7 +48,7 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 
 ## Skills best practices and writing standards
 
-These 10 standards are the base for every skill you write, not a limit. Apply each in the form the skill calls for, and add others when official Anthropic documentation for Claude skills backs them.
+These 11 standards are the base for every skill you write, not a limit. Apply each in the form the skill calls for, and add others when official Anthropic documentation for Claude skills backs them.
 
 1. OFFICIAL SOURCES FIRST: write from official documentation instead of memory or training cut-off knowledge. Search and read Anthropic's documentation for Claude skills and Agent Skills, and this skill's reference files. When sources disagree, follow the one that owns the target surface.
 2. UNDERSTAND FIRST: before you design or plan, understand the user's intent and goal, where the skill will load from, what it will need, and the best practices that apply.
@@ -60,6 +60,7 @@ These 10 standards are the base for every skill you write, not a limit. Apply ea
 8. PATTERNS WHEN NEEDED: gotchas for facts that defy assumptions, templates for fixed formats, checklists for gated steps, validation loops for cheap-to-detect errors, plan-validate-execute for batch or destructive work, scripts for logic Claude keeps rewriting, examples where they help. Embed commands, templates and schemas as code blocks.
 9. READ BEFORE AND AFTER WRITING: read the whole file, first line to last, before you edit it, and again after the change. Read every document you write once it is done. Inconsistencies, breakage and lost logic surface before you deliver.
 10. OWN THE RESULT: own the writing of the skill: the method, the design, the plan, the scaffold and the build are yours. Ask the user for context when something is missing, and keep the technical decisions with you. Be accountable for what you deliver.
+11. GOTCHAS FIRST: put gotchas before the procedure they affect, in `SKILL.md` and at the top of each reference file.
 
 ## Gotchas
 
