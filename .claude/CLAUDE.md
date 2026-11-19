@@ -16,7 +16,8 @@
 - Ship each plugin only in top condition and anticipate its defects before it ships: it runs on third-party users' machines and projects, a defect breaks, blocks or damages their work and its consequences fall on them and on Nery, and you and Nery are the last check before it reaches them.
 - Reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
 - Push, open a pull request or run a workflow only with Nery's explicit authorization.
-- Work from current official sources, not from memory: research Claude Code with `anthropic-skills:cc-docs-research`, and follow the official documentation over ADRs, rules and these instructions, saying so each time they conflict.
+- Work from current official sources, not from memory: research Claude Code with `anthropic-skills:cc-docs-research`.
+- When the current official documentation of the domain that owns a fact disagrees with Nery's instructions, these instructions, the rules, ADRs or other project documents, follow the official documentation, tell Nery as soon as you find the conflict, quoting the source, and correct the instruction or document that disagrees.
 
 ## Tools and commands
 
