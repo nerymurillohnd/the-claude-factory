@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 import fnmatch
 import re
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeGuard
 
 from validators.skill_lint.model import Finding, Severity
 
@@ -68,16 +68,24 @@ def _finding(rule: str, severity: Severity, path: str, line: int | None, message
     return Finding(rule, severity, path, line, message, SOURCES[rule])
 
 
+def _is_mapping(value: object) -> TypeGuard[Mapping[str, object]]:
+    """Report whether a parsed value is a mapping (YAML maps have string keys here)."""
+    return isinstance(value, Mapping)
+
+
+def _is_list(value: object) -> TypeGuard[list[object]]:
+    """Report whether a parsed value is a list."""
+    return isinstance(value, list)
+
+
 def _as_mapping(value: object) -> Mapping[str, object] | None:
     """Return value as a string-keyed mapping, or None."""
-    if isinstance(value, Mapping):
-        return cast("Mapping[str, object]", value)
-    return None
+    return value if _is_mapping(value) else None
 
 
 def _as_list(value: object) -> list[object]:
     """Return value as a list of objects, or an empty list."""
-    return cast("list[object]", value) if isinstance(value, list) else []
+    return value if _is_list(value) else []
 
 
 def _allowed_tools(value: object) -> tuple[str, ...]:

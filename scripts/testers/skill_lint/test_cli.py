@@ -5,14 +5,13 @@ from __future__ import annotations
 
 import contextlib
 import io
-import json
 import os
 from pathlib import Path
 import tempfile
-from typing import cast
 import unittest
 from unittest import mock
 
+from release.release_tools.repo import is_list, is_object, read_json
 from validators.skill_lint.cli import main
 from validators.skill_lint.markdown_model import DocBuilder
 from validators.skill_lint.model import Family, Finding, Severity
@@ -68,13 +67,13 @@ class ReportTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             skill = load(build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD}))
             findings = [_finding("CO-11", Severity.WARNING)]
-            data = cast(
-                "dict[str, list[dict[str, object]]]",
-                json.loads(render_json([(skill, findings)], None, strict=False)),
-            )
-        self.assertEqual(len(data["skills"]), 1)
-        self.assertEqual(data["findings"][0]["rule"], "CO-11")
-        self.assertEqual(data["findings"][0]["severity"], "warning")
+            data = read_json(render_json([(skill, findings)], None, strict=False))
+        skills, found = data["skills"], data["findings"]
+        if not is_list(skills) or not is_list(found) or not is_object(first := found[0]):
+            self.fail(f"unexpected report shape: {data!r}")
+        self.assertEqual(len(skills), 1)
+        self.assertEqual(first["rule"], "CO-11")
+        self.assertEqual(first["severity"], "warning")
 
 
 class CliTest(unittest.TestCase):
@@ -172,8 +171,10 @@ class CliTest(unittest.TestCase):
         """--json --manifest prints JSON with a manifest entry for the skill."""
         with tempfile.TemporaryDirectory() as tmp:
             _, out = _main(["--json", "--manifest", self._skill(tmp, VALID_SKILL_MD)])
-        data = cast("dict[str, dict[str, object]]", json.loads(out))
-        self.assertIn("demo:demo-skill", data["manifest"])
+        manifest = read_json(out)["manifest"]
+        if not is_object(manifest):
+            self.fail(f"manifest is not an object: {manifest!r}")
+        self.assertIn("demo:demo-skill", manifest)
 
 
 if __name__ == "__main__":

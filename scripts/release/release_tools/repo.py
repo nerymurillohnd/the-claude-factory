@@ -7,9 +7,10 @@ import json
 import re
 import shutil
 import subprocess
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeGuard
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
 MARKETPLACE = ".claude-plugin/marketplace.json"
@@ -20,6 +21,18 @@ UNRELEASED = re.compile(
     r"^## \[Unreleased\][^\n]*\n(?P<body>.*?)(?=^## |^\[[^\]]+\]: |\Z)", re.MULTILINE | re.DOTALL
 )
 VERSION_HEADING = re.compile(r"^## \[([0-9]+\.[0-9]+\.[0-9]+)\]", re.MULTILINE)
+# Decodes JSON as plain objects; is_object() and is_list() narrow what it returns.
+_decode: Callable[[str], object] = json.JSONDecoder().decode
+
+
+def is_object(found: object) -> TypeGuard[dict[str, object]]:
+    """Report whether a decoded JSON value is an object."""
+    return isinstance(found, dict)
+
+
+def is_list(found: object) -> TypeGuard[list[object]]:
+    """Report whether a decoded JSON value is an array."""
+    return isinstance(found, list)
 
 
 class GitError(RuntimeError):
@@ -37,11 +50,11 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 def read_json(text: str) -> dict[str, object]:
     """Parse a JSON object, or raise ValueError when the text holds anything else."""
-    data = cast("object", json.loads(text))
-    if not isinstance(data, dict):
+    data = _decode(text)
+    if not is_object(data):
         msg = "expected a JSON object"
         raise TypeError(msg)
-    return cast("dict[str, object]", data)
+    return data
 
 
 def marketplace(root: Path) -> dict[str, object]:
@@ -52,8 +65,8 @@ def marketplace(root: Path) -> dict[str, object]:
 def entries(root: Path) -> list[dict[str, object]]:
     """Return the marketplace's plugin entries, in order."""
     raw = marketplace(root).get("plugins", [])
-    items = cast("list[object]", raw) if isinstance(raw, list) else []
-    return [cast("dict[str, object]", e) for e in items if isinstance(e, dict)]
+    items = raw if is_list(raw) else []
+    return [e for e in items if is_object(e)]
 
 
 def plugin_names(root: Path) -> list[str]:

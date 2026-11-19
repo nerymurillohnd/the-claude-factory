@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import re
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeGuard
 
 from validators.skill_lint import rules_content_files
 from validators.skill_lint.model import Finding, Severity
@@ -97,6 +97,11 @@ def _co04(skill: Skill, data: Mapping[str, object]) -> list[Finding]:
     return [_finding(skill, "CO-04", "description", message)]
 
 
+def _is_mapping(value: object) -> TypeGuard[Mapping[object, object]]:
+    """Report whether a parsed value is a mapping, whatever its keys and values."""
+    return isinstance(value, Mapping)
+
+
 def _all_strings(mapping: Mapping[object, object]) -> bool:
     """Return True when every key and value is a string."""
     return all(isinstance(k, str) and isinstance(v, str) for k, v in mapping.items())
@@ -117,9 +122,7 @@ def _co05(skill: Skill, data: Mapping[str, object]) -> list[Finding]:
             findings.append(_finding(skill, "CO-05", "compatibility", message))
     if "metadata" in data:
         metadata = data["metadata"]
-        if not isinstance(metadata, Mapping) or not _all_strings(
-            cast("Mapping[object, object]", metadata)
-        ):
+        if not _is_mapping(metadata) or not _all_strings(metadata):
             message = "`metadata` must be a map of strings to strings"
             findings.append(_finding(skill, "CO-05", "metadata", message))
     return findings

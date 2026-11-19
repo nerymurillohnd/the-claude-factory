@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from release.release_tools.repo import (
     MARKETPLACE,
@@ -11,6 +11,7 @@ from release.release_tools.repo import (
     VERSION_HEADING,
     entries,
     git,
+    is_object,
     manifest,
     marketplace,
     remote_tags,
@@ -52,7 +53,7 @@ def _names(root: Path) -> Iterator[Finding]:
 def _renames(root: Path) -> Iterator[Finding]:
     """PC-02: no renames key is still a listed plugin."""
     raw = marketplace(root).get("renames")
-    keys = set(cast("dict[str, object]", raw)) if isinstance(raw, dict) else set[str]()
+    keys = set(raw) if is_object(raw) else set[str]()
     for entry in entries(root):
         name = str(entry.get("name", ""))
         if name in keys:
@@ -76,7 +77,7 @@ def _tags(root: Path, tags: set[str]) -> Iterator[Finding]:
     for entry in entries(root):
         name = str(entry.get("name", ""))
         current = version(manifest(root, name))
-        headings = cast("list[str]", VERSION_HEADING.findall(_changelog(root, name)))
+        headings = [match.group(1) for match in VERSION_HEADING.finditer(_changelog(root, name))]
         for found in headings:
             if found != current and f"{name}--v{found}" not in tags:
                 path = f"plugins/{name}/CHANGELOG.md"

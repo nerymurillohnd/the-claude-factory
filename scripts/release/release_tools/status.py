@@ -9,12 +9,14 @@ import json
 from pathlib import Path
 import re
 import sys
-from typing import TYPE_CHECKING, Literal, cast, override
+from typing import TYPE_CHECKING, Literal, override
 
 from release.release_tools.repo import (
     GitError,
     entries,
     git,
+    is_list,
+    is_object,
     manifest,
     plugin_names,
     remote_tags,
@@ -90,8 +92,8 @@ def _bad_semver(root: Path) -> Iterator[Row]:
 
 def _dependency(raw: object) -> str:
     """Return `<name> <range>` for one dependencies entry; a bare name has range `any`."""
-    if isinstance(raw, dict):
-        item = cast("dict[str, object]", raw)
+    if is_object(raw):
+        item = raw
         name = str(item.get("name", "?"))
         where = item.get("marketplace")
         return f"{name}{f'@{where}' if where else ''} {item.get('version') or 'any'}"
@@ -105,8 +107,8 @@ def _dependents(root: Path) -> Iterator[Row]:
         declared: list[object] = []
         for source in (manifest(root, plugin) or {}, entry):
             raw = source.get("dependencies")
-            if isinstance(raw, list):
-                declared.extend(cast("list[object]", raw))
+            if is_list(raw):
+                declared.extend(raw)
         for item in declared:
             yield Row(plugin, "dependent", f"{plugin} needs {_dependency(item)}")
 

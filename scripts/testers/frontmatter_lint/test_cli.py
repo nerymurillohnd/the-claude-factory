@@ -5,13 +5,12 @@ from __future__ import annotations
 
 import contextlib
 import io
-import json
 from pathlib import Path
 import tempfile
-from typing import cast
 import unittest
 from unittest import mock
 
+from release.release_tools.repo import is_list, is_object, read_json
 from validators.frontmatter_lint.cli import main
 from validators.frontmatter_lint.discover import discover
 
@@ -91,11 +90,13 @@ class CliTest(unittest.TestCase):
             path = _write(Path(tmp), "plugins/p/agents/a.md", BAD)
             code, out, _ = _main(["--json", str(path)])
             self.assertEqual(code, 1)
-            report = cast("dict[str, object]", json.loads(out))
-            findings = cast("list[dict[str, object]]", report["findings"])
+            report = read_json(out)
+            findings = report["findings"]
+            if not is_list(findings) or not is_object(first := findings[0]):
+                self.fail(f"findings is not a list of objects: {findings!r}")
             self.assertEqual(report["checked"], 1)
-            self.assertEqual(findings[0]["rule"], "FM-03")
-            self.assertEqual(findings[0]["line"], 3)
+            self.assertEqual(first["rule"], "FM-03")
+            self.assertEqual(first["line"], 3)
 
     def test_folder_argument_is_discovered(self) -> None:
         """A folder argument is searched with the same globs as the repository root."""
