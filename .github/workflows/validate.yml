@@ -2,8 +2,9 @@ name: Validate
 
 # The merge gate. On every pull request, and on every push to main, `checks` runs every check that
 # passes today and blocks on any failure; `debt` runs the checks that a logged technical-debt item
-# holds back and never blocks. On a push to main, once `checks` passes, `release` calls release.yml,
-# which tags and publishes each plugin whose current version has no tag yet.
+# holds back, plus the advisory check of the maintainer tool pins, and never blocks. On a push to
+# main, once `checks` passes, `release` calls release.yml, which tags and publishes each plugin
+# whose current version has no tag yet.
 # A check moves from `debt` to `checks` when its DEBT item closes.
 
 on:
@@ -110,6 +111,14 @@ jobs:
       - name: DEBT-003 — npm run validate:hooks-catch
         continue-on-error: true
         run: npm run validate:hooks-catch
+      - name: DEBT-010 — npm run lint:suppressions
+        continue-on-error: true
+        run: npm run lint:suppressions
+      # Not a DEBT item: an advisory that fails when a uv tool pinned in tools:install has a newer
+      # PyPI release, which Dependabot does not read. It never blocks a merge.
+      - name: Maintainer tool pins against PyPI
+        continue-on-error: true
+        run: npm run check:tool-versions
 
   release:
     name: Release

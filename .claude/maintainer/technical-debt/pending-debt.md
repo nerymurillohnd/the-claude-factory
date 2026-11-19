@@ -46,6 +46,7 @@ Add an item only when all of these hold:
 | DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
+| DEBT-010 | lint:suppressions can't join the Checks job while nine plugins hold 47 inline suppressions | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -269,6 +270,33 @@ Add an item only when all of these hold:
 - **Next action:** cut restatements, such as "Your expertise" and "What this skill promotes", or move the long Phase 2 and Phase 3 text into references, until `plugin details` shows under 5,000 tokens on invoke.
 - **Review condition:** the next change to `authoring-skills`' `SKILL.md`, or a run where Claude skips Phase 6 or 7 after compaction.
 - **Related records:** [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
+
+### DEBT-010 — lint:suppressions can't join the Checks job while nine plugins hold 47 inline suppressions
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-19 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `npm run lint:suppressions` (`scripts/validators/find-suppressions.py`, added on 2026-11-19) first reported 62 suppressions in 22 files on branch `claude/amazing-lamport-rprfhx`. The 15 `cast()` calls in `scripts/` were removed the same day; it now reports 47 in 15 files, exit 1, all in plugins.
+  - The 47 are in nine plugins: file-tree-pane 11 `biome-ignore` (7 in `hooks/register.tsx`, 4 in its tests); `cast()` in hook-engineering 25, skill-diagnostics 4, python-lsp-intelligence 2, and one each in bash-lsp-intelligence, github-operations, instruction-engineering, typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+  - The pre-commit gate (`.githooks/pre-commit`) runs the same check on every staged file it covers and blocks the commit, so no new suppression enters, and editing one of these files requires removing its suppressions.
+  - `.claude/rules/code-quality/python.md` and `typescript.md` already forbid these suppressions.
+- **Inferences:** most `cast()` calls narrow decoded JSON; the `JsonObject` decoder and `TypeGuard` helpers used in `scripts/checkers/tool_versions/check.py` and `plugins/github-operations/skills/github-files-setup/scripts/labels-sync.py` remove them without changing behavior.
+- **Open questions:** whether file-tree-pane's `noAwaitInLoops` cases, which serialize processes on purpose, are rewritten or the rule's scope is changed in `biome.jsonc` with the owner's approval.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a whole-repository scan can't block in Validate's `Checks` job, so it runs in the non-blocking `Debt` job; a suppression in a file nobody stages stays unseen there.
+- **Why it is not fixed now:** each plugin's change needs its own pull request and patch release, which the owner schedules.
+- **Next action:** the owner schedules one pull request per plugin that removes its suppressions, starting with hook-engineering (25); then `lint:suppressions` moves from the `Debt` job to the `Checks` job.
+- **Review condition:** `npm run lint:suppressions` exits 0 on `main`.
+- **Related records:** DEBT-006.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
