@@ -34,6 +34,8 @@ GATE = PLUGIN / "hooks" / "plan-gate.py"
 VALIDATOR = PLUGIN / "skills" / "planning-before-execution" / "scripts" / "validate-state.py"
 SESSION = "3e13ae09-6c1d-4ce6-b55c-237353734d93"
 UNREADABLE_BLOCK = '{"decision": "block", "reason": "The plan state file'
+# The default of task()'s `recorded`: a named constant, since a call in a default is evaluated once.
+NOTHING_RECORDED: frozenset[str] = frozenset()
 
 
 class Outcome(NamedTuple):
@@ -60,7 +62,7 @@ def evidence(output: str = "1 passed") -> dict[str, str]:
 def task(
     task_id: str,
     *,
-    recorded: frozenset[str] = frozenset(),
+    recorded: frozenset[str] = NOTHING_RECORDED,
     test_first: bool = False,
     check: str | None = "npm test",
 ) -> dict[str, object]:
