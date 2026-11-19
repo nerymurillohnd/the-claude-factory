@@ -4,20 +4,12 @@ How to word each instruction of the skill so Claude follows it the same way on e
 
 ## Contents
 
-- [Gotchas](#gotchas)
 - [Register](#register)
 - [What each instruction adds](#what-each-instruction-adds)
 - [Defaults, not menus](#defaults-not-menus)
 - [Terms and time](#terms-and-time)
 - [Emphasis and prohibitions](#emphasis-and-prohibitions)
 - [Official sources](#official-sources)
-
-## Gotchas
-
-- Capitals and absolutes, such as ALWAYS, MUST or "If in doubt, do X", make current models over-apply the rule and trigger on cases it doesn't fit.
-- A list of options is resolved differently on each run. Claude picks one, and the next run picks another.
-- Two words for one concept read as two concepts: Claude treats "line item", "row" and "entry" as different things.
-- A prohibition with nothing to do instead leaves the right path to a guess.
 
 ## Register
 

@@ -7,9 +7,7 @@ Where a skill can live, which sessions load it from there, and when it loads.
 - At startup, Claude Code loads `.claude/skills/` from the folder the session starts in and from every parent up to the repository root, plus `~/.claude/skills/`. A `.claude/skills/` in a subfolder below the start folder loads only the first time Claude reads or edits a file there, and until then it can't be invoked by name.
 - Cowork, cloud sessions and cloud scheduled tasks don't read `~/.claude/skills/`. A cloud scheduled task that invokes a skill found only there reports that the skill was not found.
 - A cloud thread in a Claude project doesn't load the skills committed to a repository's `.claude/skills/`, and a cloud session doesn't load the plugins declared in the repository's `.claude/settings.json` or enabled only in the user's settings.
-- A skill synced from claude.ai is a download. An edit to its copy in `~/.claude/skills/synced/` never reaches the account, and the next sync can overwrite it.
 - A `SKILL.md` at a plugin's root loads only when the plugin has no `skills/` folder and no `skills` key in its manifest.
-- `paths` in the frontmatter matches files against Claude's working directory. A file outside it, such as one in a sibling worktree, never activates the skill.
 - A skill folder can be a symlink to a folder elsewhere on disk: Claude Code reads `SKILL.md` from the target, and loads the skill once even when several locations point at it.
 
 ## The locations

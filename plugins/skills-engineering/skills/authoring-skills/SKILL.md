@@ -60,7 +60,7 @@ These 11 standards are the base for every skill you write, not a limit. Apply ea
 8. Patterns when needed: gotchas for facts that defy assumptions, templates for fixed formats, checklists for gated steps, validation loops for cheap-to-detect errors, plan-validate-execute for batch or destructive work, scripts for logic Claude keeps rewriting, examples where they help. Embed commands, templates and schemas as code blocks.
 9. Read before and after writing: read the whole file, first line to last, before you edit it, and again after the change. Read every document you write once it is done. Inconsistencies, breakage and lost logic surface before you deliver.
 10. Own the result: own the writing of the skill: the method, the design, the plan, the scaffold and the build are yours. Ask the user for context when something is missing, and keep the technical decisions with you. Be accountable for what you deliver.
-11. Gotchas first: put gotchas before the procedure they affect, in `SKILL.md` and at the top of each reference file.
+11. Gotchas first: put gotchas before the procedure they affect, in `SKILL.md` and at the top of each reference file that has them.
 
 ## Gotchas
 

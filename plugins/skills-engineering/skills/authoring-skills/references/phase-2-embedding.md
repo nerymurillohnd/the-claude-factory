@@ -5,7 +5,6 @@ How to embed commands, calls to bundled scripts, templates and schemas in the sk
 ## Gotchas
 
 - A fenced block inside a fenced block closes the outer one at its first three backticks. Open the outer block with four.
-- What you embed in `SKILL.md` passes through the text substitutions that this skill's `SKILL.md` lists under Gotchas: an argument placeholder, a path variable and an exclamation mark before a backtick command change before Claude reads them. Check each embed against them as you write it.
 
 ## Commands and code
 

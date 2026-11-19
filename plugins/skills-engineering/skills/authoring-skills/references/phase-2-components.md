@@ -4,15 +4,9 @@ The components a skill can have, what each one is for, and which file of Phase 2
 
 ## Contents
 
-- [Gotchas](#gotchas)
 - [The components](#the-components)
 - [Choose the components](#choose-the-components)
 - [Official sources](#official-sources)
-
-## Gotchas
-
-- Every component costs something on every run: a reference costs a read, a script an execution, a hook fires on every event it matches. Add a component only for a failure you can name without it.
-- Claude reads a reference only when `SKILL.md` points to it, and runs a script without reading its code: only the script's output enters the context.
 
 ## The components
 

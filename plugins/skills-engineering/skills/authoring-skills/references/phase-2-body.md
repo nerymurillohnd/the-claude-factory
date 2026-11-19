@@ -12,7 +12,7 @@ What the body of the skill must carry, and how to build its task: workflows, che
 - [Validation loops](#validation-loops)
 - [Plan, validate, execute](#plan-validate-execute)
 - [Output templates](#output-templates)
-- [Gotchas in the skill you write](#gotchas-in-the-skill-you-write)
+- [Write the skill's gotchas](#write-the-skills-gotchas)
 - [Official sources](#official-sources)
 
 ## Gotchas
@@ -89,14 +89,12 @@ The changes file can be fixed and checked again without touching the originals.
 
 Give a template when the output has a fixed shape, strict or flexible, inline or in `assets/`, as the embedding file of Phase 2 shows.
 
-## Gotchas in the skill you write
+## Write the skill's gotchas
 
-A gotcha is a fact of the environment or domain that defies a reasonable assumption, so Claude gets it wrong unless told: the export whose amounts are in cents, the sandbox API that accepts any key but never sends email.
+A gotcha is a fact of the environment or domain that defies a reasonable assumption, so Claude gets it wrong unless told: the export whose amounts are in cents, the sandbox API that accepts any key but never sends email. Leave out general advice: it isn't a gotcha unless a capable model would get it wrong.
 
-- Write each as the fact and what to do about it, in one or two lines.
 - Put the gotchas in `SKILL.md`, before the steps they affect: Claude must know them before it reaches the situation.
-- Put a gotcha that affects only one variant in that variant's file, before the steps it affects.
-- Leave out general advice: it isn't a gotcha unless a capable model would get it wrong.
+- Put a gotcha that affects only one variant in that variant's file, before the steps it affects, and give the pointer to that file a condition Claude can recognize: for a non-obvious trap, Claude may not see that the file applies.
 
 ## Official sources
 

@@ -5,7 +5,6 @@ When the skill needs examples, how many, and how to write and place them so Clau
 ## Gotchas
 
 - Claude copies what examples share: when every example has the same length, tone or opening, the output takes it too. Vary them where the output may vary.
-- An example in `SKILL.md` loads on every run. A long one, or one only some runs need, costs tokens each time it isn't used.
 - Without tags, Claude can read an example as an instruction to carry out.
 
 ## When to add examples
