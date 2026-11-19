@@ -1,12 +1,13 @@
 # Phase 2: Writing style
 
-How to word each instruction of the skill so Claude follows it the same way on every run: register, what each line must add, defaults, terms and emphasis.
+How to word each instruction of the skill so Claude follows it the same way on every run: register, what each line must add, defaults, procedures, terms and emphasis.
 
 ## Contents
 
 - [Register](#register)
 - [What each instruction adds](#what-each-instruction-adds)
 - [Defaults, not menus](#defaults-not-menus)
+- [Procedures, not answers](#procedures-not-answers)
 - [Terms and time](#terms-and-time)
 - [Emphasis and prohibitions](#emphasis-and-prohibitions)
 - [Official sources](#official-sources)
@@ -40,6 +41,7 @@ Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_totals.py invoices.csv`. When it 
 
 - Give one default, and the exception as its own condition.
 - Match the freedom to the step's fragility: criteria where many approaches work, a preferred pattern where one is better, the exact command where a deviation breaks something.
+- Calibrate each step on its own: most skills mix free steps with exact ones.
 
 ```markdown
 <!-- Weak: a menu -->
@@ -47,6 +49,27 @@ You could use the CSV importer, the API, a manual journal entry or a spreadsheet
 
 <!-- Strong: a default with its exception -->
 Export with the accounting system's CSV importer. For a system without one, write the journal file from [Journal template](assets/journal.csv).
+
+<!-- Weak: a fragile step left free -->
+Migrate the ledger with the options that fit.
+
+<!-- Strong: the exact command, since any change to it can corrupt the ledger -->
+Run `python3 ${CLAUDE_SKILL_DIR}/scripts/migrate_ledger.py --verify --backup` as written, with no other flags.
+```
+
+## Procedures, not answers
+
+Teach the method for the whole class of tasks the skill serves, not the answer to one request. Specific details, such as a template, a constraint or a tool's flag, stay specific inside a method that generalizes.
+
+```markdown
+<!-- Weak: the answer to one request, useless for the next -->
+Join `invoices` to `suppliers` on `supplier_id`, keep the rows from March, and sum `total`.
+
+<!-- Strong: the method for any report on the invoices -->
+1. Read the schema file to find the tables the request needs.
+2. Join the tables on their `_id` keys.
+3. Turn each filter of the request into a `WHERE` clause.
+4. Sum or count the columns the request names, and return a Markdown table.
 ```
 
 ## Terms and time
@@ -86,5 +109,5 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Concise is key](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#concise-is-key) and [Set appropriate degrees of freedom](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#set-appropriate-degrees-of-freedom) when you weigh what a line adds or how strict a step is. They give the test for a line and the three levels of freedom.
 - Read [Avoid offering too many options](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#avoid-offering-too-many-options) and [Provide defaults, not menus](https://agentskills.io/skill-creation/best-practices#provide-defaults-not-menus) when a step lists approaches. They show the default with its escape hatch.
 - Read [Use consistent terminology](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#use-consistent-terminology) and [Avoid time-sensitive information](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#avoid-time-sensitive-information) when you name a concept or a change over time. They show one term per concept and how to keep an old pattern.
-- Read [Favor procedures over declarations](https://agentskills.io/skill-creation/best-practices#favor-procedures-over-declarations) when a section states facts without saying what to do. It shows how to turn them into a procedure.
+- Read [Favor procedures over declarations](https://agentskills.io/skill-creation/best-practices#favor-procedures-over-declarations) when a step answers one request instead of teaching the method. It shows a specific answer turned into a method that works for the whole class of tasks.
 - Read [What you can stop doing](https://code.claude.com/docs/en/best-practices#what-you-can-stop-doing) when emphasis seems the fix for a missed line. It says why IMPORTANT and ALL CAPS backfire and when a hook is the answer.
