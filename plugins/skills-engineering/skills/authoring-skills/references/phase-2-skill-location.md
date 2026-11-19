@@ -34,7 +34,7 @@ The places a skill can live, the path of each, and what each one changes in the 
 ## The locations
 
 | Location | Path |
-| :- | :- |
+| :-- | :-- |
 | User scope | `~/.claude/skills/<skill-name>/SKILL.md` |
 | Project scope | `.claude/skills/<skill-name>/SKILL.md` |
 | Nested in a project | `<subdir>/.claude/skills/<skill-name>/SKILL.md` |
@@ -51,7 +51,7 @@ The places a skill can live, the path of each, and what each one changes in the 
 In Claude Code, reach the skill's files and the project's through these variables, not through a relative path. A relative path in an injected command resolves from the session's working directory, which moves when Claude runs `cd`. Outside Claude Code, where no variable is replaced, use paths relative to the skill root.
 
 | Location | `${CLAUDE_SKILL_DIR}` | `${CLAUDE_PLUGIN_ROOT}` | `${CLAUDE_PROJECT_DIR}` |
-| :- | :- | :- | :- |
+| :-- | :-- | :-- | :-- |
 | User, project, nested, added directory, enterprise | The skill's folder | Not replaced | The project root |
 | Plugin, `skills/` folder | The skill's subfolder | The root of the installed plugin version | The project root |
 | Plugin, root | The plugin root, same as `${CLAUDE_PLUGIN_ROOT}` | The root of the installed plugin version | The project root |

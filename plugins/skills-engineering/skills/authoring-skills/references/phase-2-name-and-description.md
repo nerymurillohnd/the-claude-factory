@@ -68,7 +68,7 @@ name: reviewing-contracts   # Strong: the activity, in the gerund
 ## From name to command
 
 | Layout | Command | Example |
-| :- | :- | :- |
+| :-- | :-- | :-- |
 | Personal or project skill folder | `/` plus `name` | `.claude/skills/send-report/` with `name: send-report` → `/send-report` |
 | Plugin `skills/` folder | `/<plugin>:` plus `name` | `billing/skills/close-month/` with `name: close-month` → `/billing:close-month` |
 | Single skill at a plugin root | `/<plugin>:` plus `name` | `billing/SKILL.md` with `name: close-month` → `/billing:close-month` |
@@ -85,7 +85,7 @@ Resolve the name against the inventory you made in Phase 2: Environment and proj
    - Read what happens for each match:
 
      | Same name in | Which one runs |
-     | :- | :- |
+     | :-- | :-- |
      | Two of enterprise, personal and project | Enterprise over personal, personal over project |
      | One of those and a bundled skill or a built-in command | Your skill, but the command's aliases still run the original |
      | A skill and a file in `.claude/commands/` | The skill |
