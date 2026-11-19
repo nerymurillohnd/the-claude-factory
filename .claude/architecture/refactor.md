@@ -112,7 +112,7 @@
   - `claude plugin test` on each mod — **Implemented** as `validate:mods`, part of `validate`; no CI job runs it until `validate.yml` exists
   - The missing-summary guard from `check-mod.sh` until anthropics/claude-code#103055 is confirmed closed (E11)
 - `scripts/validators/pr-checks.sh` — **Implemented** · Callers: `npm run check:pr`, every step of Validate's `Checks` job and the DEBT-003 step of its `Debt` job (CI) · The merge gate's steps in one place, so a branch that passes locally passes in CI. It owns the DEBT-003 plugin list and gates Biome on the files a branch changed (`biome-changed`), which `lint:js` can't while DEBT-006 is open
-- `scripts/basedpyright-maintainer.mjs` — **Replaced by** `npm run typecheck:python` (`basedpyright && basedpyright -p scripts`): plugin Python at 3.12, maintainer Python at 3.15
+- `scripts/basedpyright-maintainer.mjs` — **Replaced by** `npm run typecheck:python` (`basedpyright`, configured in `pyproject.toml`): plugin Python at 3.12, maintainer Python at 3.15 through `executionEnvironments`
 - Linters — **Implemented** · `npm run lint`: Biome (`lint:js`), ruff (`lint:python`), ShellCheck and shfmt (`lint:shell`), actionlint and zizmor (`lint:workflows`), check-jsonschema and `scripts/check-github-files.py` (`lint:github`)
 - `scripts/lib.mjs`, `scripts/components.mjs` — **Dropped** · They served `gates.mjs` and the generators; a rebuilt generator brings its own helpers
 - `scripts/sync-labels.py` — **Implemented** (was `sync-labels.mjs`) · Caller: `npm run labels:sync` · GitHub labels from `.github/labels.json`. No plugin command touches GitHub

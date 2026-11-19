@@ -7,7 +7,7 @@ metadata:
 
 basedpyright evaluates the `sys.version_info` checks inside stdlib stubs with the top-level `pythonVersion`, never with the `pythonVersion` of the `executionEnvironments` entry that imports them. The `executionEnvironments` version only governs the file's own syntax. The maintainer reported it in DetachHead/basedpyright#416 (opened 2024-06-14, still open).
 
-Reproduced on basedpyright 1.40.2 (2026-11-15) in an isolated copy of this repository: with the top level at 3.15 and `{ root = "plugins", pythonVersion = "3.12" }`, a plugin file importing `warnings.deprecated` or `typing.TypeIs` (both 3.13+) reported 0 errors. With the top level at 3.12, the same file failed with `reportAttributeAccessIssue`.
+Applied in the root `pyproject.toml` on 2026-11-19; #416 was still open that day. Reproduced on basedpyright 1.40.2 (2026-11-15) in an isolated copy of this repository: with the top level at 3.15 and `{ root = "plugins", pythonVersion = "3.12" }`, a plugin file importing `warnings.deprecated` or `typing.TypeIs` (both 3.13+) reported 0 errors. With the top level at 3.12, the same file failed with `reportAttributeAccessIssue`.
 
 **Why:** plugin Python must run on any python3 from 3.12, so a 3.13+ stdlib call would crash on users' machines while every check stayed green.
 
