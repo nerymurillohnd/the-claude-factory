@@ -10,7 +10,6 @@ paths:
 - Put tests in `testers/`, mirroring the package under test, in `test_*.py` files written with `unittest`, never pytest.
 - Ask the owner before creating a subfolder that is not listed here.
 - Look up a script in `.claude/architecture/refactor.md` before writing it, and rebuild it to current official practice instead of copying it from `main`.
-- Write the failing test first, then the code, and confirm the test fails without the change.
 - Start every new `.py` file under `validators/` and `testers/` with `#!/usr/bin/env python3` and give it mode 100755.
 - Import package modules absolutely (`from validators.skill_lint.model import Finding`).
 - Add each ruamel.yaml member a script uses to the stubs in `typings/ruamel/yaml/`.
