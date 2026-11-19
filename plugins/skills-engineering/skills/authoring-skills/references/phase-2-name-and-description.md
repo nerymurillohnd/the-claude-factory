@@ -118,7 +118,7 @@ Write it for the model that matches it against the user's request. The more spec
 
 1. Prefer to open with a "Use…" clause: "Use when…", "Use for…", "Use every time…". It tells the model when to act. Open with what the skill does only when that is what sets it apart.
 2. Write everything after the "Use…" clause in the third person: "Extracts…", "Teaches Claude to…", "Provides a curated set of…". Never "I can" or "you can".
-3. Name concrete situations, file types and the words users say. Words that cover everything, such as any, anything, anytime, whenever, wherever and all kinds of, trigger nothing.
+3. Use the words a real user writes or says when asking for the task: the action verbs, such as write, review, migrate or deploy, the file types and the situations. Avoid words and phrases that trigger nothing, such as any, anything, anytime, anywhere, whenever, wherever, whatever, everything, any kind of and all kinds of.
 4. Describe what the user is trying to achieve, not the skill's mechanics.
 5. List the contexts where it applies, most likely first, including requests that never name the domain.
 6. Name the boundary with each sibling skill that shares its keywords.
