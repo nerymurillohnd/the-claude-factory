@@ -121,9 +121,11 @@ Once the user's intent is understood or your proposal is approved, work through 
 
 3. Design the directory and the body
    - See [Phase 2: Directory](references/phase-2-directory.md) to learn and design the skill's directory: the layout for its location, the folders and files of the components you chose, and what is shared and what belongs to the skill.
-   - See [Phase 2: Body](references/phase-2-body.md) to learn and choose the mechanisms the task needs: workflow, validation loop, checklist, plan-validate-execute, output template and gotchas.
-   - See [Phase 2: Writing patterns](references/phase-2-writing-patterns.md) to learn and choose the content patterns and examples.
-   - See [Phase 2: Embedding](references/phase-2-embedding.md) to learn and choose how to embed text, schemas, templates, commands and code snippets in the body.
+   - See [Phase 2: Body](references/phase-2-body.md) to decide what the body carries and build its task: workflows, checklists, validation loops, plan-validate-execute, output templates and gotchas.
+   - See [Phase 2: Writing style](references/phase-2-writing-style.md) to word each instruction: register, defaults, terms and emphasis.
+   - See [Phase 2: Style and format](references/phase-2-style.md) to lay out headings, lists, checklists, tables, pointers and links.
+   - See [Phase 2: Examples](references/phase-2-examples.md) to decide whether the skill needs examples, and to write and place them.
+   - See [Phase 2: Embedding](references/phase-2-embedding.md) to embed commands, calls to bundled scripts, templates and schemas.
 4. Define the frontmatter, the name and the description
    - See [Phase 2: Frontmatter](references/phase-2-frontmatter.md) to learn and choose the frontmatter fields, their accepted values and their order.
    - See [Phase 2: Name and description](references/phase-2-name-and-description.md) to choose the name, its command and clashes, and to write the description.
