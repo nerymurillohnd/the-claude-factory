@@ -1,14 +1,9 @@
 {
-  // Open this file (File > Open Workspace from File) instead of the folder. Each folder gets its
-  // own pyrightconfig.json, as basedpyright supports for multi-root workspaces: the root checks
-  // plugins/ at Python 3.12 (pyrightconfig.json), "maintainer scripts" checks scripts/ at 3.15
-  // with uv's .venv (scripts/pyrightconfig.json). One config can't do both: an
-  // executionEnvironments entry keeps typeshed at the global Python version.
-  "folders": [
-    { "path": ".", "name": "the-claude-factory" },
-    { "path": "scripts", "name": "maintainer scripts" }
-  ],
-  // Settings for both folders. Each folder's .vscode/settings.json sets only its interpreter.
+  // Open this file (File > Open Workspace from File) instead of the folder. pyproject.toml holds the
+  // Ruff and basedpyright settings for the whole repository: plugins/ at Python 3.12 and scripts/
+  // at 3.15 through basedpyright's executionEnvironments, with uv's .venv. .vscode/settings.json
+  // sets only the interpreter.
+  "folders": [{ "path": ".", "name": "the-claude-factory" }],
   "settings": {
     // --- Files: the same rules as .editorconfig, for editors and saves that bypass it ---
     "files.eol": "\n",
@@ -148,7 +143,7 @@
     // No ruff.path: the extension looks in the active Python environment, then on PATH, where the
     // ruff that tools:install pins lives, and uses its bundled copy only when neither has one.
     "ruff.importStrategy": "fromEnvironment",
-    // ruff.toml decides, as for the CLI; no ruff.lint.* or ruff.lineLength setting here.
+    // pyproject.toml decides, as for the CLI; no ruff.lint.* or ruff.lineLength setting here.
     "ruff.configurationPreference": "filesystemFirst",
     "ruff.lint.enable": true,
     "ruff.fixAll": true,
@@ -157,7 +152,9 @@
     "[python]": {
       "editor.defaultFormatter": "charliermarsh.ruff",
       "editor.formatOnSave": true,
-      // Ruff sorts imports with ruff.toml's isort settings; basedpyright's sort stays off.
+      // Ruff sorts imports with pyproject.toml's isort settings, and I001 checks the order;
+      // basedpyright's organizer imitates isort's defaults with no options, so it stays off on save
+      // and stays available as a command.
       "editor.codeActionsOnSave": {
         "source.fixAll.ruff": "explicit",
         "source.organizeImports.ruff": "explicit",
@@ -181,8 +178,8 @@
     "basedpyright.analysis.inlayHints.callArgumentNames": true,
     "basedpyright.analysis.inlayHints.functionReturnTypes": true,
     "basedpyright.analysis.inlayHints.genericTypes": false,
-    // Type checking is configured in pyrightconfig.json and scripts/pyrightconfig.json only, as
-    // basedpyright's docs recommend, so the editor checks what the basedpyright CLI checks.
+    // Type checking is configured in pyproject.toml's [tool.basedpyright] only: basedpyright ignores
+    // the editor's copies of those settings once it exists, so the editor checks what the CLI does.
 
     // basedpyright is the only Python language server.
     "python.languageServer": "None",

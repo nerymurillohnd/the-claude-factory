@@ -58,7 +58,7 @@
     }
   },
   "formatter": {
-    // Nery's standard line width, the same as ruff.toml.
+    // Nery's standard line width, the same as Ruff's in pyproject.toml.
     "lineWidth": 100,
     // .editorconfig is the only source of indentation and line endings.
     "useEditorconfig": true
