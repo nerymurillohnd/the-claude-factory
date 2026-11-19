@@ -105,10 +105,12 @@ Once the user's intent is understood or your proposal is approved, work through 
 
 **A. Identify environment and components**
 
-1. Identify and choose the skill type and location
-   - See [Phase 2: Skill types](references/phase-2-skill-types.md) to learn the different types of skills and choose the one this skill needs.
-   - See [Phase 2: Skill location](references/phase-2-skill-location.md) to learn where a skill can be served from and decide where this one loads.
-2. Decide the required components
+1. Recognize the environment and the project
+   - See [Phase 2: Environment and project](references/phase-2-environment.md) to establish the environment you work in, inventory what the project and Claude already load, and flag every overlap or friction with the new skill for the user to decide.
+2. Identify and choose the skill type and location
+   - See [Phase 2: Skill types](references/phase-2-skill-types.md) to decide whether a skill is the right feature and choose which of the six types this one is.
+   - See [Phase 2: Skill location](references/phase-2-skill-location.md) to choose where the skill lives, and learn what each location changes in what you write, its path variables included.
+3. Decide the required components
    - See [Phase 2: Components](references/phase-2-components.md) to learn the types of components and files a skill supports today, and choose the ones this skill needs.
    - If a subagent runs the skill or reads it, see [Phase 2: Skills for subagents](references/phase-2-subagents.md) to choose whether the subagent runs it as its task or preloads it as knowledge, and what a subagent can't do.
    - Then, for each component you chose:
@@ -119,21 +121,21 @@ Once the user's intent is understood or your proposal is approved, work through 
 
 **B. Design before you plan**
 
-3. Design the directory and the body
+4. Design the directory and the body
    - See [Phase 2: Directory](references/phase-2-directory.md) to learn and design the skill's directory: the layout for its location, the folders and files of the components you chose, and what is shared and what belongs to the skill.
    - See [Phase 2: Body](references/phase-2-body.md) to decide what the body carries and build its task: workflows, checklists, validation loops, plan-validate-execute, output templates and gotchas.
    - See [Phase 2: Writing style](references/phase-2-writing-style.md) to word each instruction: register, defaults, terms and emphasis.
    - See [Phase 2: Style and format](references/phase-2-style.md) to lay out headings, lists, checklists, tables, pointers and links.
    - See [Phase 2: Examples](references/phase-2-examples.md) to decide whether the skill needs examples, and to write and place them.
    - See [Phase 2: Embedding](references/phase-2-embedding.md) to embed commands, calls to bundled scripts, templates and schemas.
-4. Define the frontmatter, the name and the description
+5. Define the frontmatter, the name and the description
    - See [Phase 2: Frontmatter](references/phase-2-frontmatter.md) to learn and choose the frontmatter fields, their accepted values and their order.
-   - See [Phase 2: Name and description](references/phase-2-name-and-description.md) to choose the name, its command and clashes, and to write the description.
+   - See [Phase 2: Name and description](references/phase-2-name-and-description.md) to choose the name and its command, resolve a name already taken, and write the description.
 
 **C. Present the design**
 
-5. Present the design to the user
-   - Show the design as a proposal: the skill type and location, its components, the body, the frontmatter, the name and the description.
+6. Present the design to the user
+   - Show the design as a proposal: what you found in the environment and the user's decision on each friction, the skill type and location, its components, the body, the frontmatter, the name and the description.
    - Adjust it with the user's corrections until the whole idea is clear.
    - When the user approves the design, go to Phase 3.
 
