@@ -68,7 +68,7 @@ In the `SKILL.md` you write, though not in its other files, Claude Code changes 
 
 - A dollar sign before a digit, `ARGUMENTS` or a declared argument name becomes an argument; escape a literal one with a backslash.
 - A `CLAUDE_` variable in a dollar sign and braces becomes its value; to mention one, write its bare name.
-- An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Describe such commands in words.
+- An exclamation mark directly before a backtick command, at a line's start or after a space, runs it at load, as does a fenced block opened with three backticks and the mark; a failure aborts the skill. Write the mark only where the command must run at load; to show or mention such a command, describe it in words.
 
 A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy the next sync or update overwrites: edit its source.
 

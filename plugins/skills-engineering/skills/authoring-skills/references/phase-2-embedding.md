@@ -4,11 +4,8 @@ How to embed commands, calls to bundled scripts, templates and schemas in the sk
 
 ## Gotchas
 
-In `SKILL.md`, though not in the skill's other files, Claude Code changes the text before Claude reads it:
-
-- A dollar sign before a digit, `ARGUMENTS` or a declared argument name becomes an argument. Escape a literal one with a backslash: `\$1.00`.
-- A `${CLAUDE_…}` variable becomes its value. Write the variable where the path must resolve, and its bare name where you only mention it.
-- An exclamation mark directly before a backtick command, at a line's start or after a space, runs the command when the skill loads, and so does a fenced block opened with three backticks and the mark. A failure aborts the skill. Write the mark only where the command must run at load.
+- A fenced block inside a fenced block closes the outer one at its first three backticks. Open the outer block with four.
+- What you embed in `SKILL.md` passes through the text substitutions that this skill's `SKILL.md` lists under Gotchas: an argument placeholder, a path variable and an exclamation mark before a backtick command change before Claude reads them. Check each embed against them as you write it.
 
 ## Commands and code
 
@@ -17,6 +14,7 @@ In `SKILL.md`, though not in the skill's other files, Claude Code changes the te
 - Pin the version in a command that fetches a package.
 - Show code only as long as the pattern needs: the call and its arguments, not a whole program.
 - Call a bundled script through the path variable of its location, as the scripts file of Phase 2 shows.
+- In `SKILL.md`, escape a literal dollar sign before a digit, and show a command you only mention without the exclamation mark in front of it.
 
 ```bash
 python3 ${CLAUDE_SKILL_DIR}/scripts/to_csv.py [input-pdf] [output-csv]
@@ -24,13 +22,20 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/to_csv.py [input-pdf] [output-csv]
 
 `[input-pdf]` is the invoice to read. `[output-csv]` is the file to write.
 
+```markdown
+<!-- Weak: in SKILL.md, the price becomes the first argument, and the shown command runs at load -->
+Charge $1.00 per page. To see the changes, Claude Code runs !`git status`.
+
+<!-- Strong -->
+Charge \$1.00 per page. To see the changes, run `git status`.
+```
+
 ## Templates
 
 - Give a template when the output has a fixed shape: Claude follows a template more reliably than a description of the format.
 - Say whether it is strict, "Use exactly this structure", or flexible, "This is the default; adapt the sections to what you find".
 - Put a short template every run uses inline. Put a long one, or one only some runs need, in `assets/`, with a pointer that says when to fill it in.
 - Make each placeholder say what goes there: `[what failed, for whom, for how long]`, not `[text]`.
-- Open the outer block with four backticks when the template holds a fenced block.
 
 ````markdown
 <!-- Weak: a description of the format, and placeholders that say nothing -->
