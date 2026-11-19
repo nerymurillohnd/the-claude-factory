@@ -32,7 +32,7 @@
 - Run `npx biome check --write <file>` to format and lint a TypeScript, JavaScript, JSON, YAML or Markdown file after each edit; on Markdown Claude reads as instructions, run `npx biome lint <file>` instead.
 - Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
 - Run `shfmt -w <file>`, then `shellcheck <file>`, which takes its options from `SHELLCHECK_OPTS` and `.shellcheckrc`, to format and lint a shell script after each edit.
-- Run `tsc --noEmit` to type-check the TypeScript after each change to a TypeScript file.
+- Run `npx tsc -p tsconfig.json --noEmit` to type-check the maintainer JavaScript after each change to a `.mjs`, `.cjs` or `.js` file: the root `tsconfig.json` lists only those. Type-check a mod's `.ts` files with `npx tsc -p plugins/<mod> --noEmit`, through the `tsconfig.json` Claude Code writes into the mod when it loads it from `--plugin-dir` in an interactive session.
 - Run `basedpyright --outputjson` to type-check the Python after each change to a Python file.
 
 **Tests and plugins**
