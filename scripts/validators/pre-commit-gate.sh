@@ -6,7 +6,7 @@
 # What it checks, by staged file type:
 #   .ts .tsx .mjs .md .json   Biome (biome.jsonc), formatting and lint
 #   .ts .tsx .mjs             tsc --noEmit with the root tsconfig.json, or a mod's generated one
-#   .py .pyi             ruff check, ruff format --check (ruff.toml), basedpyright (pyrightconfig)
+#   .py .pyi             ruff check, ruff format --check --diff, basedpyright (pyproject.toml)
 #   shell scripts        shfmt -d (.editorconfig), shellcheck (.shellcheckrc, SHELLCHECK_OPTS):
 #                        .sh files, and any file shfmt -f finds by its shebang, such as a Git hook
 # Other types, and deleted files, are not checked here; Validate's Checks job still checks them.
@@ -186,30 +186,17 @@ if ((${#py_files[@]} > 0)); then
   if [[ -n ${ruff} ]]; then
     # ruff-pre-commit's own hooks: ruff-check runs `ruff check --force-exclude` before ruff-format
     # runs `ruff format --force-exclude`, on python and pyi files (Markdown stays Biome's, and
-    # ruff.toml excludes it). Both only check: a fix written during the commit would leave the file
+    # pyproject.toml excludes it). Both only check: a fix written during the commit would leave the file
     # with unstaged changes; run `ruff check --fix` and `ruff format` before staging instead.
     run_tool "ruff check" "${ruff}" check --force-exclude "${py_files[@]}"
-    run_tool "ruff format" "${ruff}" format --check --force-exclude "${py_files[@]}"
+    run_tool "ruff format" "${ruff}" format --check --diff --force-exclude "${py_files[@]}"
   fi
   find_tool basedpyright basedpyright
   if [[ -n ${basedpyright} ]]; then
-    # Files given on the command line replace the config's include list; everything else in the
-    # config still applies. scripts/ has its own config (Python 3.15 and the .venv), the rest of
-    # the repository the root one, as npm run typecheck:python runs them.
-    scripts_group=()
-    root_py=()
-    for file in "${py_files[@]}"; do
-      case "${file}" in
-        scripts/*) scripts_group+=("${file}") ;;
-        *) root_py+=("${file}") ;;
-      esac
-    done
-    if ((${#root_py[@]} > 0)); then
-      run_tool basedpyright "${basedpyright}" "${root_py[@]}"
-    fi
-    if ((${#scripts_group[@]} > 0)); then
-      run_tool basedpyright "${basedpyright}" -p scripts "${scripts_group[@]}"
-    fi
+    # Files given on the command line replace the config's include list; everything else in
+    # pyproject.toml's [tool.basedpyright] still applies, executionEnvironments included, so one run
+    # checks plugins/ at Python 3.12 and scripts/ at 3.15, as npm run typecheck:python does.
+    run_tool basedpyright "${basedpyright}" "${py_files[@]}"
   fi
 fi
 

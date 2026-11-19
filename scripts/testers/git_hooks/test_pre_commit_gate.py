@@ -127,12 +127,22 @@ class PreCommitGateTest(unittest.TestCase):
     def test_ruff_format_blocks(self) -> None:
         """A Python file Ruff would reformat blocks the commit."""
         self.box.stage(PROBE_PY, CLEAN_PY.replace("value * 2", "value*2"))
-        self.assert_blocks(self.box.gate(), "ruff format")
+        result = self.box.gate()
+        self.assert_blocks(result, "ruff format")
+        self.assertIn("+    return value * 2", result.stdout, "the diff shows the fix")
 
     def test_basedpyright_blocks(self) -> None:
         """A type error blocks the commit."""
         broken = CLEAN_PY.replace("return value * 2", 'return value + "x"')
         self.box.stage(PROBE_PY, broken)
+        self.assert_blocks(self.box.gate(), "basedpyright")
+
+    def test_basedpyright_checks_plugins_at_the_312_floor(self) -> None:
+        """A plugin file that calls a 3.13 stdlib API fails: plugins run on Python 3.12."""
+        probe = "plugins/macos-grep-guard/hooks/gate_probe.py"
+        self.box.stage(
+            probe, '"""Probe."""\n\nfrom warnings import deprecated\n\n__all__ = ["deprecated"]\n'
+        )
         self.assert_blocks(self.box.gate(), "basedpyright")
 
     def test_basedpyright_checks_stub_files(self) -> None:
