@@ -2,15 +2,15 @@
 
 How to hand the skill to the user and ask how to proceed.
 
-## Report
-
-Report what you built and what each file holds, each decision and its reason, what you checked and how, what you couldn't check and why, and the assumptions still open. Never report a check you didn't run as passed.
-
 ## Gotchas
 
 - An `AskUserQuestion` call holds 1 to 4 questions, each with 2 to 4 options and a header of up to 12 characters. The tool always adds an "Other" choice where the user types free text.
 - A question that times out submits the options already selected: treat it as unanswered, list the options in your reply and stop.
 - Without the tool, ask the same question in the reply, list the same options, and stop until the user answers.
+
+## Report
+
+Report what you built and what each file holds, each decision and its reason, what you checked and how, what you couldn't check and why, and the assumptions still open. Never report a check you didn't run as passed.
 
 ## The question
 

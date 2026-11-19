@@ -1,6 +1,6 @@
 # Phase 2: Style and format
 
-How to lay out the text of every file of the skill: headings, lists, checklists, tables, pointers, links and line layout. Use these as the default, and follow the user's own conventions instead when the environment shows them.
+How to lay out the text of every file of the skill, from headings, lists, checklists and tables to pointers, links and line layout, by default, giving way to the user's own conventions when the environment shows them.
 
 ## Contents
 
