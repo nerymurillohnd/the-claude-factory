@@ -37,15 +37,14 @@ A subagent's `skills` field injects the full content of each listed skill into i
 
 ## Write the body of a subagent
 
-Write the body as a prompt in natural language with a clear hierarchy, not as a Markdown document.
+Write the body as a prompt in natural language with a clear hierarchy, not as a Markdown document. Open every subagent with the same three parts, in this order, before anything else: its role, its expertise and its goal.
 
-1. Open with the role, its expertise and its knowledge, before anything else:
-   - A paragraph: "You are a [role], with expert knowledge of [the domains and sources it works from]. You specialize in [its focus].", then the seat it works from and what counts as a failure from there.
-   - `Your expertise:`, followed by a bullet per area, each as "Area: what it covers".
-2. Follow with a `GOAL:` section: what the subagent must determine or produce, and for whom.
-3. Mark each later section with an uppercase label on its own line, followed by a colon, and choose the sections the work needs, such as `GOTCHAS:`, `WORKFLOW:`, `RULES:`, `REPORT:` and `VERIFICATION CHECKLIST:`.
-4. Number the steps of `WORKFLOW:`, and bullet the facts and rules that have no order.
-5. Point to each file the subagent reads by its full path. In a plugin, build it on `${CLAUDE_PLUGIN_ROOT}`, which Claude Code replaces in an agent's body, such as `${CLAUDE_PLUGIN_ROOT}/skills/[skill]/references/[file].md`: a subagent opens files with the Read tool, and a relative link resolves from no known folder.
+1. Role: a paragraph, "You are a [role], with expert knowledge of [the domains and sources it works from]. You specialize in [its focus].", then the seat it works from and what counts as a failure from there.
+2. Expertise: `Your expertise:`, followed by a bullet per area, each as "Area: what it covers".
+3. Goal: a `GOAL:` section with the purpose the subagent must reach, what it must determine or produce, and for whom.
+4. Mark each later section with an uppercase label on its own line, followed by a colon, and choose the sections the work needs, such as `GOTCHAS:`, `WORKFLOW:`, `RULES:`, `REPORT:` and `VERIFICATION CHECKLIST:`.
+5. Number the steps of `WORKFLOW:`, and bullet the facts and rules that have no order.
+6. Point to each file the subagent reads by its full path. In a plugin, build it on `${CLAUDE_PLUGIN_ROOT}`, which Claude Code replaces in an agent's body, such as `${CLAUDE_PLUGIN_ROOT}/skills/[skill]/references/[file].md`: a subagent opens files with the Read tool, and a relative link resolves from no known folder.
 
 ```markdown
 <!-- Weak: no role or expertise, and a Markdown document with headings, bold and a relative link -->
