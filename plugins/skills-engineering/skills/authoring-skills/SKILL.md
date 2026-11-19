@@ -76,12 +76,18 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy that the
 
 Follow this procedure to create a skill, applying each phase in order. In each phase, apply what the skill needs to reach its goal, and read every reference file at the step that names it, again whenever it is no longer in your context. Complete each phase to its exit, and when a later phase shows a gap in an earlier one, go back to it; when the same gap returns, stop and ask the user.
 
-Copy this to-do list into your reply and tick each phase when you finish it:
+Copy this to-do list into your reply and tick each phase and step when you finish it:
 
 ```text
 To do:
 - [ ] Phase 1: Understand the user's intent
 - [ ] Phase 2: Design environment and components
+  - [ ] 1. Recognize the environment and the project
+  - [ ] 2. Identify and choose the skill type and location
+  - [ ] 3. Decide the required components
+  - [ ] 4. Design the directory and the body
+  - [ ] 5. Define the frontmatter, the name and the description
+  - [ ] 6. Present the design to the user
 - [ ] Phase 3: Draft and approve plan
 - [ ] Phase 4: Build the skill
 - [ ] Phase 5: Review the skill
