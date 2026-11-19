@@ -16,7 +16,7 @@ How to lay out the text of every file of the skill: headings, lists, checklists,
 ## Gotchas
 
 - The skill's formatting steers the formatting of what Claude writes with it: a body full of bullets and bold gets output full of bullets and bold. Format the skill the way its output should look.
-- Claude may read only part of a file, such as its first lines, when it reaches the file through another reference instead of from `SKILL.md`, whether the file sits beside that reference or deeper. Link every file from `SKILL.md`, one level deep.
+- Claude may read only part of a file, such as its first lines, when it reaches the file through another reference instead of from `SKILL.md`, whether the file sits beside that reference or deeper. Link every file from `SKILL.md`, one level deep. The level counts the hops from `SKILL.md`, not the folders: `FORMS.md` at the skill's root and `references/forms.md` are both one level deep when `SKILL.md` links them.
 - A path written with backslashes instead of forward slashes fails on macOS and Linux. Write every path with forward slashes.
 - Padding table cells to align columns costs tokens and bytes on every load, and adds nothing for Claude.
 
@@ -78,7 +78,9 @@ Make sure everything is done.
 
 - Point to each file at the step that needs it, at the start of the sentence, with its verb and a condition Claude can check: `Read [Title](path) when…`, `See [Title](path) to…`, `Fill in [Title](path) for…`.
 - Keep each pointer on its own line in `SKILL.md`. Use a Markdown link whose path is relative to the skill's folder and whose text is the file's title.
-- In a reference file, name another file of the skill in plain text, such as "the hooks file of Phase 2", and only one that `SKILL.md` already links: Claude still reaches it in one step from `SKILL.md`, while a link would start a second one.
+- In a skill whose work runs in phases, list each phase's files under that phase in `SKILL.md`, in the order of the steps that read them, each with its step and condition, and tell Claude to read them in that order.
+- In a reference file, name another file of the skill in plain text, such as "the hooks file of Phase 2", and only one that `SKILL.md` already links: Claude still reaches it in one step from `SKILL.md`, while a link would start a second one. This holds for a supporting file at the skill's root, such as `WORKFLOW.md`, as for one in `references/`.
+- A reference file may tell Claude to run a script: a script runs without being read, so it adds no level. How the command reaches the script is in the scripts file of Phase 2.
 - Point to a file, not a folder. Leave out an at-mention such as `@references/guide.md`: it loads the file on every run.
 
 ```markdown
@@ -93,6 +95,13 @@ Before you fill a field, see [Field rules](field-rules.md).
 
 <!-- Strong: in references/forms.md, and SKILL.md links the field rules file -->
 Before you fill a field, check it against the field rules file.
+
+<!-- Weak: in SKILL.md, only the root file is linked, so the field rules sit two levels deep -->
+Follow [Workflow](WORKFLOW.md) when you fill a PDF form.
+
+<!-- Strong: in SKILL.md, a root file and the reference it sends Claude to, each linked one level deep -->
+Follow [Workflow](WORKFLOW.md) when you fill a PDF form.
+Read [Field rules](references/field-rules.md) when the workflow asks you to check a field.
 ```
 
 ## Links to web pages

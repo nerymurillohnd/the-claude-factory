@@ -28,6 +28,16 @@ User or project scope, where only the parent folder changes. A nested skill sits
 └── assets/summary.md
 ```
 
+A skill with its few supporting files at its root, next to `SKILL.md`, each linked from `SKILL.md`:
+
+```text
+pdf/
+├── SKILL.md
+├── FORMS.md                      read when the task fills a form
+├── REFERENCE.md                  read when SKILL.md doesn't cover the case
+└── scripts/fill_form.py
+```
+
 A plugin with its skills under `skills/`, each running as `/<plugin>:<skill>`:
 
 ```text
@@ -94,12 +104,15 @@ Claude Code replaces these variables only in `SKILL.md` and in the Bash rules of
 ## Lay out the folders
 
 - Keep a file one skill uses inside that skill's folder, so it travels with every copy and upload. Put a file several skills of one plugin use at the plugin root.
-- In a skill whose work runs in phases, give each reference one phase and one topic, and name it with both, such as `phase-2-hooks.md`. A topic two phases use gets one file per phase.
+- Put a skill's few supporting files, such as a workflow, a checklist or a form guide, at its root next to `SKILL.md`. Move them to `references/` when they are many or group by domain or phase.
+- Name a supporting file at the root in capitals, such as `WORKFLOW.md`, `CHECKLIST.md` or `REFERENCE.md`, so they stand out beside `SKILL.md`, and the files in `references/` in lowercase. Write each link with the file name's exact case: Linux and cloud sessions treat `forms.md` and `FORMS.md` as different files.
+- In a skill whose work runs in phases, give each reference one phase and one topic, and name it with both, such as `phase-2-hooks.md`. A topic two phases use gets one file per phase, because a rule kept in another phase's file is applied late or not at all.
 
 ## Official sources
 
 This file condenses these pages. Read the page whose condition holds before you decide.
 
+- Read [Progressive disclosure patterns](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#progressive-disclosure-patterns) when you choose between files at the root and a `references/` folder. It shows both layouts, with supporting files such as `FORMS.md` and `REFERENCE.md` beside `SKILL.md`.
 - Read [Skills in a plugin](https://code.claude.com/docs/en/plugins/components#skills) when the skill ships in a plugin. It shows the layout, the command name, extra skill folders and the single skill at the root.
 - Read [Standard layout](https://code.claude.com/docs/en/plugins/manifest-reference#standard-layout) when the plugin holds other components or its manifest moves a folder. It gives each folder's place.
 - Read [Available string substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions) when a file reaches another by a path variable. It defines each variable and where Claude Code replaces it.
