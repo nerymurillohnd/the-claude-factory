@@ -18,7 +18,6 @@ paths:
 - Install npm 12 with `npm install -g npm@12` only with the owner's approval; Node 26 ships npm 11, which `devEngines` rejects.
 - Add an npm script for each new maintainer script before its first run.
 - Never run a script as `./<file>.py`: its shebang picks the machine's OS Python, not the `.venv` one.
-- Install with `npm ci`, never with `npm install`, which can rewrite `package-lock.json`.
 - Add or change a dev dependency with `npm install -D <package>@<version>`, and commit `package.json` and `package-lock.json` together.
 - Add a package to `allowScripts` with `npm approve-scripts <package>` only when it needs its install script to work.
 - Install the Python version in `.python-version` with `uv python install`, and change it together with the cloud setup script's `uv python pin`.
