@@ -120,7 +120,7 @@ On 2026-11-19 the owner asked for all fourteen in one branch instead of a pull r
 #### 🔗 Follow-up
 
 - **Residual risk:** `instruction-engineering/agents/reviewer.md` still fails FM-02 (a colon in `description`), which DEBT-005 holds; the frontmatter was not touched.
-- **Closed by:** the pull request from branch `ccr-96f1d749-ivnwo1`.
+- **Closed by:** [#114](https://github.com/nerymurillohnd/the-claude-factory/pull/114).
 - **Related records:** DEBT-005.
 - **Superseded by:** none
 
