@@ -33,7 +33,7 @@ paths:
 | :-- | :-- |
 | Locally, before each push | `npm run check:pr`, the Checks job's own steps; `npm run lint` stops at `lint:js` (DEBT-006) before `lint:github` runs |
 | Locally, before each commit | the Git pre-commit gate (`.githooks/pre-commit`, `npm run check:staged`) on the staged files, and the plugin checks of `.claude/rules/plugins.md` and `.claude/rules/plugins/testing.md` for each changed plugin |
-| Before each merge, in Validate (`.github/workflows/validate.yml`) | its `Checks` job, which includes `npm run check:install -- --from local <plugin>` for each changed plugin, with `--no-strict` for a DEBT-003 plugin |
+| Before each merge, in Validate (`.github/workflows/validate.yml`) | its `Checks` job, which includes `npm run check:install -- --from local <plugin>` for each changed plugin |
 
 - Run a merge-only check locally only when no pull-request workflow exists, or to reproduce a CI failure.
 - Merge only when the merge checks pass.
