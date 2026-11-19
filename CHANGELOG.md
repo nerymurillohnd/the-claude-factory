@@ -23,6 +23,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Fixed
 
+- **svelte-development** 0.1.5 — `svelte-best-practices` points to the current source of Astro's Svelte renderer, now in `@astrojs/svelte-renderer`, and drops SvelteKit's removed Sapper migration guide from its docs map.
 - **turn-meter** 0.1.7 — if counting a tool call fails, the call goes on unchanged, and if `/turn-meter` fails, it says so instead of giving no reply; validated and tested on Claude Code v2.1.328.
 
 ## 2026-11-18

@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-19
+
+### Fixed
+
+- The `svelte-best-practices` skill now sends Claude to the current source of Astro's Svelte renderer, which moved to the `@astrojs/svelte-renderer` package in `@astrojs/svelte` 9.1.3, and its Astro notes cite `@astrojs/svelte` 9.1.6 and its Node.js 22.23.4 minimum. The docs map no longer lists SvelteKit's removed "Migrating from Sapper" guide.
+
 ## [0.1.4] - 2026-11-19
 
 ### Changed
@@ -42,7 +48,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Svelte MCP server: the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, with no download or install.
 - Svelte language server: `svelteserver` for `.svelte` files, with diagnostics after each edit, when `svelte-language-server` 0.18.5 or later is installed on your `PATH`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.1.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.1.5...HEAD
+[0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.2
