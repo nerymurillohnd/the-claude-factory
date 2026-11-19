@@ -66,32 +66,7 @@ Node.js 24 or later runs the language-server checks. Python runs the link check 
 
 ### 🤖 Claude Code
 
-Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
-
-<details>
-<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
-
-```bash
-claude update
-```
-
-</details>
-<details>
-<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
-
-```bash
-brew upgrade claude-code  # claude-code@latest if you installed that cask
-```
-
-</details>
-<details>
-<summary>📦 <b>npm</b> — any platform</summary>
-
-```bash
-npm install -g @anthropic-ai/claude-code@latest
-```
-
-</details>
+Already installed? Bring it to the latest version the way you installed it, as the official [Update Claude Code](https://code.claude.com/docs/en/setup#update-claude-code) guide shows for each installation method. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
 
 ### 🟢 Node.js
 
