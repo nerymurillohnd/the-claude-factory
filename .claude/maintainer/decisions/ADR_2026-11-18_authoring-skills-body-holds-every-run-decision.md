@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-18
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-19_authoring-skills-splits-content-by-phase-and-topic
 ---
 
 # authoring-skills keeps every run's decisions in SKILL.md and only conditional depth in references
