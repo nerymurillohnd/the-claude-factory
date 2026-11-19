@@ -16,7 +16,7 @@ Whether a subagent runs the skill as its task or preloads it as knowledge, what 
 - A subagent in the background, the default, keeps every MCP tool but only a fixed set of built-in tools. Name each tool the skill relies on, and say what to do when one is missing.
 - The built-in Explore and Plan agents start without CLAUDE.md and git status, and an agent that sets `omitClaudeMd` starts without the CLAUDE.md files: the skill must carry everything the task needs.
 - A teammate in an agent team doesn't get its definition's `skills`. It loads skills from the project and user scopes, so a skill a teammate needs lives there.
-- A subagent shipped in a plugin ignores `permissionMode`, `hooks`, `mcpServers` and `initialPrompt`.
+- A subagent shipped in a plugin ignores `permissionMode`, `hooks`, `mcpServers` and `initialPrompt`: put its hooks and MCP servers in the plugin's own files.
 
 ## The skill is the task
 

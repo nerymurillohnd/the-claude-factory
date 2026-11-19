@@ -17,9 +17,9 @@ What the body of the skill must carry, and how to build its task: workflows, che
 
 ## Gotchas
 
-- Once the skill loads, its content stays in the conversation and Claude Code doesn't read the file again. After compaction it keeps only the first 5,000 tokens of each skill invoked, within 25,000 tokens shared by all of them. Put the guidance for the whole task near the top, as standing instructions such as "after every edit". The budget fills from the most recently invoked skill, so a skill invoked early can be dropped whole.
-- The task tools, such as `TaskCreate`, are available by default only on older models (Opus 4.7, Sonnet 4.6, Haiku 4.5 and earlier), so on current models a skill that tracks its progress with them finds no tool. Give it a checklist Claude copies into its reply instead.
-- A confirmation needs someone to answer. `AskUserQuestion` isn't available in a subagent, and a `claude -p` run offers it only when a host answers its permission prompts. A skill that asks before acting needs a default to take and a report to return instead of asking.
+- After compaction, Claude keeps only the first 5,000 tokens of each invoked skill, within 25,000 shared by all: put the guidance for the whole task near the top.
+- The task tools, such as `TaskCreate`, exist by default only on older models: track progress with a checklist Claude copies into its reply.
+- A subagent can't ask the user, and a `claude -p` run can only when its host answers permission prompts: give a skill that asks before acting a default to take and a report to return.
 
 ## What the body must carry
 
@@ -93,6 +93,7 @@ Give a template when the output has a fixed shape, strict or flexible, inline or
 
 A gotcha is a fact of the environment or domain that defies a reasonable assumption, so Claude gets it wrong unless told: the export whose amounts are in cents, the sandbox API that accepts any key but never sends email. Leave out general advice: it isn't a gotcha unless a capable model would get it wrong.
 
+- Write each as the trap and then the fix, in one or two lines.
 - Put the gotchas in `SKILL.md`, before the steps they affect: Claude must know them before it reaches the situation.
 - Put a gotcha that affects only one variant in that variant's file, before the steps it affects, and give the pointer to that file a condition Claude can recognize: for a non-obvious trap, Claude may not see that the file applies.
 

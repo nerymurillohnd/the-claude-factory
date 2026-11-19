@@ -4,9 +4,9 @@ Whether a skill is the right feature, and how to understand what the user wants 
 
 ## Gotchas
 
-- Claude consults a skill only for work it can't handle well alone. A one-step request such as "read this PDF" may not load a PDF skill however well its description matches. A skill earns its place on specialized knowledge, an unfamiliar API, a domain workflow or an uncommon format.
-- In a session signed in with a claude.ai account, Claude Code loads the skills synced from it, including Anthropic's built-in ones such as `pdf` and `xlsx`. Before you write a skill for a file format or a common task, check the listing and `~/.claude/skills/synced/` for one that covers it; without that sign-in, such as with an API key or a cloud provider, they aren't there. Claude Code also ships bundled skills such as `/code-review`, `/debug`, `/loop` and `/claude-api`: check that none already does the job.
-- A process you just performed carries its accidents: a command that failed once for a network or permission reason, or a tool missing in this environment, is not a rule of the process. Before a skill you propose in Scenario B states such a limit, check that it holds beyond this session, or leave it out.
+- Claude loads a skill only for work it can't do well alone, so a skill for a one-step task such as "read this PDF" may never load: write skills for specialized knowledge, unfamiliar APIs, domain workflows or uncommon formats.
+- A session signed in with a claude.ai account already has Anthropic's synced skills, such as `pdf` and `xlsx`, and every session has the bundled ones, such as `/code-review` and `/loop`: check the listing for one that does the job before you write a skill.
+- A failure you hit while doing a process once, such as a network error or a missing tool, isn't a rule of the process: check that it holds beyond this session before a skill you propose states it.
 
 ## Is a skill the right feature
 

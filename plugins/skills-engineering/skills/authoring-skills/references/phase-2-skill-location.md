@@ -4,11 +4,10 @@ Where a skill can live, which sessions load it from there, and when it loads.
 
 ## Gotchas
 
-- At startup, Claude Code loads `.claude/skills/` from the folder the session starts in and from every parent up to the repository root, plus `~/.claude/skills/`, and `/cd` adds the new folder's. A `.claude/skills/` below the start folder loads once Claude works on a file there, and with the Bash sandbox on only when the session starts or moves there. A nested skill whose name clashes appears as `<dir>:<name>`.
-- Cowork, cloud sessions and cloud scheduled tasks don't read `~/.claude/skills/`. A cloud scheduled task that invokes a skill found only there reports that the skill was not found.
-- A cloud thread in a Claude project doesn't load the skills committed to a repository's `.claude/skills/`, and a cloud session doesn't load the plugins declared in the repository's `.claude/settings.json` or enabled only in the user's settings.
-- A `SKILL.md` at a plugin's root loads only when the plugin has no `skills/` folder and no `skills` key in its manifest. Set `name` in its frontmatter: otherwise a marketplace install names the skill after its cache folder.
-- A skill folder can be a symlink to a folder elsewhere on disk: Claude Code reads `SKILL.md` from the target, and loads the skill once even when several locations point at it.
+- A `.claude/skills/` below the session's start folder loads only once Claude works on a file there: put a skill that must be ready at the start at the repository root.
+- Cowork, cloud sessions and cloud scheduled tasks don't read `~/.claude/skills/`, so a cloud scheduled task reports such a skill as not found: enable the skill on the claude.ai account, or commit it to the repository's `.claude/skills/`.
+- A project's cloud thread doesn't load the repository's skills, and a cloud session doesn't load plugins declared in the repository's or the user's settings: enable the skill on the claude.ai account for those sessions.
+- A `SKILL.md` at a plugin's root loads only when the plugin has no `skills/` folder and no `skills` key: use one layout or the other.
 
 ## The locations
 

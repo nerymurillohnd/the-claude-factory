@@ -16,12 +16,12 @@ How to give a skill a hook once Phase 1 has decided that a rule belongs in a hoo
 
 - A hook in the skill's frontmatter registers only when the user or Claude invokes the skill, so it never sees that invocation. A check on the invocation itself belongs in the plugin's hooks file.
 - A skill is invoked by two paths, and each event sees one. `PreToolUse` with the matcher `Skill` fires when Claude invokes the skill; `UserPromptExpansion` fires when the user types `/name`. To gate or log every invocation, hook both.
-- `${CLAUDE_SKILL_DIR}` is replaced only in the skill's body and in the Bash rules of `allowed-tools`, never in a hook. A hook resolves `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`.
+- `${CLAUDE_SKILL_DIR}` isn't replaced in a hook: reach the script with `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_PROJECT_DIR}`.
 - A failing hook lets the action through: exit code 1, a crash, a wrong path and a timeout all count as non-blocking errors. Only exit 2 blocks, unless the hook sets `onFailure: "block"`.
 - A matcher with a `:`, such as `my-plugin:deploy`, is an unanchored regular expression that also matches `my-plugin:deploy-preview`. Write `^my-plugin:deploy$`.
-- `if` works only on tool events. On any other event, a hook with `if` set never runs.
+- `if` works only on tool events: on any other event a hook with `if` set never runs, so leave it out there.
 - When the organization locks hooks to plugins, a personal or project skill runs without its hooks. A skill that needs its hooks for third parties ships in a plugin installed from a marketplace.
-- `hooks` is not a portable field: a claude.ai upload or the Skills API rejects the skill on it.
+- `hooks` isn't a portable field: an upload to claude.ai or the Skills API rejects a skill that declares it.
 
 ## Choose where the hook lives
 

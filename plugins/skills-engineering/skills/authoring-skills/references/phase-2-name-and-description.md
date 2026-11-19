@@ -15,13 +15,13 @@ How to choose the skill's name and the command it becomes, check it against the 
 
 ## Gotchas
 
-- Claude Code cuts `description` plus `when_to_use` at 1,536 characters in the skill listing, and the end is lost first. With many skills, the listing budget (1% of the context window) drops whole descriptions, starting with the skills used least.
-- A value that breaks the YAML loads the skill with no fields set: `/name` still runs it, but Claude never matches its description. An unquoted value breaks on `: ` or ` #`, and when it opens with `"`, `'`, `[`, `{`, `>`, `|`, `*`, `&`, `!`, `%`, `@` or a backtick. `claude plugin validate` reports the parse error.
+- The listing cuts `description` plus `when_to_use` at 1,536 characters, and with many skills drops the descriptions of the least used: put the key use case first.
+- A value that breaks the YAML loads the skill with no fields, so its description never matches: quote a value with `: ` or ` #`, or one that opens with a YAML symbol such as a quote, bracket or `>`, and run `claude plugin validate`.
 - `<` and `>` in `description` or `when_to_use` show as `&lt;` and `&gt;`. Write placeholders in square brackets, or move them to `argument-hint`.
-- A skill name with `claude` or `anthropic` loads in Claude Code, but its upload to claude.ai or the Claude API fails, so it never reaches the account. In Claude Code itself, a skill folder or `name` of `anthropic-skills`, or one in that namespace, doesn't load: it is reserved for skills synced from claude.ai.
-- A personal, project, enterprise or added-directory skill, or a `.claude/commands/` file, named `verify` or `simplify` is run by Claude right before each commit that changes more than docs or tests, as long as Claude can invoke it and the built-in git instructions are on. Plugin and synced skills don't count. Use those names only for that purpose.
-- A custom skill with the name of a bundled skill or a built-in command replaces that command in a local session, but not its aliases.
-- Capitalized emphasis and absolutes, such as CRITICAL, IMPORTANT, MUST, ALWAYS, "Only use this skill" or "If in doubt, use this skill", make current models load the skill for requests it doesn't fit. A plainly worded "Use when…" triggers as well.
+- A name with `claude` or `anthropic` fails an upload to claude.ai or the API, and `anthropic-skills` doesn't load in Claude Code: avoid both.
+- A local skill named `verify` or `simplify` runs right before each of Claude's commits: use those names only for that purpose.
+- A skill with the name of a bundled skill or built-in command replaces it, but its aliases still run the original: pick another name unless replacing it is the goal.
+- Capitals and absolutes in a description, such as MUST or "If in doubt, use this skill", make it load for requests it doesn't fit: write a plain "Use when…".
 
 ## Required fields
 

@@ -16,12 +16,13 @@ Whether the skill needs scripts, what each one does, where it lives, its languag
 
 ## Gotchas
 
-- In Claude Code, a command runs in the session's working directory, which moves each time Claude runs `cd`. A bare `scripts/check.py` resolves only by chance: write the path with the variable of its location. A subagent never keeps a `cd`.
-- Claude Code replaces the path variables in two places only: the body of `SKILL.md`, and the `Bash(...)` rules of `allowed-tools`. A reference file that Claude opens keeps them as literal text, and the commands Claude runs through the Bash tool, with the scripts they start, don't have them in their environment. State each resolved path in `SKILL.md`: tell Claude the path when it opens a reference, pass it to a script as an argument, and have a script find its own files from its own location. When a supporting file, such as `WORKFLOW.md`, holds the commands, write its paths relative to the skill's folder, and state that folder in the line of `SKILL.md` that links the file: `Follow [Workflow](WORKFLOW.md) when you fill a form. Its paths are relative to ${CLAUDE_SKILL_DIR}.`
-- A plugin installed from a marketplace runs from a cached copy, and `${CLAUDE_PLUGIN_ROOT}` changes with each version: anything a script writes to the plugin folder is lost on the next update. Write state to `${CLAUDE_PLUGIN_DATA}`.
+- A bare `scripts/check.py` resolves from the session's working directory, which moves with every `cd`: write the path with the variable of its location.
+- Path variables are replaced only in `SKILL.md` and in `allowed-tools`, never in a reference file or a script's environment: state each resolved path in `SKILL.md`, and pass it to the script as an argument.
+- `${CLAUDE_PLUGIN_ROOT}` changes with each plugin version, so what a script writes there is lost on update: write state to `${CLAUDE_PLUGIN_DATA}`.
 - claude.ai and Cowork don't install a plugin with a top-level `bin/`. A plugin that must reach them keeps its executables in `scripts/`.
-- A script runs unread: only its output enters the context. Output past about 30,000 characters reaches Claude as a file path and a 2,000-character preview, and a failing script's output past about 10,000 characters as a head-and-tail excerpt with no path, so Claude decides on what it gets.
-- An upload to the Claude API runs scripts with no network and only pre-installed packages. On claude.ai, network access, and with it package installs, depends on the user's and the admin's settings.
+- A script's long output reaches Claude only as a file path and a short preview: print a short summary, and write the details to a file.
+- A script that asks for input hangs the run: take every input as an argument or a file.
+- An upload to the Claude API runs scripts with no network and only pre-installed packages, and on claude.ai network depends on the admin's settings: use the standard library or what the surface provides.
 
 ## Decide whether the skill needs a script
 
@@ -117,12 +118,12 @@ Write each path with the variable of the script's location:
 | The project | The project's runner, or `${CLAUDE_PROJECT_DIR}/[path]` |
 | An upload to claude.ai or the Claude API | `scripts/[file]`, relative to the skill root |
 
+- When a supporting file, such as `WORKFLOW.md`, holds the commands, write its paths relative to the skill's folder, and state that folder in the line of `SKILL.md` that links the file: `Follow [Workflow](WORKFLOW.md) when you fill a form. Its paths are relative to ${CLAUDE_SKILL_DIR}.`
 - For a skill that targets Claude Code and an upload, write the Claude Code form, and say in the body that where the variable shows unreplaced, the path is relative to the skill's folder.
 - To run a script without a permission prompt, write the same command, with the same variable, in the body and in an `allowed-tools` rule. Write the rule as the frontmatter file of Phase 2 shows.
 - Say whether Claude runs the script or reads it. Run it for its result, the usual case. Read it only when its logic is the knowledge the step needs.
 - List every bundled script in the body, each with its purpose, its output format and its command, so Claude never has to browse `scripts/`.
 - Show each command in the body as the embedding file of Phase 2 shows. To run a script as the skill loads, read the injected commands file of Phase 2.
-
 
 ## Examples
 
