@@ -19,7 +19,7 @@ Write every skill, subagent and command, in a plugin or in `.claude/`, with thes
 ## Layout
 
 - Leave one blank line around each heading or label, list, table and fenced block, and none between the items of a list.
-- Write each paragraph, bullet and table row on one line, unwrapped. Keep the lines inside a fenced block within 100 characters, except a frontmatter value and a quoted message, which stay on one line.
+- Write each paragraph, bullet and table row on one line, unwrapped. Keep each line of code in a fenced block, such as a command, a script or a JSON or YAML line, within 100 characters. Prose, a frontmatter value or a quoted message inside a block stays on one line.
 - Use inline code for every path, field, command, file name and value.
 
 ## Pointers and links
