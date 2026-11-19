@@ -1,9 +1,7 @@
 ---
 paths:
-  - ".claude/skills/**"
-  - "plugins/*/skills/**"
-  - ".claude/agents/**"
-  - "plugins/*/agents/**"
+  - "**/skills/**"
+  - "**/agents/**"
 ---
 
 # Skill and subagent standards
@@ -26,15 +24,8 @@ Write and edit every skill with `skills-engineering:authoring-skills`; these are
 ## Descriptions
 
 - State explicitly and specifically what the skill or subagent covers and does: the more precise, the better Claude triggers it.
+- Use the words a real user writes or says when asking for the task, such as the action verbs write, review, migrate or deploy, and avoid words and phrases that trigger nothing, such as any, anything, anytime, anywhere, whenever, wherever, whatever, everything, any kind of and all kinds of.
 - Prefer opening with a "Use…" clause that says when to use it, for skills and subagents alike; write the rest in the third person.
-
-## Subagents
-
-- Write the body in plain language with a clear hierarchy, and no Markdown headings (`#`):
-  - open with the role and its areas of expertise, then the `GOAL:` section;
-  - mark every later section with an uppercase label, choosing the sections the subagent's kind of work needs;
-  - use numbered steps for a sequence, and bullets for separate actions or facts.
-- Model a new subagent on the `skills-engineering` reviewer agents.
 
 ## Names and checks
 

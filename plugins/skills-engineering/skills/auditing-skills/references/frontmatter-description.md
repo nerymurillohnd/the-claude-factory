@@ -40,6 +40,7 @@ This file teaches you how to audit a skill's frontmatter, its name and its descr
   - 4.7 XML tags and angle brackets
   - 4.8 `when_to_use`
   - 4.9 Descriptions across a set of skills
+  - 4.10 Descriptions of subagents that use the skill
 - 5. Activation and trigger tests
   - 5.1 What automatic activation depends on
   - 5.2 Whether the skill targets tasks Claude needs it for
@@ -57,7 +58,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that has only this skill's name and description in front of it, among every other skill it can see, and has to decide whether to load it; and then from the seat of the surface that reads the frontmatter. Ask at each point whether that Claude would load the skill for the wrong request, miss it for the right one, or whether the surface would reject the skill, ignore a field, or apply a setting the author didn't mean.
 
-The prompt you receive states what the orchestrating model's scripts already checked, such as whether the frontmatter parses, the fields it holds and their values, and the structural validator's output. Take those results as verified and judge what they mean for the skill. When a mechanical result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading. You never run, test, measure or upload anything, and never run the skill: where only a run or an upload would settle a point, name that check.
+The prompt you receive states what the orchestrating model's scripts already checked, such as whether the frontmatter parses, the fields it holds and their values, and the structural validator's output. Take those results as verified and judge what they mean for the skill. When a mechanical result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading. Where only a run or an upload would settle a point, name that check.
 
 ### Before auditing: establish the context
 
@@ -323,6 +324,8 @@ When you audit:
 
 ## 4. The description
 
+Some examples in this section quote official sources word for word, and open with the capabilities: those sources don't fix the order of what and when. Judge each example only on the point it illustrates. Where official sources disagree on a point of this section, give Anthropic's own documentation priority over agentskills.io: the Claude Code docs for a skill served by Claude Code, and the Claude Platform docs and Anthropic's guide to building skills for the other surfaces. Name the disagreement in the finding.
+
 ### 4.1 The description is the router
 
 Before Claude decides whether to load a skill, it has only the skill's name and description. The body, its references and its scripts reach Claude only after that decision. Claude matches the user's request against the descriptions of every skill it can see, possibly a hundred or more, and picks the ones that fit. So the description is a router, not a summary or a title. If it doesn't match the request, a skill with an excellent body never runs. If it matches the wrong requests, its instructions load where they don't belong. A skill that installs and loads proves nothing about how it routes.
@@ -343,7 +346,12 @@ When you audit:
 - Flag a description that states capabilities or a topic but no condition of use: present but wrong. Both the standard and the platform require what and when.
 - Flag a description that states only a condition, such as "Use when working with data", with no capabilities: present but wrong. Claude can't tell which of several data skills it is.
 - Flag implementation mechanics that fill the description in place of intents: present but wrong. Recommend moving them to the body, and environment requirements to `compatibility`.
-- Don't impose one template or order. A description can open with "Use when…" or with the capabilities, and can end with a "Not for…" clause or have none. It meets the sources when what and when are both there and clear.
+- Don't impose one template or order, and don't fix a severity for the form of the condition of use: weigh these points against the skill's nature and how it is invoked, and set any severity by the consequence on Claude's choice ("Classifying findings").
+  - The condition of use reads best as an imperative "Use…" clause. The Agent Skills guide asks for "Use this skill when…" rather than "This skill does…", because Claude is deciding whether to act. A description with no condition of use at all is covered above.
+  - The form of the clause should fit the skill: "Use when…" for a skill Claude picks by the request, "Use only when…" for a skill meant for narrow cases, "Use every time…" for a step that must always run, "Use for…" for a base skill that covers a whole kind of work.
+  - Where the clause goes is a judgment, because the official sources differ. The Claude Code docs ask to "put the key use case first" and to "lead with words a request would contain"; Anthropic's guide to building skills shows "[What it does] + [When to use it]". For a skill served by Claude Code, opening with the "Use…" clause follows the Claude Code docs, and it matters most when the trigger is what tells the skill apart from its siblings. When what the skill does is what tells it apart, opening with that is sound. Recommend moving the clause when the key use case comes late, for example after long lists of surfaces or capabilities.
+  - A skill with `disable-model-invocation: true` is outside these points: Claude never reads its description, and the user reads it while picking the command (4.1).
+  - Each listing entry, `description` plus `when_to_use`, is cut at 1,536 characters in Claude Code, so what comes last is what is lost from a long entry. When the listing exceeds its budget, Claude Code drops whole descriptions, starting with the skills invoked least, so order within a description doesn't help there.
 
 Recognize the difference:
 
@@ -357,7 +365,7 @@ Write the description in the third person. It is injected into the system prompt
 When you audit:
 
 - Flag first person ("I can help…", "We provide…") and second person addressed to the user ("You can use this to…"): present but wrong. Recommend the third-person form ("Processes…", "Generates…").
-- Don't flag a "Use when…" or "Use this skill when…" clause. The platform's own examples use it, and the Agent Skills guidance recommends that imperative framing because Claude is deciding whether to act. It is compatible with a third-person "what".
+- Don't flag a "Use…" clause as a change of point of view, wherever it sits. It is the imperative framing the Agent Skills guide recommends, and it is compatible with a third-person "what".
 - Don't flag a capability list in the bare verb form ("Extract text and tables…") as a change of point of view. The platform's own examples use it.
 
 Recognize the difference:
@@ -452,6 +460,7 @@ When you audit:
 - For each pair, ask which request both would claim. If one request fits both and the skills would do different or conflicting work with it, flag both descriptions as present but wrong. Recommend that each state what separates it (the input, the stage of the work, the target, the outcome), with a boundary that sends the other request to its sibling.
 - Don't flag overlap between skills meant to load together for one task, such as a brand-guidelines skill and a document-creation skill. Each does a different part of the work.
 - Flag an umbrella description that covers its siblings' territory ("Use for any work on X" beside narrower X skills): present but wrong. It takes their requests.
+- Don't flag a base skill whose description and body say it loads together with its specialized siblings, such as a command reference every task of the set needs: it supplies one part of every task, and its siblings lead their own parts. Flag it only when it also claims the work those siblings lead.
 - Flag sibling descriptions that restate the plugin's overall purpose instead of their own job: present but wrong. The plugin name can't separate them either: Claude Code adds it to every sibling's description alike.
 - Where only a run can settle which sibling loads, name the check: each sibling's near-misses run with every sibling installed, recording which skill loads.
 
@@ -459,6 +468,19 @@ Recognize the difference (two skills in one GitHub plugin):
 
 - Competing: both say `Use when the user asks for a code review.`
 - Separated: one says `Reviews an open pull request on GitHub, its checks and review threads. Use when the user names a PR or asks why one is blocked.` The other says `Reviews the uncommitted changes in the working tree before a commit. Use when the user asks to check their diff or local changes. Not for pull requests already on GitHub.`
+
+### 4.10 Descriptions of subagents that use the skill
+
+A subagent's `description` tells Claude when to delegate to it, so it routes the same way a skill's description does. When a subagent preloads the skill in its `skills` field, or its prompt tells it to load the skill or read one of the skill's files, its description decides when the skill's content runs.
+
+When you audit:
+
+- Find those subagents: search the plugin's `agents/` folder and the project's `.claude/agents/` for the skill's name and the names of its files.
+- Judge each description by 4.2 to 4.7 as they apply to a subagent: what it does, when to delegate to it, the users' words, and its boundary with the skill and with sibling subagents. The Claude Code docs ask for "a clear description so Claude knows when to use it", kept short.
+- Weigh the form of its condition of use against how the subagent is launched, and set any severity by the consequence:
+  - The Claude Code docs suggest phrases like "use proactively" to encourage proactive delegation. It is a suggestion, not a rule, and it fits only a subagent Claude should start on its own.
+  - A subagent that only a skill or an orchestrator launches, or that runs only when a user-invoked skill runs, should say so ("Launched only by…"), not invite proactive use. A subagent for narrow cases reads best as "Use only when…".
+  - The official examples put the condition of use after the role ("Expert code reviewer. Use proactively after code changes."). Subagent descriptions have no per-entry character cap like skills, so where the clause sits matters less than whether it routes right.
 
 ---
 

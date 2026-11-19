@@ -1,6 +1,6 @@
 ---
 name: cli-commands-guide
-description: Exact, current reference for the Claude Code plugin CLI and for how plugins install, load and update - every claude plugin and claude plugin marketplace subcommand, every /plugin form, /reload-plugins, --plugin-dir and --plugin-url, with flags, defaults, aliases, messages, JSON fields, exit codes, scopes, minimum versions and the gotchas that break plugin work. Use for any task or question that involves Claude Code plugins of any kind, with or without a marketplace or a repository - designing, planning, building, testing, installing, enabling, configuring, updating, validating, evaluating, tagging, releasing, debugging or removing plugins, mods, skills-directory plugins, synced plugins or marketplaces; scripting plugin commands with --json; or reading a plugin command's output, error or exit code. Load it before answering from memory about anything that involves plugins.
+description: Use for all work that writes, builds, audits, validates, tests, debugs, renames, removes, releases, tags or maintains plugins, their components (skills, subagents, hooks, scripts, MCP and LSP servers, commands, mods), dependencies and marketplaces, across any surface and environment (Claude Code CLI, desktop, web and cloud environments, claude.ai, Cowork, Agent SDK) and any distribution method (public or private GitHub marketplaces, plugins without a marketplace, claude.ai uploads, the Anthropic Directory, local plugins), even when the user only names a plugin command or pastes its output. Teaches Claude to use this skill as the base for all of that work, alone when no other skill fits, and alongside every specialized skill for the task. Gives the exact, current syntax and behavior of every claude plugin and claude plugin marketplace subcommand, /plugin form, /reload-plugins, --plugin-dir and --plugin-url, with flags, JSON fields, exit codes and minimum versions, and the gotchas that break plugin work.
 ---
 
 # Claude Code plugin commands
@@ -10,6 +10,14 @@ The reference files in `references/` hold every flag, message, JSON field, exit 
 ## When this skill applies
 
 Every plugin task, not only the ones that run a command. A plugin's design, its README, its tests and every answer about it depend on how Claude Code installs, scopes, loads, updates, validates and removes it, and those facts live here. Load it at the start of any work on a plugin, a mod, a marketplace or a plugin install, wherever the plugin lives. Once it is loaded, don't load it again unless the conversation was compacted.
+
+This skill is the base of that work, not all of it. Before the first step of the task:
+
+1. Review every skill available in this session, by name and description, and pick each one specialized in the task or in a task tied to it, such as building, testing, debugging, releasing or migrating a plugin, or writing one of its skills, hooks, agents or MCP servers. In this plugin, `plugin-testing-and-debugging` is one. Its sibling `public-marketplace-dev`, which sets up a new public marketplace on GitHub, runs only when the user invokes it: when the task is setting one up, ask the user to run `/plugin-engineering:public-marketplace-dev`, and don't build the marketplace from this skill alone.
+2. Load every skill you picked now, and work with them and this one together: each specialized skill leads its own part of the task, and this one supplies the commands and their behavior to all of them. Where a specialized skill and this one disagree on a command, follow the newer official source, as the next section says.
+3. Work from this skill alone only when no available skill is specialized in the task.
+
+Review the list again when the task moves to another kind of plugin work, such as from building to releasing.
 
 This skill covers commands and their behavior. For a plugin's files, read the official page for the topic:
 - Manifest fields and `userConfig`: `https://code.claude.com/docs/en/plugins/manifest-reference.md`

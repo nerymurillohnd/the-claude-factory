@@ -21,6 +21,7 @@ This file teaches you how to audit whether a Claude that loads the skill with no
   - 2.4 Each phase's instructions in that phase, neither earlier nor later
   - 2.5 Pointers placed at the step that needs them
   - 2.6 Standing instructions say they stand
+  - 2.7 A phased skill's files organized by phase
 - 3. Coherence across the skill
   - 3.1 Contradictions
   - 3.2 One term per concept
@@ -53,7 +54,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that loads the skill with no prior context and has to carry it out. Your method differs from a line-by-line review: you read the skill from its first line to its last, opening each file where the skill points to it, and build the model of the task that Claude would form. Every point where that model breaks, or forms only from your own guess, is where the skill fails its reader. Having understood the skill, also judge where its own logic and purpose call for clearer, stronger or more complete writing than it has.
 
-You judge by reading. You never run, test or measure anything, and never run the skill. When the prompt passes a mechanical result, such as where the part of the body kept after compaction ends or where capitalized absolutes and time-sensitive words appear, take it as verified and judge what it means. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading.
+You judge by reading. When the prompt passes a mechanical result, such as where the part of the body kept after compaction ends or where capitalized absolutes and time-sensitive words appear, take it as verified and judge what it means. When a result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading.
 
 ### Before auditing: establish the context
 
@@ -219,6 +220,18 @@ When you audit:
 
 - Find every instruction meant to hold for the whole task. Flag each one worded as a single step, and each one placed inside a single step.
 - Recommend the standing wording, which names when it applies ("after every edit," "whenever you open a new file"), placed near the top as 2.1 describes.
+
+### 2.7 A phased skill's files organized by phase
+
+Section 2.4 keeps each phase's instructions in that phase; the same holds for the files a phased skill points to. Claude opens a file at the step that points to it and applies what fits that step, so a file that holds the rules of two phases delivers the other phase's rules late or never. Where a phase reads several files, Claude applies them in the order it opens them, and when the skill doesn't state that order, Claude picks one. A name that carries the phase as well as the topic, such as `phase-2-placements.md`, shows from the file listing which phase a file serves. Focused reference files, files organized by domain or feature, descriptive names, and saying when to load each file are sourced. Cutting the files by phase, putting the phase in the name and stating the reading order are an inference and the owner's doctrine.
+
+When you audit:
+
+- Apply this section only to a skill that works in phases and keeps phase content in supporting files. A file serves a phase when that phase's steps apply its content; deciding something in one phase and writing it in a later one are two phases. A phase's own file, such as `phase-3-design-and-plan.md`, counts among the files that phase reads, first.
+- Map each file to the phases whose steps use its content. Flag every file whose content serves more than one phase, quoting a passage for each phase, even a single rule when a step of the other phase decides or writes with it and none of that phase's files states it, and recommend moving each passage to a file of the phase it serves, splitting the file when each phase holds a section of it, with each passage's destination and every pointer updated. A passage the steps of two phases both apply goes once in the earlier phase's file, and the later step points back to it. A lookup that every phase consults on purpose, such as a glossary, a table of values or a template, is not a mixed file. Flag a rule stated in the files of two phases as a duplicate under 3.3.
+- Flag every phase that reads more than one file without stating their order, and recommend listing the files under that phase in the order of the steps that read them, each with its condition and, where the phase's steps are numbered, the step that reads it, and one line telling Claude to read them in that order, under the phase or once as a standing instruction that covers every phase.
+- Record a phase-specific file whose name doesn't carry its phase as an improvement opportunity, not a defect, and recommend the name `phase-<n>-<topic>.md`, with every pointer to it updated. Judge whether the name says what the file holds under 5.9.
+- Judge a file that makes Claude apply a rule after the step it governs as 2.2 does. Judge a missing order as a defect when the order of the files changes the result, because one file's rule decides how Claude applies another's, and as an improvement opportunity otherwise.
 
 ---
 

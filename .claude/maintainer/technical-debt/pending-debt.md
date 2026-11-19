@@ -44,6 +44,9 @@ Add an item only when all of these hold:
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
 | DEBT-006 | npm run lint:js fails on 25 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-007 | Fourteen plugin subagents use Markdown headings instead of the house agent format | 🟠 Blocked |
+| DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
+| DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 
 ## 📂 Open items
 
@@ -210,6 +213,87 @@ Add an item only when all of these hold:
 - **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/validators/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
 - **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** none.
+
+### DEBT-007 — Fourteen plugin subagents use Markdown headings instead of the house agent format
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-18 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The rule `.claude/rules/code-quality/skill-standards.md`, rewritten on `main` in 3589127 on 2026-11-18, says a subagent body uses plain language with a hierarchy and no Markdown headings: it opens with the role and its expertise, then `GOAL:`, and marks later sections with uppercase labels.
+  - On 2026-11-18, on branch `ccr-c6ac3e54-13pbbz` at 49a81f9, a count of `#` heading lines outside code fences in each agent body finds 14 files: `hook-engineering/agents/hook-engineer.md` (9), `instruction-engineering/agents/reviewer.md` (3), the six `skill-diagnostics/agents/*.md` (8 each), `svelte-development/agents/svelte-code-auditor.md` (7) and `svelte-component-editor.md` (6), and the four `tailwind-development/agents/*.md` (3 each).
+  - The skills-engineering and work-lifecycle agents already follow the format.
+  - The owner deferred the conversion and asked to log it, stated by the user on 2026-11-18.
+- **Inferences:** none.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the agents read inconsistently with the house format, and a new agent modeled on one of them repeats the headings.
+- **Why it is not fixed now:** each conversion is a plugin change with a version bump in its own pull request, and the owner schedules plugin work.
+- **Next action:** the owner schedules a pull request per plugin that rewrites its agents in the house format, modeled on the skills-engineering reviewer agents.
+- **Review condition:** the same count finds no `#` heading outside code fences in any plugin agent body.
+- **Related records:** none.
+
+### DEBT-008 — public-marketplace-dev's body teaches more than its description promises
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-18 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - plugin-engineering 0.4.0, on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113), gives `public-marketplace-dev` a description that scopes it to setting up a new public marketplace on GitHub once, with every folder it needs. It also sets `disable-model-invocation: true` on the skill.
+  - The skill's body is unchanged: its workflow still covers designing, building, auditing and maintaining plugins in a marketplace, and has no setup steps and no `plugin-testing-and-debugging` step. The code review on 2026-11-18 rated this the most severe finding of the pull request.
+  - The redesign that matches the new description is on branch `claude/project-thread-gnuenz` at 5ade49e, not merged. The owner chose to write the description first, stated by the user on 2026-11-18.
+- **Inferences:** none.
+- **Open questions:** whether the skill also creates the marketplace's maintenance folders, and which ones.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a user who runs `/plugin-engineering:public-marketplace-dev` to set up a marketplace gets the old workflow, which doesn't create the promised architecture.
+- **Why it is not fixed now:** the redesign's scope waits on the owner's decisions: setup only, the maintenance folders, and how much of the gnuenz redesign to port.
+- **Next action:** the owner decides the scope; then port the redesign from 5ade49e onto `main` with `skills-engineering:authoring-skills` and release it.
+- **Review condition:** the released body sets up a new marketplace as the description says.
+- **Related records:** [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
+
+### DEBT-009 — authoring-skills' SKILL.md is over the 5,000-token budget
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🔴 Risk accepted |
+| **Category** | quality |
+| **Owner** | skills-engineering |
+| **Logged** | 2026-11-19 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `claude --plugin-dir plugins/skills-engineering plugin details skills-engineering` estimates `authoring-skills` at about 5.7k tokens on invoke, on 2026-11-19, on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
+  - Its `SKILL.md` body is 17,560 characters.
+  - `.claude/rules/code-quality/skill-standards.md` sets the `SKILL.md` body under about 5,000 tokens, and the skill's own standard 5 sets the same limit.
+  - The skill's `phase-2-body.md` gotcha states that after compaction Claude keeps only the first 5,000 tokens of each invoked skill.
+  - The owner accepted the overage for this release on 2026-11-19.
+- **Inferences:** in a long session that compacts, Phases 6 and 7 at the end of `SKILL.md` can drop from context, so the closing question, the audit and the evals may be skipped.
+- **Open questions:** how much of the estimate is the frontmatter description, which `plugin details` counts with the body.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** after compaction, Claude can lose the end of the workflow and finish without the report, the question or the audit.
+- **Why it is not fixed now:** the owner chose to release this version as it is.
+- **Next action:** cut restatements, such as "Your expertise" and "What this skill promotes", or move the long Phase 2 and Phase 3 text into references, until `plugin details` shows under 5,000 tokens on invoke.
+- **Review condition:** the next change to `authoring-skills`' `SKILL.md`, or a run where Claude skips Phase 6 or 7 after compaction.
+- **Related records:** [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

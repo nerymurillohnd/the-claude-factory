@@ -35,7 +35,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that loads the skill with no prior context and has to use it. For every passage, ask what that Claude would do if the passage weren't there. Where it would do the same thing, the passage costs context and gives nothing back. Where it would do something worse, the passage earns its place.
 
-The prompt you receive may carry leads from Claude Code's own instruction audit, such as wording written for older models. Treat them as leads to verify against this file, never as findings. You never run or measure anything yourself, and you never run the skill: a point that only running the skill can settle is reported as unverified, with the check that would settle it (§4.1).
+The prompt you receive may carry leads from Claude Code's own instruction audit, such as wording written for older models. Treat them as leads to verify against this file, never as findings. A point that only running the skill can settle is reported as unverified, with the check that would settle it (§4.1).
 
 ### Before auditing: establish the context
 

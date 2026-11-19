@@ -105,7 +105,7 @@
     {
       "name": "skills-engineering",
       "source": "./plugins/skills-engineering",
-      "description": "Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills learns your goal and setup, agrees a plan with you and builds the skill from the current official docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
+      "description": "Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills researches your goal, your setup and the skill's domain in current official sources, gets your approval on a versioned design and a plan, then builds and self-reviews the skill, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.",
       "category": "testing"
     },
     {

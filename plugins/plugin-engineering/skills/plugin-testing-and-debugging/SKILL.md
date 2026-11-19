@@ -1,6 +1,6 @@
 ---
 name: plugin-testing-and-debugging
-description: Tests, troubleshoots and debugs Claude Code plugins with the official CLI - claude plugin validate, list, details, eval and eval init, /plugin, /reload-plugins and --plugin-dir - and the documented loading rules. Use when a plugin, marketplace or skills-directory plugin will not install, load, enable, update or run its skills, hooks, MCP or LSP servers; when a copy behaves differently installed than with --plugin-dir; when a plugin keeps loading after being turned off; when reading a plugin error, Errors-tab entry or exit code; when reviewing a plugin or marketplace before publishing; and when writing, running, reading or gating CI on plugin evals and graders. Also use it in cloud sessions, project threads, Claude on the web, desktop and mobile, and the Agent SDK, where plugins load differently. Use it even when the user only pastes an error or says "my plugin doesn't work".
+description: Use every time right after a new plugin is created, and whenever an edited plugin, or the user, needs it validated and tested again. Also for all work that tests, validates, troubleshoots, debugs, fixes or audits plugins, their components (skills, subagents, hooks, scripts, MCP and LSP servers, commands, mods) and dependencies, across any surface and environment (Claude Code CLI, desktop, web and cloud environments, claude.ai, Cowork, Agent SDK) and any distribution method (public or private GitHub marketplaces, plugins without a marketplace, skills-directory and synced plugins, claude.ai uploads, the Anthropic Directory, local plugins), and in every way of testing them (local, with evals, isolated, in background or non-interactive sessions, in sandboxes), even when the user only pastes an error or says a plugin won't install, load or run. Teaches Claude to test, validate, diagnose and fix plugins with the official plugin CLI and loading rules, together with cli-commands-guide for the exact commands.
 ---
 
 # Test, troubleshoot and debug Claude Code plugins
@@ -12,6 +12,12 @@ You are the user's plugin test engineer. Three jobs, one discipline:
 - **Debug**: no message, or the wrong copy, scope or version loaded. Read the loading rules and the state on disk and in settings until one rule explains what happened.
 
 Everything here comes from the official pages "Plugin loading reference", "Troubleshoot plugins", "Test plugins with evals" and "Plugin commands reference" (code.claude.com/docs), checked against Claude Code 2.1.325. Most of it shipped after mid-2026, so do not answer these from memory: read the reference that holds the answer.
+
+## When to run it
+
+Run this skill every time, without weighing whether it is needed: right after a plugin is created, and again after every edit to a plugin, its components or its dependencies, before you report the work as done. Each of these runs is the validation and tests that cost nothing; start an eval or any other run that spends the user's usage only after the user approves it.
+
+Before the first step, load `cli-commands-guide`, this plugin's reference for every plugin command, if it isn't loaded yet, and work with both together: this skill decides what to test and how to diagnose, and `cli-commands-guide` gives the exact flags, messages, JSON fields and exit codes of each command it runs. Where the two disagree on a command, follow the newer official source, as "Version and source check" says.
 
 ## Gotchas
 
@@ -32,6 +38,14 @@ These are the facts that most often turn a reasonable guess into a wrong answer.
 - A plugin under `.claude/skills/` loads only from the session's primary working directory, never from a parent. Started in a subdirectory, it is simply absent. Managed settings can also skip such folders with no error at all.
 - Many causes appear only in the debug log, which `claude --debug` writes to `~/.claude/debug/<session-id>.txt` without printing anything to the terminal. `claude --debug-file <path>` writes it to a path you choose, `--debug=mcp,startup` filters categories (only in the `=` form), and `/debug` turns it on mid-session. `references/messages.md`, "Read the debug log", has the details.
 - Skills load from `skills/` at the plugin root. A `skills/` inside `.claude-plugin/` is not scanned. Hook event names are case-sensitive (`PostToolUse`). A shell-form hook with an unquoted `CLAUDE_PLUGIN_ROOT` placeholder breaks when the path has a space.
+
+**Plugin subagents**
+
+- A plugin's agent reads only `name`, `description`, `model`, `effort`, `maxTurns`, `autoCompactWindow`, `tools`, `disallowedTools`, `skills`, `memory`, `background`, `omitClaudeMd`, `isolation`, `color` and the `cacheTtl` key of `experimental`. It ignores `permissionMode`, `hooks`, `mcpServers` and `initialPrompt` without an error: declare hooks in `hooks/hooks.json` and MCP servers in the plugin's MCP configuration instead.
+- A subagent runs in the background by default, and there it keeps every MCP tool but only a fixed set of built-in tools (Read, Grep, Glob, LSP, Bash, Edit, Write, WebFetch, WebSearch, Skill, ToolSearch and a few more, listed under "Available tools" in the sub-agents docs). Any other built-in tool is removed with no error, even when `tools` lists it.
+- When no entry in a `tools` list resolves to a tool, Claude Code refuses to launch the agent with `Agent '<name>' would be spawned with zero tools — refusing.` (v2.1.208+), and names each entry as unrecognized, not available to subagents, or matched no tools in this session. Omitting `tools` never triggers it: the agent then inherits every tool available to subagents, MCP included.
+- An MCP entry in `tools` matches only the server name as the session spells it: `mcp__plugin_<plugin>_<server>__*` for the plugin's own server, `mcp__claude_ai_<server>__*` for a claude.ai connector that Claude Code fetches, and `mcp__<name>__*` for a server the user added under that name. A server name that holds `__` needs the whole name and `__*`. Another spelling silently gives the agent none of those tools; to reach whatever docs server the user has, omit `tools` and restrict with `disallowedTools`.
+- `isolation: worktree` branches the agent's worktree from the repository's default branch, not from the session's `HEAD`, unless the user's settings set `worktree.baseRef` to `"head"`. An agent that must see the current branch or its unpushed commits gets neither.
 
 **Validation**
 

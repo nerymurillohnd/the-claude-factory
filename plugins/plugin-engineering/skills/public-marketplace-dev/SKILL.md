@@ -1,6 +1,7 @@
 ---
 name: public-marketplace-dev
-description: Current knowledge, CLI commands and references from the official sources that teach Claude how to create, build, develop, structure, publish and maintain a public Claude Code plugin marketplace hosted on GitHub. Use when the user asks about or requests, or the task involves, designing or planning, creating, developing, structuring, versioning, tagging, auditing, troubleshooting and debugging, adding components or dependencies, releasing or distributing, and maintaining or answering questions about plugins in a Claude Code plugin marketplace served to third parties from a public GitHub repository. Use only for plugins that belong to such a marketplace or repository.
+description: Use only when a new public plugin marketplace hosted on GitHub must be set up from scratch, once, at its start, whenever the user asks to create, establish, build or scaffold one, or the task needs a marketplace repository that does not exist yet, even when the user only says they want to publish or distribute plugins to other people. Builds the complete operating environment and architecture the marketplace will need, ready for its first plugin, including the repository's folders and subfolders, the marketplace catalog, the plugins folder layout, versioning and releases, validation, user instructions, CI/CD workflows, repository files and the folders for its maintenance. Teaches Claude to build it with cli-commands-guide for the exact commands, and to run plugin-testing-and-debugging on the result before reporting the work as done. Not for writing a plugin or its components, testing or debugging a plugin on its own, or maintaining a marketplace that already exists.
+disable-model-invocation: true
 ---
 
 # Public marketplace development
@@ -32,7 +33,7 @@ The work is done when every fact you state or write comes from one of these file
 
 Copy this checklist and tick each item as you complete it:
 
-```
+```text
 Task Progress:
 - [ ] Step 1: Pick the files for the task (the file index in this `SKILL.md`)
 - [ ] Step 2: Read each file's `## Contents`, then the sections the task needs

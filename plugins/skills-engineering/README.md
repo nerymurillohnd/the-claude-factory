@@ -2,7 +2,7 @@
 
 # 🧰 Skills Engineering
 
-<p><strong>Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills learns your goal and setup, agrees a plan with you and builds the skill from the current official docs, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.</strong></p>
+<p><strong>Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills researches your goal, your setup and the skill's domain in current official sources, gets your approval on a versioned design and a plan, then builds and self-reviews the skill, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskills-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
@@ -15,6 +15,7 @@
 [Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -23,51 +24,47 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Type `/skills-engineering:authoring-skills` to get a skill written from your own setup and the current docs, then `/skills-engineering:auditing-skills` to get independent reviews of it, each with quoted evidence and an exact fix.
+> **TL;DR** — Ask Claude to write a skill, or type `/skills-engineering:authoring-skills`, and get a skill built from current official docs after you approve its design and plan. Type `/skills-engineering:auditing-skills` to get an audit from nine specialized reviewers, each finding backed by the exact file and line.
 
-Skills Engineering gives Claude two skills for the whole life of a skill. `authoring-skills` learns your environment and your goal, asks you only for context, shows you a plan to approve, then builds the skill and reviews it the way Claude will read it. `auditing-skills` checks a skill's frontmatter with scripts, then sends nine specialized reviewer agents at it in parallel, each limited to its own domain and each reporting file-and-line evidence, a severity, an exact fix and a verdict. It works on a skill in a plugin, a personal or project folder, a claude.ai account or a URL.
+Skills Engineering is two skills and nine reviewer agents for the whole life of a Claude skill. `authoring-skills` writes a new skill, or changes an existing one, wherever it lives: your personal folder, a project, a plugin, your claude.ai account, a Skills API upload or a subagent. It learns your goal and your setup first, researches what the skill acts on in the current official sources, and builds nothing until you approve the design and the plan. `auditing-skills` then checks the finished skill with reviewers that each own one domain, so you fix what is wrong before the skill reaches anyone else.
 
 ## ✨ Why use it
 
-- **A plan before any file** — `authoring-skills` inventories the skills, rules and conventions already around the new skill, asks at most three questions about context only, and writes nothing until you approve a plan that names the goal, location, name, description and files.
-- **Reviews you can check** — each reviewer owns one domain and quotes the exact lines behind every finding, with its severity and the replacement text, so you can verify a finding and apply a fix without redoing the review.
-- **Fewer platform rules to remember** — the frontmatter checks catch problems `claude plugin validate` doesn't report, and the reviewers check each fact they rely on against the current official docs.
+- **Skills built from sources, not memory** — before it designs anything, `authoring-skills` reviews the code, data or documents the skill will act on and reads the official sources of every technology the skill uses, at the version you run.
+- **You approve before anything is built** — you review a versioned design document and then a plan. After each correction the design is shown again in full, so the plan starts from what you approved. When the skill is built, Claude asks how to go on and preselects no option.
+- **An audit you can check** — nine reviewers run in parallel, each on its own domain. Every finding quotes the file and the lines, gives a severity and an exact fix, and the reports reach you word for word.
 
 ## 🧩 What's inside
 
-| Component | Name                                  | What it does                                                                                                                                                                                | How it runs                                                           |
-| :-------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------- |
-| 🎯 Skill  | `skills-engineering:authoring-skills` | Writes a new skill or changes an existing one for any place a skill lives, in six phases: environment, intent, decide what to build, design and plan for your approval, build, self-review. | `/skills-engineering:authoring-skills` or automatically when relevant |
-| 🎯 Skill  | `skills-engineering:auditing-skills`  | Audits a skill: runs frontmatter checks, launches the reviewer agents in parallel, presents each report as written and recommends where to start.                                           | `/skills-engineering:auditing-skills` or automatically when relevant  |
-| 🤖 Agents | The nine reviewers below              | Each audits one domain of a skill against its own reference and checklist, and fills the same report template.                                                                              | Launched by `auditing-skills`, in parallel                            |
+| Component | Name                                                  | What it does                                                                                                                                                                                       | How it runs                                                                                    |
+| :-------- | :---------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| 🎯 Skill  | `skills-engineering:authoring-skills`                 | Writes or changes a skill in seven phases: your intent, a researched design you approve, a plan you approve, the build, a self-review, a report and a question, then the audit or evals you choose | `/skills-engineering:authoring-skills` or automatically when you ask for a skill               |
+| 🎯 Skill  | `skills-engineering:auditing-skills`                  | Runs frontmatter checks, then the reviewer agents in parallel, and presents each report in full with a recommendation of where to start                                                            | `/skills-engineering:auditing-skills` or automatically when you ask to audit or review a skill |
+| 🤖 Agent  | `skills-engineering:content-patterns-reviewer`        | Reviews a skill's examples and its embedded commands and code                                                                                                                                      | Launched by `auditing-skills`, or "use the content-patterns-reviewer agent"                    |
+| 🤖 Agent  | `skills-engineering:runtime-contract-reviewer`        | Reviews whether a skill's files resolve, package, load and are discovered on every surface it targets                                                                                              | Launched by `auditing-skills`, or "use the runtime-contract-reviewer agent"                    |
+| 🤖 Agent  | `skills-engineering:size-limits-and-budgets-reviewer` | Reviews every length, size, count and context budget the skill must stay within                                                                                                                    | Launched by `auditing-skills`, or "use the size-limits-and-budgets-reviewer agent"             |
+| 🤖 Agent  | `skills-engineering:knowledge-delta-reviewer`         | Reviews whether each passage gives Claude something it lacks without the skill                                                                                                                     | Launched by `auditing-skills`, or "use the knowledge-delta-reviewer agent"                     |
+| 🤖 Agent  | `skills-engineering:task-mechanisms-reviewer`         | Reviews whether the skill controls its task with the right workflows, checklists, validation loops and templates                                                                                   | Launched by `auditing-skills`, or "use the task-mechanisms-reviewer agent"                     |
+| 🤖 Agent  | `skills-engineering:frontmatter-description-reviewer` | Reviews the frontmatter, the name and the description Claude chooses the skill by                                                                                                                  | Launched by `auditing-skills`, or "use the frontmatter-description-reviewer agent"             |
+| 🤖 Agent  | `skills-engineering:comprehension-reviewer`           | Reviews whether a Claude reading the skill from top to bottom understands the task and is never left to guess                                                                                      | Launched by `auditing-skills`, or "use the comprehension-reviewer agent"                       |
+| 🤖 Agent  | `skills-engineering:feature-fit-reviewer`             | Reviews whether each piece belongs in a skill or in another feature, and whether it collides with its environment                                                                                  | Launched by `auditing-skills`, or "use the feature-fit-reviewer agent"                         |
+| 🤖 Agent  | `skills-engineering:scripts-reviewer`                 | Reviews the scripts a skill ships, as code Claude runs without reading                                                                                                                             | Launched by `auditing-skills`, or "use the scripts-reviewer agent"                             |
 
-The nine reviewers, as you name them after `/skills-engineering:auditing-skills` to run only some of them:
-
-| Name                      | Agent                                                 | Audits                                                                                                                            | Model  |
-| :------------------------ | :---------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :----- |
-| `content-patterns`        | `skills-engineering:content-patterns-reviewer`        | Examples, and embedded commands and code                                                                                          | Sonnet |
-| `runtime-contract`        | `skills-engineering:runtime-contract-reviewer`        | Packaging, paths and variables, plugin layout, discovery, subagent use, tool pre-approval, hooks, composition with other skills   | Opus   |
-| `size-limits-and-budgets` | `skills-engineering:size-limits-and-budgets-reviewer` | Field lengths, body and file sizes, install size, active-skill counts, output and hook budgets                                    | Sonnet |
-| `knowledge-delta`         | `skills-engineering:knowledge-delta-reviewer`         | Whether each passage gives Claude something it lacks, and what only spends context                                                | Opus   |
-| `task-mechanisms`         | `skills-engineering:task-mechanisms-reviewer`         | Workflows, checklists, validation loops, output templates, planning and progress tracking                                         | Opus   |
-| `frontmatter-description` | `skills-engineering:frontmatter-description-reviewer` | Frontmatter parsing and fields on every target surface, the name, the description, trigger tests                                  | Opus   |
-| `comprehension`           | `skills-engineering:comprehension-reviewer`           | Whether Claude reading the skill top to bottom forms the right task: order, contradictions, gaps, register                        | Opus   |
-| `feature-fit`             | `skills-engineering:feature-fit-reviewer`             | Whether each piece belongs in a skill or in CLAUDE.md, a rule, a hook, a subagent, an MCP server or an output style               | Opus   |
-| `scripts`                 | `skills-engineering:scripts-reviewer`                 | Every script the skill ships: interface, exit codes, failure handling, dependencies, portability, secrets, network, writes, tests | Opus   |
+Together the descriptions of these components add about 2,100 tokens to every session. Each one costs more only when it runs: about 5,100 to 5,700 tokens when a skill loads and about 4,900 to 7,200 when a reviewer starts.
 
 ## 📋 Prerequisites
 
 | Tool                  | Minimum version | Check                  |
 | :-------------------- | :-------------- | :--------------------- |
 | Claude Code           | 2.1.304         | `claude --version`     |
-| Python (optional)     | 3.12            | `python3 --version`    |
+| Python                | 3.12            | `python3 --version`    |
 | Git (optional)        | —               | `git --version`        |
 | ShellCheck (optional) | —               | `shellcheck --version` |
 | Ruff (optional)       | —               | `ruff --version`       |
 
-Python runs the frontmatter checks of `auditing-skills`. Without it the audit still runs and the reviewers are told the checks didn't run. Git, ShellCheck and Ruff are used only when found: Git to list the release tags of a plugin dependency that lives in its own git repository, ShellCheck and Ruff to lint the shell and Python scripts of the skill you audit. `authoring-skills` needs nothing beyond Claude Code.
+Python runs the frontmatter checks of `auditing-skills`. Without it the audit still runs and the reviewers are told those checks didn't run. Git, ShellCheck and Ruff are optional: the audit uses Git to read the version tags of a plugin dependency, and ShellCheck and Ruff to lint the shell and Python scripts of the skill it audits, each only when it is installed.
 
-The plugin also uses `cp`, `awk`, `basename`, `dirname`, `head` and `ls`, which come with macOS and Linux.
+The plugin also uses `awk`, `basename`, `cp`, `dirname`, `head`, `ls` and `mkdir`, which come with macOS and Linux.
 
 ### 🤖 Claude Code
 
@@ -100,6 +97,8 @@ npm install -g @anthropic-ai/claude-code@latest
 
 ### 🐍 Python
 
+Many Linux distributions ship an older Python than 3.12: run the check after you install, and download a current release from [python.org](https://www.python.org/downloads/) when it reports an older one.
+
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
@@ -108,17 +107,27 @@ brew install python
 ```
 
 </details>
-
-Without Homebrew, download an installer from [python.org](https://www.python.org/downloads/) on macOS, or install Python 3.12 or later with your Linux distribution's package manager. Check that `python3` is 3.12 or later:
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
 
 ```bash
-python3 --version
+sudo apt install python3
 ```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install python3
+```
+
+</details>
 
 ### 🌿 Git
 
 <details>
-<summary>🍺 <b>Homebrew</b> — macOS</summary>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
 brew install git
@@ -126,40 +135,26 @@ brew install git
 
 </details>
 <details>
-<summary>🛠️ <b>Xcode Command Line Tools</b> — macOS</summary>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
 
 ```bash
-xcode-select --install
+sudo apt install git
 ```
 
 </details>
 <details>
-<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+<summary>📦 <b>dnf</b> — Fedora</summary>
 
 ```bash
-sudo apt install git-all
+sudo dnf install git
 ```
 
 </details>
-<details>
-<summary>🎩 <b>dnf</b> — Fedora, RHEL</summary>
-
-```bash
-sudo dnf install git-all
-```
-
-</details>
-
-Check it:
-
-```bash
-git --version
-```
 
 ### 🐚 ShellCheck
 
 <details>
-<summary>🍺 <b>Homebrew</b> — macOS</summary>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
 brew install shellcheck
@@ -167,7 +162,7 @@ brew install shellcheck
 
 </details>
 <details>
-<summary>🐧 <b>apt</b> — Debian-based Linux</summary>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
 
 ```bash
 sudo apt install shellcheck
@@ -175,7 +170,7 @@ sudo apt install shellcheck
 
 </details>
 <details>
-<summary>🎩 <b>dnf</b> — Fedora-based Linux</summary>
+<summary>📦 <b>dnf</b> — Fedora</summary>
 
 ```bash
 sudo dnf install ShellCheck
@@ -183,27 +178,21 @@ sudo dnf install ShellCheck
 
 </details>
 
-Check it:
-
-```bash
-shellcheck --version
-```
-
 ### ⚡ Ruff
 
-<details>
-<summary>⚡ <b>uv</b> — macOS, Linux</summary>
-
-```bash
-uv tool install ruff@latest
-```
-
-</details>
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
 brew install ruff
+```
+
+</details>
+<details>
+<summary>🚀 <b>uv</b> — macOS, Linux</summary>
+
+```bash
+uv tool install ruff@latest
 ```
 
 </details>
@@ -215,12 +204,6 @@ pip install ruff
 ```
 
 </details>
-
-Check it:
-
-```bash
-ruff --version
-```
 
 ## 📥 Installation
 
@@ -267,10 +250,10 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 ### Write a new skill
 
 ```text
-/skills-engineering:authoring-skills Turn our release-notes process into a skill for this repository
+Write a skill that drafts our release notes from the pull requests merged since the last tag
 ```
 
-**Result:** Claude takes stock of the skills, `CLAUDE.md` files and rules already in your project, asks at most three questions about context only (each with its recommended answer), and decides whether a skill is the right answer at all. It then shows a plan with the goal, use cases, location, name, description, files and open assumptions, and builds nothing until you approve it. After the build it reads the skill the way Claude will, reports what it checked and what it couldn't, and offers four next steps: keep the skill, give observations to apply, build evals, or audit it with `auditing-skills`.
+**Result:** Claude loads `authoring-skills`, learns your goal, your project and the instructions Claude already loads there, and researches what the skill acts on in current official sources. It shows you a design document, shows it again in full after each correction you make, then writes a plan for you to approve. Once you approve, it builds the skill, reviews it as the model that will load it, and asks how to go on: keep it, run `auditing-skills`, build evals, or something else.
 
 ### Audit a skill with every reviewer
 
@@ -278,32 +261,42 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /skills-engineering:auditing-skills .claude/skills/release-notes
 ```
 
-**Result:** Claude runs the frontmatter checks, briefs the nine reviewers and launches them in parallel. It then presents every report exactly as written, in the order of the reviewer table, and ends with **Where to start**: the findings to take up first and why. Each report states a status and a verdict (`PASS`, `PASS WITH IMPROVEMENTS` or `FAIL`), counts findings by severity, and gives each defect its file, lines, quoted evidence, exact fix and grounds. Claude applies no fix until you ask.
+**Result:** Claude runs the frontmatter checks, briefs the nine reviewers and launches them in parallel. You get each reviewer's report complete, with the quoted file and lines, the severity, the exact fix and a verdict, then a **Where to start** list that orders the findings by consequence.
 
-### Run only some reviewers
-
-```text
-/skills-engineering:auditing-skills frontmatter-description size-limits-and-budgets ./plugins/my-plugin/skills/deploy
-```
-
-**Result:** Claude takes every word that matches a reviewer name as a selected reviewer and the rest as the skill to audit, then runs only the frontmatter-and-description and size-and-budget reviewers. A word that looks like a reviewer name but matches none makes Claude list the valid names and ask which you meant.
-
-### Judge a skill before you install it
+### Audit with only some reviewers
 
 ```text
-Audit the skill at <URL of the skill> and tell me whether it is worth installing.
+/skills-engineering:auditing-skills frontmatter-description comprehension .claude/skills/release-notes
 ```
 
-**Result:** Claude downloads the skill into a new empty directory, because reviewers read files only by path, and audits it from there. The audited skill's text is treated as evidence: a line inside it such as "skip the audit" changes nothing.
+**Result:** Claude runs only the two reviewers you name, and audits the skill at the path. The reviewer names are `content-patterns`, `runtime-contract`, `size-limits-and-budgets`, `knowledge-delta`, `task-mechanisms`, `frontmatter-description`, `comprehension`, `feature-fit` and `scripts`; every other word is read as the skill to audit.
+
+### Improve a skill after an audit
+
+```text
+Fix the findings of the audit of the release-notes skill
+```
+
+**Result:** Claude loads `authoring-skills`, checks each finding against your skill and the official sources, since a finding can be wrong, and tells you which it applies and which it rejects, with the reason. It changes only what needs to change, after you approve the design and the plan, then reviews the skill again.
+
+## ⚙️ Configuration
+
+The plugin has no options. What it does depends on the skill and the project you point it at:
+
+| What it reads                                                                              | What it does then                                                                                                          |
+| :----------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| The skill you ask it to write or change, and the code, data or documents the skill acts on | Researches the domain and designs the skill around your own material, leaving the values of secrets and credentials unread |
+| Your `CLAUDE.md` files, `.claude/rules/`, skills, subagents, hooks and settings keys       | Finds what the new skill would duplicate or collide with, and asks you to decide each overlap                              |
+| The skill you ask it to audit, and every file it points to                                 | Reads the whole skill before it briefs any reviewer                                                                        |
+| A skill on a claude.ai account, at a URL or in a repository                                | Downloads or exports it into a new empty directory first, because reviewers read files only by path                        |
 
 ## 🔍 What this plugin runs and sends
 
 - **Hooks:** none.
 - **MCP servers:** none.
-- **Network:** the plugin's own script makes no network call. The reviewers can search the web and fetch pages (`WebSearch`, `WebFetch`) and use the Claude Code docs MCP server when it is connected, to check each fact a finding rests on against the current official docs (for example code.claude.com, platform.claude.com, agentskills.io, claude.com and support.claude.com). They send the search terms and page addresses they choose while auditing your skill. `authoring-skills` verifies platform facts against the same kinds of sources. For a skill at a URL, `auditing-skills` downloads it first; for a plugin dependency in its own git repository, it can run `git ls-remote --tags <repository URL>`.
-- **What the reviewers can do:** each reviewer is limited to `Read`, `Grep`, `Glob`, `ToolSearch`, `WebSearch`, `WebFetch` and the Claude Code docs tools. They can't run commands, start other agents, edit, create or delete files, and they don't load your `CLAUDE.md` files. Each runs for at most 80 turns, `runtime-contract` for 120.
-- **Commands `auditing-skills` runs:** the frontmatter script `skills/auditing-skills/scripts/frontmatter-checks.py` with `python3` (or `python`), which the skill pre-approves for its turn and which reads only the `SKILL.md` you point it at and its folder name. Through the Bash tool, with the usual permission prompts, it can also run `claude plugin validate --json`, `claude --plugin-dir <plugin> plugin details <plugin>`, `claude --plugin-dir <plugin> plugin list --json`, `claude -p "/skill-doctor"`, `claude -p "/context"`, `claude -p "/doctor prompt-audit <skill directory>"`, `cp -RL`, `awk`, `basename`, `dirname`, `head`, `ls -l`, `shellcheck` and `ruff check` where found, and `git ls-remote --tags`. The `claude -p` commands start non-interactive Claude Code sessions that use the model. The audit playbook keeps the values of your settings, MCP and credential files out of what the reviewers receive.
-- **Files written:** the frontmatter script creates a results folder named `auditing-skills-fm-…` in your system temp folder and `auditing-skills` removes it at the end of the audit; each new run also removes such folders older than 24 hours. For a skill outside a plugin, or one validate can't read in place, `auditing-skills` copies it into a new empty directory to validate the copy. `authoring-skills` writes the files of the skill you approved, at the location in the plan. The plugin writes nothing to its data directory and nothing else into your project.
+- **Commands:** `auditing-skills` runs its own Python script, `scripts/frontmatter-checks.py`, with `python3` (or `python`), pre-approved for that exact path. To gather what the reviewers receive it also runs `claude plugin validate`, `claude plugin details`, `claude plugin list --json` and `claude -p` with `/skill-doctor`, `/context` and `/doctor prompt-audit`, which start Claude Code sessions that use your usage. It runs `awk`, `basename`, `cp`, `head` and `ls` on your skill's files, `git ls-remote --tags` for each plugin dependency that has its own repository, and ShellCheck and Ruff on the skill's scripts when they are installed. `authoring-skills` runs `claude plugin validate` on the skill it writes. The reviewer agents have no Edit, Write or Agent tool, and are told to change none of your files.
+- **Network:** the plugin's own script makes no network call. Claude uses its web and documentation tools to read official sources while it researches a skill and while the reviewers verify their findings, and `git ls-remote` contacts a dependency's repository, so search queries and page requests leave your machine as your session's tools and permissions allow. `authoring-skills` writes no credential's value into a skill.
+- **Files written:** the skill files you approve in the plan, in the location you chose. The design document, as `design-<skill name>.md`, in the session's scratchpad or in your project's plans folder, never in the skill's folder. During an audit, a results folder named `auditing-skills-fm-…` in your temporary folder (`TMPDIR`, `TEMP` or `TMP`), a temporary copy of the skill or plugin for `claude plugin validate` when the skill sits where validate doesn't read it, and a new empty directory for a skill it downloads or exports. The audit removes its results folder when it ends, and each later audit removes any left by an interrupted one that is older than 24 hours. `auditing-skills` applies no fix until you ask. The plugin writes nothing to its data directory.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -323,11 +316,14 @@ Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-Update the optional tools the way you installed them, for example with Homebrew or uv:
+Update each tool the way you installed it:
 
 ```bash
 brew upgrade python git shellcheck ruff
+sudo apt install --only-upgrade python3 git shellcheck
+sudo dnf upgrade python3 git ShellCheck
 uv tool upgrade ruff
+pip install --upgrade ruff
 ```
 
 ## 🗑️ Uninstalling
@@ -344,7 +340,7 @@ claude plugin uninstall skills-engineering@the-claude-factory --scope project
 
 In Claude: **Customize** → **Plugins** → **Skills Engineering** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Skills you wrote with it stay where you saved them, and so do any files you asked Claude to write into your project. A results folder left in your temp folder by an audit that stopped early is removed by the next audit run once it is a day old, or you can delete it yourself. Python, Git, ShellCheck and Ruff stay installed.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. The skills it wrote for you, their design documents and the tools you installed for it stay where they are.
 
 ## 🧭 Compatibility
 
@@ -357,19 +353,19 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-In Claude, both skills load. `auditing-skills` launches its reviewers as agents, so it needs a conversation where Claude can run tasks: if a selected reviewer isn't among the agents the session can launch, Claude tells you which one and stops instead of auditing in its place. The mechanical checks need the `claude` command, which is Claude Code's CLI, and Python 3.12 or later; where either is missing, Claude names the checks as not run to the reviewers.
+In Claude, `authoring-skills` plans in its reply instead of in plan mode, since plan mode is a Claude Code feature. `auditing-skills` needs its reviewer agents: where Claude can't run tasks it tells you which reviewer it can't launch and stops, and it never audits in a reviewer's place. The frontmatter checks need Python 3.12 or later and the `claude` command; where either is missing, the reviewers are told those checks didn't run.
 
 **Platforms:** macOS and Linux.
 
 ## 🚧 Limitations
 
-- A full audit starts nine agents in parallel, seven on Opus and two on Sonnet, all at high effort. Use the reviewer names to run only the ones you need.
-- The reviewers measure and run nothing themselves: every figure they use comes from the mechanical checks, and a check that didn't run is named as not run in their prompt.
-- Reviewers read a skill only by its path on disk, so a skill in a claude.ai account or at a URL is exported or downloaded into a new empty directory first.
-- The audit adds no finding of its own and applies no fix: the findings come from the reviewers, and Claude changes your skill only when you ask after the reports.
-- When `auditing-skills` loads right after you create or edit a skill without asking for an audit, it asks you first and runs only the reviewers you agree to.
-- A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy that the next sync or update overwrites: Claude edits its source instead.
-- `authoring-skills` decides whether a skill is the right answer. When a hook, `CLAUDE.md`, a subagent or an MCP server fits better, it says so and stops unless you still want a skill.
+- `auditing-skills` reports and recommends only: it applies no fix until you ask for one after the reports.
+- A full audit launches nine reviewer agents, each loading about 4,900 to 7,200 tokens before it reads your skill, so it uses a good part of your usage. Name only the reviewers you need to run fewer.
+- Without Python 3.12 or later the frontmatter checks don't run, and the reviewers work without their results.
+- When a selected reviewer can't be launched in your session, the audit stops and names it.
+- `authoring-skills` writes no credential's value into a skill: it names each credential by its environment variable and pushes back when you ask it to include a value.
+- `authoring-skills` runs evals only when you choose them in its closing question, and each eval run uses your usage.
+- When you didn't ask for an audit, `auditing-skills` asks before it runs one, right after a skill is created or edited.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -381,40 +377,41 @@ Run `/reload-plugins`, then type `/skills-engineering:` to list its skills. If i
 </details>
 
 <details>
-<summary><b>I asked for a skill and Claude asked whether to audit it.</b></summary>
+<summary><b>Claude asked whether to audit a skill I never asked it to audit.</b></summary>
 
-`auditing-skills` loads on its own right after a skill is created or edited. Because each reviewer runs as its own agent, it asks first: answer with the full audit, only the reviewers you name, or no audit.
-
-</details>
-
-<details>
-<summary><b>The audit stopped and named a reviewer.</b></summary>
-
-A reviewer you selected isn't among the agents this session can launch. Claude never audits in a reviewer's place, so it stops and names it. Run the audit in a Claude Code session with the plugin enabled, or in a Claude conversation where Claude can run tasks, then check that the plugin is loaded:
-
-```text
-/plugin
-```
+`auditing-skills` loads right after Claude creates or edits a skill. It names the skill, tells you that each reviewer runs as its own agent, and offers the full audit or only the reviewers you name. It runs nothing until you agree.
 
 </details>
 
 <details>
-<summary><b>The reviewers say the frontmatter checks didn't run.</b></summary>
+<summary><b>Does the audit change my skill?</b></summary>
 
-The frontmatter checks need Python 3.12 or later. Check your Python version:
+No. The reviewers have no Edit or Write tool and are told to change none of your files, and `auditing-skills` applies a fix only after the reports and only when you ask for it.
+
+</details>
+
+<details>
+<summary><b>The audit says the frontmatter checks didn't run.</b></summary>
+
+The checks need Python 3.12 or later. Check your version, then install or update Python as the Prerequisites section shows.
 
 ```bash
 python3 --version
 ```
 
-Install or upgrade it as in [Prerequisites](#-prerequisites), then run the audit again.
+</details>
+
+<details>
+<summary><b>Can I audit a skill that lives on my claude.ai account or at a URL?</b></summary>
+
+Yes. Reviewers read files only by path, so `auditing-skills` first downloads or exports the skill into a new empty directory and gives the reviewers that path.
 
 </details>
 
 <details>
-<summary><b>Can I audit one part of a skill only?</b></summary>
+<summary><b>Claude says a reviewer isn't available.</b></summary>
 
-Yes. Put the reviewer names before the skill's path, as in the third example under [Usage](#-usage). With no reviewer named, the audit runs complete.
+A reviewer runs only where the session can launch it. In Claude, agents work only in conversations where Claude can run tasks. Run the audit in Claude Code, or in a conversation that can run tasks.
 
 </details>
 
@@ -422,11 +419,7 @@ Yes. Put the reviewer names before the skill's path, as in the third example und
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
-- 🧪 [Plugin Evals](../plugin-evals/README.md): designs eval suites for a plugin or its skills, the step `authoring-skills` offers after it builds a skill
-- 📖 [Claude Code skills](https://code.claude.com/docs/en/skills)
-- 📖 [Claude Code subagents](https://code.claude.com/docs/en/sub-agents)
-- 📖 [Agent Skills specification](https://agentskills.io/specification)
-- 📖 [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+- 📖 [Skills in Claude Code](https://code.claude.com/docs/en/skills) and [subagents](https://code.claude.com/docs/en/sub-agents), the two components this plugin ships
 
 ## 🐞 Found a problem?
 

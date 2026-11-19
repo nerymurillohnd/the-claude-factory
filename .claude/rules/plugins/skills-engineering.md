@@ -19,9 +19,7 @@ paths:
 - Each agent reads only its reference and `assets/audit-report.md`, by `${CLAUDE_PLUGIN_ROOT}` paths.
 - `references/` holds the reviewers' references and the lookups they are given; `MECHANICAL-CHECKS.md`, at the skill root, is the main session's playbook, which no reviewer reads.
 - Plugin files never name the maintainer validators, their rule ids or any repository path.
-- Model a new agent or reference on the existing ones: same frontmatter fields, section order and checklist groups.
 
 ## Release gate
 
 - Don't release until the mechanical-check scripts exist under `skills/auditing-skills/scripts/`.
-- Keep the skill-lint findings CO-08, CO-10, CO-12, PO-03, FM-03 and SC-03 on this plugin in suspense: report them, never fix them or record them as debt.
