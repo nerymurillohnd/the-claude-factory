@@ -26,7 +26,7 @@ Version [n], [YYYY-MM-DD]. [What changed since the last version, or "First versi
 
 ## Domain sources
 
-[Each technology the skill depends on, with the version its users run, the official source you read with its URL and date, and the facts from it that shape the skill]
+[Each area and technology the skill draws on, with its version or edition, each source you read with its URL and date, and the facts from it that shape the skill]
 
 ## Skill type
 

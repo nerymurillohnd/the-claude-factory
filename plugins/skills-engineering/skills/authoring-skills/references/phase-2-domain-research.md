@@ -1,40 +1,42 @@
 # Phase 2: Domain research
 
-How to learn the domain the skill works in, from the project's code and data and from the official sources of every technology it uses, at the version its users run, before you design the skill.
+How to research everything the skill draws on, in any field, from the user's own material and from primary and expert sources, deeply enough that the skill meets its goal, before you design it.
 
 ## Gotchas
 
 - The documentation of a tool's latest version can describe options, defaults or commands that the version the user runs doesn't have: find the installed version first, and read the release notes between it and the latest.
-- A domain's specialized tool, such as its MCP or documentation server, skill or plugin, often holds newer and more exact documentation than a web search returns: use it before the web.
+- A domain's specialized tool, such as its MCP or documentation server, skill or plugin, often holds newer and more exact information than a web search returns: use it before the web.
+- A general article can repeat outdated or unverified advice: check each claim it makes against a primary source before the skill states it.
 
-## 1. Map what the skill depends on
+## 1. Map what the skill draws on
 
-List every technology the skill's task touches, each with the version the user's project or machine runs:
+List everything the skill's task depends on, whatever the field, such as code, data, design, marketing, documentation, science, operations or productivity:
 
-- languages, frameworks and libraries, from the lockfile or the manifest;
-- command-line tools and binaries, from their `--version`;
-- databases, APIs and services, from the configuration or the user;
-- MCP servers, connectors and apps, from the session's tools and settings;
-- file formats and standards that the input or the output follows.
+- the discipline's knowledge: its methods, standards, quality criteria and common failures, such as a style guide, an accounting standard, a regulation or a research method;
+- technologies: languages, libraries, binaries, databases, APIs and operating systems, each with the version its users run, from the lockfile, the manifest, `--version`, the configuration or the user;
+- platforms, apps, MCP servers and connectors, and the rules they impose, such as an ad platform's policies or an API's limits;
+- the user's own material: their templates, guidelines, examples, past work and conventions.
 
-When a version can't be found, ask the user, or research the latest and say so.
+When a version or an edition can't be found, ask the user, or research the latest and say so.
 
 ## 2. Review what the skill acts on
 
-Read the project's code, configuration, schemas, scripts and a sample of the data the skill will work with, and how the project uses each technology: its wrappers, its conventions and the paths it takes. Leave the values of secrets and credentials unread.
+When the skill serves a project or works on the user's material, read what it will act on: the code, configuration, data, documents, designs or campaigns, and how the user works with them, such as their wrappers, conventions and the paths they take. Leave the values of secrets and credentials unread.
 
-## 3. Research the official sources
+## 3. Research the sources
 
-For each technology on the map:
+For each item on the map:
 
-1. Use the domain's specialized tool first, then its official documentation, API reference, changelog or release notes and official repository, and a web search only to find their current pages.
-2. Read whole sections, and follow their links to the parts the skill depends on.
-3. Check the release notes from the installed version to the latest for removals, renames, changed defaults and fixes that bear on the skill.
-4. Record each source with its URL, its date and the version it covers.
+1. Read the primary sources first: the domain's specialized tool, then the official documentation, standard, regulation, platform policy or peer-reviewed research that owns each fact. Use a web search to find their current pages.
+2. Then read recognized expert sources, such as practitioner guides, case studies and articles from established authorities, for the practice the primary sources don't cover.
+3. Read whole sections, and follow their links to the parts the skill depends on. Cover every dimension the task touches, and stop when the last two sources add no new fact.
+4. For a technology, check the release notes from the installed version to the latest for removals, renames, changed defaults and fixes that bear on the skill.
+5. When the research is broad and the environment offers subagents, split it among parallel subagents, one area each, and check their facts against the sources before you use them.
+6. Record each source with its URL, its date and the version or edition it covers.
 
 ## 4. Gather the project's own material
 
-Build the skill from the project's own material, not from general knowledge: a skill built from the team's runbooks and incident reports carries their schemas, failure modes and fixes, which a general article on the topic can't.
+When the skill serves a project, build it from the project's own material, not from general knowledge: a skill built from the team's runbooks and incident reports carries their schemas, failure modes and fixes, which a general article on the topic can't.
 
 - Read what the project holds on the skill's domain:
   - runbooks, internal documentation and style guides;
@@ -45,13 +47,14 @@ Build the skill from the project's own material, not from general knowledge: a s
 
 ## 5. Settle conflicts
 
+- When a primary source and an expert source differ, follow the primary source.
 - When the project's material and a general article differ, follow the project's.
-- When the project's material contradicts a technology's official documentation, tell the user, ask which prevails, and record the answer with the other decisions of Phase 2.
-- When two official sources disagree, follow the one that owns the technology, and tell the user.
+- When the project's material contradicts a primary source, tell the user, ask which prevails, and record the answer with the other decisions of Phase 2.
+- When two primary sources disagree, follow the one that owns the subject, and tell the user.
 
 ## 6. Carry it into the design
 
-Put each technology, its version and its sources in the Domain sources section of the design proposal. Write every fact that defies what Claude would assume into the skill, as a rule or a gotcha.
+Put each area and technology, its version or edition, and its sources in the Domain sources section of the design proposal. Write every fact that defies what Claude would assume into the skill, as a rule or a gotcha.
 
 ## Official sources
 
