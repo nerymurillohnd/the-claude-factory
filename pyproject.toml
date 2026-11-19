@@ -18,3 +18,142 @@ dev = [
 [tool.uv]
 package = false
 required-version = ">=0.13.7,<0.14"
+
+# =================================================================================================
+# Ruff and basedpyright share one rule: each check has one owner. Where both tools report the same
+# defect, basedpyright owns it (its checks are type-aware) and Ruff's copy is off, except where an
+# official source says the basedpyright copy conflicts with the Ruff formatter. Every pair below was
+# confirmed by running basedpyright 1.40.2 in "all" mode on a probe of each case. No inline
+# suppression is honored: "all" ignores `# type: ignore`, and a bare `# pyright: ignore` is an error.
+# =================================================================================================
+
+[tool.ruff]
+required-version = ">=0.17.5,<0.18"
+line-length = 100
+indent-width = 4
+# Maintainer Python runs on 3.15 through uv run; plugin Python runs on any python3 from 3.12. Set
+# explicitly: target-version wins over requires-python, which would put plugins/ on 3.15.
+target-version = "py315"
+per-file-target-version = { "plugins/**/*.py" = "py312" }
+respect-gitignore = true
+# Excluded paths stay excluded even when a tool passes a file by name (editors, the pre-commit gate).
+force-exclude = true
+# Biome owns Markdown: without this, Ruff's formatter also formats the Python blocks in .md files.
+extend-exclude = ["*.md"]
+# Preview rules, fixes and formatter style change between patch releases and are not a quality gate.
+preview = false
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # === Owned by basedpyright (typeCheckingMode "all") ===
+    "ANN001",  # missing-type-function-argument -> reportMissingParameterType
+    "ANN002",  # missing-type-args -> reportMissingParameterType
+    "ANN003",  # missing-type-kwargs -> reportMissingParameterType
+    "ANN401",  # any-type -> reportExplicitAny
+    "ARG",     # unused-*-argument -> reportUnusedParameter
+    "B008",    # function-call-in-default-argument -> reportCallInDefaultInitializer
+    "B018",    # useless-expression -> reportUnusedExpression
+    "F401",    # unused-import -> reportUnusedImport
+    "F631",    # assert-tuple -> reportAssertAlwaysTrue
+    "F811",    # redefined-while-unused -> reportRedeclaration
+    "F821",    # undefined-name -> reportUndefinedVariable
+    "F822",    # undefined-export -> reportUnsupportedDunderAll
+    "F823",    # undefined-local -> reportUnboundVariable
+    "F841",    # unused-variable -> reportUnusedVariable
+    "N804",    # invalid-first-argument-name-for-class-method -> reportSelfClsParameterName
+    "N805",    # invalid-first-argument-name-for-method -> reportSelfClsParameterName
+    "PGH003",  # blanket-type-ignore -> enableTypeIgnoreComments false, reportIgnoreCommentWithoutRule
+    "PLE0604", # invalid-all-object -> reportUnsupportedDunderAll
+    "PLE0605", # invalid-all-format -> reportUnsupportedDunderAll
+    "PLW0211", # bad-staticmethod-argument -> reportSelfClsParameterName
+    "RUF013",  # implicit-optional -> strictParameterNoneValue (reportArgumentType)
+    "RUF016",  # invalid-index-type -> reportArgumentType, reportCallIssue
+    "SLF001",  # private-member-access -> reportPrivateUsage
+    "UP006",   # non-pep585-annotation -> deprecateTypingAliases (reportDeprecated)
+    "UP007",   # non-pep604-annotation-union -> deprecateTypingAliases (reportDeprecated)
+    "UP035",   # deprecated-import -> deprecateTypingAliases (reportDeprecated)
+    "UP045",   # non-pep604-annotation-optional -> deprecateTypingAliases (reportDeprecated)
+    "W605",    # invalid-escape-sequence -> reportInvalidStringEscapeSequence
+    # Conflict: basedpyright requires `name as name` for an explicit re-export
+    # (reportPrivateLocalImportUsage), which this rule removes. basedpyright's own pyproject.toml
+    # ignores it for that reason.
+    "PLC0414", # useless-import-alias
+
+    # === Conflict with the Ruff formatter (Ruff docs, formatter.md "Conflicting lint rules") ===
+    "W191",   # tab-indentation
+    "E111",   # indentation-with-invalid-multiple
+    "E114",   # indentation-with-invalid-multiple-comment
+    "E117",   # over-indented
+    "D206",   # docstring-tab-indentation
+    "D300",   # triple-single-quotes
+    "Q000",   # bad-quotes-inline-string
+    "Q001",   # bad-quotes-multiline-string
+    "Q002",   # bad-quotes-docstring
+    "Q003",   # avoidable-escaped-quote
+    "Q004",   # unnecessary-escaped-quote
+    "COM812", # missing-trailing-comma
+    "COM819", # prohibited-trailing-comma
+
+    # === Project policy ===
+    "CPY001", # missing-copyright-notice: each plugin's LICENSE carries the notice
+    "S603",   # subprocess-without-shell-equals-true: fires on every subprocess call
+    # pytest is not used; flake8-pytest-style's PT009 and PT027 would demand pytest's bare assert
+    # and pytest.raises over unittest's TestCase.assert* (bare assert is S101, which stays on).
+    "PT",
+]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+# Hyphenated entry scripts, run by path and never imported.
+"scripts/validators/skill-lint.py" = ["N999"]
+"scripts/validators/plugin-consistency.py" = ["N999"]
+"scripts/validators/frontmatter-lint.py" = ["N999"]
+"scripts/release/release-*.py" = ["N999"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+combine-as-imports = true
+order-by-type = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 8
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 100
+ignore-overlong-task-comments = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+docstring-code-format = true
+docstring-code-line-length = 100
+
+[tool.basedpyright]
+# "all": every report* rule is an error, every strict* switch and deprecateTypingAliases are on,
+# `# type: ignore` is not honored, and warnings fail the CLI. failOnWarnings is stated anyway.
+typeCheckingMode = "all"
+failOnWarnings = true
+# basedpyright reads stdlib stubs with the top-level pythonVersion only, never an
+# executionEnvironments one (DetachHead/basedpyright#416, open), so the top level holds the lowest
+# floor: plugin Python runs on any python3 from 3.12. scripts/ runs on 3.15: its syntax is checked
+# as 3.15 and the stdlib it calls as 3.12.
+pythonVersion = "3.12"
+pythonPlatform = "All"
+stubPath = "scripts/typings"
+executionEnvironments = [
+    { root = "plugins/skills-engineering/skills/auditing-skills/scripts" },
+    { root = "plugins/skills-engineering/tests", extraPaths = ["plugins/skills-engineering/skills/auditing-skills/scripts"] },
+    { root = "scripts", pythonVersion = "3.15" },
+]
+# Conflicts with the Ruff formatter, per basedpyright's own pyproject.toml; Ruff's ISC rules own it.
+reportImplicitStringConcatenation = "none"

@@ -37,7 +37,7 @@
     "test:scripts": "uv run python -m unittest discover -s scripts/testers -t scripts -p 'test_*.py'",
     "tools:install": "uv tool install ruff==0.17.5 && uv tool install basedpyright==1.40.2 && uv tool install zizmor==1.32.0 && uv tool install check-jsonschema==0.39.0",
     "typecheck": "npm run typecheck:ts && npm run typecheck:python",
-    "typecheck:python": "basedpyright && basedpyright -p scripts",
+    "typecheck:python": "basedpyright",
     "typecheck:ts": "tsc -p tsconfig.json",
     "validate": "for d in plugins/*/; do claude plugin validate --strict \"$d\" || exit 1; done && claude plugin validate --strict . && npm run validate:claude && npm run validate:mods",
     "validate:claude": "claude plugin validate --strict .claude",
