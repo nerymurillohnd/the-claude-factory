@@ -66,7 +66,7 @@ What the body of the skill must carry, and how to build its task: workflows, che
 
 ## Checklists
 
-- Progress checklist: Claude copies it into its reply and ticks each item as it works. Use it for a long workflow with dependencies or gates, where Claude would lose its place.
+- Progress checklist: Claude copies it into its reply and ticks each item as it works. Use it for a long workflow with dependencies or gates, where Claude would lose its place, with or without scripts. Name each item after its step, so Claude ticks the step it just finished.
 - Verification checklist: Claude checks its finished output against it. Use it when the output can be wrong in ways Claude doesn't notice while producing it. Each item names something observable and fails on a bad output.
 
 ```text
@@ -103,6 +103,14 @@ Check the journal and fix any errors.
 2. Run `python3 ${CLAUDE_SKILL_DIR}/scripts/check_journal.py journal.csv`.
 3. When it fails, fix the rows it names and run it again. After 3 rounds, or when the same error returns after a fix, stop and report it.
 4. Import `journal.csv` only when the check passes.
+
+<!-- Weak: a review with nothing to check against -->
+Review the supplier letter for quality.
+
+<!-- Strong: a document as the validator, with the stop and the gate -->
+1. Check the letter against `STYLE_GUIDE.md`: its terms, its greeting and its required sections.
+2. Note each issue with its section, revise it, and check again. After 3 rounds, stop and report what remains.
+3. Send the letter for approval only when it meets every rule of the guide.
 ```
 
 ## Plan, validate, execute
