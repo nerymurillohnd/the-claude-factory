@@ -22,7 +22,7 @@ How to lay out the text of every file of the skill: headings, lists, checklists,
 
 - Give each file one `#` title, then `##` sections and `###` subsections. Group the content inside a `###` under a bold label on its own line, not a `####`.
 - Write headings and labels in sentence case. Keep capitals for proper names, acronyms and code, and never for emphasis.
-- Open each reference file with its title, then one sentence on what it holds, and a `## Contents` list of links to its sections when it is over 100 lines.
+- Open each reference file with its title, then one sentence on what it holds, and a `## Contents` list of links to its sections when it is over 100 lines, so Claude sees all the file holds even when it previews only its start.
 
 ```markdown
 <!-- Weak: capitals for emphasis, a fourth level, and a title that says nothing -->

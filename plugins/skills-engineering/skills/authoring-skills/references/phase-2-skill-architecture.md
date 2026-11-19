@@ -1,6 +1,6 @@
 # Phase 2: Skill architecture
 
-The folder layout a skill takes in each location, how its files reach each other there, and how to lay out the folders of the components you chose.
+The folder layout a skill takes in each location, how its files reach each other there, how to lay out the folders of the components you chose, and how to split the content between `SKILL.md` and its files.
 
 ## Contents
 
@@ -8,6 +8,7 @@ The folder layout a skill takes in each location, how its files reach each other
 - [Layout by location](#layout-by-location)
 - [Path variables by layout](#path-variables-by-layout)
 - [Lay out the folders](#lay-out-the-folders)
+- [Split the content](#split-the-content)
 - [Official sources](#official-sources)
 
 ## Gotchas
@@ -108,11 +109,32 @@ Claude Code replaces these variables only in `SKILL.md` and in the Bash rules of
 - Name a supporting file at the root in capitals, such as `WORKFLOW.md`, `CHECKLIST.md` or `REFERENCE.md`, so they stand out beside `SKILL.md`, and the files in `references/` in lowercase. Write each link with the file name's exact case: Linux and cloud sessions treat `forms.md` and `FORMS.md` as different files.
 - In a skill whose work runs in phases, give each reference one phase and one topic, and name it with both, such as `phase-2-hooks.md`. A topic two phases use gets one file per phase, because a rule kept in another phase's file is applied late or not at all.
 
+## Split the content
+
+Keep in `SKILL.md` what every run needs, and give each part that only some runs need its own file, behind a pointer whose condition tells Claude when to read it. Choose the split by the shape of the content:
+
+- One task with advanced features: `SKILL.md` holds a quick start with a working example, and one pointer per advanced topic, such as form filling or the full API.
+- Several domains, such as finance and sales data: one reference per domain, each listed in `SKILL.md` with what it covers, so a request about one domain loads none of the others. For a large reference, give the command that finds a term in it, so Claude reads only the matching lines.
+- A common path with rare features: the common path in `SKILL.md`, and each rare feature in its own file, behind the condition that needs it.
+
+```markdown
+<!-- Weak: every domain inline, so a question about sales loads finance and marketing too -->
+## Finance
+[revenue and billing tables]
+## Sales
+[pipeline and account tables]
+
+<!-- Strong: one file per domain, read only when the request touches it, and a search -->
+Read [Finance](references/finance.md) when the request is about revenue, ARR or billing.
+Read [Sales](references/sales.md) when the request is about opportunities or the pipeline.
+To find a metric, run `grep -i "[metric]" ${CLAUDE_SKILL_DIR}/references/sales.md`.
+```
+
 ## Official sources
 
 This file condenses these pages. Read the page whose condition holds before you decide.
 
-- Read [Progressive disclosure patterns](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#progressive-disclosure-patterns) when you choose between files at the root and a `references/` folder. It shows both layouts, with supporting files such as `FORMS.md` and `REFERENCE.md` beside `SKILL.md`.
+- Read [Progressive disclosure patterns](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#progressive-disclosure-patterns) when you choose between files at the root and a `references/` folder, or how to split the content. It shows both layouts, and the three patterns: a high-level guide with references, one file per domain, and conditional details.
 - Read [Skills in a plugin](https://code.claude.com/docs/en/plugins/components#skills) when the skill ships in a plugin. It shows the layout, the command name, extra skill folders and the single skill at the root.
 - Read [Standard layout](https://code.claude.com/docs/en/plugins/manifest-reference#standard-layout) when the plugin holds other components or its manifest moves a folder. It gives each folder's place.
 - Read [Available string substitutions](https://code.claude.com/docs/en/skills#available-string-substitutions) when a file reaches another by a path variable. It defines each variable and where Claude Code replaces it.

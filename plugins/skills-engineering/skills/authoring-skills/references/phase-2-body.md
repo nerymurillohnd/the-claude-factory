@@ -50,7 +50,7 @@ What the body of the skill must carry, and how to build its task: workflows, che
   - Decision point: where the path forks, with a condition Claude can check and where each branch goes.
   - Exit condition: what must be true before a long workflow moves on.
   - Loop back: when a later step can reveal a gap, a return to an earlier step, with a limit on the rounds.
-- Move a long branch or variant to its own file, and point to it from the decision point, so Claude reads only the branch it takes.
+- Move a long branch or variant to its own file, and point to it from the decision point, so Claude reads only the branch it takes. The architecture file of Phase 2 shows how to split the content.
 
 ```markdown
 <!-- Weak: no input, command or output, and nothing stops a bad import -->

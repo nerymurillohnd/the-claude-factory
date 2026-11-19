@@ -54,7 +54,7 @@ These 11 standards are the base for every skill you write, not a limit. Apply ea
 2. Understand first: before you design or plan, understand the user's intent and goal, where the skill will load from, what it will need, and the best practices that apply.
 3. Write for what Claude lacks: include what Claude can't know or wouldn't do consistently. Before each line, ask whether Claude gets it wrong without it. If not, cut it. If unsure, test it.
 4. Optimized for Claude: read Anthropic's current prompting guides for Claude models and write as they recommend, in a tone and format built for the model that loads the skill. Tell Claude what to do, in plain words: give the reason instead of capitalized emphasis, and turn a rule that can't bend into a hook. Keep human-oriented writing for documentation that collaborates with the user, such as a README.
-5. Progressive disclosure: keep `SKILL.md` as the contract that governs the skill's structure, under 500 lines and 5,000 tokens. Delegate procedures, assets and depth to files linked from it, one level deep, and open each reference over 100 lines with a table of contents.
+5. Progressive disclosure: keep `SKILL.md` as the contract that governs the skill's structure, under 500 lines and 5,000 tokens. Delegate procedures, assets and depth to files linked from it, one level deep, split so each run reads only what it needs, and open each reference over 100 lines with a table of contents.
 6. Content in its place: body for what every run needs, references for depth and how-to, assets for files the output starts from, scripts for code that must run the same every time, injected commands for current data every run needs as the skill loads, hooks for rules that must always hold.
 7. Calibrated control: be exact where an operation is fragile and free where many approaches work. Give judgment steps their criterion and reason, fixed steps the action, and every instruction one reading, with one default instead of a menu.
 8. Patterns when needed: gotchas for facts that defy assumptions, templates for fixed formats, checklists for gated steps, validation loops for cheap-to-detect errors, plan-validate-execute for batch or destructive work, scripts for logic Claude keeps rewriting, examples where they help. Embed commands, templates and schemas as code blocks.
@@ -123,7 +123,7 @@ Once the user's intent is understood or your proposal is approved, work through 
 **B. Design before you plan**
 
 4. Design the directory and the body
-   - See [Phase 2: Skill architecture](references/phase-2-skill-architecture.md) to lay out the skill's folders for its location, the files of the components you chose, and the path variables that reach them.
+   - See [Phase 2: Skill architecture](references/phase-2-skill-architecture.md) to lay out the skill's folders for its location and the files of the components you chose, split the content between `SKILL.md` and its files, and choose the path variables that reach them.
    - See [Phase 2: Body](references/phase-2-body.md) to decide what the body carries and build its task: workflows, checklists, validation loops, plan-validate-execute and gotchas.
    - See [Phase 2: Writing style](references/phase-2-writing-style.md) to word each instruction: register, defaults, procedures, terms and emphasis.
    - See [Phase 2: Style and format](references/phase-2-style.md) to lay out headings, lists, checklists, tables, pointers and links.
