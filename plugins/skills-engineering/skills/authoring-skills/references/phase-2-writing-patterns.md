@@ -45,7 +45,7 @@ Read [tokens.md](tokens.md)    ← in auth.md
 
 - Use the imperative: one action per line, with its condition and fallback, and concrete names instead of categories.
 - Give a reason only where the model must judge, so it can decide the cases the line doesn't name. In a fixed step, say what to do without narrating why.
-- No narration, and no capitals for emphasis.
+- No narration, and no capitals or absolutes for emphasis, such as ALWAYS, MUST or "If in doubt, do X": current models over-apply them. Give the reason instead, and turn a rule that can't bend into a hook.
 - Use one term per concept and no time-sensitive wording.
 - State each fact in one file only.
 - State a prohibition as one sentence beside the instruction it limits, or as a gotcha. Don't write it as a correct and incorrect pair: the pairs in this file teach authors, not the model running a skill.
