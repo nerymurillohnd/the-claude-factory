@@ -1,6 +1,6 @@
 import type { On } from 'claude-code'
 import { expect, mock, test } from 'claude-code/testing'
-import { adr, closed, pending, pendingEntry, SETTLED } from './fixtures.ts'
+import { adr, closed, pending, pendingEntry, SETTLED } from './fixtures.js'
 
 const ROOT = '/work/app'
 const DECISIONS = `${ROOT}/.claude/maintainer/decisions`
@@ -402,4 +402,28 @@ test('a record still asks when the verdict beneath cannot be read either', async
   })
   expect(verdict.decision).toBe('ask')
   expect(verdict.plugin).toBe('project-maintainer')
+})
+
+test('a compaction goes on without the note when the records cannot be looked for', async ($, on) => {
+  // The session cannot say where its root is, so the check throws before it calls next
+  on('session.root', () => ({ deny: 'no root' }))
+  const seen = compaction(on)
+  const result = await $.session.compact({ trigger: 'auto', messages: MESSAGES })
+  expect(result.messages).toEqual(MESSAGES)
+  expect(seen.instructions).toBeUndefined()
+})
+
+test('a commit runs once and adds nothing when the reminder cannot check it', async ($, on) => {
+  // The session cannot say where it works, so the reminder throws before it calls next
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  const session = mock.session(on)
+  let runs = 0
+  on('tool.call', () => {
+    runs += 1
+    return { result: 'committed' }
+  })
+  const result = await $.tool.call({ tool: 'Bash', command: 'git commit -m "Add a cache layer"' })
+  expect(runs).toBe(1)
+  expect(JSON.stringify(result)).toContain('committed')
+  expect(session.appended().length).toBe(0)
 })

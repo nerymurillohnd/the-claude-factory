@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
-import { closedAuthority, parseLedger, pendingAuthority, validateLedger } from '../hooks/debt.ts'
-import { closed, pending, pendingEntry } from './fixtures.ts'
+import { closedAuthority, parseLedger, pendingAuthority, validateLedger } from '../hooks/debt.js'
+import { closed, pending, pendingEntry } from './fixtures.js'
 
 test('the ledger parser reads entries and index rows and ignores the Entry format comment', () => {
   const ledger = parseLedger(pending(pendingEntry('DEBT-001'), pendingEntry('DEBT-002')))
