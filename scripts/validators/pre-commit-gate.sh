@@ -10,6 +10,8 @@
 #   .sh                  shfmt -w, then shellcheck
 #   .ts .mjs             tsc --noEmit; a mod's .ts file without its generated tsconfig.json is
 #                        named as not type-checked, without blocking
+#   agent .md            agent-headings (no Markdown heading in a subagent's body), for the .md
+#                        files under plugins/*/agents/ and .claude/agents/
 # The configuration is pyproject.toml (Ruff, basedpyright), biome.jsonc, tsconfig.json,
 # .editorconfig (shfmt), .shellcheckrc and SHELLCHECK_OPTS.
 #
@@ -21,6 +23,7 @@
 set -Eeuo pipefail
 trap 'exit 1' ERR
 
+gate_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 
@@ -42,6 +45,7 @@ biome_files=()
 ts_files=()
 py_files=()
 sh_files=()
+agent_files=()
 partial=()
 while IFS= read -r -d '' file; do
   case "${file}" in
@@ -51,6 +55,9 @@ while IFS= read -r -d '' file; do
     *.sh) sh_files+=("${file}") ;;
     *) continue ;;
   esac
+  # A subagent: an .md file under a plugin's agents/ or .claude/agents/, nested folders included,
+  # as agent-headings discovers them. A case pattern's * also matches /, so a regex instead.
+  if [[ ${file} =~ ^(plugins/[^/]+|\.claude)/agents/.+\.md$ ]]; then agent_files+=("${file}"); fi
   git diff --quiet -- "${file}" || partial+=("${file}")
 done < "${scratch}/staged"
 
@@ -151,6 +158,15 @@ if ((${#sh_files[@]} > 0)); then
     # ShellCheck reads .shellcheckrc and adds SHELLCHECK_OPTS from the environment itself; -S style
     # and -a have no .shellcheckrc key, so they are passed as npm run lint:shell does.
     run_tool shellcheck "${shellcheck}" -S style -a "${sh_files[@]}"
+  fi
+fi
+
+if ((${#agent_files[@]} > 0)); then
+  find_tool uv uv
+  if [[ -n ${uv} ]]; then
+    # The validator beside this script, so the gate and its validator always come from one tree.
+    run_tool agent-headings "${uv}" run --quiet python "${gate_dir}/agent-headings.py" \
+      "${agent_files[@]}"
   fi
 fi
 

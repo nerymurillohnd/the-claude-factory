@@ -29,6 +29,7 @@ is_debt_003() {
 
 step_lint() {
   # lint:js is held back by DEBT-006; biome-changed gates the files a branch changes instead.
+  npm run lint:agents
   npm run lint:python
   npm run lint:shell
   npm run lint:workflows
