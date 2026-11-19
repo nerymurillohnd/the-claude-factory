@@ -13,7 +13,7 @@ Structure every file of a skill, in a plugin or in `.claude/skills/`, this way, 
 - Give each file one `#` title, `Phase N: Topic` in a phase reference, then `##` sections and `###` subsections. Go no deeper: group the content inside a `###` under a bold label on its own line, such as `**A. Identify environment and components**`, and use bold for nothing else.
 - Letter with capitals the parallel parts or scenarios a step chooses between: `Scenario A`, `**A. …**`. Use no lowercase letters.
 - Write a numbered label as `1. Label: text`, with the label in sentence case.
-- Use the target file's title as the text of a link to it, such as `[Phase 2: Skill location](references/phase-2-skill-location.md)`, not its path.
+- Point to every file of the skill with a Markdown link whose path is relative to the skill's folder and whose text is the file's title, such as `[Phase 2: Skill location](references/phase-2-skill-location.md)`, not a bare path.
 
 ## Reference layout
 
