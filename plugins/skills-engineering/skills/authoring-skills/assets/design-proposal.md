@@ -24,6 +24,10 @@ Version [n], [YYYY-MM-DD]. [What changed since the last version, or "First versi
 - Where the skill runs and is served from: [location and surfaces, with the reason]
 - What already loads there: [each overlap or friction found and where it lives; its decision goes under Decisions taken]
 
+## Domain sources
+
+[Each technology the skill depends on, with the version its users run, the official source you read with its URL and date, and the facts from it that shape the skill]
+
 ## Skill type
 
 [One of the six types, with the reason]

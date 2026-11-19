@@ -8,6 +8,7 @@ How to review the skill from the model's seat and run its checks before you deli
 
    ```text
    - [ ] Each section prevents a failure you can name from a use case or a correction.
+   - [ ] Every fact about a technology the skill uses comes from its official source, at the version its users run.
    - [ ] The description carries every use case's trigger words and the boundary with each sibling skill from phase 2, within every target's limit.
    - [ ] Every supporting file is linked from SKILL.md on its own line, with its verb and condition.
    - [ ] A search for each number, limit and rule finds it in one file only.

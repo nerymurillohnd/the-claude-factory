@@ -50,7 +50,7 @@ Write specialized skills that achieve the user's intent and purpose, and the one
 
 These 12 standards are the base for every skill you write, not a limit. Apply each in the form the skill calls for, and add others when official Anthropic documentation for Claude skills backs them.
 
-1. Official sources first: write from official documentation instead of memory or training cut-off knowledge. Search and read Anthropic's documentation for Claude skills and Agent Skills, and this skill's reference files. When sources disagree, follow the one that owns the target surface.
+1. Official sources first: write from official documentation instead of memory or training cut-off knowledge. Search and read Anthropic's documentation for Claude skills and Agent Skills, this skill's reference files, and the official documentation of every technology, service and tool the skill's task depends on, at the version its users run. When sources disagree, follow the one that owns the target surface.
 2. Understand first: before you design or plan, understand the user's intent and goal, where the skill will load from, what it will need, and the best practices that apply.
 3. Write for what Claude lacks: include what Claude can't know or wouldn't do consistently. Before each line, ask whether Claude gets it wrong without it. If not, cut it. If unsure, test it.
 4. Optimized for Claude: read Anthropic's current prompting guides for Claude models and write as they recommend, in a tone and format built for the model that loads the skill. Tell Claude what to do, in plain words: give the reason instead of capitalized emphasis, and turn a rule that can't bend into a hook. Keep human-oriented writing for documentation that collaborates with the user, such as a README.
@@ -83,7 +83,7 @@ Copy this to-do list into your reply and tick each phase and step when you finis
 To do:
 - [ ] Phase 1: Understand the user's intent
 - [ ] Phase 2: Design environment and components
-  - [ ] 1. Recognize the environment and the project
+  - [ ] 1. Recognize the environment, the project and the domain
   - [ ] 2. Identify and choose the skill type and location
   - [ ] 3. Decide the required components
   - [ ] 4. Design the directory and the body
@@ -114,8 +114,9 @@ Once the user's intent is understood or your proposal is approved, work through 
 
 **A. Identify environment and components**
 
-1. Recognize the environment and the project
-   - See [Phase 2: Environment and project](references/phase-2-environment.md) to establish the environment you work in, inventory what the project and Claude already load, flag every overlap or friction with the new skill for the user to decide, and gather the domain sources the skill is built from.
+1. Recognize the environment, the project and the domain
+   - See [Phase 2: Environment and project](references/phase-2-environment.md) to establish the environment you work in, inventory what the project and Claude already load, and flag every overlap or friction with the new skill for the user to decide.
+   - Then see [Phase 2: Domain research](references/phase-2-domain-research.md) to review the code and data the skill acts on, and research the official sources of every technology it uses, at the version its users run.
 2. Identify and choose the skill type and location
    - See [Phase 2: Skill types](references/phase-2-skill-types.md) to choose which of the six types this skill is.
    - See [Phase 2: Skill location](references/phase-2-skill-location.md) to choose where the skill lives, from which sessions load it there and when.
