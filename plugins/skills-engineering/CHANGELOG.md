@@ -6,9 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-11-18
+## [0.2.0] - 2026-11-19
+
+### Added
+
+- `authoring-skills` now researches the domain of the skill you ask for before it designs it: it reviews the code, data or documents the skill will act on, and reads the official sources of every technology, standard or platform the skill uses, at the version you run.
+- `authoring-skills` now presents its design as a document you approve, from a template, and updates it and shows it again in full after each of your corrections, so the plan starts from what you approved and not from memory of the conversation.
+- In Claude Code, `authoring-skills` now writes its plan in plan mode, so the plan only goes ahead once you approve it.
 
 ### Changed
+
+- `authoring-skills` is rebuilt in seven phases, each with a clear end: your intent, the design, the plan, the build, a self-review, a report with a question, and an audit or evals. Each topic it teaches sits in its own reference file, which it reads at the step that needs it.
+- The skills `authoring-skills` writes now follow current Agent Skills best practices: steps with a working example instead of exhaustive coverage, one default instead of a menu, checklists, validation loops with a stop, plan-validate-execute for batch or risky work, and gotchas written as the trap and its fix.
+- After it builds a skill, `authoring-skills` reviews it from Claude's seat, then asks how to go on, with no option preselected: keep it, run `auditing-skills`, build evals, or anything else. It checks each audit finding with you before applying it, and asks again until you keep the skill.
+- `authoring-skills` never writes a credential's value into a skill: it names each credential by its environment variable, and pushes back when you ask it to include a value.
+- In Claude Code, the commands in the skills `authoring-skills` writes reach their scripts with the skill's folder variable, so they work wherever the session's working folder is; links between the skill's files stay relative.
 
 - The reviewers no longer forbid themselves to run or measure anything; they take the mechanical results from the audit and keep strictly to auditing, treating any change to your files as a serious defect of the audit.
 - The nine reviewers now keep only their model, effort level and denied tools in their settings: they load your `CLAUDE.md` files like any subagent and have no turn limit or color of their own.

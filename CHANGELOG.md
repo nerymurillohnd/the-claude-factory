@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-19
+
+### Changed
+
+- **skills-engineering** 0.2.0 — `authoring-skills` is rebuilt in seven phases: it researches the skill's domain in current official sources, gets your approval on a versioned design and, in Claude Code, a plan in plan mode, builds and self-reviews the skill, then asks whether to keep it, audit it or build evals; `auditing-skills` weighs how descriptions say when to use a skill, checks that a phased skill's files are cut and ordered by phase, and follows Anthropic's own docs first where sources disagree.
+
 ## 2026-11-18
 
 ### Added
@@ -16,7 +22,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **instruction-engineering** 0.2.0 — **Breaking:** the `claude-md-and-rules` skill is now `cc-md-and-rules`, for the same reason; run `/instruction-engineering:cc-md-and-rules` instead. What the skill does is unchanged.
 - **instruction-engineering** 0.2.1 — the `reviewer` agent checks loader facts in the current Claude Code docs through your session's docs server.
 - **work-lifecycle** 0.2.0 — the new `restructuring-documents` skill reorganizes documentation without losing a line, mapping every line in a ledger you approve and checking each task with a bundled script and the new read-only `migration-verifier` agent; `planning-researcher` researches in depth with your session's model, effort and tools, docs servers included; `plan-verifier` checks facts through your docs servers and skills; `planning-before-execution` treats published work as high-stakes, rewrites the whole plan when you correct it before approving, and re-checks research from earlier in the session.
-- **skills-engineering** 0.2.0 — `auditing-skills` weighs how skill and subagent descriptions say when to use them, with a "Use…" clause fitted to how each is invoked, checks that a phased skill's files are cut and ordered by phase, and follows Anthropic's own docs first where sources disagree; `authoring-skills` writes descriptions the same way.
 - **plugin-engineering** 0.4.0 — **Breaking:** `public-marketplace-dev` now runs only when you call it with `/plugin-engineering:public-marketplace-dev`, and is for setting up a new public marketplace on GitHub; `cli-commands-guide` loads the specialized skills alongside it, and `plugin-testing-and-debugging` runs after every plugin you create or change.
 - **hook-engineering** 0.3.1 — `hook-development` loads for auditing, debugging and questions about hooks, and no longer competes with `writing-hooks` when you ask for a new hook; the `hook-engineer` agent says which tasks it takes.
 
