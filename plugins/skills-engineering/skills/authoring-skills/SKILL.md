@@ -114,7 +114,8 @@ Once the user's intent is understood or your proposal is approved, work through 
    - See [Phase 2: Components](references/phase-2-components.md) to see every component a skill can have and what each one is for, and choose the ones this skill needs.
    - If a subagent runs the skill or reads it, see [Phase 2: Skills for subagents](references/phase-2-subagents.md) to choose whether the subagent runs it as its task or preloads it as knowledge, and what a subagent can't do.
    - Then, for each component you chose:
-     - See [Phase 2: Scripts](references/phase-2-scripts.md) to choose where each script lives, its language and interface, how the body calls it, and any injected command.
+     - See [Phase 2: Scripts](references/phase-2-scripts.md) to decide whether the skill needs scripts, and choose where each one lives, its language and interface, and how the body calls it.
+     - See [Phase 2: Injected commands](references/phase-2-injected-commands.md) to decide whether the skill injects commands as it loads, and write and pre-approve each one.
      - See [Phase 2: Hooks](references/phase-2-hooks.md) to choose a hook's event, matcher and handler type, and where it lives: skill, plugin or settings.
      - See [Phase 2: Tools and other skills](references/phase-2-tools-and-skills.md) to choose how the skill names MCP tools and other skills, what it does when they are missing, and which plugin dependencies it declares.
      - See [Phase 2: Configuration, state and security](references/phase-2-config-and-security.md) to choose where configuration and state live, which values the user provides, and the limits the skill keeps to its stated purpose.
