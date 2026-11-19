@@ -23,6 +23,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Fixed
 
+- **file-tree-pane** 0.1.7 — `claude plugin validate --strict` passes again: the mod imports its own files as `./file.js`, the form the mods docs show; nothing changes in how it works.
+- **project-maintainer** 0.2.7 — `claude plugin validate --strict` passes again, and if the compaction note or the commit reminder fails, the compaction or the command still goes on as asked.
 - **svelte-development** 0.1.5 — `svelte-best-practices` points to the current source of Astro's Svelte renderer, now in `@astrojs/svelte-renderer`, and drops SvelteKit's removed Sapper migration guide from its docs map.
 - **turn-meter** 0.1.7 — if counting a tool call fails, the call goes on unchanged, and if `/turn-meter` fails, it says so instead of giving no reply; validated and tested on Claude Code v2.1.328.
 
