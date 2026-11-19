@@ -1,5 +1,5 @@
 # Ruff + basedpyright
-required-version = ">=0.17.4,<0.18"
+required-version = ">=0.17.5,<0.18"
 
 line-length = 100
 indent-width = 4
@@ -14,6 +14,9 @@ respect-gitignore = true
 force-exclude = true
 # Every Python file in the repository is linted and formatted, .github/ included; git-ignored
 # folders such as node_modules and .venv stay out through respect-gitignore.
+# Biome owns Markdown: Ruff's formatter would also format the Python code blocks in .md files,
+# so they are excluded, the way Ruff's formatter docs say to turn Markdown formatting off.
+extend-exclude = ["*.md"]
 
 # Explicit, not implicit: preview rules, fixes and formatter style change between patch
 # releases and are not a quality gate. `ruff check --preview` still opts in per run.
