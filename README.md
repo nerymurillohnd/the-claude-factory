@@ -158,7 +158,7 @@ _Observability, usage tracking and audit trails._
 | :-- | :-- | :-- | :--: | :-- |
 | [**Model Trace**](./plugins/model-trace#readme)<br>`model-trace@the-claude-factory` | Usage observability for Claude Code: shows, as Claude works, each skill, agent, MCP server, plugin, hook and web tool it uses in the session, how many times and at what time, with an export to Markdown or HTML. A Claude Code mod. | 💻 Code only | `0.1.5` | 🧩 Mods |
 | [**Tool Ledger**](./plugins/tool-ledger#readme)<br>`tool-ledger@the-claude-factory` | Audit and observability panel for every tool call of the session: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied by permissions or hooks. A Claude Code mod. | 💻 Code only | `0.1.6` | 🧩 Mods |
-| [**Turn Meter**](./plugins/turn-meter#readme)<br>`turn-meter@the-claude-factory` | Shows how long each turn took (duration), how many tools it used in the main thread and in subagents, and the tokens it spent, in a status band above the prompt, with usage at a glance and a notification when a long turn ends. A Claude Code mod. | 💻 Code only | `0.1.6` | 🧩 Mods |
+| [**Turn Meter**](./plugins/turn-meter#readme)<br>`turn-meter@the-claude-factory` | Shows how long each turn took (duration), how many tools it used in the main thread and in subagents, and the tokens it spent, in a status band above the prompt, with usage at a glance and a notification when a long turn ends. A Claude Code mod. | 💻 Code only | `0.1.7` | 🧩 Mods |
 
 ### 🧪 Testing & Quality
 

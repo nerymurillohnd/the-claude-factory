@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-19
+
+### Fixed
+
+- If the tool count fails during a tool call, the call now goes on unchanged instead of depending on Claude Code to skip the failed step, and if `/turn-meter` fails, it now says so instead of giving no reply.
+- Validated and tested on Claude Code v2.1.328. Nothing else changes in how the plugin works.
+
 ## [0.1.6] - 2026-11-13
 
 ### Changed
@@ -52,7 +59,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The `/turn-meter` command and a **Hide** button to hide or show the band.
 - Tested with Claude Code v2.1.308; requires v2.1.295 or later.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/turn-meter--v0.1.6...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/turn-meter--v0.1.7...HEAD
+[0.1.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.7
 [0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.6
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.4

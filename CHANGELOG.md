@@ -21,6 +21,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **typescript7-lsp-intelligence** 0.5.0 — **Breaking:** the same first-edit wait and opening step; the `ts-lifecycle` skill now carries the TypeScript 6 plugin's corrections, among them that `allowJs` alone doesn't type-check JavaScript.
 - **github-operations** 0.9.1 — the four agents open with their role, their expertise and their goal, and mark their sections with plain labels instead of Markdown headings; what they do is unchanged.
 
+### Fixed
+
+- **turn-meter** 0.1.7 — if counting a tool call fails, the call goes on unchanged, and if `/turn-meter` fails, it says so instead of giving no reply; validated and tested on Claude Code v2.1.328.
+
 ## 2026-11-18
 
 ### Added
