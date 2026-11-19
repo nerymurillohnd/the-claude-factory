@@ -10,7 +10,7 @@ How to hand the skill to the user and ask how to proceed.
 
 ## Report
 
-Report what you built and what each file holds, each decision and its reason, what you checked and how, what you couldn't check and why, and the assumptions still open. Never report a check you didn't run as passed.
+Report what you built and what each file holds, each decision and its reason, the path of the approved design document, each deviation from the plan recorded in Phase 4, what you checked and how, what you couldn't check and why, and the assumptions still open. Never report a check you didn't run as passed.
 
 ## The question
 
@@ -21,7 +21,7 @@ Question: The skill [name] is finished and self-reviewed. How do you want to pro
 Header: Next step
 Multiple selection: yes
 Options:
-- Keep it as is (Recommended): The skill is done as delivered.
+- Keep it as is: The skill is done as delivered.
 - Run the audit: Load auditing-skills and run its full battery of reviewer agents on the skill.
 - Build evals: [Plugin evals, run with claude plugin eval. | Evals for skills, run in clean subagents.]
 ```
@@ -31,5 +31,6 @@ Options:
 - Keep it as is, alone: the skill is done.
 - Run the audit, build evals, or both, with or without Keep it as is: go to phase 7 with what they chose.
 - Text under Other: do what the user wrote. When it changed the skill, run phase 5 again, report what changed, then ask again.
+- After phase 7, report again and ask again: the user may run another audit or more evals, until they keep the skill as it is.
 
 Exit: the user keeps the skill as it is, or chose phase 7.

@@ -106,6 +106,8 @@ Start by choosing the situation in which you loaded this skill:
 
 Read [Phase 1: Understand the user's intent](references/phase-1-intent.md) to confirm your scenario, then understand the user's intent (A), propose a new skill (B) or understand what to change (C).
 
+Exit: the last step of your scenario in the Phase 1 file is met.
+
 ### Phase 2: Design environment and components
 
 Once the user's intent is understood or your proposal is approved, work through A, B and C in order. For an existing skill, decide only what changes.
@@ -165,11 +167,15 @@ Scaffold the skill's folder and write every file the approved plan lists, checki
 
 - Read [Phase 4: Build](references/phase-4-build.md) when you start this phase.
 
+Exit: every planned file exists and passes its checks.
+
 ### Phase 5: Review the skill
 
-Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing until they pass.
+Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing what fails.
 
 - Read [Phase 5: Self-review](references/phase-5-self-review.md) when you start this phase.
+
+Exit: every check passes, or each one that can't is listed for the report.
 
 ### Phase 6: Report and ask
 
@@ -177,8 +183,12 @@ Report what you built and checked, and ask the user how to proceed.
 
 - Read [Phase 6: Deliver](references/phase-6-deliver.md) when you start this phase.
 
+Exit: the user keeps the skill as it is, or chooses the audit, the evals or both.
+
 ### Phase 7: Audit and evaluate
 
 Run the audit, the evals or both, as the user chose, then the final checks, and deliver again.
 
 - Read [Phase 7: Audit and evals](references/phase-7-audit-and-evals.md) when the user chooses the audit or the evals in Phase 6.
+
+Exit: every final check passes or is reported with its output, and you are back at Phase 6.

@@ -10,7 +10,12 @@ How to run the audit and the evals the user chose in phase 6, and the final chec
 
 ## Audit
 
-Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. Apply its findings through Scenario C of the intent file of Phase 1, then run phase 5 again. When the user chose the evals too, run the audit first.
+Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. When the user chose the evals too, run the audit first. Then apply its findings, with no new design or plan:
+
+1. Check each finding against the skill and the official sources, since a finding can be wrong.
+2. Tell the user which findings you apply and which you reject, each with its reason.
+3. Apply the accepted ones. When one changes a decision of the design, update the design document and raise its version.
+4. Run phase 5 again.
 
 ## Evals
 
