@@ -43,6 +43,15 @@ const USER_LAYER = {
   },
 }
 
+/**
+ * A WebSearch call. Its input depends on the session: where Claude Code offers extended search,
+ * the engine's tool types require `mode`; elsewhere, as in `claude plugin validate`, they have no
+ * `mode` and refuse it in an object literal. Built here and passed on, the call checks against both.
+ */
+function webSearch(query: string): { tool: 'WebSearch'; query: string; mode: 'standard' } {
+  return { tool: 'WebSearch', query, mode: 'standard' }
+}
+
 /** The engine beneath the plugin: what the session has available. */
 function world(
   on: On,
@@ -227,7 +236,7 @@ describe('the session', () => {
     })
     await $.tool.call({ tool: 'mcp__plugin_docs-kit_search__query', q: 'a' })
     await $.tool.call({ tool: 'mcp__plugin_docs-kit_search__query', q: 'b' })
-    await $.tool.call({ tool: 'WebSearch', query: 'mods', mode: 'standard' })
+    await $.tool.call(webSearch('mods'))
     await $.tool.call({ tool: 'Bash', command: 'ls' })
 
     for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
@@ -348,7 +357,7 @@ describe('the session', () => {
   test('observing never changes a call, even when recording fails', async ($, on) => {
     world(on)
     on('state.set', () => ({ deny: 'store unavailable' }))
-    const ran = await $.tool.call({ tool: 'WebSearch', query: 'x', mode: 'standard' })
+    const ran = await $.tool.call(webSearch('x'))
     expect(ran.result).toEqual({ ok: true })
   })
 
