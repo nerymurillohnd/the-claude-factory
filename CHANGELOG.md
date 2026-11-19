@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Changed
 
 - **skills-engineering** 0.2.0 — `authoring-skills` is rebuilt in seven phases: it researches the skill's domain in current official sources, gets your approval on a versioned design and, in Claude Code, a plan in plan mode, builds and self-reviews the skill, then asks whether to keep it, audit it or build evals; `auditing-skills` weighs how descriptions say when to use a skill, checks that a phased skill's files are cut and ordered by phase, and follows Anthropic's own docs first where sources disagree.
+- **hook-engineering** 0.3.2 — the `hook-engineer` agent opens with its role, its expertise and its goal, and marks its sections with plain labels instead of Markdown headings; what it does is unchanged.
+- **instruction-engineering** 0.2.2 — the `reviewer` agent takes the same layout; its checks and report are unchanged.
+- **skill-diagnostics** 0.4.3 — the six audit agents take the same layout; their rules, methods and report templates are unchanged.
+- **svelte-development** 0.1.4 — `svelte-code-auditor` and `svelte-component-editor` take the same layout; their rules, steps and report formats are unchanged.
+- **tailwind-development** 0.3.5 — the four agents take the same layout; their steps and reports are unchanged.
 
 ## 2026-11-18
 

@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-19
+
+### Changed
+
+- The `svelte-code-auditor` and `svelte-component-editor` agents now open with their role, their expertise and a goal that sums up their existing rules, and mark each section with a plain label instead of a Markdown heading. Their rules, steps, checklists and report formats are unchanged.
+
 ## [0.1.3] - 2026-11-06
 
 ### Changed
@@ -36,7 +42,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Svelte MCP server: the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, with no download or install.
 - Svelte language server: `svelteserver` for `.svelte` files, with diagnostics after each edit, when `svelte-language-server` 0.18.5 or later is installed on your `PATH`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.1.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.1.4...HEAD
+[0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.1

@@ -19,6 +19,7 @@
 | --- | --- | --- | --- | --- |
 | 2026-11-13 | DEBT-002 | resolved | The cloud setup script pins every tool it installs | none |
 | 2026-11-13 | DEBT-004 | resolved | Changelog versions link to their release pages in the files, the procedure and the script | none |
+| 2026-11-19 | DEBT-007 | resolved | The fourteen plugin subagents follow the house agent format | none |
 
 ## 🏁 Closed items
 
@@ -90,6 +91,37 @@ The owner kept the release-page format on 2026-11-13. Commit d3aef8e changed fou
 - **Residual risk:** none.
 - **Closed by:** commit d3aef8e.
 - **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-007 — The fourteen plugin subagents follow the house agent format
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-19 |
+| **Logged on** | 2026-11-18 |
+| **Owner** | unassigned |
+
+#### ❗ The problem
+
+Fourteen plugin subagents used Markdown headings instead of the house agent format of `.claude/rules/code-quality/agent-and-command-style.md`: `hook-engineering/agents/hook-engineer.md`, `instruction-engineering/agents/reviewer.md`, the six `skill-diagnostics/agents/*.md`, the two `svelte-development/agents/*.md` and the four `tailwind-development/agents/*.md`. A new agent modeled on one of them repeated the headings.
+
+#### 🔧 The closure
+
+On 2026-11-19 the owner asked for all fourteen in one branch instead of a pull request per plugin. Each agent now opens with its role paragraph, `Your expertise:` and `GOAL:`, marks every later section with an uppercase label instead of a heading, and drops bold outside code fences; fenced blocks, such as report templates, are byte-identical. Each `GOAL:` sums up the agent's existing rules, and a `/code-review` pass made three of them conditional where the rules are (the migrator's approval, the Svelte editor's unchecked exits, the verifier's fourth ruling). The five plugins took patch bumps: hook-engineering 0.3.2, instruction-engineering 0.2.2, skill-diagnostics 0.4.3, svelte-development 0.1.4 and tailwind-development 0.3.5.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `claude plugin validate --strict` passed for each of the five plugins and the marketplace; `plugin details` listed every agent (1, 1, 6, 2 and 4); `npm run check:consistency -- --offline` exited 0; `npm run test:plugins` ran 58 tests, OK; `check:install --from local` installed each new version. A line-by-line comparison against a frozen baseline found every original body line in the new file, except the intended rewordings (bold removed, the hook-engineer field list moved into `Your expertise:` bullets, section references renamed), each confirmed word by word. |
+| 🚫 **Negative:** the original failure or condition is gone | The same count the entry used, `#` lines outside code fences in each `plugins/*/agents/*.md` body, finds 0 files (was 14). |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** `instruction-engineering/agents/reviewer.md` still fails FM-02 (a colon in `description`), which DEBT-005 holds; the frontmatter was not touched.
+- **Closed by:** [#114](https://github.com/nerymurillohnd/the-claude-factory/pull/114).
+- **Related records:** DEBT-005.
 - **Superseded by:** none
 
 <!--

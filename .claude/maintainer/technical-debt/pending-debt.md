@@ -44,7 +44,6 @@ Add an item only when all of these hold:
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule | 🟠 Blocked |
 | DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
-| DEBT-007 | Fourteen plugin subagents use Markdown headings instead of the house agent format | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 
@@ -214,33 +213,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes.
 - **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/validators/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
 - **Review condition:** `npm run lint:js` exits 0.
-- **Related records:** none.
-
-### DEBT-007 — Fourteen plugin subagents use Markdown headings instead of the house agent format
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | unassigned |
-| **Logged** | 2026-11-18 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - The rule `.claude/rules/code-quality/skill-standards.md`, rewritten on `main` in 3589127 on 2026-11-18, says a subagent body uses plain language with a hierarchy and no Markdown headings: it opens with the role and its expertise, then `GOAL:`, and marks later sections with uppercase labels.
-  - On 2026-11-18, on branch `ccr-c6ac3e54-13pbbz` at 49a81f9, a count of `#` heading lines outside code fences in each agent body finds 14 files: `hook-engineering/agents/hook-engineer.md` (9), `instruction-engineering/agents/reviewer.md` (3), the six `skill-diagnostics/agents/*.md` (8 each), `svelte-development/agents/svelte-code-auditor.md` (7) and `svelte-component-editor.md` (6), and the four `tailwind-development/agents/*.md` (3 each).
-  - The skills-engineering and work-lifecycle agents already follow the format.
-  - The owner deferred the conversion and asked to log it, stated by the user on 2026-11-18.
-- **Inferences:** none.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the agents read inconsistently with the house format, and a new agent modeled on one of them repeats the headings.
-- **Why it is not fixed now:** each conversion is a plugin change with a version bump in its own pull request, and the owner schedules plugin work.
-- **Next action:** the owner schedules a pull request per plugin that rewrites its agents in the house format, modeled on the skills-engineering reviewer agents.
-- **Review condition:** the same count finds no `#` heading outside code fences in any plugin agent body.
 - **Related records:** none.
 
 ### DEBT-008 — public-marketplace-dev's body teaches more than its description promises

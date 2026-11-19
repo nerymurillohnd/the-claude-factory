@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-19
+
+### Changed
+
+- The `hook-engineer` agent's instructions now open with its role, its expertise and a goal that sums up its existing rules, and mark each section with a plain label instead of a Markdown heading. Its instructions keep everything they said.
+
 ## [0.3.1] - 2026-11-18
 
 ### Changed
@@ -76,7 +82,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Helper scripts: a linter for hooks configuration files, a probe that predicts how Claude Code reads a command hook's result, and a changelog script that lists the hook-related entries newer than your installed version.
 - The `claude-code-docs` MCP server (`https://code.claude.com/docs/mcp`), so Claude reads the official hooks pages instead of recalling them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.2...HEAD
+[0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.2
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.0
 [0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.6
