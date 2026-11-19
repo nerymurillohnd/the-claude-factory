@@ -142,32 +142,20 @@ Once the user's intent is understood or your proposal is approved, work through 
 **C. Present the design**
 
 6. Present the design to the user
-   - Show the design as a proposal: what you found in the environment and the user's decision on each friction, the skill type and location, its components, the body, the frontmatter, the name and the description.
-   - Adjust it with the user's corrections until the whole idea is clear.
-   - When the user approves the design, go to Phase 3.
+   - Fill in [Design proposal](assets/design-proposal.md): it holds the decisions of phases 1 and 2, not the build's specifications.
+   - In Claude Code, write it to `design-[skill name].md` in the session's scratchpad, or in the project's plans folder when the session has no scratchpad, never in the skill's folder, and give the user its path. In plan mode, or outside Claude Code, put the whole document in the reply.
+   - When the user corrects, observes or asks anything, settle each point with them, update the same document, raise its version, and present the whole design again for approval. Never carry a correction into Phase 3 only in the conversation.
+   - When the user approves the design, go to Phase 3 with the approved document.
 
-Exit: the user approves the design.
+Exit: the user approves the latest version of the design document.
 
 ### Phase 3: Draft and approve plan
 
-Draft the plan from the design and get the user's approval before you build.
+Expand the approved design into the build's specifications, and get the user's approval before you build.
 
-1. Draft: write the plan in this shape.
-
-   ```text
-   Goal: [one sentence]
-   Use cases: [trigger and checkable result for each]
-   Type and location: [kind, who invokes it, where it loads, why, and what differs from the ask]
-   Files: [each path, what it holds, when the model reads or runs it]
-   Components: [each script, injected command, hook, subagent, tool and mechanism, with its reason]
-   Frontmatter: [each field and value, with its reason]
-   Name: [proposed name], because [reason]; alternatives: [names]
-   Description: [full text]
-   Assumptions: [each one still open]
-   ```
-
-2. Present: show it to the user and wait for their answer.
-3. Approval: if they approve, go to Phase 4. If they comment, adjust the plan and present it again.
+1. Plan mode: in Claude Code, enter plan mode with `EnterPlanMode` unless the session is already in it. Where plan mode doesn't exist, such as claude.ai, the API or a subagent without the tool, plan in the reply. In a terminal session with bypass permissions available, plan mode doesn't block edits: keep to planning until the user approves.
+2. Draft: read the approved design document and expand it, without repeating what it decided, into the checkable result of each use case, every file with its path, what it holds and when the model reads or runs it, the build order with the check of each step, and the assumptions still open.
+3. Present and approve: in plan mode, present the plan with `ExitPlanMode`, which only the user can approve; elsewhere, present it in the reply and wait. A subagent returns the plan as its result. When the user corrects, observes or asks anything, settle each point and present the whole plan again. When a point changes a design decision, write the change into the plan, since plan mode allows no other file, and update the design document and its version once the plan is approved. Once approved, go to Phase 4.
 
 Exit: the user approves the plan.
 
