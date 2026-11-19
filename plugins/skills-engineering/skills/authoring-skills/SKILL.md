@@ -111,7 +111,7 @@ Once the user's intent is understood or your proposal is approved, work through 
    - See [Phase 2: Skill types](references/phase-2-skill-types.md) to decide whether a skill is the right feature and choose which of the six types this one is.
    - See [Phase 2: Skill location](references/phase-2-skill-location.md) to choose where the skill lives, and learn what each location changes in what you write, its path variables included.
 3. Decide the required components
-   - See [Phase 2: Components](references/phase-2-components.md) to see every component a skill can have and where each one works, and choose the ones this skill needs.
+   - See [Phase 2: Components](references/phase-2-components.md) to see every component a skill can have and what each one is for, and choose the ones this skill needs.
    - If a subagent runs the skill or reads it, see [Phase 2: Skills for subagents](references/phase-2-subagents.md) to choose whether the subagent runs it as its task or preloads it as knowledge, and what a subagent can't do.
    - Then, for each component you chose:
      - See [Phase 2: Scripts](references/phase-2-scripts.md) to choose where each script lives, its language and interface, how the body calls it, and any injected command.

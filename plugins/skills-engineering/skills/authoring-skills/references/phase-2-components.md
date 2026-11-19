@@ -1,26 +1,24 @@
 # Phase 2: Components
 
-The components a skill can have, what each one is for, where each one works, and which file of Phase 2 shows how to build it. Choose here which ones the skill needs.
+The components a skill can have, what each one is for, and which file of Phase 2 shows how to build it. Choose here which ones the skill needs.
 
 ## Contents
 
 - [Gotchas](#gotchas)
 - [The components](#the-components)
 - [Choose the components](#choose-the-components)
-- [Where each component works](#where-each-component-works)
 - [Official sources](#official-sources)
 
 ## Gotchas
 
 - Every component costs something on every run: a reference costs a read, a script an execution, a hook fires on every event it matches. Add a component only for a failure you can name without it.
 - Claude reads a reference only when `SKILL.md` points to it, and runs a script without reading its code: only the script's output enters the context.
-- Beyond the files of the skill folder, every component is a Claude Code feature. An upload to claude.ai or the Claude API takes only the files and the six portable frontmatter fields: a skill that declares `hooks` or `context: fork` fails the upload, and injected commands and path variables don't work there.
 
 ## The components
 
 A skill has its own files, mechanisms it declares in `SKILL.md`, and components outside it that it ships with or relies on.
 
-**A. Files of the skill, on every surface**
+**A. Files of the skill**
 
 | Component | What it is for |
 | :-- | :-- |
@@ -29,7 +27,7 @@ A skill has its own files, mechanisms it declares in `SKILL.md`, and components 
 | `scripts/` | Code that must run the same way every time, run without being read |
 | `assets/` | Files the output starts from: templates, images, data, schemas |
 
-**B. Mechanisms declared in `SKILL.md`, in Claude Code only**
+**B. Mechanisms declared in `SKILL.md`**
 
 | Component | What it is for |
 | :-- | :-- |
@@ -40,7 +38,7 @@ A skill has its own files, mechanisms it declares in `SKILL.md`, and components 
 | `paths` | Loading the skill automatically only for certain files |
 | Injected commands | Live data, such as a diff, put into the skill as it loads |
 
-**C. Components outside the skill, in Claude Code only**
+**C. Components outside the skill**
 
 | Component | What it is for |
 | :-- | :-- |
@@ -66,18 +64,6 @@ Start from `SKILL.md` alone, and add each component only for the failure it fixe
 
 For each component you choose, read its file of Phase 2: scripts, hooks, skills for subagents, tools and other skills, or configuration, state and security. The directory file then lays out where each one lives.
 
-## Where each component works
-
-| Component | Claude Code | claude.ai and Claude API uploads |
-| :-- | :-- | :-- |
-| `SKILL.md`, `references/`, `assets/` | Yes | Yes |
-| `scripts/` | Yes, with the user's network and tools | Yes, in a sandbox: the API has no network and no package installs |
-| Frontmatter beyond the six portable fields | Yes | No: the upload fails |
-| Hooks, `context: fork`, injected commands, path variables | Yes | No |
-| Subagents, plugin hooks, MCP servers | Yes, in a plugin or the project | No |
-
-When the skill targets both, keep what an upload needs inside the files of section A, and state in the design what the upload loses.
-
 ## Official sources
 
 This file condenses these pages. Read the page whose condition holds before you decide: each holds the full rules, edge cases and version notes this file leaves out.
@@ -89,4 +75,3 @@ This file condenses these pages. Read the page whose condition holds before you 
 - Read [Inject dynamic context](https://code.claude.com/docs/en/skills#inject-dynamic-context) when the skill needs live data as it loads. It shows how injected commands run and what aborts the skill.
 - Read [Add components to a plugin](https://code.claude.com/docs/en/plugins/components) when the skill ships in a plugin with other components. It shows each component's folder and an example that validates.
 - Read [Compare similar features](https://code.claude.com/docs/en/features-overview#compare-similar-features) when a need could be met by a skill or by another component. It compares them pair by pair.
-- Read [Limitations and constraints](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview#limitations-and-constraints) when the skill must also work as an upload. It gives each surface's runtime and network limits.
