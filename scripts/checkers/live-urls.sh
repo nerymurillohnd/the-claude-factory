@@ -12,6 +12,11 @@ set -euo pipefail
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 ignore="scripts/checkers/live-urls.ignore"
+# This repository's own tag and compare links: a CHANGELOG links each new version's tag before
+# release.yml creates it at the merge, and check:consistency (PC-04) already matches tags.
+origin="$(git remote get-url origin)"
+repo="${origin%.git}"
+repo="github.com/${repo#*github.com[:/]}"
 
 files=("$@")
 if ((${#files[@]} == 0)); then
@@ -23,11 +28,12 @@ fi
 # punctuation from prose or Markdown trimmed. Left out: hosts without a dot, reserved example
 # names (RFC 2606, RFC 6761: example.com, .example, .test, .invalid, localhost), .internal and
 # .local, URLs with a shell variable ($) or cut at a line break (a trailing -), and every URL
-# that contains a line of live-urls.ignore.
+# that contains a line of live-urls.ignore, and this repository's own tag and compare links.
 urls="$(grep -IhoE 'https?://[^][[:space:]"'"'"'`<>(){}|\\^]+' -- "${files[@]}" \
   | sed -E 's/[.,;:!?*_]+$//' \
   | awk -F/ '$3 ~ /\./ && $3 !~ /(^|\.)(example\.(com|org|net)|[^.]+\.(example|test|invalid|localhost|internal|local))(:|$)/ && $3 !~ /^(127\.0\.0\.1|0\.0\.0\.0)(:|$)/ && !/[$]/ && !/-$/' \
   | grep -vFf "${ignore}" \
+  | awk -v own="${repo}/" 'index($0, own "releases/tag/") == 0 && index($0, own "compare/") == 0' \
   | sort -u)" || (($? == 1))
 
 # One curl per URL, 16 at a time, printing the HTTP code, curl's exit code (28 is a timeout) and
