@@ -318,7 +318,7 @@
 - `scripts/check-repo.mjs` — **Pending**, except template placeholders and README length, now `check:consistency` PC-06 · Gap: README sections, Compatibility cells against `docs/compatibility.md`, the Platforms line
 - `scripts/generators/catalog.mjs` — **Pending** · Gap: builds the root README catalog from marketplace and manifests (NV-C). The root `README.md` still names it as the generator of its catalog
 - `scripts/validators/readme-catalog-consistency.py` — **Replaced by** `check:consistency` PC-08 (`mods` holding only mods is not checked) · Gap: one catalog row per plugin under its category, categories match, `mods` holds only mods
-- `scripts/checkers/markdown-urls.py` — **Pending** · Caller: manual · Gap: live check of every http(s) URL and fragment in tracked Markdown
+- `scripts/checkers/markdown-urls.py` — **Replaced by** `scripts/checkers/live-urls.sh` (`npm run check:links`; Validate on changed files, the weekly Links workflow on all tracked files) · Gap left: URL fragments (anchors) are not checked
 - `scripts/checkers/reference-pages.py` — **Pending** · Caller: manual · Gap: offline layout (`## Contents`, `## Documentation References`), relative links and anchors
 ---
 

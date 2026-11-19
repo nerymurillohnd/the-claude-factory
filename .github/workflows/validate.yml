@@ -78,6 +78,13 @@ jobs:
         env:
           CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
         run: bash scripts/validators/pr-checks.sh install
+      # The URLs in the files the pull request adds or changes must answer (404, 410 or no
+      # connection fails); the weekly Links workflow checks every file.
+      - name: Live URLs in changed files
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
+        env:
+          CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
+        run: bash scripts/validators/pr-checks.sh links
 
   debt:
     name: Debt (non-blocking)
