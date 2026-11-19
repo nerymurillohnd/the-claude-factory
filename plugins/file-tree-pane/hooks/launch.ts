@@ -3,8 +3,8 @@
 // into nvim's own command line; a file name never reaches a command line a shell parses, and a
 // relative name never starts with a character a program reads as an option.
 
-import { splitWords } from './activity.ts'
-import { parentOf } from './tree.ts'
+import { splitWords } from './activity.js'
+import { parentOf } from './tree.js'
 
 export type Platform = 'darwin' | 'linux' | 'windows'
 

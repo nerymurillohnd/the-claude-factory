@@ -5,8 +5,8 @@
 
 import type { ClientModule, ClientPointerEvent, ClientSurface, RenderElement } from 'claude-code'
 
-import type { BodyLine, BodyMessage, BodyProps, Segment } from './body.ts'
-import { DOUBLE_CLICK_MS, SHIMMER_MS, thumbOf } from './body.ts'
+import type { BodyLine, BodyMessage, BodyProps, Segment } from './body.js'
+import { DOUBLE_CLICK_MS, SHIMMER_MS, thumbOf } from './body.js'
 
 type Local = {
   rows: number

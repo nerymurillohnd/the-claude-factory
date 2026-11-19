@@ -1,7 +1,7 @@
 // Git's machine output read into what the tree shows: each file's status and line counts,
 // each folder's counts, and the branch line of the header.
 
-import { ancestorsOf } from './tree.ts'
+import { ancestorsOf } from './tree.js'
 
 export type GitCode = 'modified' | 'added' | 'deleted' | 'renamed' | 'conflict' | 'untracked'
 

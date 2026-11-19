@@ -1,9 +1,9 @@
 import { expect, test } from 'claude-code/testing'
 
-import { parseCommand, splitWords, touchesOf } from '../hooks/activity.ts'
-import { readMessage, thumbOf } from '../hooks/body.ts'
-import { nextStop, parseDiff, unquotePath } from '../hooks/diff.ts'
-import { clip, formatAge, formatDate, formatSize, printable } from '../hooks/format.ts'
+import { parseCommand, splitWords, touchesOf } from '../hooks/activity.js'
+import { readMessage, thumbOf } from '../hooks/body.js'
+import { nextStop, parseDiff, unquotePath } from '../hooks/diff.js'
+import { clip, formatAge, formatDate, formatSize, printable } from '../hooks/format.js'
 import {
   countsText,
   headText,
@@ -12,9 +12,9 @@ import {
   parseStatus,
   parseWc,
   rollUp,
-} from '../hooks/git.ts'
-import { decideGlyphs, iconFor, isNerdFontFile } from '../hooks/glyphs.ts'
-import type { Host, OpenTarget } from '../hooks/launch.ts'
+} from '../hooks/git.js'
+import { decideGlyphs, iconFor, isNerdFontFile } from '../hooks/glyphs.js'
+import type { Host, OpenTarget } from '../hooks/launch.js'
 import {
   canEdit,
   defaultAppPlan,
@@ -30,7 +30,7 @@ import {
   platformOf,
   runsWhenOpened,
   vimEscape,
-} from '../hooks/launch.ts'
+} from '../hooks/launch.js'
 import {
   BACKGROUNDS,
   contrast,
@@ -42,10 +42,10 @@ import {
   parsePalette,
   THEMED,
   TONES,
-} from '../hooks/palette.ts'
-import { filterDrivers, gitArgv } from '../hooks/register.tsx'
-import { searchPaths } from '../hooks/search.ts'
-import type { Entry } from '../hooks/tree.ts'
+} from '../hooks/palette.js'
+import { filterDrivers, gitArgv } from '../hooks/register.js'
+import { searchPaths } from '../hooks/search.js'
+import type { Entry } from '../hooks/tree.js'
 import {
   ancestorsOf,
   clampOffset,
@@ -56,7 +56,7 @@ import {
   relativeTo,
   revealOffset,
   withGhosts,
-} from '../hooks/tree.ts'
+} from '../hooks/tree.js'
 
 const file = (name: string, size = 1): Entry => ({
   name,
