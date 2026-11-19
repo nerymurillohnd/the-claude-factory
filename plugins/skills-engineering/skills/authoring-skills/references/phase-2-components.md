@@ -34,7 +34,6 @@ A skill has its own files, mechanisms it declares in `SKILL.md`, and components 
 | Plugin hooks | A rule that must hold whether or not the skill was invoked |
 | MCP server | Access to an external system the skill teaches Claude to use |
 | Other skills and tools | Work an existing skill or MCP tool already does, named and relied on |
-| Configuration and state | Values the user provides once, and data that must outlive a session |
 
 ## Choose the components
 
@@ -48,9 +47,8 @@ Start from `SKILL.md` alone, and add each component only for the failure it fixe
 | A rule is skipped under pressure, and must always hold | A hook |
 | The task would fill the main conversation and needs none of its history | `context: fork`, or a subagent |
 | The skill needs an external system | An MCP server, or an existing MCP tool |
-| The user supplies the same values on every run | Configuration |
 
-For each component you choose, read its file of Phase 2: scripts, injected commands, hooks, skills for subagents, tools and other skills, or configuration, state and security. The skill architecture file of Phase 2 then lays out where each one lives.
+For each component you choose, read its file of Phase 2: scripts, injected commands, hooks, skills for subagents, or tools and other skills. The skill architecture file of Phase 2 then lays out where each one lives.
 
 ## Official sources
 
