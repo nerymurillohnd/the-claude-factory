@@ -162,6 +162,13 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage("docs/GATE-PROBE", "Plain text, not a script: $UNQUOTED\n")
         self.assert_passes(self.box.gate())
 
+    def test_shellcheck_reads_shellcheck_opts(self) -> None:
+        """SHELLCHECK_OPTS reaches ShellCheck: its options change what the gate reports."""
+        self.box.stage("scripts/gate-probe.sh", CLEAN_SH + "echo $UNQUOTED\n")
+        self.assert_blocks(self.box.gate(), "shellcheck")
+        opts = {**os.environ, "SHELLCHECK_OPTS": "--exclude=SC2086,SC2154,SC2250"}
+        self.assert_passes(self.box.gate(opts))
+
     def test_biome_blocks_javascript(self) -> None:
         """A Biome finding in a .mjs file blocks the commit."""
         self.box.stage("scripts/gate-probe.mjs", CLEAN_MJS + "var unused = 1\n")

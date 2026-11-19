@@ -220,7 +220,9 @@ if ((${#sh_files[@]} > 0)); then
   fi
   find_tool shellcheck shellcheck
   if [[ -n ${shellcheck} ]]; then
-    # -S style and -a have no .shellcheckrc key, so they are passed as npm run lint:shell does.
+    # ShellCheck reads .shellcheckrc and adds SHELLCHECK_OPTS from the environment to the start of
+    # its command line itself; -S style and -a have no .shellcheckrc key, so they are passed as npm
+    # run lint:shell does.
     run_tool shellcheck "${shellcheck}" -S style -a "${sh_files[@]}"
   fi
 fi
