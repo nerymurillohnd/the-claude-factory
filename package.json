@@ -17,6 +17,7 @@
     "check:install": "bash scripts/release/check-install.sh",
     "check:pr": "bash scripts/validators/pr-checks.sh",
     "check:staged": "bash scripts/validators/pre-commit-gate.sh",
+    "check:tool-versions": "uv run python scripts/checkers/tool-versions.py",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "format": "biome format --write . && ruff format . && shfmt -w .",
     "icons:render": "node scripts/generators/plugin-icons.mjs",

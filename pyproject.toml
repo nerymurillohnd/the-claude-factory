@@ -111,6 +111,7 @@ unfixable = []
 "scripts/validators/plugin-consistency.py" = ["N999"]
 "scripts/validators/frontmatter-lint.py" = ["N999"]
 "scripts/validators/find-suppressions.py" = ["N999"]
+"scripts/checkers/tool-versions.py" = ["N999"]
 "scripts/release/release-*.py" = ["N999"]
 
 [tool.ruff.lint.isort]
