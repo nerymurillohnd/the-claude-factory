@@ -190,6 +190,6 @@ The difference between the arms is what the evals measure, so set each arm to wh
 When the audit and the evals the user chose are done, check the final skill:
 
 1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 5, and each linter, validator or script the environment provides for skills.
-2. Fix each finding, and run every check again until all of them pass.
+2. Fix each finding and run every check again. After 3 rounds, or when the same failure returns after a fix, stop and report it with its output.
 3. Report each check with its exact command and raw output. The skill is done when every check passes.
 4. Go back to phase 6 and ask again how to proceed.

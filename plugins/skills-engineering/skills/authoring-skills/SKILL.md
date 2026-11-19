@@ -74,7 +74,7 @@ A skill under `~/.claude/skills/synced/` or in a plugin cache is a copy that the
 
 ## Workflow
 
-Follow this procedure to create a skill, applying each phase in order. In each phase, apply what the skill needs to reach its goal, and read every reference file at the step that names it, again whenever it is no longer in your context. Complete each phase to its exit, and when a later phase shows a gap in an earlier one, go back to it.
+Follow this procedure to create a skill, applying each phase in order. In each phase, apply what the skill needs to reach its goal, and read every reference file at the step that names it, again whenever it is no longer in your context. Complete each phase to its exit, and when a later phase shows a gap in an earlier one, go back to it; when the same gap returns, stop and ask the user.
 
 Copy this to-do list into your reply and tick each phase when you finish it:
 
