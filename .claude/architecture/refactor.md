@@ -20,7 +20,7 @@
 6. **No scripts under `.claude/skills/`.** Project skills describe procedures and call `scripts/`. Maintainer scripts, and the hooks that only maintain the repository, live in `scripts/<subfolder>/`. A Claude Code hook of this project keeps its script in `.claude/hooks/`, beside its registration in `.claude/settings.json`, and calls `scripts/` for any maintainer logic it reuses (owner decision, 2026-11-13).
 
 **Script status (redesign branch, 2026-11-13):** **Implemented** exists, with its npm script · **Replaced by** another mechanism covers it (npm script, CLI command, skill-lint rule) · **Pending** planned, not built yet: rebuild it to current official practice, never copy it from `main` · **Dropped** no longer planned, with the reason.  
-**Callers:** `npm` = an npm script in `package.json` · `CI` = a workflow · `CC hook` = Claude Code hook registration · `skill` = a project skill · `manual` = run by hand. The `gate`, `commit` and `.husky` callers of the original plan are gone: `scripts/gates.mjs` was not rebuilt, and the repository installs no Git hooks.
+**Callers:** `npm` = an npm script in `package.json` · `CI` = a workflow · `CC hook` = Claude Code hook registration · `skill` = a project skill · `manual` = run by hand · `Git` = a Git hook in `.githooks/`. The `gate` and `.husky` callers of the original plan are gone: `scripts/gates.mjs` was not rebuilt, and husky was replaced by `.githooks/`.
 
 ---
 
@@ -111,7 +111,7 @@
   - Parse `validate --json` and fail on `gatingHooks[].hasCatch: false` — **Implemented** as `validate:hooks-catch` (`scripts/validators/gating-hooks-catch.sh`), outside `validate` while four hooks in `project-maintainer` and `turn-meter` fail it
   - `claude plugin test` on each mod — **Implemented** as `validate:mods`, part of `validate`; no CI job runs it until `validate.yml` exists
   - The missing-summary guard from `check-mod.sh` until anthropics/claude-code#103055 is confirmed closed (E11)
-- `scripts/validators/pr-checks.sh` — **Implemented** · Callers: `npm run check:pr`, every step of Validate's `Checks` job and the DEBT-003 step of its `Debt` job (CI), and the pre-push hook (CC hook) · The merge gate's steps in one place, so a branch that passes locally passes in CI. It owns the DEBT-003 plugin list and gates Biome on the files a branch changed (`biome-changed`), which `lint:js` can't while DEBT-006 is open
+- `scripts/validators/pr-checks.sh` — **Implemented** · Callers: `npm run check:pr`, every step of Validate's `Checks` job and the DEBT-003 step of its `Debt` job (CI) · The merge gate's steps in one place, so a branch that passes locally passes in CI. It owns the DEBT-003 plugin list and gates Biome on the files a branch changed (`biome-changed`), which `lint:js` can't while DEBT-006 is open
 - `scripts/basedpyright-maintainer.mjs` — **Replaced by** `npm run typecheck:python` (`basedpyright && basedpyright -p scripts`): plugin Python at 3.12, maintainer Python at 3.15
 - Linters — **Implemented** · `npm run lint`: Biome (`lint:js`), ruff (`lint:python`), ShellCheck and shfmt (`lint:shell`), actionlint and zizmor (`lint:workflows`), check-jsonschema and `scripts/check-github-files.py` (`lint:github`)
 - `scripts/lib.mjs`, `scripts/components.mjs` — **Dropped** · They served `gates.mjs` and the generators; a rebuilt generator brings its own helpers
@@ -120,7 +120,8 @@
 - `scripts/validators/skill-references.py` — **Pending** · Every path and skill name cited in `.claude/skills/**` and `.claude/CLAUDE.md` exists. skill-lint (stage 5) covers links inside each skill folder only
 - `.claude/hooks/checkout.sh` — **Pending** · Caller: CC hook (SessionStart) · Branch, ahead/behind, tool versions. No command reports git state. Stays in `.claude/hooks/` as a project Claude Code hook (rule 6); `.claude/settings.json` registers no hooks today
 - `.claude/hooks/validators-gate.sh` — **Dropped** · Not on the redesign branch; it duplicated `gates.mjs`
-- `.husky/pre-commit`, `.husky/pre-push` — **Dropped** · husky was rejected and the `.githooks/` replacement is deprecated; no Git hooks are installed
+- `.husky/pre-commit`, `.husky/pre-push` — **Dropped** · husky was rejected; the tracked `.githooks/` folder replaces it
+- `.githooks/pre-commit` and `scripts/validators/pre-commit-gate.sh` — **Implemented** · Callers: `Git`, through `core.hooksPath`, which `scripts/install-git-hooks.sh` sets from npm's `prepare`; `npm run check:staged` (npm) · Biome, tsc, Ruff, basedpyright, shfmt and ShellCheck on the staged `.sh`, `.ts`, `.mjs`, `.md`, `.py`, `.pyi` and `.json` files. No pre-push Git hook: Validate's `Checks` job is the merge gate
 - `.github/workflows/validate.yml` — **Pending** · CI entry point running the npm scripts. `release.yml` depends on it (it triggers on `workflow_run` of `Validate`)
 - `.github/workflows/claude.yml`, `claude-code-review.yml` — **Dropped** · Not on the redesign branch
 - `scripts/testers/` — **Implemented** for skill-lint · Caller: `npm run test:scripts` (`unittest discover -s scripts/testers -t scripts`). The other maintainer tests of `main` (`run_unittest.py`, `gates.test.mjs`, `scripts.test.mjs`, `reserved-name.test.mjs`, `schemas/test_schemas.py`) are **Pending** with the scripts they test
