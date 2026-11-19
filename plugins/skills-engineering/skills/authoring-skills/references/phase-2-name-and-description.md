@@ -38,7 +38,7 @@ The name meets every target surface's rules:
 - In a skill folder, `name` equals the folder name: `skills/close-month/SKILL.md` has `name: close-month`.
 - In a single skill at a plugin root, `name` is the skill's own name, and the command becomes `/<plugin>:<name>`. Always set it: without it, a marketplace install names the skill after its cache folder.
 
-Name the activity the skill performs. Prefer the gerund form, and follow the pattern of the sibling skills found in the environment.
+Name the activity the skill performs, never a vague or generic word such as `helper`, `utils`, `tools` or `data`. Prefer the gerund form, and follow the pattern of the sibling skills found in the environment.
 
 - In a plugin skill, write the bare name. Claude Code adds the plugin prefix.
 - Propose the name with one or two alternatives and the reason.
