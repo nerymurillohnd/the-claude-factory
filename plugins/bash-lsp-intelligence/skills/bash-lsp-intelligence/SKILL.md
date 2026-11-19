@@ -1,6 +1,6 @@
 ---
 name: bash-lsp-intelligence
-description: Navigates Bash and POSIX shell scripts through bash-language-server, traces source chains before trusting same-named functions, and checks scripts with shfmt and ShellCheck using the project's own configuration. Use when editing, refactoring or diagnosing shell scripts, fixing a ShellCheck finding such as SC2086, renaming a shell function, or formatting a script.
+description: Use before writing, editing, refactoring or renaming code in a shell script (.sh, .bash, a hook or CI script, a file with a bash or sh shebang), even for a one-line change, and when ShellCheck reports a finding such as SC2086, a script fails under set -euo pipefail, or a function is defined in more than one sourced file. Traces source chains through bash-language-server before trusting a same-named function, and formats and checks the result with the project's own shfmt and ShellCheck configuration. Not for PowerShell or other languages.
 ---
 
 # Bash and POSIX shell code intelligence

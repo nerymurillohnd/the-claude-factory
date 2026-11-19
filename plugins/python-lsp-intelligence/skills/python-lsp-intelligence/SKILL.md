@@ -1,6 +1,6 @@
 ---
 name: python-lsp-intelligence
-description: Navigates Python by symbol through basedpyright, resolves imports and aliases before a rename or deletion, and checks code with ruff and basedpyright using the project's own configuration. Use when editing, refactoring or diagnosing Python, fixing a ruff or basedpyright finding, finding every usage of a function, or explaining why an import fails only in the editor.
+description: Use before writing, editing, refactoring, renaming, moving or deleting Python code in .py or .pyi files, even for a one-line fix, and when ruff or basedpyright reports a finding, an import fails only in the editor, or the user asks where a function is used. Finds every caller through basedpyright before a change, since grep misses aliased and re-exported names, and checks the result with the project's own ruff and basedpyright configuration instead of default rules. Not for other languages, nor for Python questions that touch no project file.
 ---
 
 # Python code intelligence

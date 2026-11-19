@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The skill's description now opens with the work it serves, before writing, editing, renaming or deleting Python code, even for a one-line fix, and says what it adds over a text search, so Claude loads it for everyday Python edits instead of only when asked.
+
 ## [0.3.4] - 2026-11-14
 
 ### Fixed

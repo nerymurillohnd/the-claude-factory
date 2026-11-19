@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The `ts-lifecycle` description now opens with the work it serves and the file types it covers, even for a small change, and says it is for projects on the native TypeScript 7 compiler and not for TypeScript 6, so Claude loads it for everyday edits and tells it apart from the TypeScript 6 plugin's skill of the same name.
+
 ## [0.4.6] - 2026-11-14
 
 ### Fixed

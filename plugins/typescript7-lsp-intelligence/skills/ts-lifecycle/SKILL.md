@@ -1,6 +1,6 @@
 ---
 name: ts-lifecycle
-description: Researches, writes, edits, reviews and verifies TypeScript and JavaScript code with official sources, LSP code intelligence and behavioral evidence. Use for every task that writes, edits, audits or answers questions about TypeScript or JavaScript code, including scripts, tsconfig and jsconfig, modules, declarations, migrations, type errors, editor and tsc disagreements, broken builds, failing checks and cross-tool behavior. Not for other languages, comment-only or formatting-only edits, or syntax explanations that depend on neither the project nor a version.
+description: Use before writing, editing, reviewing or debugging TypeScript or JavaScript code (.ts, .tsx, .js, .mjs, .cjs, tsconfig and jsconfig) in a project on the native TypeScript 7 compiler, even for a small change, and when tsc and the editor disagree, a type check or build fails, a module won't resolve, or the user asks how the compiler or a library behaves at their version. Checks the behavior in official sources for the installed version, navigates symbols through the LSP before a change, and proves the result with the project's own tsc and checks. Not for TypeScript 6 projects, other languages, comment-only or formatting-only edits, or syntax questions that depend on neither the project nor a version.
 ---
 
 # TypeScript/JavaScript Lifecycle Execution

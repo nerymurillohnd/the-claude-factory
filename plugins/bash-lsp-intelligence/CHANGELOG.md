@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The skill's description now opens with the work it serves, before writing, editing or renaming code in a shell, hook or CI script, even for a one-line change, so Claude loads it for everyday script edits instead of only when asked.
+
 ## [0.2.9] - 2026-11-14
 
 ### Fixed
