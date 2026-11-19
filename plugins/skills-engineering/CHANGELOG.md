@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** when you ask for a review without naming reviewers, `auditing-skills` now picks the reviewers your request is about, such as only `frontmatter-description` for a question about a skill's description or why Claude never uses it, instead of launching all nine. It tells you which reviewers it chose and why, and waits for your confirmation before it launches them. A general audit still runs every reviewer. Name the reviewers, or ask for a full audit, to choose them yourself.
+- `auditing-skills` can now audit several skills in one request, running its workflow once per skill with the reviewers you confirmed for each.
+- The `auditing-skills` description now leads with the words of a review request and the symptoms of a skill that misbehaves, such as a skill Claude never uses, so Claude loads it for those requests.
+
 ## [0.2.0] - 2026-11-19
 
 ### Added
