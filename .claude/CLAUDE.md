@@ -45,6 +45,7 @@
 
 - Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
 - Run `npm run check:pr` before a push to run the checks of Validate's `Checks` job, or `npm run check:pr -- <step>` for one of them.
+- Expect each commit to run the Git pre-commit gate, which `npm ci` turns on through `prepare`: on the staged `.sh`, `.ts`, `.mjs`, `.md`, `.py`, `.pyi` and `.json` files only, it applies Biome's and Ruff's lint and format fixes and `shfmt -w`, stages those fixes, then runs Biome, Ruff, basedpyright, ShellCheck and `tsc --noEmit`, and it refuses a file with unstaged changes on top. Run `npm run check:staged` to run it before committing, and fix what it reports instead of committing with `--no-verify`.
 
 **Platforms**
 
