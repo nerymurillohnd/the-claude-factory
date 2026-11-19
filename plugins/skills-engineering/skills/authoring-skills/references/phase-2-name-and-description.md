@@ -131,7 +131,7 @@ Write it for the model that matches it against the user's request. The more spec
 Examples, each weak against strong:
 
 ```yaml
-# Weak: no "Use…" clause, second person, catch-all words, capitalized emphasis (rules 1 to 3 and 11)
+# Weak: no "Use…" clause, second person, catch-all words, emphasis (rules 1 to 3, 11)
 description: You MUST ALWAYS use this skill for ANY file or anything about data, whenever it comes up.
 # Strong
 description: Use when the user has a CSV, TSV or Excel file and wants summary statistics, a derived column, a cleaned table or a chart, even if they never say CSV. Computes the statistics, adds the columns, cleans the rows and draws the charts.
@@ -141,7 +141,7 @@ description: Runs lint.py and diff.py on pull requests.
 # Strong
 description: Use when the user asks to review, check or comment on a pull request's code. Reviews it for bugs and style. Not for merging or fixing CI, which pr-lifecycle does.
 
-# Weak: the colon breaks the YAML, Markdown shows as symbols, the placeholder shows escaped (rules 7 and 9)
+# Weak: a colon that breaks the YAML, Markdown, an escaped placeholder (rules 7, 9)
 description: Deploys **<branch>** when: the user asks.
 # Strong
 description: Use when the user asks to deploy a branch to staging. Deploys [branch] and reports the URL.
@@ -163,7 +163,7 @@ Before you settle the description, write the requests it must catch and the near
 
 ```json
 [
-  { "query": "my accountant sent 30 receipt photos, can you get the totals into a sheet?", "should_trigger": true },
+  { "query": "got 30 receipt photos, totals into a sheet pls", "should_trigger": true },
   { "query": "extract the tax lines from supplier_0421.pdf", "should_trigger": true },
   { "query": "fix the formula in my budget spreadsheet", "should_trigger": false },
   { "query": "write a script that emails each invoice PDF to the client", "should_trigger": false }

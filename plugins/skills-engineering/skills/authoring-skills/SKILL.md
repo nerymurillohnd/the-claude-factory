@@ -146,7 +146,7 @@ Draft the plan from the design and get the user's approval before you build.
    ```text
    Goal: [one sentence]
    Use cases: [trigger and checkable result for each]
-   Type and location: [kind, who invokes it, where it loads, why, and any difference from what the user asked]
+   Type and location: [kind, who invokes it, where it loads, why, and what differs from the ask]
    Files: [each path, what it holds, when the model reads or runs it]
    Components: [each script, hook, subagent, tool and mechanism, with its reason]
    Frontmatter: [each field and value, with its reason]
