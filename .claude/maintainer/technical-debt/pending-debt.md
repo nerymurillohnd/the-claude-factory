@@ -204,6 +204,7 @@ Add an item only when all of these hold:
   - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:js` checks 695 files and finds 31 errors, exit 1.
   - Update, 2026-11-18, on branch `ccr-74c453c5-5x0jvi`: renaming `claude-github-actions` to `cc-github-actions` made its two reference files changed files, so `biome-changed` blocked the push. Their 5 `useFencedCodeLanguage` findings were fixed by tagging the fences `bash`, and `biome check --write` fixed the format of `plugins/github-operations/README.md`. `npm run lint:js` now checks 705 files and finds 25 errors, exit 1.
   - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:js` checks 744 files and finds 24 errors, exit 1. CI run 44486756899 on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113) reports the same 24.
+  - Update, 2026-11-19: the Claude Code pre-push hook is removed, so nothing runs `biome-changed` before a push any more; it still runs in Validate's `Checks` job and in `npm run check:pr`. The Git pre-commit gate (`.githooks/pre-commit`) now runs Biome on each commit's staged `.ts`, `.mjs`, `.md` and `.json` files, so a file with one of the 24 findings can't be committed until it is fixed.
 - **Inferences:** none.
 - **Open questions:** none.
 
