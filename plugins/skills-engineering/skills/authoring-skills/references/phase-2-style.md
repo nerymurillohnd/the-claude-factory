@@ -105,7 +105,7 @@ Read [Frontmatter reference](https://code.claude.com/docs/en/skills#frontmatter-
 ## Layout
 
 - Leave one blank line around each heading, list, table and fenced block, and none between the items of a list.
-- Write each paragraph, bullet and table row on one line. Keep each line of code in a fenced block, such as a command, a script or a JSON or YAML line, within 100 characters. Prose, a frontmatter value or a quoted message inside a block stays on one line.
+- Write each paragraph, bullet and table row on one line. Aim for 100 characters per line of code in a fenced block, such as a command, a script or a JSON or YAML line: it is a target, as formatters wrap on a best effort, not a hard cut. Break a line only where its language allows it, and never split a string, a URL, a command argument or a frontmatter value to fit. Prose and quoted messages inside a block stay on one line.
 - Use bold only for a group label, and inline code for every path, field, command, file name and value.
 
 ## Official sources

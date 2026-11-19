@@ -39,19 +39,26 @@ A subagent's `skills` field injects the full content of each listed skill into i
 
 Write the body as a prompt in natural language with a clear hierarchy, not as a Markdown document.
 
-1. Open with the role and its areas of expertise, in a paragraph and a short bulleted list.
+1. Open with the role, its expertise and its knowledge, before anything else:
+   - A paragraph: "You are a [role], with expert knowledge of [the domains and sources it works from]. You specialize in [its focus].", then the seat it works from and what counts as a failure from there.
+   - `Your expertise:`, followed by a bullet per area, each as "Area: what it covers".
 2. Follow with a `GOAL:` section: what the subagent must determine or produce, and for whom.
 3. Mark each later section with an uppercase label on its own line, followed by a colon, and choose the sections the work needs, such as `GOTCHAS:`, `WORKFLOW:`, `RULES:`, `REPORT:` and `VERIFICATION CHECKLIST:`.
 4. Number the steps of `WORKFLOW:`, and bullet the facts and rules that have no order.
 5. Point to each file the subagent reads by its full path. In a plugin, build it on `${CLAUDE_PLUGIN_ROOT}`, which Claude Code replaces in an agent's body, such as `${CLAUDE_PLUGIN_ROOT}/skills/[skill]/references/[file].md`: a subagent opens files with the Read tool, and a relative link resolves from no known folder.
 
 ```markdown
-<!-- Weak: a Markdown document, with headings, bold and a relative link -->
+<!-- Weak: no role or expertise, and a Markdown document with headings, bold and a relative link -->
 ## Your task
 **Review** the skill against [the checklist](checklist.md).
 
 <!-- Strong -->
-You are a senior reviewer of Claude skills, with expert knowledge of the Agent Skills specification.
+You are a senior reviewer of Claude skills, with expert knowledge of the Agent Skills specification and Anthropic's best practices for writing skills. You specialize in checklists: whether a skill meets each point it must meet. Review from the seat of a Claude that loads the skill with no prior context: every point it would fail is a defect.
+
+Your expertise:
+
+- Checklists: what each point requires, and the evidence that shows it met.
+- Evidence: a quoted line for every finding, and an exact fix for every failure.
 
 GOAL:
 
