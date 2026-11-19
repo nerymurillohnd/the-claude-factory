@@ -62,7 +62,7 @@ Start from `SKILL.md` alone, and add each component only for the failure it fixe
 | The skill needs an external system | An MCP server, or an existing MCP tool |
 | The user supplies the same values on every run | Configuration |
 
-For each component you choose, read its file of Phase 2: scripts, injected commands, hooks, skills for subagents, tools and other skills, or configuration, state and security. The directory file then lays out where each one lives.
+For each component you choose, read its file of Phase 2: scripts, injected commands, hooks, skills for subagents, tools and other skills, or configuration, state and security. The skill architecture file of Phase 2 then lays out where each one lives.
 
 ## Official sources
 

@@ -1,6 +1,6 @@
 # Phase 2: Hooks
 
-How to give a skill a hook once the skill types file has sent a rule to one: where the hook lives, which event it uses, how its handler reaches the script, and how to check it.
+How to give a skill a hook once Phase 1 has decided that a rule belongs in a hook: where the hook lives, which event it uses, how its handler reaches the script, and how to check it.
 
 ## Contents
 

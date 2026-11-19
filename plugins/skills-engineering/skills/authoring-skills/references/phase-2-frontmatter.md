@@ -22,6 +22,7 @@ An upload to claude.ai or the Skills API fails with a hard error on any other fi
 - `allowed-tools`: tools Claude can use without asking during the turn that invokes the skill. The grant clears at the user's next message, and it never removes a tool. It takes a space- or comma-separated string, or a YAML list.
   - Set it only when the body tells the model to run specific commands on every run, and asking each time would interrupt a flow the user chose by invoking the skill.
   - Write the narrowest rule that matches the exact command in the body, such as `Bash(git add *) Bash(git commit *)`. Never grant a bare `Bash` or `Bash(*)`: a skill shared in a repository grants itself that access on every machine that runs it.
+  - A scheduled task or `/loop` asks before it runs a skill that declares `allowed-tools` or `hooks`. For a skill meant to run unattended, tell its users to add `Skill(<name>)` to `permissions.allow`.
 
 ## Fields only Claude Code accepts
 

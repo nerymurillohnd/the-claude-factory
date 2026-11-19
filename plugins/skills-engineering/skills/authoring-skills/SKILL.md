@@ -108,8 +108,8 @@ Once the user's intent is understood or your proposal is approved, work through 
 1. Recognize the environment and the project
    - See [Phase 2: Environment and project](references/phase-2-environment.md) to establish the environment you work in, inventory what the project and Claude already load, and flag every overlap or friction with the new skill for the user to decide.
 2. Identify and choose the skill type and location
-   - See [Phase 2: Skill types](references/phase-2-skill-types.md) to decide whether a skill is the right feature and choose which of the six types this one is.
-   - See [Phase 2: Skill location](references/phase-2-skill-location.md) to choose where the skill lives, and learn what each location changes in what you write, its path variables included.
+   - See [Phase 2: Skill types](references/phase-2-skill-types.md) to choose which of the six types this skill is.
+   - See [Phase 2: Skill location](references/phase-2-skill-location.md) to choose where the skill lives, from which sessions load it there and when.
 3. Decide the required components
    - See [Phase 2: Components](references/phase-2-components.md) to see every component a skill can have and what each one is for, and choose the ones this skill needs.
    - If a subagent runs the skill or reads it, see [Phase 2: Skills for subagents](references/phase-2-subagents.md) to choose whether the subagent runs it as its task or preloads it as knowledge, and what a subagent can't do.
@@ -123,7 +123,7 @@ Once the user's intent is understood or your proposal is approved, work through 
 **B. Design before you plan**
 
 4. Design the directory and the body
-   - See [Phase 2: Directory](references/phase-2-directory.md) to learn and design the skill's directory: the layout for its location, the folders and files of the components you chose, and what is shared and what belongs to the skill.
+   - See [Phase 2: Skill architecture](references/phase-2-skill-architecture.md) to lay out the skill's folders for its location, the files of the components you chose, and the path variables that reach them.
    - See [Phase 2: Body](references/phase-2-body.md) to decide what the body carries and build its task: workflows, checklists, validation loops, plan-validate-execute, output templates and gotchas.
    - See [Phase 2: Writing style](references/phase-2-writing-style.md) to word each instruction: register, defaults, terms and emphasis.
    - See [Phase 2: Style and format](references/phase-2-style.md) to lay out headings, lists, checklists, tables, pointers and links.
