@@ -27,6 +27,8 @@ CLEAN_PY = (
 CLEAN_SH = '#!/usr/bin/env bash\nset -euo pipefail\nprintf "%s\\n" "hi"\n'
 CLEAN_MJS = "/** @param {number} value */\nexport const double = (value) => value * 2\n"
 PROBE_PY = "scripts/validators/gate_probe.py"
+# A stand-in for the tsconfig.json Claude Code writes at a mod's root (git-ignored).
+MOD_TSCONFIG = '{"extends": "../../tsconfig.base.json", "compilerOptions": {"types": []}}\n'
 PADDED_TABLE = "# Probe\n\n| A   | B |\n| :-- | :-- |\n| 1   | 2 |\n"
 
 type Result = subprocess.CompletedProcess[str]
@@ -67,7 +69,7 @@ class Sandbox:
     def reset(self) -> None:
         """Drop every staged and unstaged change and every untracked file."""
         _ = run(["git", "reset", "--quiet", "--hard"], cwd=self.repo)
-        _ = run(["git", "clean", "-fdq", "-e", "node_modules", "-e", ".venv"], cwd=self.repo)
+        _ = run(["git", "clean", "-fdqx", "-e", "node_modules", "-e", ".venv"], cwd=self.repo)
 
     def remove(self) -> None:
         """Delete the clone."""
@@ -176,14 +178,24 @@ class PreCommitGateTest(unittest.TestCase):
         self.box.stage("scripts/gate-probe.mjs", broken)
         self.assert_blocks(self.box.gate(), "tsc")
 
-    def test_mod_typescript_without_tsconfig_is_reported(self) -> None:
-        """A mod's .ts file with no generated tsconfig is named as not type-checked."""
+    def test_mod_typescript_without_tsconfig_blocks(self) -> None:
+        """A mod's .ts file with no generated tsconfig can't be type-checked, so it blocks."""
         probe = "plugins/macos-grep-guard/hooks/gate-probe.ts"
         self.box.stage(probe, "export const one = 1\n")
         result = self.box.gate()
-        self.assert_passes(result)
+        self.assert_blocks(result, "tsc")
         self.assertIn("not type-checked", result.stdout + result.stderr)
         self.assertIn(probe, result.stdout + result.stderr)
+
+    def test_mod_typescript_uses_its_tsconfig(self) -> None:
+        """With the mod's tsconfig.json in place, tsc checks the staged .ts file through it."""
+        mod = "plugins/macos-grep-guard"
+        self.box.write(f"{mod}/tsconfig.json", MOD_TSCONFIG)
+        probe = f"{mod}/hooks/gate-probe.ts"
+        self.box.stage(probe, "export const one: number = 1\n")
+        self.assert_passes(self.box.gate())
+        self.box.stage(probe, 'export const one: number = "one"\n')
+        self.assert_blocks(self.box.gate(), "tsc")
 
     def test_only_staged_files_are_checked(self) -> None:
         """A broken file that is not staged does not block the commit."""
