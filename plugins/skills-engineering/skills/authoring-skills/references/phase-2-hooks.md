@@ -16,7 +16,7 @@ How to give a skill a hook once Phase 1 has decided that a rule belongs in a hoo
 
 - A hook in the skill's frontmatter registers only when the user or Claude invokes the skill, so it never sees that invocation. A check on the invocation itself belongs in the plugin's hooks file.
 - A skill is invoked by two paths, and each event sees one. `PreToolUse` with the matcher `Skill` fires when Claude invokes the skill; `UserPromptExpansion` fires when the user types `/name`. To gate or log every invocation, hook both.
-- `${CLAUDE_SKILL_DIR}` isn't replaced in a hook: reach the script with `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_PROJECT_DIR}`.
+- `${CLAUDE_SKILL_DIR}` isn't replaced in a hook: reach the script with `${CLAUDE_PLUGIN_ROOT}` in a plugin skill or `${CLAUDE_PROJECT_DIR}` in a project skill; no variable points to a personal skill's folder.
 - A failing hook lets the action through: exit code 1, a crash, a wrong path and a timeout all count as non-blocking errors. Only exit 2 blocks, unless the hook sets `onFailure: "block"`.
 - A matcher with a `:`, such as `my-plugin:deploy`, is an unanchored regular expression that also matches `my-plugin:deploy-preview`. Write `^my-plugin:deploy$`.
 - `if` works only on tool events: on any other event a hook with `if` set never runs, so leave it out there.

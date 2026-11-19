@@ -4,7 +4,6 @@ Where a skill can live, which sessions load it from there, and when it loads.
 
 ## Gotchas
 
-- A `.claude/skills/` below the session's start folder loads only once Claude works on a file there: put a skill that must be ready at the start at the repository root.
 - Cowork, cloud sessions and cloud scheduled tasks don't read `~/.claude/skills/`, so a cloud scheduled task reports such a skill as not found: enable the skill on the claude.ai account, or commit it to the repository's `.claude/skills/`.
 - A project's cloud thread doesn't load the repository's skills, and a cloud session doesn't load plugins declared in the repository's or the user's settings: enable the skill on the claude.ai account for those sessions.
 - A `SKILL.md` at a plugin's root loads only when the plugin has no `skills/` folder and no `skills` key: use one layout or the other.

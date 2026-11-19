@@ -20,8 +20,6 @@ Whether the skill needs scripts, what each one does, where it lives, its languag
 - Path variables are replaced only in `SKILL.md` and in `allowed-tools`, never in a reference file or a script's environment: state each resolved path in `SKILL.md`, and pass it to the script as an argument.
 - `${CLAUDE_PLUGIN_ROOT}` changes with each plugin version, so what a script writes there is lost on update: write state to `${CLAUDE_PLUGIN_DATA}`.
 - claude.ai and Cowork don't install a plugin with a top-level `bin/`. A plugin that must reach them keeps its executables in `scripts/`.
-- A script's long output reaches Claude only as a file path and a short preview: print a short summary, and write the details to a file.
-- A script that asks for input hangs the run: take every input as an argument or a file.
 - An upload to the Claude API runs scripts with no network and only pre-installed packages, and on claude.ai network depends on the admin's settings: use the standard library or what the surface provides.
 
 ## Decide whether the skill needs a script

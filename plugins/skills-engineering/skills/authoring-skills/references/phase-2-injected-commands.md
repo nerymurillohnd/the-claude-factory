@@ -14,8 +14,7 @@ Whether the skill injects commands as it loads, how to write each one so it runs
 
 ## Gotchas
 
-- A failing injected command aborts the whole skill, and only `grep`, `rg`, `egrep`, `fgrep`, `find`, `diff`, `test`, `[`, `git diff` and `git grep` may exit 1: append `|| true` to any other command that can exit non-zero.
-- An injected command never prompts: outside auto mode, one that no rule allows aborts the skill, so pre-approve it in `allowed-tools`.
+- A failing injected command aborts the whole skill, and with the default `bash` shell only `grep`, `rg`, `egrep`, `fgrep`, `find`, `diff`, `test`, `[`, `git diff` and `git grep` may exit 1: append `|| true` to any other command that can exit non-zero.
 - An exclamation mark right after another character, as in ``KEY=!`cmd` ``, stays literal and the command doesn't run: put it at a line's start or after a space.
 
 ## Decide whether to inject a command
