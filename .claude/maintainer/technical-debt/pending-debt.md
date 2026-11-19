@@ -42,8 +42,8 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
-| DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on 25 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-005 | frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
 | DEBT-007 | Fourteen plugin subagents use Markdown headings instead of the house agent format | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
@@ -149,7 +149,7 @@ Add an item only when all of these hold:
 - **Review condition:** both scripts exit 0.
 - **Related records:** none.
 
-### DEBT-005 — frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule
+### DEBT-005 — frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule
 
 | Field | Value |
 | --- | --- |
@@ -171,6 +171,7 @@ Add an item only when all of these hold:
   - Rechecked 2026-11-15 on `main` at ceecd50: `npm run lint:frontmatter` reports 54 files checked and 16 findings, exit 1. The tag `github-operations--v0.8.0` now exists on the remote, so the github-operations fix no longer waits on that release.
   - Rechecked 2026-11-16 on `main` at a55cd4e: `npm run lint:frontmatter` reports 59 files checked and 16 findings, the same 16. The 5 files added since ceecd50 have none: `work-lifecycle`'s 2 skills and 2 agents (`4 files checked, 0 findings`) and hook-engineering's `writing-hooks` skill.
   - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:frontmatter` reports 70 files checked and 17 findings. The new one is FM-03 in the `argument-hint` of `skills-engineering`'s `auditing-skills`, which `.claude/rules/plugins/skills-engineering.md` keeps in suspense until the owner decides.
+  - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:frontmatter` reports 72 files checked and 17 findings, in six plugins: github-operations, instruction-engineering, plugin-test-bench, prompt-writer, skills-engineering and svelte-development.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -182,7 +183,7 @@ Add an item only when all of these hold:
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** none.
 
-### DEBT-006 — npm run lint:js fails on 25 Biome findings in plugin files
+### DEBT-006 — npm run lint:js fails on 24 Biome findings in plugin files
 
 | Field | Value |
 | --- | --- |
@@ -203,6 +204,7 @@ Add an item only when all of these hold:
   - Update, 2026-11-16, after #110 (merged as a55cd4e): Validate's `Checks` job now runs `pr-checks.sh biome-changed`, Biome on the files a pull request changes, so a new finding in a changed file blocks the merge. `npm run check:pr` runs the same step locally and the pre-push hook runs it before every push. Rechecked on `main` at a55cd4e: Biome checks 714 files and finds 31 errors, the same ones.
   - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:js` checks 695 files and finds 31 errors, exit 1.
   - Update, 2026-11-18, on branch `ccr-74c453c5-5x0jvi`: renaming `claude-github-actions` to `cc-github-actions` made its two reference files changed files, so `biome-changed` blocked the push. Their 5 `useFencedCodeLanguage` findings were fixed by tagging the fences `bash`, and `biome check --write` fixed the format of `plugins/github-operations/README.md`. `npm run lint:js` now checks 705 files and finds 25 errors, exit 1.
+  - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:js` checks 744 files and finds 24 errors, exit 1. CI run 44486756899 on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113) reports the same 24.
 - **Inferences:** none.
 - **Open questions:** none.
 
