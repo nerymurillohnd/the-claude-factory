@@ -4,7 +4,7 @@ paths:
 ---
 # Where skills load
 
-Choose where a skill lives by the sessions that must load it. The table follows https://code.claude.com/docs/en/skills#choose-where-skills-load; check that section when a row may have changed.
+Choose where a skill lives by the sessions that must load it. The table follows https://code.claude.com/docs/en/skills#where-skills-live; check that section when a row may have changed.
 
 | Location | Loads in |
 | :-- | :-- |
