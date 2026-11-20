@@ -1,6 +1,6 @@
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "Follow these instructions before you create, write or edit Python files (*.py, *.pyi, *.pyw, *.ipynb), with any tool or command:\n- Use the Skill tool to call \"python-lsp-intelligence:python-lsp-intelligence\".\n- Apply the skill end to end, including its LSP and Grep steps.\nSkipping these steps is a serious defect."
+    "additionalContext": "Follow these instructions before and while you create, write or edit Python files (*.py, *.pyi, *.pyw, *.ipynb), with any tool or command:\n- Use the Skill tool to call \"python-lsp-intelligence:python-lsp-intelligence\".\n- Apply the skill end to end, including its LSP and Grep steps.\nSkipping these steps is a serious defect."
   }
 }
