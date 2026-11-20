@@ -6,10 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.mjs\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
             "timeout": 120,
             "onFailure": "block",
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on the changed TypeScript and JavaScript files"
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit --pretty false --strict"
           }
         ]
       }
@@ -20,6 +20,11 @@
           {
             "type": "command",
             "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/typescript6-lsp-skill-instructions.txt\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\" --new-turn",
             "timeout": 60
           }
         ]
