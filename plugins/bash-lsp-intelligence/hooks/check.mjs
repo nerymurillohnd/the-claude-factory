@@ -3,32 +3,31 @@
 // tool call changed. Reads one PostToolUse or PostToolUseFailure event on stdin. The tools
 // run the way they run from a terminal and read the user's .editorconfig, .shellcheckrc and
 // SHELLCHECK_OPTS; the plugin's defaults (shfmt -i 2 -ci -bn, shellcheck -o all -S style
-// -x -a -P SCRIPTDIR) apply only when none of those exists. Exit 0 with a systemMessage when
-// everything passed, stderr and exit 2 with findings or when a tool failed on a file. Files of
-// other languages are ignored in silence.
+// -x -a -P SCRIPTDIR) apply only when none of those exists. The user always gets one
+// systemMessage line saying which tools ran on which files, whether shfmt reformatted any and
+// whether they found errors, or why they did not run. Claude gets a message only when the tools
+// found errors or failed on a file: the findings on stderr with exit 2, and the instruction to
+// audit and fix them with the plugin's skill before continuing. Files of other languages are
+// ignored in silence.
 //
 // The hook judges only what the tool call changed and never blocks because it cannot check:
-// - A tool that is not installed gives one notice per session and exit 0; without
-//   CLAUDE_PLUGIN_DATA, where the hook may keep its marker, the notice comes on every call.
+// - A tool that is not installed is reported to the user on every call, with exit 0.
 // - Files that a Bash command left under a nested Git work tree count only when Git lists
 //   them as modified, untracked or staged there, so a clone, a checkout or a pull is never checked.
 // - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
-//   (an extracted archive, a generated tree), not an edit: none is checked, and Claude is told.
+//   (an extracted archive, a generated tree), not an edit: none is checked, and the user is told.
 // Node 18 or later, no dependencies.
 
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
   existsSync,
-  mkdirSync,
   openSync,
   readdirSync,
   readFileSync,
   readSync,
   realpathSync,
   statSync,
-  unlinkSync,
-  writeFileSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, parse, relative, resolve, sep } from 'node:path'
@@ -40,10 +39,10 @@ import { dirname, join, parse, relative, resolve, sep } from 'node:path'
 // null when the list comes from the tool's input, from Claude Code or from Git.
 /** @typedef {{ files: string[], walked: string | null }} Changed */
 
-const { CLAUDE_PLUGIN_DATA, CLAUDE_PROJECT_DIR, SHELLCHECK_OPTS, XDG_CONFIG_HOME } = process.env
+const { CLAUDE_PROJECT_DIR, SHELLCHECK_OPTS, XDG_CONFIG_HOME } = process.env
 const PLUGIN = 'bash-lsp-intelligence'
-// Closes every message Claude reads, so a hook that checks is never taken for the whole workflow.
-const SKILL_HINT = `Use the ${PLUGIN}:${PLUGIN} skill and apply all its knowledge when working on shell scripts.`
+// Closes the message Claude receives when the tools found errors.
+const CLAUDE_INSTRUCTION = `Use the Skill tool to load "${PLUGIN}:${PLUGIN}", audit these errors with it and fix them before continuing with anything else.`
 const SHELL_SUFFIXES = new Set(['.sh', '.bash'])
 const SHEBANG_SHELL = /^#!(?:\S*\/)?(?:env\s+(?:-S\s+)?)?(sh|bash|zsh)(?:\s|$)/
 const SKIPPED_DIRS = new Set(['node_modules', '.venv', 'venv', 'site-packages'])
@@ -68,8 +67,6 @@ const INSTALL_HINTS = {
   shfmt: 'brew install shfmt (macOS) or your distribution package, see the README',
   shellcheck: 'brew install shellcheck (macOS) or your distribution package, see the README',
 }
-// The empty files that keep the "not installed" notice to once per session are deleted after this.
-const NOTICE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 const SHFMT_DEFAULT_ARGS = ['-i', '2', '-ci', '-bn']
 const SHELLCHECK_DEFAULT_ARGS = ['-o', 'all', '-S', 'style', '-x', '-a', '-P', 'SCRIPTDIR']
 
@@ -570,83 +567,7 @@ function findTools() {
   return { shfmt, shellcheck }
 }
 
-// True when this session already got the notice about tool; else records it. One empty file
-// per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices. When that variable is unset or empty
-// the hook keeps no marker and creates, writes and deletes nothing, not even in the temporary
-// directory, which other users can write to: the notice then repeats.
-/**
- * @param {Record<string, unknown>} event
- * @param {string} tool
- * @returns {boolean}
- */
-function announced(event, tool) {
-  if (!CLAUDE_PLUGIN_DATA) {
-    return false
-  }
-  const session = (textAt(event, 'session_id') || 'unknown').replace(/[^A-Za-z0-9_-]/g, '_')
-  const folder = join(CLAUDE_PLUGIN_DATA, 'notices')
-  const marker = join(folder, `${session}.${tool}`)
-  if (newerThan(marker, -1)) {
-    return true
-  }
-  try {
-    mkdirSync(folder, { recursive: true })
-    const expired = Date.now() - NOTICE_MAX_AGE_MS
-    for (const entry of readdirSync(folder, { withFileTypes: true })) {
-      const old = join(folder, entry.name)
-      if (entry.isFile() && statSync(old).mtimeMs < expired) {
-        unlinkSync(old)
-      }
-    }
-    writeFileSync(marker, '')
-  } catch {
-    // Without a marker the notice repeats, which beats never telling the user.
-  }
-  return false
-}
-
-// One JSON object that adds context for Claude and, with message, a line for the user.
-/**
- * @param {Record<string, unknown>} event
- * @param {string} context
- * @param {string} [message]
- * @returns {string}
- */
-function contextJson(event, context, message) {
-  const hookEventName = textAt(event, 'hook_event_name') || 'PostToolUse'
-  const hookSpecificOutput = { hookEventName, additionalContext: context }
-  return JSON.stringify(
-    message ? { systemMessage: message, hookSpecificOutput } : { hookSpecificOutput },
-  )
-}
-
-// The JSON stdout that says tool is not installed, once per session; '' afterwards.
-/**
- * @param {Record<string, unknown>} event
- * @param {keyof typeof INSTALL_HINTS} tool
- * @returns {string}
- */
-function missingNotice(event, tool) {
-  if (announced(event, tool)) {
-    return ''
-  }
-  return contextJson(
-    event,
-    `${PLUGIN}: ${tool} is not installed, so the hook does not check the shell files changed in this session. Do not treat them as checked. ${SKILL_HINT}`,
-    `${PLUGIN}: ${tool} is not installed, so shell files are not checked. Install it: ${INSTALL_HINTS[tool]}`,
-  )
-}
-
-// What Claude is told when a command left more loose files than the hook checks.
-/**
- * @param {number} count
- * @returns {string}
- */
-function arrivalNote(count) {
-  return `${PLUGIN}: this command left ${count} shell files outside a Git work tree, more than the ${MAX_FILES} the hook checks per command, so none of them was checked or reformatted. If you edited them, run shfmt and shellcheck on them.`
-}
-
-// Cuts text so that it and the reserved characters (the skill hint) fit under the cap.
+// Cuts text so that it and the reserved characters (the closing instruction) fit under the cap.
 /**
  * @param {string} text
  * @param {number} reserve
@@ -671,78 +592,86 @@ function bounded(text, reserve) {
   return `${kept.join('\n')}\n… ${lines.length - kept.length} more lines\n`
 }
 
+// The paths as a comma-separated list, each relative to base when it lies under it.
 /**
- * @param {string} path
+ * @param {readonly string[]} paths
  * @param {string | null} base
  * @returns {string}
  */
-function display(path, base) {
-  if (base === null) {
-    return path
-  }
-  const rel = relative(base, path)
-  return rel.startsWith('..') ? path : rel.split(sep).join('/')
+function namesOf(paths, base) {
+  return paths
+    .map((path) => {
+      if (base === null) {
+        return path
+      }
+      const rel = relative(base, path)
+      return rel.startsWith('..') ? path : rel.split(sep).join('/')
+    })
+    .join(', ')
 }
 
+// The JSON stdout with the one line the user sees.
+/**
+ * @param {readonly string[]} parts
+ * @returns {string}
+ */
+function userMessage(parts) {
+  return JSON.stringify({ systemMessage: `${PLUGIN}: ${parts.join(' · ')}` })
+}
+
+// What the user is told when a command left more loose files than the hook checks.
+/**
+ * @param {number} count
+ * @returns {string}
+ */
+function arrivalNote(count) {
+  return `not run on ${count} shell files this command left outside a Git work tree (more than the ${MAX_FILES} checked per tool call)`
+}
+
+// What the user is told after the tools ran: what ran, what was formatted, what was found.
 /**
  * @param {readonly string[]} checked
  * @param {readonly FileResult[]} results
  * @param {readonly string[]} unchecked
  * @param {string | null} base
- * @returns {string}
+ * @returns {string[]}
  */
-function report(checked, results, unchecked, base) {
-  const parts = results.flatMap((result) => [...result.findings, ...result.failures])
+function outcomeParts(checked, results, unchecked, base) {
+  const rewritten = checked.filter((_, i) => results[i]?.rewrote === true)
+  const withErrors = checked.filter((_, i) => {
+    const result = results[i]
+    return result !== undefined && result.findings.length + result.failures.length > 0
+  })
+  const parts = [
+    `ran shfmt, shellcheck on ${namesOf(checked, base)}`,
+    rewritten.length > 0 ? `reformatted ${namesOf(rewritten, base)}` : 'no formatting changes',
+    withErrors.length > 0
+      ? `errors in ${namesOf(withErrors, base)}, sent to Claude to fix`
+      : 'no errors',
+  ]
   if (unchecked.length > 0) {
-    const names = unchecked.map((path) => `  ${display(path, base)}`).join('\n')
-    const summary = `${unchecked.length} more shell files changed and were not checked`
-    parts.push(`${summary}; run the toolchain on them:\n${names}`)
+    parts.push(
+      `not run on ${namesOf(unchecked, base)} (more than the ${MAX_FILES} checked per tool call)`,
+    )
   }
-  if (parts.length === 0) {
-    return ''
-  }
-  const names = checked.map((path) => display(path, base)).join(', ')
-  parts.push(`Fix these findings in ${names} before continuing; do not suppress them.`)
-  return `${parts.join('\n')}\n`
+  return parts
 }
 
+// The stderr text Claude receives when the tools found errors; '' when there are none.
 /**
- * @param {Record<string, unknown>} event
  * @param {readonly string[]} checked
  * @param {readonly FileResult[]} results
- * @param {readonly string[]} zsh
  * @param {string | null} base
- * @param {string} arrival
  * @returns {string}
  */
-function success(event, checked, results, zsh, base, arrival) {
-  const eventName = textAt(event, 'hook_event_name') || 'PostToolUse'
-  /** @type {{ systemMessage?: string, hookSpecificOutput?: { hookEventName: string, additionalContext: string } }} */
-  const payload = {}
-  if (checked.length > 0) {
-    const names = checked.map((path) => display(path, base)).join(', ')
-    payload.systemMessage = `${PLUGIN}: shfmt, shellcheck passed · ${names}`
+function claudeReport(checked, results, base) {
+  const details = results.flatMap((result) => [...result.findings, ...result.failures])
+  if (details.length === 0) {
+    return ''
   }
-  /** @type {string[]} */
-  const notes = []
-  const rewritten = checked
-    .filter((_, i) => results[i]?.rewrote === true)
-    .map((path) => display(path, base))
-  if (rewritten.length > 0) {
-    notes.push(`shfmt reformatted ${rewritten.join(', ')}; re-read before the next edit.`)
-  }
-  if (zsh.length > 0) {
-    const names = zsh.map((path) => display(path, base)).join(', ')
-    notes.push(`ShellCheck does not support zsh; ${names} was not checked.`)
-  }
-  if (arrival !== '') {
-    notes.push(arrival)
-  }
-  if (notes.length > 0) {
-    notes.push(SKILL_HINT)
-    payload.hookSpecificOutput = { hookEventName: eventName, additionalContext: notes.join(' ') }
-  }
-  return Object.keys(payload).length > 0 ? JSON.stringify(payload) : ''
+  const head = `${PLUGIN}'s post-edit hook ran shfmt, shellcheck on ${namesOf(checked, base)} and found errors:\n`
+  const body = bounded(`${head}${details.join('\n')}\n`, CLAUDE_INSTRUCTION.length + 1)
+  return `${body}${CLAUDE_INSTRUCTION}\n`
 }
 
 // The shell and zsh files to check, and the note about loose files left unchecked ('' for none).
@@ -785,28 +714,36 @@ function main() {
     return 0
   }
   const { shell, zsh, arrival } = changedShell(event)
-  if (shell.length === 0 && zsh.length === 0) {
-    if (arrival !== '') {
-      process.stdout.write(contextJson(event, `${arrival} ${SKILL_HINT}`))
+  const base = projectDir(event)
+  /** @type {string[]} */
+  const notes = []
+  if (zsh.length > 0) {
+    notes.push(`not run on ${namesOf(zsh, base)}: ShellCheck does not support zsh`)
+  }
+  if (arrival !== '') {
+    notes.push(arrival)
+  }
+  if (shell.length === 0) {
+    if (notes.length > 0) {
+      process.stdout.write(userMessage(notes))
     }
     return 0
   }
-  const base = projectDir(event)
-  const tools = shell.length > 0 ? findTools() : null
+  const tools = findTools()
   if (typeof tools === 'string') {
-    process.stdout.write(missingNotice(event, tools))
+    const missing = `not run on ${namesOf(shell, base)}: ${tools} is not installed (install it with ${INSTALL_HINTS[tools]})`
+    process.stdout.write(userMessage([missing, ...notes]))
     return 0
   }
   const checked = shell.slice(0, MAX_FILES)
   const unchecked = shell.slice(MAX_FILES)
-  const results = tools === null ? [] : checked.map((path) => checkFile(path, tools))
-  const text = report(checked, results, unchecked, base)
+  const results = checked.map((path) => checkFile(path, tools))
+  process.stdout.write(userMessage([...outcomeParts(checked, results, unchecked, base), ...notes]))
+  const text = claudeReport(checked, results, base)
   if (text !== '') {
-    const full = arrival === '' ? text : `${text}${arrival}\n`
-    process.stderr.write(`${bounded(full, SKILL_HINT.length + 1)}${SKILL_HINT}\n`)
+    process.stderr.write(text)
     return 2
   }
-  process.stdout.write(success(event, checked, results, zsh, base, arrival))
   return 0
 }
 

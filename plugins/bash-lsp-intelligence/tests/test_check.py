@@ -18,10 +18,13 @@ if TYPE_CHECKING:
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
-# A stub tool logs its name and arguments, then exits with STUB_EXIT_<name> (0 by default).
+# A stub tool logs its name and arguments, appends a newline to its last argument when
+# STUB_APPEND_<name> is set (a reformat), then exits with STUB_EXIT_<name> (0 by default).
 STUB = """#!/usr/bin/env bash
 name="${0##*/}"
 printf '%s %s\\n' "${name}" "$*" >> "${STUB_LOG}"
+append_var="STUB_APPEND_${name}"
+if [[ -n "${!append_var:-}" ]]; then printf '\\n' >> "${@: -1}"; fi
 code_var="STUB_EXIT_${name}"
 exit "${!code_var:-0}"
 """
@@ -197,26 +200,12 @@ class BashHookTest(unittest.TestCase):
             "tool_input": {"file_path": str(path)},
         }
 
-    def test_missing_tool_gives_one_notice_and_never_blocks(self) -> None:
-        """Without shfmt the hook exits 0, tells the user and Claude once, then stays silent."""
-        with tempfile.TemporaryDirectory() as raw:
-            tmp = Path(raw).resolve()
-            write(tmp / "work" / "a.sh", SCRIPT)
-            first, _ = self._run(tmp, self._edit(tmp / "work" / "a.sh"), tools=False)
-            second, _ = self._run(tmp, self._edit(tmp / "work" / "a.sh"), tools=False)
-        self.assertEqual((first.code, first.stderr), (0, ""))
-        self.assertIn("shfmt is not installed", field(first.stdout, "systemMessage"))
-        context = field(first.stdout, "hookSpecificOutput", "additionalContext")
-        self.assertIn("Do not treat them as checked", context)
-        self.assertEqual((second.code, second.stdout, second.stderr), (0, "", ""))
-
-    def test_missing_tool_without_plugin_data_keeps_no_marker(self) -> None:
-        """With no data folder the notice repeats and nothing is created in the temporary folder."""
+    def test_missing_tool_is_reported_to_the_user_on_every_call(self) -> None:
+        """Without shfmt the hook exits 0 and tells only the user, every time, writing nothing."""
         for data in (False, True):
-            with self.subTest(data_set_but_empty=data), tempfile.TemporaryDirectory() as raw:
+            with self.subTest(plugin_data=data), tempfile.TemporaryDirectory() as raw:
                 tmp = Path(raw).resolve()
                 write(tmp / "work" / "a.sh", SCRIPT)
-                extra = {"CLAUDE_PLUGIN_DATA": ""} if data else {}
                 runs = [
                     self._run(
                         tmp,
@@ -224,16 +213,57 @@ class BashHookTest(unittest.TestCase):
                         tools=False,
                         data=data,
                         TMPDIR=str(tmp),
-                        **extra,
                     )[0]
                     for _ in range(2)
                 ]
-                left = folders_named(tmp, "bash-lsp-intelligence")
+                left = [*folders_named(tmp, "bash-lsp-intelligence"), *folders_named(tmp, "data")]
                 for outcome in runs:
                     self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-                    self.assertNotEqual(outcome.stdout, "")
-                    self.assertIn("shfmt is not installed", field(outcome.stdout, "systemMessage"))
+                    message = field(outcome.stdout, "systemMessage")
+                    self.assertTrue(
+                        message.startswith(
+                            "bash-lsp-intelligence: not run on a.sh: shfmt is not installed "
+                            "(install it with brew install shfmt"
+                        ),
+                        message,
+                    )
+                    self.assertNotIn("hookSpecificOutput", outcome.stdout)
                 self.assertEqual(left, [])
+
+    def test_clean_edit_tells_only_the_user(self) -> None:
+        """No errors and no reformat: one line for the user, nothing for Claude."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.sh", SCRIPT)
+            outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.sh"))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertEqual(
+            field(outcome.stdout, "systemMessage"),
+            "bash-lsp-intelligence: ran shfmt, shellcheck on a.sh · no formatting changes"
+            " · no errors",
+        )
+        self.assertNotIn("hookSpecificOutput", outcome.stdout)
+
+    def test_reformat_is_reported_to_the_user(self) -> None:
+        """A file shfmt rewrote is named in the user's line; Claude gets nothing without errors."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.sh", SCRIPT)
+            outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.sh"), STUB_APPEND_shfmt="1")
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertIn("· reformatted a.sh · no errors", field(outcome.stdout, "systemMessage"))
+
+    def test_zsh_is_reported_as_not_run(self) -> None:
+        """A zsh script gets no tool run, and the user is told why."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.zsh", "#!/usr/bin/env zsh\necho hi\n")
+            outcome, calls = self._run(tmp, self._edit(tmp / "work" / "a.zsh"))
+        self.assertEqual((outcome.code, outcome.stderr, calls), (0, "", []))
+        self.assertEqual(
+            field(outcome.stdout, "systemMessage"),
+            "bash-lsp-intelligence: not run on a.zsh: ShellCheck does not support zsh",
+        )
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: no tool runs on them and nothing is said."""
@@ -254,7 +284,7 @@ class BashHookTest(unittest.TestCase):
             write(tmp / "work" / "clone" / "a.sh", f"{SCRIPT}echo more\n")
             outcome, calls = self._run(tmp, self._bash(tmp))
         self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-        self.assertIn("passed · clone/a.sh", field(outcome.stdout, "systemMessage"))
+        self.assertIn("shellcheck on clone/a.sh ·", field(outcome.stdout, "systemMessage"))
         self.assertTrue(any(call.endswith("clone/a.sh") for call in calls), calls)
         self.assertFalse(any(call.endswith("b.sh") for call in calls), calls)
 
@@ -285,15 +315,16 @@ class BashHookTest(unittest.TestCase):
                 self.assertEqual(once[0], once[1], calls)
 
     def test_arrival_outside_git_is_not_checked(self) -> None:
-        """More loose files than the hook checks per command: none is touched, Claude is told."""
+        """More loose files than the hook checks per command: none is touched, the user is told."""
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw).resolve()
             for number in range(TOO_MANY):
                 write(tmp / "work" / "tree" / f"s{number}.sh", SCRIPT)
             outcome, calls = self._run(tmp, self._bash(tmp))
         self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-        context = field(outcome.stdout, "hookSpecificOutput", "additionalContext")
-        self.assertIn(f"left {TOO_MANY} shell files outside a Git work tree", context)
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn(f"not run on {TOO_MANY} shell files this command left outside", message)
+        self.assertNotIn("hookSpecificOutput", outcome.stdout)
         self.assertEqual(calls, [])
 
     def test_output_git_ignores_is_left_alone(self) -> None:
@@ -313,14 +344,32 @@ class BashHookTest(unittest.TestCase):
         self.assertFalse(any(call.endswith("hook.sh") for call in calls), calls)
 
     def test_findings_still_block(self) -> None:
-        """A finding still reaches Claude through stderr and exit 2."""
+        """A finding reaches Claude through stderr and exit 2, with the skill to fix it.
+
+        The user is told that errors were sent to Claude.
+        """
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw).resolve()
             write(tmp / "work" / "a.sh", SCRIPT)
             outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.sh"), STUB_EXIT_shellcheck="1")
         self.assertEqual(outcome.code, BLOCKED)
-        self.assertIn("shellcheck (", outcome.stderr)
-        self.assertIn("Fix these findings in a.sh", outcome.stderr)
+        self.assertTrue(
+            outcome.stderr.startswith(
+                "bash-lsp-intelligence's post-edit hook ran shfmt, shellcheck on a.sh "
+                "and found errors:\nshellcheck (",
+            ),
+            outcome.stderr,
+        )
+        self.assertTrue(
+            outcome.stderr.endswith(
+                'Use the Skill tool to load "bash-lsp-intelligence:bash-lsp-intelligence", '
+                "audit these errors with it and fix them before continuing with anything else.\n",
+            ),
+            outcome.stderr,
+        )
+        self.assertIn(
+            "· errors in a.sh, sent to Claude to fix", field(outcome.stdout, "systemMessage")
+        )
 
 
 if __name__ == "__main__":

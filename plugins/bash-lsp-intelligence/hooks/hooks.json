@@ -2,14 +2,15 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|Bash",
+        "matcher": "Edit|Write|NotebookEdit|Bash",
         "hooks": [
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
             "shell": "bash",
             "timeout": 60,
-            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts"
+            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts",
+            "onFailure": "block"
           }
         ]
       }
@@ -23,7 +24,8 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
             "shell": "bash",
             "timeout": 60,
-            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts"
+            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts",
+            "onFailure": "block"
           }
         ]
       }
