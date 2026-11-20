@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- With each prompt you send, the plugin now tells Claude that the `python-lsp-intelligence:python-lsp-intelligence` skill governs every Python file it creates, writes or edits, whether through Edit, Write or a shell command, and that Claude loads the skill before the first such change. A new `UserPromptSubmit` hook adds this short note to Claude's context; it sends nothing and writes nothing.
+
+### Removed
+
+- **Breaking:** the first Python edit of a session no longer waits for the skill. The `PreToolUse` hook that denied the first Edit, Write or NotebookEdit call until Claude loaded `python-lsp-intelligence:python-lsp-intelligence` is gone, together with the entries that only tracked it (`PostToolUse` on the Skill tool, `UserPromptExpansion` and `PostCompact`). Claude now gets the reminder above with each prompt instead of a denied edit. Nothing for you to do: the marker files it left in the plugin's data folder, under `skill-loads/`, are no longer read, and you can delete them.
+
 ## [0.4.0] - 2026-11-19
 
 ### Added
