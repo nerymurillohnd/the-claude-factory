@@ -45,6 +45,9 @@ Add an item only when all of these hold:
 | DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
+| DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
+| DEBT-011 | bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk | 🟠 Blocked |
+| DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -130,6 +133,7 @@ Add an item only when all of these hold:
   - Rechecked 2026-11-16 on `main` at a55cd4e: `npm run lint:frontmatter` reports 59 files checked and 16 findings, the same 16. The 5 files added since ceecd50 have none: `work-lifecycle`'s 2 skills and 2 agents (`4 files checked, 0 findings`) and hook-engineering's `writing-hooks` skill.
   - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:frontmatter` reports 70 files checked and 17 findings. The new one is FM-03 in the `argument-hint` of `skills-engineering`'s `auditing-skills`, which `.claude/rules/plugins/skills-engineering.md` keeps in suspense until the owner decides.
   - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:frontmatter` reports 72 files checked and 17 findings, in six plugins: github-operations, instruction-engineering, plugin-test-bench, prompt-writer, skills-engineering and svelte-development.
+  - Rechecked 2026-11-20 on `main` at 12c404d, after [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117): `npm run lint:frontmatter` reports 72 files checked and 17 findings, unchanged.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -165,6 +169,7 @@ Add an item only when all of these hold:
   - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:js` checks 744 files and finds 24 errors, exit 1. CI run 44486756899 on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113) reports the same 24.
   - Update, 2026-11-19: the Claude Code pre-push hook is removed, so nothing runs `biome-changed` before a push any more; it still runs in Validate's `Checks` job and in `npm run check:pr`. The Git pre-commit gate (`.githooks/pre-commit`) now runs Biome on each commit's staged `.ts`, `.mjs`, `.md` and `.json` files, so a file with one of the 24 findings can't be committed until it is fixed.
   - Update, 2026-11-19, on branch `claude/tech-debt-parallel-9lsn8d`: the DEBT-003 fixes staged `file-tree-pane/hooks/register.tsx`, `project-maintainer/hooks/debt.ts` and `project-maintainer/hooks/guard.ts`, so the pre-commit gate required their findings fixed: `noNegatedArrayPredicate` ×3 and `noUselessLengthCheck` ×1, by equivalent rewrites. `npm run lint:js` now checks 742 files and finds 20 errors, exit 1.
+  - Rechecked 2026-11-20 on `main` at 12c404d, after [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117): `npm run lint:js` checks 744 files and finds 20 errors, unchanged; #117 added none.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -229,6 +234,86 @@ Add an item only when all of these hold:
 - **Next action:** cut restatements, such as "Your expertise" and "What this skill promotes", or move the long Phase 2 and Phase 3 text into references, until `plugin details` shows under 5,000 tokens on invoke.
 - **Review condition:** the next change to `authoring-skills`' `SKILL.md`, or a run where Claude skips Phase 6 or 7 after compaction.
 - **Related records:** [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113).
+
+### DEBT-010 — The TypeScript 6 skill still describes the post-edit hook's old strict profile
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | typescript6-lsp-intelligence |
+| **Logged** | 2026-11-20 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - typescript6-lsp-intelligence 0.5.0, released from [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117) on 2026-11-20, runs the project's own `tsc --noEmit --pretty false --strict` under its tsconfig; `hooks/tsc-check.sh` has no strict policy block of its own.
+  - `plugins/typescript6-lsp-intelligence/skills/ts-6-writing-and-navigation/SKILL.md`, "Scope", still says the post-edit hook "still checks each edited JavaScript file under its strict profile, `checkJs` included; that is the hook's policy".
+  - `skills/ts-6-writing-and-navigation/scripts/run-fixtures.sh`, header lines 11-12, still calls its `STRICT_POLICY` block "the post-edit hook's strictest policy, the same block as in hooks/tsc-check.sh (a test keeps them equal)".
+  - The skill's fixtures section (`SKILL.md` line 15, `references/fixtures.md`, `scripts/run-fixtures.sh`) is an open owner decision since the hook rebuild.
+- **Inferences:** Claude, following the skill, can assume the hook checks JavaScript files that `tsc` itself leaves unchecked, and skip its own check of them.
+- **Open questions:** keep the fixtures with their own strict profile, align them with `--strict`, or drop them.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the skill tells Claude something false about what the hook checks, so a JavaScript file without `checkJs` or `// @ts-check` can be taken as type-checked when it was not.
+- **Why it is not fixed now:** the wording depends on the owner's decision about the fixtures section.
+- **Next action:** the owner decides the fixtures; then correct the "Scope" bullet and the `run-fixtures.sh` header with `skills-engineering:authoring-skills`, with a patch bump.
+- **Review condition:** the owner's decision, or the next change to the skill.
+- **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
+
+### DEBT-011 — bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | compatibility |
+| **Owner** | bash-lsp-intelligence |
+| **Logged** | 2026-11-20 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - bash-lsp-intelligence 0.4.0, released from [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117) on 2026-11-20, replaced `hooks/check.mjs` with `hooks/bash-gate.sh`, `hooks/read-event.awk` and `hooks/json-string.awk`, and its README states Bash 3.2 or later.
+  - The 13 tests in `plugins/bash-lsp-intelligence/tests/test_check.py` pass with GNU Bash 5.2.21 and mawk 1.3.4 on Linux; ShellCheck (`-o all`), `shfmt -d` and `bash -n` are clean.
+  - Building Bash 3.2.57 in the cloud session to run the tests was refused by the session's permission classifier on 2026-11-20, and no BSD awk was available there. The script was reviewed by hand against Bash 3.2's limits only.
+- **Inferences:** `utf8()` in `read-event.awk` prints bytes with `sprintf("%c", n)`; an awk that encodes code points above 127 as UTF-8 would garble a `\uXXXX` escape outside ASCII. Claude Code sends such characters unescaped, so the case is rare.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** an incompatibility with macOS's `/bin/bash` 3.2 or its awk would make the hook fail on every edit there, which `onFailure: "block"` turns into an error Claude receives after each call.
+- **Why it is not fixed now:** it needs a macOS machine, or approval to build Bash 3.2 in the cloud session.
+- **Next action:** run `python3 -m unittest discover -s plugins/bash-lsp-intelligence/tests -p 'test_*.py'` on macOS with `/bin/bash` and `/usr/bin/awk`, and fix what fails.
+- **Review condition:** that run, or a user report from macOS.
+- **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
+
+### DEBT-012 — The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | reliability |
+| **Owner** | typescript6-lsp-intelligence |
+| **Logged** | 2026-11-20 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - Stated by the user on 2026-11-20: the hook must keep Claude from advancing while files it edited have type errors, and must find Node however it was installed (standalone, npm, fnm, Volta, nvm, packages or any other way) on macOS and Linux.
+  - typescript6-lsp-intelligence 0.5.0 reports errors through `PostToolUse` (exit 2) and `PostToolBatch` (`additionalContext`). The Claude Code hooks reference (code.claude.com/docs/en/hooks, read 2026-11-20) says `PostToolUse` exit 2 "Shows stderr to Claude; the tool already ran", and only `Stop` and `SubagentStop` keep Claude working in the same turn.
+  - `hooks/tsc-check.sh` reads the event with `node -e` and, without `node` on the inherited `PATH`, only tells the user it did not run.
+  - A plan, `.claude/maintainer/plans/2026-11-20-typescript6-stop-gate-and-node-lookup.md`, covering both (a `Stop`/`SubagentStop` gate with a ledger cleared only by verification, a git-snapshot fallback for Bash edits, a `userConfig` `node_path` and a lookup through Volta, nodenv, mise, fnm, nvm, asdf, n and system prefixes) was presented on 2026-11-20 and not approved.
+- **Inferences:** none.
+- **Open questions:** whether the owner approves the plan as written or changes it.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** Claude can end a turn with type errors in files it changed, and on machines where `node` comes from a version manager the shell profile loads, the check does not run at all.
+- **Why it is not fixed now:** it waits on the owner's approval of the plan.
+- **Next action:** the owner approves or amends the plan; then implement it test-first, starting with its Task 0 probes.
+- **Review condition:** the owner's decision.
+- **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
