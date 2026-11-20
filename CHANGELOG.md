@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-20
+
+### Changed
+
+- **github-operations** 0.9.2 — the `init-pr-lifecycle` and `init-cleanup-and-debug` commands mark each stage with a plain label instead of a Markdown heading; what they do is unchanged.
+
 ## 2026-11-19
 
 ### Changed
@@ -20,6 +26,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **typescript6-lsp-intelligence** 0.4.0 — **Breaking:** the first TypeScript or JavaScript edit of a session now waits, once, until Claude has loaded `ts-lifecycle`; the skill takes the same opening step and three-identical rule, and its description names TypeScript 6.
 - **typescript7-lsp-intelligence** 0.5.0 — **Breaking:** the same first-edit wait and opening step; the `ts-lifecycle` skill now carries the TypeScript 6 plugin's corrections, among them that `allowJs` alone doesn't type-check JavaScript.
 - **github-operations** 0.9.1 — the four agents open with their role, their expertise and their goal, and mark their sections with plain labels instead of Markdown headings; what they do is unchanged.
+
+### Fixed
+
+- **file-tree-pane** 0.1.7 — `claude plugin validate --strict` passes again: the mod imports its own files as `./file.js`, the form the mods docs show; nothing changes in how it works.
+- **project-maintainer** 0.2.7 — `claude plugin validate --strict` passes again, and if the compaction note or the commit reminder fails, the compaction or the command still goes on as asked.
+- **svelte-development** 0.1.5 — `svelte-best-practices` points to the current source of Astro's Svelte renderer, now in `@astrojs/svelte-renderer`, and drops SvelteKit's removed Sapper migration guide from its docs map.
+- **turn-meter** 0.1.7 — if counting a tool call fails, the call goes on unchanged, and if `/turn-meter` fails, it says so instead of giving no reply; validated and tested on Claude Code v2.1.328.
 
 ## 2026-11-18
 

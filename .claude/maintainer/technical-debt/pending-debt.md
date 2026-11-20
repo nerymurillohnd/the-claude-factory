@@ -41,7 +41,6 @@ Add an item only when all of these hold:
 | ID | Title | Status |
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
-| DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule | 🟠 Blocked |
 | DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
@@ -108,46 +107,6 @@ Add an item only when all of these hold:
 - **Review condition:** the owner's decision, or the first README or catalog drift found in review.
 - **Related records:** none.
 
-### DEBT-003 — Two CLI checks can't join npm run validate while five mods fail them
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | unassigned |
-| **Logged** | 2026-11-13 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - `npm run validate:hooks-catch` checks `contents[].gatingHooks[].hasCatch` from `claude plugin validate --json` (commit 79af551, Claude Code 2.1.323). On 2026-11-13 it exits 1 with four hooks:
-    - `plugins/project-maintainer`: `session.compact` and `tool.call{tool=Bash}`, in `./register.ts`
-    - `plugins/turn-meter`: `tool.call` and `command.run{command=turn-meter}`, in `./register.tsx`
-  - `npm run validate:portable` runs `claude plugin validate --profile directory --strict` on each plugin. On 2026-11-13 it fails on `file-tree-pane`, `model-trace`, `project-maintainer`, `tool-ledger` and `turn-meter`. `npm run check:install -- --from local turn-meter` shows the cause for `turn-meter`: `TS2741: Property 'isCollapsed' is missing`.
-  - Both scripts stay out of `validate` and `check`. `validate:claude` and `validate:mods`, which pass, joined `validate`.
-  - On 2026-11-14, with Claude Code 2.1.325, plain `claude plugin validate --strict` also exits 1 on `model-trace`, `tool-ledger` and `turn-meter`, at `main` (39b0110): `error TS2769: No overload matches this call … 'mode' does not exist in type … ToolInputOf<"WebSearch", …>` (model-trace lines 230 and 351). So `npm run validate` fails on them too.
-  - On 2026-11-15, on `ccr-7fcd6ef3-rku7l1` at 005f47d with Claude Code 2.1.325, plain `--strict` also exits 1 on `file-tree-pane` and `project-maintainer`, with `error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled`. `tool-ledger` and `turn-meter` exit 1 with `TS2741: Property 'isCollapsed' is missing`. All five fail plain `--strict` and `--profile directory --strict` alike. The type check of a TypeScript hooks module joined `claude plugin validate` in 2.1.323, per the changelog.
-  - Validate's blocking `Checks` job runs `claude plugin validate --strict` on every other plugin. Its non-blocking `Debt` job runs these five, `validate:portable` and `validate:hooks-catch`, each step named `DEBT-003`.
-  - On 2026-11-15, at 6a58b1a with Claude Code 2.1.325, `npm run check:install -- --from local` also exits 1 on four of the five, at its strict validation:
-    - `model-trace`: TS2769 (`mode` on `WebSearch`);
-    - `project-maintainer`: 14× TS5097;
-    - `tool-ledger` and `turn-meter`: TS2741 (`isCollapsed` missing).
-
-    Validate's blocking install check runs `check:install --no-strict` on those a pull request changes: it still installs, loads and tests them, and their strict validation stays in the `Debt` job.
-  - Rechecked 2026-11-15 on `main` at ceecd50 with Claude Code 2.1.325: `npm run validate:hooks-catch` still lists the same four hooks, and plain `--strict` and `--profile directory --strict` both still fail on the same five plugins.
-  - Update, 2026-11-16, after #110 (merged as a55cd4e): the DEBT-003 plugin list moved from the workflow's `DEBT_003_PLUGINS` env into `scripts/validators/pr-checks.sh`. Its `validate` step skips the five, its `install` step installs them with `--no-strict`, and the Debt job's strict step runs `pr-checks.sh debt-validate`. The Debt job on #110's head 62accc3 reported the same failures as main's run 43770320773.
-  - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d` with Claude Code 2.1.327: `npm run validate:hooks-catch` exits 1 on the same four hooks.
-- **Inferences:** the same mods-API type errors may mean the mods are broken for users on current Claude Code builds; whether 2.1.325 changed the WebSearch input type is not checked against the release notes.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** nothing blocks a merge on a gating hook with no `.catch` or on a portability failure. These plugins reach users with the defects the two checks report.
-- **Why it is not fixed now:** the fixes are plugin-scope work with version bumps. The owner kept them out of the scripts and CLI task on 2026-11-13.
-- **Next action:** the owner schedules the fixes for the five plugins. Once `validate:hooks-catch` and `validate:portable` exit 0, chain both into `npm run validate`, empty `DEBT_003_PLUGINS` in `scripts/validators/pr-checks.sh` (drop its `debt-validate` step), and move the `DEBT-003` steps from Validate's `Debt` job into `Checks`.
-- **Review condition:** both scripts exit 0.
-- **Related records:** none.
-
 ### DEBT-005 — frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule
 
 | Field | Value |
@@ -205,6 +164,7 @@ Add an item only when all of these hold:
   - Update, 2026-11-18, on branch `ccr-74c453c5-5x0jvi`: renaming `claude-github-actions` to `cc-github-actions` made its two reference files changed files, so `biome-changed` blocked the push. Their 5 `useFencedCodeLanguage` findings were fixed by tagging the fences `bash`, and `biome check --write` fixed the format of `plugins/github-operations/README.md`. `npm run lint:js` now checks 705 files and finds 25 errors, exit 1.
   - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:js` checks 744 files and finds 24 errors, exit 1. CI run 44486756899 on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113) reports the same 24.
   - Update, 2026-11-19: the Claude Code pre-push hook is removed, so nothing runs `biome-changed` before a push any more; it still runs in Validate's `Checks` job and in `npm run check:pr`. The Git pre-commit gate (`.githooks/pre-commit`) now runs Biome on each commit's staged `.ts`, `.mjs`, `.md` and `.json` files, so a file with one of the 24 findings can't be committed until it is fixed.
+  - Update, 2026-11-19, on branch `claude/tech-debt-parallel-9lsn8d`: the DEBT-003 fixes staged `file-tree-pane/hooks/register.tsx`, `project-maintainer/hooks/debt.ts` and `project-maintainer/hooks/guard.ts`, so the pre-commit gate required their findings fixed: `noNegatedArrayPredicate` ×3 and `noUselessLengthCheck` ×1, by equivalent rewrites. `npm run lint:js` now checks 742 files and finds 20 errors, exit 1.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -212,7 +172,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** `npm run lint` and `npm run check` fail on the existing findings, so they can't serve as the local check; `npm run check:pr` replaces them. A finding in a file a pull request doesn't touch still goes unreported.
 - **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes.
-- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/validators/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
+- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/validators/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
 - **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** none.
 

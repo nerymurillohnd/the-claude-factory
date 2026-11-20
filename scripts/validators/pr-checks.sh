@@ -7,26 +7,18 @@
 #   failed. With steps, runs only those, in order.
 #
 # Steps: lint biome-changed typecheck test-scripts test-plugins validate mods consistency
-#        release-notes install links debt-validate (debt-validate belongs to the Debt job, never to
-#        "all")
+#        release-notes install links
 #
 # CHECKS_BASE is the commit the branch is compared with for biome-changed, install and links; it
 # defaults to origin/main. They read committed changes only, as CI sees them.
 set -Eeuo pipefail
 trap 'exit 1' ERR
 
-# The plugins that fail plain `claude plugin validate --strict` today (DEBT-003): the Debt job
-# validates them strictly, and the Checks job installs them with `check:install --no-strict`.
-DEBT_003_PLUGINS="file-tree-pane model-trace project-maintainer tool-ledger turn-meter"
 ALL_STEPS="lint biome-changed typecheck test-scripts test-plugins validate mods consistency release-notes install links"
 
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 base="${CHECKS_BASE:-origin/main}"
-
-is_debt_003() {
-  [[ " ${DEBT_003_PLUGINS} " == *" $1 "* ]]
-}
 
 step_lint() {
   # lint:js is held back by DEBT-006; biome-changed gates the files a branch changes instead.
@@ -44,14 +36,15 @@ step_biome_changed() {
 }
 
 step_validate() {
-  local dir name status=0
+  local dir status=0
   for dir in plugins/*/; do
-    name="$(basename "${dir}")"
-    if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then continue; fi
     claude plugin validate --strict "${dir}" || status=1
   done
   claude plugin validate --strict . || status=1
   npm run validate:claude || status=1
+  # What the Anthropic directory checks, and a .catch on every gating hook of a mod.
+  npm run validate:portable || status=1
+  npm run validate:hooks-catch || status=1
   return "${status}"
 }
 
@@ -66,20 +59,18 @@ step_release_notes() {
 }
 
 step_install() {
-  # A DEBT-003 plugin is still installed, loaded and tested; only its strict validation waits.
   local changed name
-  local -a strict=() debt=()
+  local -a names=()
   changed="$(git diff --name-only "${base}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
   for name in ${changed}; do
     if [[ ! -f plugins/${name}/.claude-plugin/plugin.json ]]; then continue; fi
-    if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then debt+=("${name}"); else strict+=("${name}"); fi
+    names+=("${name}")
   done
-  if ((${#strict[@]} + ${#debt[@]} == 0)); then
+  if ((${#names[@]} == 0)); then
     echo "No plugin changed."
     return 0
   fi
-  if ((${#strict[@]} > 0)); then npm run check:install -- --from local "${strict[@]}"; fi
-  if ((${#debt[@]} > 0)); then npm run check:install -- --from local --no-strict "${debt[@]}"; fi
+  npm run check:install -- --from local "${names[@]}"
 }
 
 step_links() {
@@ -97,14 +88,6 @@ step_links() {
   bash scripts/checkers/live-urls.sh "${changed[@]}"
 }
 
-step_debt_validate() {
-  local name status=0
-  for name in ${DEBT_003_PLUGINS}; do
-    claude plugin validate --strict "plugins/${name}/" || status=1
-  done
-  return "${status}"
-}
-
 run_step() {
   case "$1" in
     lint) step_lint ;;
@@ -119,9 +102,8 @@ run_step() {
     release-notes) step_release_notes ;;
     install) step_install ;;
     links) step_links ;;
-    debt-validate) step_debt_validate ;;
     *)
-      echo "pr-checks: unknown step '$1'; steps: ${ALL_STEPS} debt-validate" >&2
+      echo "pr-checks: unknown step '$1'; steps: ${ALL_STEPS}" >&2
       return 2
       ;;
   esac

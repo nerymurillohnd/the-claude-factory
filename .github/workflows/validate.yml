@@ -54,7 +54,7 @@ jobs:
       - name: Plugin hook tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: bash scripts/validators/pr-checks.sh test-plugins
-      - name: claude plugin validate --strict (plugins outside DEBT-003, the marketplace, .claude)
+      - name: claude plugin validate --strict (every plugin, the marketplace, .claude), portable and hooks-catch
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: bash scripts/validators/pr-checks.sh validate
       - name: Mod tests
@@ -71,8 +71,6 @@ jobs:
       - name: Release notes for every plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: bash scripts/validators/pr-checks.sh release-notes
-      # A DEBT-003 plugin is still installed, loaded and tested here; only its strict validation
-      # waits in `debt`.
       - name: Install check for each changed plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
@@ -104,15 +102,6 @@ jobs:
       - name: DEBT-005 — npm run lint:frontmatter
         continue-on-error: true
         run: npm run lint:frontmatter
-      - name: DEBT-003 — claude plugin validate --strict on the five plugins
-        continue-on-error: true
-        run: bash scripts/validators/pr-checks.sh debt-validate
-      - name: DEBT-003 — npm run validate:portable
-        continue-on-error: true
-        run: npm run validate:portable
-      - name: DEBT-003 — npm run validate:hooks-catch
-        continue-on-error: true
-        run: npm run validate:hooks-catch
 
   release:
     name: Release

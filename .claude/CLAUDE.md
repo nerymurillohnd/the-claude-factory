@@ -12,7 +12,6 @@
 
 ## Ownership
 
-- Own your work and every result you deliver.
 - Ship each plugin only in top condition and anticipate its defects before it ships: it runs on third-party users' machines and projects, a defect breaks, blocks or damages their work and its consequences fall on them and on Nery, and you and Nery are the last check before it reaches them.
 - Reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
 - Push, open a pull request or run a workflow only with Nery's explicit authorization.
@@ -24,7 +23,7 @@
 **Runtimes**
 
 - Run `npm run setup` in the cloud after a lockfile changes or with `node_modules/` or `.venv/` missing: it runs `npm ci` and `uv sync --locked` and installs the tools.
-- Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins, with npm 12, before any npm command; the cloud has no nvm and already runs that Node.
+- Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins before any npm command; `devEngines` also requires npm 12, which Node 26 does not ship (see `.claude/rules/npm-and-uv.md`). The cloud has no nvm and already runs that Node and npm 12.
 - Run `uv sync --locked` to set up Python 3.15 and its dev dependencies before the first Python command of a session and after `uv.lock` changes.
 
 **Formatting, linting and type checking**
@@ -33,7 +32,7 @@
 - Run `npm run lint:agents -- <file>` after each edit of a subagent in `plugins/*/agents/` or `.claude/agents/`: it reports any Markdown heading outside the frontmatter and fenced blocks.
 - Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
 - Run `shfmt -w <file>`, then `shellcheck <file>`, which takes its options from `SHELLCHECK_OPTS` and `.shellcheckrc`, to format and lint a shell script after each edit.
-- Run `npx tsc -p tsconfig.json --noEmit` to type-check the maintainer JavaScript after each change to a `.mjs`, `.cjs` or `.js` file: the root `tsconfig.json` lists only those. Type-check a mod's `.ts` files with `npx tsc -p plugins/<mod> --noEmit`, through the `tsconfig.json` Claude Code writes into the mod when it loads it from `--plugin-dir` in an interactive session.
+- Run `npx tsc -p tsconfig.json --noEmit` to type-check the maintainer JavaScript after each change to a `.mjs`, `.cjs` or `.js` file: the root `tsconfig.json` lists only those. Run no `tsc` on a mod's `.ts` files: `claude plugin validate` type-checks them against the mod API.
 - Run `basedpyright --outputjson` to type-check the Python after each change to a Python file.
 
 **Tests and plugins**
@@ -59,7 +58,7 @@
 | :-- | :-- |
 | `.claude-plugin/` | Marketplace catalog |
 | `plugins/` | One self-contained plugin per folder |
-| `.claude/` | Project settings, rules, skills, subagents, hooks, memory, handoffs, ADRs, technical debt, specs, plans, audits, references and templates |
+| `.claude/` | Project settings, rules, skills, subagents, memory, handoffs, ADRs, technical debt, specs, plans, audits, references and templates |
 | `.github/` | Workflows, the CI setup action, issue forms, PR templates, labels, Dependabot, CODEOWNERS |
 | `scripts/` | Maintainer validators, checkers, generators, release and test scripts, schemas and typings |
 | `docs/` | User guides and their assets |
@@ -79,7 +78,6 @@ Do every task, area, phase and function through the skill this section designate
 
 Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside the task's skill below for all work on plugins or their commands: read its complete list of plugin commands first, and do no manual work a command already does.
 
-- Use `plugin-engineering:cli-commands-guide` to build a plugin.
 - Use `plugin-authoring` to create a plugin that ships mods, or to change a mod.
 - Use `hook-engineering:writing-hooks` to write or rewrite a Claude Code hook.
 - Use `hook-engineering:hook-development` to debug or audit a hook.

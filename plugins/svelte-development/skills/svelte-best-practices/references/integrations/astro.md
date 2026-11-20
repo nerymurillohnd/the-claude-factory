@@ -19,19 +19,19 @@
 
 ## Fetch especially when
 
-- The project's `@astrojs/svelte` is newer than 9.1.0, the newest this file cites, or its `astro` or the slot behavior below does not match what you see.
-- You pass children or named slots from `.astro` files into Svelte components: read the renderer of the installed `@astrojs/svelte`:
+- The project's `@astrojs/svelte` is newer than 9.1.6, the newest this file cites, or its `astro` or the slot behavior below does not match what you see.
+- You pass children or named slots from `.astro` files into Svelte components: read the renderer of the installed `@astrojs/svelte`. Since 9.1.3 the renderer lives in the `@astrojs/svelte-renderer` package (`packages/renderers/svelte` in the Astro repository), and the `src/server.ts` and `src/client.ts` of `@astrojs/svelte` only re-export it:
 
   ```sh
-  npm ls @astrojs/svelte --depth=0
-  curl -sS 'https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/server.ts'
-  curl -sS 'https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/client.svelte.ts'
+  npm ls @astrojs/svelte @astrojs/svelte-renderer
+  curl -sS 'https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/src/server.ts'
+  curl -sS 'https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/src/client.svelte.ts'
   ```
 - You upgrade across an Astro major: read the upgrade guide and the `astro` changelog window (both URLs under [Official sources](#official-sources); the skill's changelogs reference has the window command).
 
 ## Versions and peers
 
-- `@astrojs/svelte` 9.1.0 peers: `astro ^7.0.0`, `svelte ^5.43.6`, `typescript ^5.3.3 || ^6.0.0`; engines `node >=22.22.0` (9.1.0 raised it from 22.12.0, its only change). Astro 7.4.0 declares the same Node floor.
+- `@astrojs/svelte` 9.1.6 peers: `astro ^7.0.0`, `svelte ^5.43.6`, `typescript ^5.3.3 || ^6.0.0`; engines `node >=22.23.4` (9.1.0 raised it from 22.12.0 to 22.22.0, and 9.1.1 to 22.23.4 for the Node.js security releases). Astro 7.4.13 declares the same Node floor.
 - 9.0.0 moved to Vite 8 and `@sveltejs/vite-plugin-svelte` 7. Svelte 3 and 4 need `@astrojs/svelte@5`.
 
 ## Install and configure the integration
@@ -96,7 +96,7 @@ Props given to a hydrated component or a server island must survive serializatio
 
 ## Slots arrive as snippets
 
-The renderer turns every slot passed from Astro into a Svelte raw snippet with no parameters (`createRawSnippet` in `src/server.ts` and `src/client.svelte.ts`):
+The renderer turns every slot passed from Astro into a Svelte raw snippet with no parameters (`createRawSnippet` in `src/server.ts` and `src/client.svelte.ts` of `@astrojs/svelte-renderer`):
 
 - The default slot becomes the `children` prop.
 - A named slot becomes a prop with the slot's exact name; kebab-case names are kept, so destructure them with a quoted key.
@@ -135,7 +135,7 @@ The renderer turns every slot passed from Astro into a Svelte raw snippet with n
 
 ## How the client mounts a component
 
-From `src/client.svelte.ts` in @astrojs/svelte 9.0.1:
+From `src/client.svelte.ts` in `@astrojs/svelte-renderer` 0.1.2 (in `@astrojs/svelte` itself before 9.1.3):
 
 - Server-rendered components (`client:load`, `idle`, `visible`, `media`) start with Svelte's `hydrate`.
 - `client:only="svelte"` clears the target element and uses `mount`, since there is no server HTML.
@@ -170,7 +170,8 @@ Add `@tailwindcss/vite` to `vite.plugins` in `astro.config` and import a stylesh
 - Directives reference: https://raw.githubusercontent.com/withastro/docs/main/src/content/docs/en/reference/directives-reference.mdx
 - Server islands: https://raw.githubusercontent.com/withastro/docs/main/src/content/docs/en/guides/server-islands.mdx
 - Upgrade to v7: https://raw.githubusercontent.com/withastro/docs/main/src/content/docs/en/guides/upgrade-to/v7.mdx
-- Renderer source, server: https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/server.ts
-- Renderer source, client: https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/client.svelte.ts
+- Renderer source, server (`@astrojs/svelte-renderer`): https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/src/server.ts
+- Renderer source, client (`@astrojs/svelte-renderer`): https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/src/client.svelte.ts
+- @astrojs/svelte-renderer changelog: https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/CHANGELOG.md
 - @astrojs/svelte changelog: https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/CHANGELOG.md
 - astro changelog: https://raw.githubusercontent.com/withastro/astro/main/packages/astro/CHANGELOG.md

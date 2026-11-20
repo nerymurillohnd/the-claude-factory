@@ -9,14 +9,14 @@ import type {
 import { atom, read, update } from 'claude-code'
 
 import type { FileTreeColumn, FileTreeView } from '../types'
-import type { ActivityKind, GitOp, Touches } from './activity.ts'
-import { opLabel, touchesOf } from './activity.ts'
-import type { BodyLine, BodyMessage, BodyProps, Segment } from './body.ts'
-import { readMessage } from './body.ts'
-import type { DiffRow, ParsedDiff } from './diff.ts'
-import { nextStop, parseDiff, withoutHeadings } from './diff.ts'
-import { clip, formatAge, formatDate, formatSize, printable } from './format.ts'
-import type { FolderCounts, GitFile, GitSnapshot } from './git.ts'
+import type { ActivityKind, GitOp, Touches } from './activity.js'
+import { opLabel, touchesOf } from './activity.js'
+import type { BodyLine, BodyMessage, BodyProps, Segment } from './body.js'
+import { readMessage } from './body.js'
+import type { DiffRow, ParsedDiff } from './diff.js'
+import { nextStop, parseDiff, withoutHeadings } from './diff.js'
+import { clip, formatAge, formatDate, formatSize, printable } from './format.js'
+import type { FolderCounts, GitFile, GitSnapshot } from './git.js'
 import {
   countsText,
   EMPTY_TREE,
@@ -27,9 +27,9 @@ import {
   parseWc,
   rollUp,
   underPrefix,
-} from './git.ts'
-import type { GlyphSetting, Glyphs } from './glyphs.ts'
-import { decideGlyphs, iconFor, isNerdFontFile } from './glyphs.ts'
+} from './git.js'
+import type { GlyphSetting, Glyphs } from './glyphs.js'
+import { decideGlyphs, iconFor, isNerdFontFile } from './glyphs.js'
 import type {
   HerdrPlan,
   Host,
@@ -38,7 +38,7 @@ import type {
   Platform,
   RunPlan,
   TmuxEditorPlan,
-} from './launch.ts'
+} from './launch.js'
 import {
   canEdit,
   diffToolPlan,
@@ -50,11 +50,11 @@ import {
   openPlan,
   platformOf,
   quickLookPlan,
-} from './launch.ts'
-import type { Look, Palette, Tone } from './palette.ts'
-import { lookOf, paletteFor, parsePalette } from './palette.ts'
-import { searchPaths } from './search.ts'
-import type { Entry, Row } from './tree.ts'
+} from './launch.js'
+import type { Look, Palette, Tone } from './palette.js'
+import { lookOf, paletteFor, parsePalette } from './palette.js'
+import { searchPaths } from './search.js'
+import type { Entry, Row } from './tree.js'
 import {
   absoluteOf,
   ancestorsOf,
@@ -69,7 +69,7 @@ import {
   relativeTo,
   revealOffset,
   withGhosts,
-} from './tree.ts'
+} from './tree.js'
 
 type Activity = 'reads and writes' | 'writes' | 'reads' | 'none'
 
@@ -1831,7 +1831,7 @@ const selectionNow = async ($: EngineInterface, root: string): Promise<string | 
   if (
     selected === undefined ||
     selected === null ||
-    !panes.some((pane) => pane.id === PANE && pane.isShown)
+    panes.every((pane) => pane.id !== PANE || !pane.isShown)
   ) {
     return null
   }

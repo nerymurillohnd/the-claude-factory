@@ -54,7 +54,7 @@ These go beyond the docs and stay unless the owner changes them:
 6. **Set the version.** After `git fetch origin main`, set `version` in `plugins/<plugin>/.claude-plugin/plugin.json` to what `npm run release:status -- --next <plugin> --level <major|minor|patch>` prints. Then set the plugin's version cell in the root `README.md` catalog to the same value.
 7. **Check it**, and show the raw output:
    - `npm run release:status` exits 0 and lists `changed: <plugin> <old> -> <new>`; it exits 1 on a version that isn't semver, which the validator accepts.
-   - `claude plugin validate --strict plugins/<plugin>` and `claude plugin validate --strict .` exit 0. A plugin that DEBT-003 holds back fails here today; report it instead of fixing it in this change.
+   - `claude plugin validate --strict plugins/<plugin>` and `claude plugin validate --strict .` exit 0.
    - For a mod (`tests/*.test.ts(x)`), `claude plugin test plugins/<plugin>` exits 0; for hook tests, `npm run test:plugins` exits 0.
    - `npm run check:consistency -- --offline` exits 0.
    - `npm run check:install -- --from local <plugin>` exits 0 and prints the new version. It runs in a throwaway configuration, because this checkout and an installed `the-claude-factory` can't both be added under the same marketplace name.

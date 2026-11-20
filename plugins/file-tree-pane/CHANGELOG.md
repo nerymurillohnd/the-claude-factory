@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-19
+
+### Fixed
+
+- `claude plugin validate --strict` no longer fails on this plugin with `TS5097: An import path can only end with a '.ts' extension`. The mod now imports its own files the way the mods docs show (`./file.js`), which Claude Code resolves to the same files. Nothing changes in how the plugin works.
+
 ## [0.1.6] - 2026-11-06
 
 ### Changed
@@ -59,7 +65,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Settings in `/config`: Claude activity, Follow Claude, Open at start, Right column, Hints, Search spacing, Shortcut row, Open with, Edit with, Diff with, Ignore, Palette and Glyphs.
 - Validated and tested on Claude Code v2.1.310.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.6...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.7...HEAD
+[0.1.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.7
 [0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.6
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.4

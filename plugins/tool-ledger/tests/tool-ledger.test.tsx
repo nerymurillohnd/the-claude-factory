@@ -20,7 +20,20 @@ const stubEngine = (on: On, clock?: number[]): Engine$ => {
   })
   on('agent.list', () => ({
     value: [
-      { id: 'a1', description: 'Find pricing references', type: 'Explore', status: 'running' },
+      {
+        id: 'a1',
+        description: 'Find pricing references',
+        type: 'Explore',
+        status: 'running',
+        kind: 'local_agent',
+        taskStatus: 'running',
+        label: 'Find pricing references',
+        startTime: 0,
+        cwd: '/work',
+        tokenCount: 0,
+        tokenSamples: [],
+        hasRow: true,
+      },
     ],
   }))
   on('ui.open', (_$, e) => {
@@ -260,6 +273,7 @@ test(
         viewport: { columns: 150, rows: 40, isFullscreen },
         props: {
           hasSurvey: false,
+          isCollapsed: false,
           isWorking: false,
           maxRows: 10,
           bodyColumns: 145,

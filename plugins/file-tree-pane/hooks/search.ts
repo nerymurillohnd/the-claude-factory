@@ -1,6 +1,6 @@
 // Finding files by name anywhere under the root, folders never opened included.
 
-import { baseName } from './tree.ts'
+import { baseName } from './tree.js'
 
 // 0 for a name that starts with the needle, 1 for a name that holds it, 2 for a path that
 // holds it, -1 for no match. All three are lowercase.

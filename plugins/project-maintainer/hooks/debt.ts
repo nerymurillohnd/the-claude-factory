@@ -1,6 +1,6 @@
 // Debt ledger rules, as pure functions over plain text. No call on `$` lives here.
 
-import { ADR_ID, DEBT_ID, DEBT_STATUSES, normalize, OUTCOMES } from './paths.ts'
+import { ADR_ID, DEBT_ID, DEBT_STATUSES, normalize, OUTCOMES } from './paths.js'
 
 /** The heading that opens an entry, such as `### DEBT-007`. */
 const ENTRY_HEADING = /^### (DEBT-\w+)/
@@ -156,7 +156,7 @@ function entryProblems(kind: LedgerKind, entry: Entry): string[] {
   }
   if (kind === 'pending-debt') {
     const status = field(entry.text, 'Status') ?? ''
-    if (!DEBT_STATUSES.some((name) => status.includes(name))) {
+    if (DEBT_STATUSES.every((name) => !status.includes(name))) {
       problems.push(`${entry.id}: Status must be one of ${DEBT_STATUSES.join(', ')}.`)
     }
     if (!isDate(field(entry.text, 'Logged'))) {
@@ -241,7 +241,7 @@ export function pendingAuthority(
       )
     } else if (
       outcome === 'accepted' &&
-      !(entry.match(/ADR_[\w-]+/g) ?? []).some((cited) => ADR_ID.test(cited) && adrIds.has(cited))
+      (entry.match(/ADR_[\w-]+/g) ?? []).every((cited) => !ADR_ID.test(cited) || !adrIds.has(cited))
     ) {
       reasons.push(
         `${id} is closed as accepted, and its closed entry cites no ADR that exists in the decisions folder.`,

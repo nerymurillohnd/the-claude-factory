@@ -20,6 +20,7 @@
 | 2026-11-13 | DEBT-002 | resolved | The cloud setup script pins every tool it installs | none |
 | 2026-11-13 | DEBT-004 | resolved | Changelog versions link to their release pages in the files, the procedure and the script | none |
 | 2026-11-19 | DEBT-007 | resolved | The fourteen plugin subagents follow the house agent format | none |
+| 2026-11-19 | DEBT-003 | resolved | The five mods pass strict, portable and hooks-catch validation, and the checks gate every merge | none |
 
 ## 🏁 Closed items
 
@@ -122,6 +123,37 @@ On 2026-11-19 the owner asked for all fourteen in one branch instead of a pull r
 - **Residual risk:** `instruction-engineering/agents/reviewer.md` still fails FM-02 (a colon in `description`), which DEBT-005 holds; the frontmatter was not touched.
 - **Closed by:** [#114](https://github.com/nerymurillohnd/the-claude-factory/pull/114).
 - **Related records:** DEBT-005.
+- **Superseded by:** none
+
+### DEBT-003 — The five mods pass strict, portable and hooks-catch validation, and the checks gate every merge
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-19 |
+| **Logged on** | 2026-11-13 |
+| **Owner** | unassigned |
+
+#### ❗ The problem
+
+`npm run validate:portable` and `npm run validate:hooks-catch` could not join `npm run validate`, because five mods failed them: `file-tree-pane` and `project-maintainer` with TS5097 (`.ts` import specifiers), `model-trace` with TS2769 (`mode` on `WebSearch`), `tool-ledger` and `turn-meter` with TS2741 (`isCollapsed` missing), plus four gating hooks without `.catch` in `project-maintainer` and `turn-meter`. Plain `claude plugin validate --strict` failed on the same five, so `scripts/validators/pr-checks.sh` skipped them through `DEBT_003_PLUGINS` and Validate's non-blocking `Debt` job held their strict checks.
+
+#### 🔧 The closure
+
+On 2026-11-19 the owner scheduled the fixes. `file-tree-pane` and `project-maintainer` import their own files as `./file.js`, the form the mods docs show; `project-maintainer` and `turn-meter` answer for every gating hook with a `.catch`; the `tool-ledger`, `turn-meter` and `model-trace` tests build their fixtures to the current mod API (`isCollapsed`, a complete `AgentInfo`, and a `webSearch()` helper that type-checks whether or not the session's `WebSearch` schema has `mode`). `file-tree-pane` 0.1.7, `project-maintainer` 0.2.7 and `turn-meter` 0.1.7 took patch bumps; the `model-trace` and `tool-ledger` changes are test-only and took none, per `plugin-releases`. Then `pr-checks.sh` dropped `DEBT_003_PLUGINS` and its `debt-validate` step, its `validate` step runs `validate:portable` and `validate:hooks-catch`, `check:install` runs strict on every changed plugin, `npm run validate` chains both checks, and the `Debt` job lost its three DEBT-003 steps.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | With Claude Code 2.1.328 and with 2.1.325 (CI's `CLAUDE_CODE_VERSION`): `claude plugin validate --strict` printed `√ Validation passed` for each of the five; `npm run validate:hooks-catch` and `npm run validate:portable` exited 0; `claude plugin test` passed 62, 18, 56, 14 and 12 tests. `bash scripts/validators/pr-checks.sh validate` exited 0 with 50 `Validation passed` lines. `npm run check:install -- --from local` reported `file-tree-pane 0.1.7 ok`, `project-maintainer 0.2.7 ok` and `turn-meter 0.1.7 ok`. `actionlint` and `zizmor --offline .` reported nothing on `validate.yml`. |
+| 🚫 **Negative:** the original failure or condition is gone | The commands that failed in the pending entry no longer fail: `--strict` on the five reports no TS5097, TS2769, TS2741 or TS2740, and `validate:hooks-catch` lists no hook; `grep DEBT_003 scripts/validators/pr-checks.sh` and `grep DEBT-003 .github/workflows/validate.yml` find nothing. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** no test makes the new `.catch` handlers of `turn-meter` run, so those paths have only been type-checked. The mods' tests are still not type-checked in the Git pre-commit gate, and the `typescript6-lsp-intelligence` post-edit hook checks a mod file against the root `tsconfig.json`, which reports errors the mod's own config does not.
+- **Closed by:** commits 86c5b19, cbb8c19, a35d506, f670e39, c9e56db and 7baba17 on branch `claude/tech-debt-parallel-9lsn8d`.
+- **Related records:** DEBT-006.
 - **Superseded by:** none
 
 <!--

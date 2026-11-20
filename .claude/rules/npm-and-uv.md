@@ -8,7 +8,6 @@ paths:
   - "/uv.lock"
   - "/.python-version"
   - "scripts/**"
-  - ".claude/hooks/**"
 ---
 
 # Maintainer runtimes, package managers and tools

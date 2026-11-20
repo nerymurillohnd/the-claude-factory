@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-11-19
+
+### Fixed
+
+- `claude plugin validate --strict` no longer fails on this plugin with `TS5097: An import path can only end with a '.ts' extension`. The mod now imports its own files the way the mods docs show (`./file.js`), which Claude Code resolves to the same files.
+- If the compaction note or the commit reminder fails, the compaction or the command still goes on as asked, and a command never runs twice. Each of these hooks now says so in its own error handler, so `claude plugin validate` no longer lists it as a gating hook without `.catch`. Nothing changes in how the plugin works.
+
 ## [0.2.6] - 2026-11-06
 
 ### Changed
@@ -76,7 +83,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Before a compaction, the summary is told to keep decisions, open items and record IDs. After a commit that looks like a decision, such as one that changes dependencies, a schema, CI or infrastructure, Claude gets one reminder to record it. The reminder can be turned off in the plugin's settings.
 - **Requires Claude Code v2.1.304 or later.**
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.6...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.7...HEAD
+[0.2.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.7
 [0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.6
 [0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.5
 [0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.4

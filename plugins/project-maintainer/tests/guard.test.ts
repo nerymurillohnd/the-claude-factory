@@ -6,8 +6,8 @@ import {
   mayWriteRecord,
   resultingText,
   withKeepNote,
-} from '../hooks/guard.ts'
-import { adrId, classify, resolvePath } from '../hooks/paths.ts'
+} from '../hooks/guard.js'
+import { adrId, classify, resolvePath } from '../hooks/paths.js'
 
 test('a path is a record only inside .claude/maintainer', () => {
   expect(classify('/work/app/.claude/maintainer/decisions/ADR_2026-03-14_x.md')).toEqual({

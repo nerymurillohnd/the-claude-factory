@@ -1,9 +1,9 @@
 // What the hooks decide, as pure functions over plain data. The hooks in register.ts read the
 // files and call these; no call on `$` lives here.
 
-import { adrAuthority, validateAdr } from './adr.ts'
-import { closedAuthority, pendingAuthority, validateLedger } from './debt.ts'
-import { classify, type RecordRef, resolvePath } from './paths.ts'
+import { adrAuthority, validateAdr } from './adr.js'
+import { closedAuthority, pendingAuthority, validateLedger } from './debt.js'
+import { classify, type RecordRef, resolvePath } from './paths.js'
 
 /** An absolute path, POSIX or with a Windows drive, with either slash. */
 const ABSOLUTE_PATH = /^([A-Za-z]:)?[\\/]/
@@ -261,7 +261,7 @@ const SIGNAL_WORDS =
 export function commitSignals(shown: string): string[] {
   const [subject = '', ...rest] = shown.split('\n')
   const files = rest.map((line) => line.trim()).filter((line) => line !== '')
-  if (files.length === 0 || files.every((file) => file.startsWith('.claude/maintainer/'))) {
+  if (files.every((file) => file.startsWith('.claude/maintainer/'))) {
     return []
   }
   const signals = new Set<string>()

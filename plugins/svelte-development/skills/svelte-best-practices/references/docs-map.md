@@ -60,7 +60,7 @@
 ## Gaps in the MCP section hints
 
 - The section catalog that `list-sections` returns (reproduced in the MCP prompt at https://svelte.dev/docs/ai/llms.txt) gives `use_cases` hints that steer section choice. 40 sections have none: 9 are missing from the catalog and 31 carry only the placeholder "use title and path to estimate use case". They include every SvelteKit 3 addition (`$app/env`, `$app/manifest`, `$app/service-worker`, `$app/tsconfig`, `@sveltejs/kit/params`, `@sveltejs/kit/adapter`, `@sveltejs/kit/env`, `adapter-bun`, the SvelteKit 3 migration guide). They are marked † below; this map is their classification.
-- The same catalog still lists `kit/configuration` and `kit/@sveltejs-kit-node-polyfills`, whose pages return 404. The configuration reference now lives in `kit/@sveltejs-kit-vite`, because SvelteKit 3 reads its options from the Vite plugin.
+- The same catalog still lists `kit/configuration`, `kit/@sveltejs-kit-node-polyfills` and `kit/migrating` (Migrating from Sapper), whose pages return 404. The configuration reference now lives in `kit/@sveltejs-kit-vite`, because SvelteKit 3 reads its options from the Vite plugin. The Sapper migration guide was removed with no successor; SvelteKit's migration guides now start at `kit/migrating-to-sveltekit-2`.
 
 ## Svelte
 
@@ -333,7 +333,6 @@
 | --- | --- | --- |
 | Migrating to SvelteKit v3 † | `kit/migrating-to-sveltekit-3` | https://svelte.dev/docs/kit/migrating-to-sveltekit-3/llms.txt |
 | Migrating to SvelteKit v2 | `kit/migrating-to-sveltekit-2` | https://svelte.dev/docs/kit/migrating-to-sveltekit-2/llms.txt |
-| Migrating from Sapper | `kit/migrating` | https://svelte.dev/docs/kit/migrating/llms.txt |
 
 ## CLI
 
@@ -390,7 +389,7 @@
 
 ## Astro
 
-`https://docs.astro.build/llms.txt` returns 404. Read the Markdown sources of the docs site instead:
+The Astro docs site serves no `llms.txt` (`docs.astro.build/llms.txt` returns 404). Read the Markdown sources of the docs site instead:
 
 | Page | Raw source URL |
 | --- | --- |
@@ -401,12 +400,12 @@
 | Upgrade to Astro v7 | https://raw.githubusercontent.com/withastro/docs/main/src/content/docs/en/guides/upgrade-to/v7.mdx |
 | Styling and CSS | https://raw.githubusercontent.com/withastro/docs/main/src/content/docs/en/guides/styling.mdx |
 | Container API reference | https://raw.githubusercontent.com/withastro/docs/main/src/content/docs/en/reference/container-reference.mdx |
-| Svelte renderer source, server | https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/server.ts |
-| Svelte renderer source, client | https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/client.svelte.ts |
+| Svelte renderer source, server (`@astrojs/svelte-renderer`) | https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/src/server.ts |
+| Svelte renderer source, client (`@astrojs/svelte-renderer`) | https://raw.githubusercontent.com/withastro/astro/main/packages/renderers/svelte/src/client.svelte.ts |
 
 ## Tailwind CSS
 
-`https://tailwindcss.com/llms.txt` returns 404. The docs site sources are in `tailwindlabs/tailwindcss.com`. The framework guide paths contain a `(docs)` folder, written `%28docs%29` in the URL.
+The Tailwind CSS site serves no `llms.txt` (`tailwindcss.com/llms.txt` returns 404). The docs site sources are in `tailwindlabs/tailwindcss.com`. The framework guide paths contain a `(docs)` folder, written `%28docs%29` in the URL.
 
 | Page | Raw source URL |
 | --- | --- |

@@ -1,7 +1,7 @@
 // ADR rules, as pure functions over plain text. No call on `$` lives here, so the same code
 // runs in the hooks and in the tests.
 
-import { ADR_ID, ADR_NAME, ADR_STATUSES, adrId, normalize } from './paths.ts'
+import { ADR_ID, ADR_NAME, ADR_STATUSES, adrId, normalize } from './paths.js'
 
 /** A list item of the frontmatter, such as `  - Nery`. */
 const LIST_ITEM = /^\s+-\s+(.*)$/

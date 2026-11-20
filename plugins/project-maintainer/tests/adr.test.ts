@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
-import { type AdrContext, adrAuthority, parseFrontmatter, validateAdr } from '../hooks/adr.ts'
-import { adr, SETTLED } from './fixtures.ts'
+import { type AdrContext, adrAuthority, parseFrontmatter, validateAdr } from '../hooks/adr.js'
+import { adr, SETTLED } from './fixtures.js'
 
 const NAME = 'ADR_2026-03-14_keep-sessions-in-postgres.md'
 const IDS = new Set(['ADR_2026-01-02_use-redis', 'ADR_2026-03-14_keep-sessions-in-postgres'])

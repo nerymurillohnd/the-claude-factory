@@ -22,8 +22,8 @@ import {
   resultingText,
   type Surroundings,
   withKeepNote,
-} from './guard.ts'
-import { ADR_NAME, adrId, classify, type RecordRef, resolvePath } from './paths.ts'
+} from './guard.js'
+import { ADR_NAME, adrId, classify, type RecordRef, resolvePath } from './paths.js'
 
 /** The debt folder at the end of a path, swapped for the decisions folder beside it. */
 const TECHNICAL_DEBT_DIR = /\/technical-debt$/
@@ -188,6 +188,10 @@ export function register(on: On, options: PluginOptions): void {
       (await $.fs.exists(`${root}/.claude/maintainer`)) ||
       (await $.fs.exists(`${root}/.claude/session-handoff`))
     return hasRecords ? next({ ...e, instructions: withKeepNote(e.instructions) }) : next(e)
+  }).catch(async (_$, e, next) => {
+    // Fail open: the note is a courtesy, so a failed check never stops a compaction. Before the
+    // hook called next, the compaction runs as asked; after, its result stands and nothing reruns.
+    return next(e)
   })
 
   // After a commit that changes dependencies, schema, CI or infrastructure, or whose message says
@@ -218,5 +222,9 @@ export function register(on: On, options: PluginOptions): void {
       // The reminder is a courtesy: the commit result stands whatever happens here.
     }
     return result
+  }).catch(async (_$, e, next) => {
+    // Fail open: the reminder never blocks a command. Before the hook called next, the command runs
+    // as asked; after, the command's result stands and the command does not run again.
+    return next(e)
   })
 }

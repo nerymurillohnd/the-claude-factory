@@ -141,6 +141,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     return next(e)
   })
 
+  // The meter only counts calls: if this hook fails, the call goes on unchanged.
   on('tool.call', (_$, e, next) => {
     if (e.agentId === undefined) {
       tools += 1
@@ -150,7 +151,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     }
 
     return next(e)
-  })
+  }).catch((_$, e, next) => next(e))
 
   on('turn.complete', async ($, e, next) => {
     if (e.agentId !== undefined) {
@@ -231,5 +232,5 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         ? 'Turn Meter band shown.'
         : 'Turn Meter band shown. It appears after the first turn ends.',
     }
-  })
+  }).catch(() => ({ text: 'Turn Meter could not change its band. Run /turn-meter again.' }))
 }
