@@ -14,9 +14,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- In a workflow the lockfile lists, `cc-github-actions` now writes a readable release tag, such as `actions/checkout@v7.0.1`, and regenerates the lockfile on the approved branch, instead of a commit SHA. GitHub now says the lockfile replaces SHA pinning for those workflows. Everywhere else, it still pins the full commit SHA with the tag as a comment: workflows the lockfile doesn't list, repositories without a lockfile, reusable workflows from another repository, steps of an `action.yml`, and GitHub Enterprise Server. If the extension isn't installed, the patch for a locked workflow waits, and the report gives you the command to run.
+- In a workflow the lockfile lists, `cc-github-actions` now writes a readable release tag, such as `actions/checkout@v7.0.1`, and regenerates the lockfile on the approved branch, instead of a commit SHA. GitHub now says the lockfile replaces SHA pinning for those workflows. Everywhere else, it still pins the full commit SHA with the tag as a comment: workflows the lockfile doesn't list, repositories without a lockfile, reusable workflows from another repository, steps of an `action.yml`, and GitHub Enterprise Server. The lockfile is regenerated only after you approve the patch, and Claude shows you every commit it changes before the change lands. If the extension isn't installed, the patch for a locked workflow waits, and the report gives you the commands to install it and regenerate the lockfile.
 - The version check of `anthropics/claude-code-action` reads the commit a locked workflow really runs from the lockfile, not from what the tag points to today.
 - A repository whose actions are all pinned by SHA but which has no lockfile gets a low finding that recommends adopting one. Adopting it is a separate step you approve, never part of a patch.
+- Reruns follow one rule everywhere in the skill: only with your approval, and only for a transient failure or after a cause outside the repository is fixed.
+
+### Fixed
+
+- zizmor, actionlint and `gh actions-lock` reports are no longer cut short when they find problems. Claude Code shortens the output of a command that ends with an error code, so long reports used to lose findings.
+- The version check of `anthropics/claude-code-action` no longer reports an upstream commit as "not an upstream commit" when GitHub can't be reached, and git commands no longer wait on a credential prompt.
+- The audit no longer rates a moved release tag found by `gh actions-lock` (`tag-commit-mismatch`) as a foreign commit, and no longer reports a network failure of the extension as a finding.
+- Audits no longer flag `actions/checkout` v6.1.0, v5.1.0, v4.4.0, v3.7.0 or v2.8.0 as missing the protection for fork checkouts: those versions have it.
+- The skill no longer says GitHub already blocks `pull_request_target` in public repositories: the rule is enforced from 2 December 2026.
 
 ## [0.9.2] - 2026-11-20
 
