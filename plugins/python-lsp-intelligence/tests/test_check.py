@@ -20,10 +20,13 @@ if TYPE_CHECKING:
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
-# A stub tool logs its name and arguments, then exits with STUB_EXIT_<name> (0 by default).
+# A stub tool logs its name and arguments, appends a newline to its last argument when
+# STUB_APPEND_<name> is set (a reformat), then exits with STUB_EXIT_<name> (0 by default).
 STUB = """#!/usr/bin/env bash
 name="${0##*/}"
 printf '%s %s\\n' "${name}" "$*" >> "${STUB_LOG}"
+append_var="STUB_APPEND_${name}"
+if [[ -n "${!append_var:-}" ]]; then printf '\\n' >> "${@: -1}"; fi
 code_var="STUB_EXIT_${name}"
 exit "${!code_var:-0}"
 """
@@ -205,28 +208,12 @@ class PythonHookTest(unittest.TestCase):
             "tool_input": {"file_path": str(path)},
         }
 
-    def test_missing_tool_gives_one_notice_and_never_blocks(self) -> None:
-        """Without ruff the hook exits 0, tells the user and Claude once, then stays silent."""
-        with tempfile.TemporaryDirectory() as raw:
-            tmp = Path(raw).resolve()
-            write(tmp / "work" / "a.py", "x = 1\n")
-            first, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), tools=False)
-            second, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), tools=False)
-        self.assertEqual((first.code, first.stderr), (0, ""))
-        message = field(first.stdout, "systemMessage")
-        self.assertIn("ruff is not installed", message)
-        self.assertIn("uv tool install ruff", message)
-        context = field(first.stdout, "hookSpecificOutput", "additionalContext")
-        self.assertIn("Do not treat them as checked", context)
-        self.assertEqual((second.code, second.stdout, second.stderr), (0, "", ""))
-
-    def test_missing_tool_without_plugin_data_keeps_no_marker(self) -> None:
-        """With no data folder the notice repeats and nothing is created in the temporary folder."""
+    def test_missing_tool_is_reported_to_the_user_on_every_call(self) -> None:
+        """Without ruff the hook exits 0 and tells only the user, every time, writing nothing."""
         for data in (False, True):
-            with self.subTest(data_set_but_empty=data), tempfile.TemporaryDirectory() as raw:
+            with self.subTest(plugin_data=data), tempfile.TemporaryDirectory() as raw:
                 tmp = Path(raw).resolve()
                 write(tmp / "work" / "a.py", "x = 1\n")
-                extra = {"CLAUDE_PLUGIN_DATA": ""} if data else {}
                 runs = [
                     self._run(
                         tmp,
@@ -234,16 +221,42 @@ class PythonHookTest(unittest.TestCase):
                         tools=False,
                         data=data,
                         TMPDIR=str(tmp),
-                        **extra,
                     )[0]
                     for _ in range(2)
                 ]
-                left = folders_named(tmp, "python-lsp-intelligence")
+                left = [*folders_named(tmp, "python-lsp-intelligence"), *folders_named(tmp, "data")]
                 for outcome in runs:
                     self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-                    self.assertNotEqual(outcome.stdout, "")
-                    self.assertIn("ruff is not installed", field(outcome.stdout, "systemMessage"))
+                    self.assertEqual(
+                        field(outcome.stdout, "systemMessage"),
+                        "python-lsp-intelligence: not run on a.py: ruff is not installed "
+                        "(install it with uv tool install ruff)",
+                    )
+                    self.assertNotIn("hookSpecificOutput", outcome.stdout)
                 self.assertEqual(left, [])
+
+    def test_clean_edit_tells_only_the_user(self) -> None:
+        """No errors and no reformat: one line for the user, nothing for Claude."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.py", "x = 1\n")
+            outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertEqual(
+            field(outcome.stdout, "systemMessage"),
+            "python-lsp-intelligence: ran ruff check --fix, ruff format, basedpyright on a.py"
+            " · no formatting changes · no errors",
+        )
+        self.assertNotIn("hookSpecificOutput", outcome.stdout)
+
+    def test_reformat_is_reported_to_the_user(self) -> None:
+        """A file ruff rewrote is named in the user's line; Claude gets nothing without errors."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.py", "x = 1\n")
+            outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), STUB_APPEND_ruff="1")
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertIn("· reformatted a.py · no errors", field(outcome.stdout, "systemMessage"))
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: no tool runs on them and nothing is said."""
@@ -264,7 +277,7 @@ class PythonHookTest(unittest.TestCase):
             write(tmp / "work" / "clone" / "a.py", "x = 3\n")
             outcome, calls = self._run(tmp, self._bash(tmp))
         self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-        self.assertIn("passed · clone/a.py", field(outcome.stdout, "systemMessage"))
+        self.assertIn("basedpyright on clone/a.py ·", field(outcome.stdout, "systemMessage"))
         self.assertTrue(any(call.endswith("clone/a.py") for call in calls), calls)
         self.assertFalse(any(call.endswith("b.py") for call in calls), calls)
 
@@ -295,15 +308,16 @@ class PythonHookTest(unittest.TestCase):
                 self.assertEqual(once[0], once[1], calls)
 
     def test_arrival_outside_git_is_not_checked(self) -> None:
-        """More loose files than the hook checks per command: none is touched, Claude is told."""
+        """More loose files than the hook checks per command: none is touched, the user is told."""
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw).resolve()
             for number in range(TOO_MANY):
                 write(tmp / "work" / "tree" / f"m{number}.py", "x = 1\n")
             outcome, calls = self._run(tmp, self._bash(tmp))
         self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-        context = field(outcome.stdout, "hookSpecificOutput", "additionalContext")
-        self.assertIn(f"left {TOO_MANY} Python files outside a Git work tree", context)
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn(f"not run on {TOO_MANY} Python files this command left outside", message)
+        self.assertNotIn("hookSpecificOutput", outcome.stdout)
         self.assertEqual(calls, [])
 
     def test_a_few_loose_files_are_checked(self) -> None:
@@ -335,14 +349,32 @@ class PythonHookTest(unittest.TestCase):
         self.assertFalse(any(call.endswith("built.py") for call in calls), calls)
 
     def test_findings_still_block(self) -> None:
-        """A finding still reaches Claude through stderr and exit 2."""
+        """A finding reaches Claude through stderr and exit 2, with the skill to fix it.
+
+        The user is told that errors were sent to Claude.
+        """
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw).resolve()
             write(tmp / "work" / "a.py", "x = 1\n")
             outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), STUB_EXIT_ruff="1")
         self.assertEqual(outcome.code, BLOCKED)
-        self.assertIn("ruff check", outcome.stderr)
-        self.assertIn("Fix these findings in a.py", outcome.stderr)
+        self.assertTrue(
+            outcome.stderr.startswith(
+                "python-lsp-intelligence's post-edit hook ran ruff check --fix, ruff format, "
+                "basedpyright on a.py and found errors:\nruff check (",
+            ),
+            outcome.stderr,
+        )
+        self.assertTrue(
+            outcome.stderr.endswith(
+                'Use the Skill tool to load "python-lsp-intelligence:python-lsp-intelligence", '
+                "audit these errors with it and fix them before continuing with anything else.\n",
+            ),
+            outcome.stderr,
+        )
+        self.assertIn(
+            "· errors in a.py, sent to Claude to fix", field(outcome.stdout, "systemMessage")
+        )
 
 
 if __name__ == "__main__":
