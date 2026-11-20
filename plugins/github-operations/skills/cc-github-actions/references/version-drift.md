@@ -9,6 +9,7 @@ Run it once per claude-code-action step a route touches, before you rely on any 
 - [Source files](#source-files)
 - [Find the commit a step runs](#find-the-commit-a-step-runs)
 - [Pick the newest release](#pick-the-newest-release)
+- [Pinning policy](#pinning-policy)
 - [Compare with the snapshot](#compare-with-the-snapshot)
 - [When the pin is older than the snapshot](#when-the-pin-is-older-than-the-snapshot)
 - [A version bump is a patch](#a-version-bump-is-a-patch)
@@ -20,8 +21,10 @@ Run it once per claude-code-action step a route touches, before you rely on any 
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | v1.0.275 | `4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8` | 2.1.323 | 0.3.323 | `ghcr.io/github/github-mcp-server:sha-23fa0dd` (v0.17.1) | 1.32.0 | 1.7.12 | 2026-11-13 |
 
-Dated facts other references rely on, checked on 2026-11-13. Re-check one before you rely on it after its date:
+Dated facts other references rely on, checked on 2026-11-13 unless an entry gives another date. Re-check one before you rely on it after its date:
 
+- **Workflow dependency lockfiles, checked on 2026-11-20.** General availability on 2026-10-28 for the Free, Team, Enterprise Cloud and GHE.com plans; not on GitHub Enterprise Server, which has no `$/` references either. The newest `github/gh-actions-lock` release is v0.5.1. The Require lockfile policy's Evaluate mode exists only on Enterprise Cloud.
+- **Scanners and lockfiles, checked on 2026-11-20.** actionlint 1.7.12 parses `uses: $/…` as a repository action and reports "ref is missing". zizmor supports lockfiles experimentally since 1.32.0.
 - **`pull_request_target` default policy.** GitHub adds a default policy that blocks `pull_request_target` in public repositories that have no Actions event policy. It runs in evaluate mode now; enforcement for affected repositories begins on 2026-12-02.
 - **`actions/checkout` credential layout, checked at v7.0.1 (`3d3c42e`).** v6.0.0 and later keep the token in a file under `$RUNNER_TEMP`, which the local `.git/config` includes through an `includeIf` entry. v5.0.1 and earlier, and the backports v5.1.0 and v4.4.0, keep it in the local `.git/config`. v7 and the backports refuse to check out a fork's code under `pull_request_target` or `workflow_run` unless `allow-unsafe-pr-checkout: true` is set.
 - **GitHub-hosted runner labels.** `macos-14` was retired on 2026-11-02. `ubuntu-slim` has a 15-minute job limit.
@@ -76,6 +79,7 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
 1. **Find the step.** It is a `uses: anthropics/claude-code-action@<ref>` line. When a workflow calls a remote composite action (`owner/repo/path@ref`) or a reusable workflow, open that file at the ref the caller pins and find the step there. A local `uses: ./path` has no ref: GitHub runs the file as the job's workspace holds it when the step runs, so audit that copy; when the job checked out a pull request's head before it, that copy is the head's (W-02 under `pull_request_target`).
 2. **Check the owner and name.** Any `uses:` other than `anthropics/claude-code-action` is not an upstream commit, even when the code looks the same. Report it as "not an upstream commit", count every fact for that step as unverified, and raise W-04 ([workflow-audit.md](workflow-audit.md#checks-every-workflow-gets)).
 3. **Resolve the ref.**
+   - In a workflow onboarded to `.github/workflows/actions.lock` (its path is a key under `workflows:`), the step runs the locked commit, whatever the ref points to now. Read it from the entry under `dependencies:` whose key is the `uses:` string, such as `'anthropics/claude-code-action@v1.0.275'`: its `commit` field, without the `sha1-` prefix the format writes. Then check that commit as a full SHA, next bullet. A `uses:` with no entry fails the job at run time (W-04).
    - A full 40-character SHA is the commit. A successful fetch doesn't prove it is upstream's: GitHub also serves the heads of pull requests anyone can open. It is an upstream commit only when it is on the default branch's history or a release tag points to it. In one shell call:
 
      ```bash
@@ -94,7 +98,7 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
 
      When a line ending in `^{}` prints, its SHA is the commit: the other line is an annotated tag object, not a commit. When only one line prints, its SHA is the commit. When a branch and a tag both print, report both, and take the commit from a run's log (next bullet) if one exists. With MCP only, `list_tags` (or `list_branches` for a branch) gives the commit of each name.
    - A past run: the "Set up job" log of that job has the line `Download action repository 'anthropics/claude-code-action@<ref>' (SHA:<sha>)`. That SHA is what the run executed, whatever the ref points to now.
-4. **A floating ref** (`v1`, `main`) runs whatever it points to when the job starts. Audit the commit it resolves to today, say so in Version provenance, and recommend a SHA pin (W-04).
+4. **A floating ref** (`v1`, `main`) in a workflow the lockfile doesn't list runs whatever it points to when the job starts. Audit the commit it resolves to today, say so in Version provenance, and recommend the pin the [Pinning policy](#pinning-policy) gives (W-04).
 
 ## Pick the newest release
 
@@ -104,12 +108,36 @@ Use this when a patch pins or bumps the action. It needs git 2.18 or later and n
 git ls-remote --tags --sort=-v:refname https://github.com/<owner>/<action> | awk '$2 ~ /^refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+(\^\{\})?$/ { t=$2; sub(/\^\{\}$/,"",t); if (!seen) { seen=t } if (t==seen) { sha=$1; if ($2 ~ /\^\{\}$/) peeled=$1 } } END { print seen, (peeled?peeled:sha) }'
 ```
 
-- It prints a line such as `refs/tags/v1.0.275 4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8`. Pin the commit and keep the tag as a comment: `uses: anthropics/claude-code-action@<commit> # v1.0.275`.
+- It prints a line such as `refs/tags/v1.0.275 4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8`. Write the pin as the [Pinning policy](#pinning-policy) says: the tag, `uses: anthropics/claude-code-action@v1.0.275`, in a workflow the lockfile lists; otherwise the commit with the tag as a comment, `uses: anthropics/claude-code-action@<commit> # v1.0.275`.
 - Never take the last line of a plain `git ls-remote --tags`: its order is lexical, so it ends at `v1.0.99`.
 - Stay in the pin's current major unless the user approves a jump. To keep the major, replace `v[0-9]+` in the pattern with the major, for example `v1`. A jump lists the breaking changes from the release notes as residual risk.
 - With MCP only: `get_latest_release` gives the tag GitHub marks as latest, and `list_tags` gives its commit. Check that the tag is in the current major.
 
 The same pipeline works for any action, for example `actions/checkout`.
+
+## Pinning policy
+
+Every `uses:` a patch adds or changes follows this policy. A repository's lockfile, `.github/workflows/actions.lock`, records the commit each action reference of an onboarded workflow resolves to, transitive ones included, with the source repository's numeric IDs, and GitHub runs that commit even after the tag moves. GitHub says the lockfile supersedes SHA pinning for the workflows it covers, and under it a bare SHA draws the `sha-as-ref` warning and gets no Dependabot alerts, which GitHub raises only for version refs. A workflow is onboarded when its path is a key under the lockfile's `workflows:`.
+
+1. Write each line as its case says:
+
+   | The `uses:` line | Write |
+   | :-- | :-- |
+   | A step in a workflow the lockfile lists | The full release tag from the pick pipeline, no comment: `uses: actions/checkout@v7.0.1`. Then regenerate the lockfile, step 2 |
+   | An action in the same repository, in a workflow the lockfile lists | `$/<path>`, no `@ref`: a `./` path runs whatever the workspace holds, the lockfile never follows it, and the actions it uses fail at run time without entries. Not on GitHub Enterprise Server |
+   | A reusable workflow from another repository (`jobs.<id>.uses`) | The commit with the tag as a comment: the lockfile doesn't cover these calls |
+   | A step of an `action.yml` or `action.yaml` | The commit with the tag as a comment: a composite action carries no lockfile of its own, and the repositories that call it don't have yours |
+   | A step in a workflow the lockfile doesn't list, or in a repository without a lockfile | The commit with the tag as a comment. Adopting the lockfile is a separate recommendation (W-04) with its own approval, never part of a patch, because onboarding changes how the allowed-actions policy matches and breaks `./` actions that use remote ones |
+   | Any `uses:` on GitHub Enterprise Server | The commit with the tag as a comment: GHES has neither lockfiles nor `$/` |
+   | A container image (`docker://`, `container:`, `services:`) | A digest, `@sha256:<digest>`: the lockfile doesn't lock images |
+
+   Never write a branch or a partial tag such as `v1`: in an onboarded workflow it keeps running its locked commit after the ref moves, and a lockfile change that moves it back to an older commit goes undetected.
+2. Regenerate the lockfile on the approved branch, after the workflow files are written, when the patch touches a workflow the lockfile lists:
+   1. Check that `gh extension list` shows `github/gh-actions-lock`, and read `gh actions-lock --help` before the first run: the installed version's flags win over this page. When the extension is missing, hold the patch for that workflow and give the user the command to run, `gh actions-lock <workflow file>`: without the entry the job fails at run time with `lockfile missing pin for <action>@<ref>`. Never install the extension.
+   2. Run `gh actions-lock <workflow file>...` with every changed workflow. Run it with no path only when the patch deletes a workflow, to prune its entries. Writing the lockfile needs the `workflow` scope on the `gh` token.
+   3. Read the exit code: 0 means the lockfile was written; 1 means findings block it and nothing was written; 2 means the tool failed. On 1 or 2, report its output and hold the patch.
+   4. Review the lockfile's diff as part of the patch: a changed `commit` is new code the workflow will run; a changed `owner_id` or `repo_id` means another repository now stands behind the name, so stop and report it.
+3. Never edit `actions.lock` by hand or delete it to clear an error, never pass `--accept-moved`, and pass `--relock` or `--migrate-local-actions` only with the user's approval: the first moves refs to new commits, the second rewrites `./` references across the repository.
 
 ## Compare with the snapshot
 

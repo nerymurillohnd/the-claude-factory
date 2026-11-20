@@ -18,6 +18,7 @@ Read, and record what you couldn't:
 - **The rules on the default branch:** `gh api repos/<owner>/<repo>/rules/branches/<default branch>`.
 - **Secret and variable names at every level** (names only, never values): `gh secret list`, `gh secret list --env <environment>` for each environment a job uses, `gh secret list --app dependabot`, `gh secret list --org <org>` when readable, and `gh variable list`.
 - **Runners**, when readable: `gh api repos/<owner>/<repo>/actions/runners` needs admin access; the job's `GITHUB_TOKEN` can't list runners.
+- **The lockfile:** `.github/workflows/actions.lock` on the branch you audit and on the default branch, when it exists; record which workflows its `workflows:` lists, since only those are onboarded ([Pinning policy](version-drift.md#pinning-policy)). Never edit it.
 - **The commit each claude-code-action step runs:** [version-drift.md](version-drift.md#find-the-commit-a-step-runs).
 
 When one of these can't be read, decide the checks that need it by [When a check can't be decided](#when-a-check-cant-be-decided). This audit reads files and settings; the state of runs, artifacts, caches and runners belongs to the repository audit.
@@ -93,22 +94,32 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 - **Why:** every injected or mistaken step acts with the whole token.
 - **Scanners:** zizmor `excessive-permissions`; CodeQL `actions/missing-workflow-permissions`.
 
-### W-04. Actions not pinned to an upstream commit, or pinned stale
+### W-04. Actions not locked or pinned to an upstream commit, or stale
+
+Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-policy) gives it: a workflow the lockfile lists is locked by the lockfile, not by its `uses:` text.
 
 - **Look for:**
-  - `uses:` with a tag or branch instead of a full 40-character commit SHA;
+  - a tag or branch ref that nothing locks: in a workflow the lockfile doesn't list, in a repository without a lockfile, in a reusable workflow call from another repository (`jobs.<id>.uses`), or in a step of an `action.yml` or `action.yaml`;
+  - in a workflow the lockfile lists, a `uses:` with no entry under `dependencies:`, or `gh actions-lock --verify` exiting 1 ([detection-layers.md](detection-layers.md)): the job fails at run time with `lockfile missing pin for <action>@<ref>`;
+  - in a workflow the lockfile lists, a `./` action that uses remote actions, which the lockfile never follows;
   - a SHA that is an annotated tag's object rather than its commit ([Find the commit a step runs](version-drift.md#find-the-commit-a-step-runs));
-  - a `uses:` whose owner or name isn't the action's upstream, or a SHA that is neither on upstream's default branch nor a release commit, such as a pull request's head ("not an upstream commit", tested by [Find the commit a step runs](version-drift.md#find-the-commit-a-step-runs));
+  - a `uses:` whose owner or name isn't the action's upstream, or a SHA, written or locked, that is neither on upstream's default branch nor a release commit, such as a pull request's head ("not an upstream commit", tested by [Find the commit a step runs](version-drift.md#find-the-commit-a-step-runs));
+  - in a workflow the lockfile lists, a bare SHA or a partial tag (`v1`, `main`) instead of a full release tag;
+  - on github.com, a workflow that no lockfile lists although every one of its refs is a SHA pin: a lockfile would also lock what those actions pull in;
+  - a lockfile with no CODEOWNERS entry, or no pull request check that runs `gh actions-lock --verify`;
   - a version comment that doesn't match the SHA;
-  - a stale pin: its tag is older than the newest release in its major ([Pick the newest release](version-drift.md#pick-the-newest-release)).
-- **Not a finding when** the `uses:` is a local path (`./...`) or a Docker image pinned by digest. A workflow covered by a workflow dependency lockfile (`.github/workflows/actions.lock`, made with `gh actions-lock`) needs no SHA pins: GitHub says the lockfile supersedes SHA pinning [unverified: whether the lockfile is generally available or a preview]. Reusable workflows called at job level still need pins.
+  - a stale pin: its tag, written or locked, is older than the newest release in its major ([Pick the newest release](version-drift.md#pick-the-newest-release)).
+- **Not a finding when** the `uses:` is a `$/` reference, a local path (`./...`) in a workflow the lockfile doesn't list, or a Docker image pinned by digest; or when a full release tag stands in a workflow the lockfile lists with a matching entry. On GitHub Enterprise Server the lockfile cases don't apply: GHES has no lockfiles.
 - **Severity:**
-  - a tag or branch, or not an upstream commit: high when the job holds secrets or a write token, medium otherwise;
+  - an unlocked tag or branch, or not an upstream commit: high when the job holds secrets or a write token, medium otherwise;
+  - a missing lockfile entry, a failed `--verify`, or a `./` action that uses remote actions in a listed workflow: medium, because the run fails;
+  - a fully SHA-pinned workflow that no lockfile lists: low, because its direct pins hold and only transitive dependencies stay open; report it once per repository, naming the workflows;
+  - a bare SHA or partial tag in a listed workflow, a lockfile without CODEOWNERS or a `--verify` check: low;
   - a stale pin: low, or medium when it misses a security release: claude-code-action below v1.0.273; `actions/checkout` below v7 in a `pull_request_target` or `workflow_run` job;
   - a wrong version comment: low.
-- **Patch:** pin to the commit the pick pipeline prints, with the tag as a comment. Bumping claude-code-action across a breaking release is a patch with its own impact ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)). To keep pins current, hand a `github-actions` Dependabot entry to `github-operations:github-files-setup`; Dependabot raises no security alerts for actions pinned to a SHA.
-- **Why:** a tag or branch can be moved to new code after the review, and a fork's commit is code upstream never reviewed.
-- **Scanners:** zizmor `unpinned-uses`, `ref-version-mismatch`, and offline-skipped `impostor-commit` and `ref-confusion`; staleness none.
+- **Patch:** write each `uses:` as the Pinning policy says, from the release the pick pipeline prints, and regenerate the lockfile on the approved branch. A `./` action becomes `$/` through `gh actions-lock --migrate-local-actions`, with the user's approval. Adopting the lockfile in a repository without one is a recommendation with its own approval, never part of the patch; until then pin by SHA. Add `.github/workflows/actions.lock` to CODEOWNERS, and a check that runs `gh actions-lock --verify` on pull requests (GitHub's example is `verify-lockfile.yml` in `github/gh-actions-lock`), as items with their own approval. Bumping claude-code-action across a breaking release is a patch with its own impact ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)). To keep refs current, hand a `github-actions` Dependabot entry to `github-operations:github-files-setup`: Dependabot regenerates the lockfile entry in the same pull request for a workflow the lockfile lists, and raises security alerts only for actions referenced by version, not by SHA.
+- **Why:** a tag or branch can be moved to new code after the review, a fork's commit is code upstream never reviewed, and a SHA in a workflow file pins nothing the action itself pulls in.
+- **Scanners:** zizmor `unpinned-uses`, `ref-version-mismatch`, and offline-skipped `impostor-commit` and `ref-confusion`; from 1.32.0 zizmor reads the lockfile, experimentally, so its silence on a listed workflow proves nothing. `gh actions-lock --verify`, when installed. Staleness none.
 
 ### W-05. Checkout credentials left on disk
 
@@ -169,15 +180,15 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 
 ### W-11. Actions the repository's policy doesn't allow
 
-- **Look for:** `uses:` outside the allowed-actions policy read in [Scope and inputs](#scope-and-inputs).
+- **Look for:** `uses:` outside the allowed-actions policy read in [Scope and inputs](#scope-and-inputs). For a workflow the lockfile lists, GitHub checks the policy against the locked commit, not the tag: an allowlist entry pinned to a tag, such as `actions/checkout@v7`, no longer matches it.
 - **Severity:** medium, because the workflow fails when it runs.
-- **Patch:** a permitted equivalent, or tell the user the policy needs their change.
+- **Patch:** a permitted equivalent, or tell the user the policy needs their change; for a lockfile, a wildcard or the full commit SHA in the allowlist entry.
 - **Scanners:** none (zizmor `forbidden-uses` reads its own configuration, not the repository's policy).
 
 ### W-12. The file parses and is a valid workflow
 
 - **Look for, in this order:**
-  1. actionlint's parse errors, when it is installed.
+  1. actionlint's parse errors, when it is installed. A `uses: $/…` it reports as "ref is missing" is valid syntax actionlint doesn't know yet, not an error.
   2. Runs of the workflow with zero jobs and conclusion `failure`, or conclusion `startup_failure`: GitHub creates a failed run for every commit while a workflow file is invalid.
   3. Reading the file: a plain (unquoted) value containing `: `; tabs in indentation; duplicate keys, compared without case (`my-job` and `MY-JOB` collide); an `if:` value that starts with `!` and isn't quoted or wrapped in `${{ }}`; a `job_id` that doesn't start with a letter or `_` or holds other than letters, digits, `-` and `_`; a file over 500 KB, which starts no runs.
 - **Also look for silent truncation:** ` #` inside an unquoted value starts a comment, so `run: echo a #b` runs `echo a`. Rate it by what the cut text did.
@@ -229,7 +240,7 @@ Build one set of patches for all findings, not one patch per finding:
 4. **Side effects:** for each change, find its row in [Costs of each change](auth-and-permissions.md#costs-of-each-change) and carry what its last column says.
 5. **Freeze the mode** of every claude-code-action step the patch touches, by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches). Hold back the patches that need a frozen mode the audit couldn't determine.
 6. **Separate approvals.** A change to what starts the workflow or its jobs (`on:` events or `types:`, or a job-level `if:` that decides whether the job runs), to its permissions or secrets, or to the permission mode is its own item in the report, approved on its own.
-7. **Pins.** Every new or changed `uses:` is pinned by [Pick the newest release](version-drift.md#pick-the-newest-release).
+7. **Pins.** Every new or changed `uses:` takes the release from [Pick the newest release](version-drift.md#pick-the-newest-release) and the form the [Pinning policy](version-drift.md#pinning-policy) gives it; a patch to a workflow the lockfile lists includes the regenerated lockfile, or is held with the command for the user.
 8. **Anchors.** A finding points at the line its patch changes; a missing setting points at the line of the job or step that lacks it. A `uses:` that a non-upstream commit replaces waits, like every patch that needs a frozen mode, for its Questions row.
 
 ## Validate the patches
@@ -259,6 +270,8 @@ Apply the patches only after the user approves them, on a branch, and land the c
 ## Verify against
 
 - GitHub, secure use of Actions: https://docs.github.com/en/actions/reference/security/secure-use
+- GitHub, workflow dependency lockfiles: https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles, https://docs.github.com/en/actions/how-tos/secure-your-work/lock-workflow-dependencies and https://docs.github.com/en/actions/how-tos/administer/enforce-workflow-lockfiles
+- `gh actions-lock` errors and warnings: https://github.com/github/gh-actions-lock/blob/main/docs/troubleshooting.md
 - GitHub, workflow syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
 - GitHub, workflow commands: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands
 - GitHub, GitHub-hosted runners: https://docs.github.com/en/actions/reference/runners/github-hosted-runners

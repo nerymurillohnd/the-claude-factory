@@ -23,6 +23,8 @@ For each failing workflow, read the failed job's log (MCP `get_job_logs` with `f
 3. Whether the same job fails on the base for the same reason, or started failing at a specific commit.
 4. The cause class: code, tests, configuration, infrastructure, permissions, or a rate or budget limit.
 
+A job that fails with `lockfile missing pin for <action>@<ref>`, at a `uses:` step or at a `./` action that uses other actions, is a workflow the lockfile lists whose entry is missing: a configuration cause. Fix it by regenerating the lockfile as the [Pinning policy](version-drift.md#pinning-policy) says, never by deleting `actions.lock` or removing the workflow from it, which would drop the locked commits already reviewed.
+
 ## 3. Repair
 
 1. Make the smallest justified change. Never weaken tests or checks or suppress warnings. Broaden a permission only when the job needs it, and only with the user's approval; never to get a green run.

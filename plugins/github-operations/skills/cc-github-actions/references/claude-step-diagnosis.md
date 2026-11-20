@@ -26,7 +26,7 @@ Check these in order, and stop at the first that explains it:
 1. **The default branch's copy.** Comment, issue and schedule events run the workflow file on the default branch. Read that copy: does `on:` list the event, and do its `types:` include the action that happened? `types: [edited]` never runs on a new comment.
 2. **The workflow's state:** `gh workflow list --all`, or `gh api repos/<owner>/<repo>/actions/workflows`. `disabled_manually` and `disabled_inactivity` start nothing.
 3. **An invalid workflow file:** runs of that workflow with zero jobs and `failure`, or `startup_failure`, on recent commits; or a file over 500 KB. The workflow's state doesn't show a parse error. This is W-12.
-4. **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` answering `enabled: false`.
+4. **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` answering `enabled: false`. Actions policies can also block runs: Require lockfile blocks every targeted workflow the repository's lockfile doesn't list, and actor or event rules block the rest. The repository's **Policy insights** page, under its Actions policies, lists the runs a policy blocked [unverified: whether a blocked run also appears in the run list].
 5. **An event caused by `GITHUB_TOKEN`:** a comment or label made by another workflow with the job's token starts no run.
 6. **A comment edited, not created**, against a trigger that lists only `created`, or the other way round.
 
