@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for bash-lsp-intelligence's hooks/check.mjs, run with stub shfmt and shellcheck."""
+"""Tests for bash-lsp-intelligence's hooks/bash-gate.sh, run with stub shfmt and shellcheck."""
 
 from __future__ import annotations
 
@@ -18,11 +18,14 @@ if TYPE_CHECKING:
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
-# A stub tool logs its name and arguments, appends a newline to its last argument when
-# STUB_APPEND_<name> is set (a reformat), then exits with STUB_EXIT_<name> (0 by default).
+# A stub tool logs its name and arguments, prints STUB_OUT_<name>, appends a newline to its
+# last argument when STUB_APPEND_<name> is set (a reformat), then exits with STUB_EXIT_<name>
+# (0 by default).
 STUB = """#!/usr/bin/env bash
 name="${0##*/}"
 printf '%s %s\\n' "${name}" "$*" >> "${STUB_LOG}"
+out_var="STUB_OUT_${name}"
+printf '%s' "${!out_var:-}"
 append_var="STUB_APPEND_${name}"
 if [[ -n "${!append_var:-}" ]]; then printf '\\n' >> "${@: -1}"; fi
 code_var="STUB_EXIT_${name}"
@@ -75,10 +78,15 @@ def tool_dir(tmp: Path, real: tuple[str, ...], stubs: tuple[str, ...] = ()) -> P
     return folder
 
 
-def run_hook(argv: list[str], event: dict[str, object], env: dict[str, str]) -> Outcome:
-    """Run a hook command with event on stdin and exactly env as its environment."""
+def run_hook(argv: list[str], event: dict[str, object] | str, env: dict[str, str]) -> Outcome:
+    """Run a hook command with event on stdin, as JSON unless it is text, and exactly env."""
     done = subprocess.run(
-        argv, input=json.dumps(event), env=env, capture_output=True, text=True, check=False
+        argv,
+        input=event if isinstance(event, str) else json.dumps(event),
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     return Outcome(done.returncode, done.stdout, done.stderr)
 
@@ -136,10 +144,25 @@ def field(stdout: str, *keys: str) -> str:
     return value if isinstance(value, str) else ""
 
 
-HOOK = Path(__file__).resolve().parents[1] / "hooks" / "check.mjs"
+HOOK = Path(__file__).resolve().parents[1] / "hooks" / "bash-gate.sh"
 SCRIPT = "#!/usr/bin/env bash\necho hi\n"
 # One more than the hook's MAX_FILES.
 TOO_MANY = 21
+# The commands the hook runs besides shfmt and shellcheck: the whole PATH of a test run.
+SYSTEM_TOOLS = (
+    "git",
+    "bash",
+    "sh",
+    "awk",
+    "find",
+    "head",
+    "date",
+    "touch",
+    "mktemp",
+    "rm",
+    "cksum",
+    "readlink",
+)
 BLOCKED = 2
 
 
@@ -149,20 +172,21 @@ class BashHookTest(unittest.TestCase):
     def _run(
         self,
         tmp: Path,
-        event: dict[str, object],
+        event: dict[str, object] | str,
         *,
-        tools: bool = True,
+        tools: tuple[str, ...] = ("shfmt", "shellcheck"),
         data: bool = True,
         **extra: str,
     ) -> tuple[Outcome, list[str]]:
         """Run the hook in project tmp/work and return (outcome, stub calls).
 
-        With data False, CLAUDE_PLUGIN_DATA is not in the environment at all.
+        tools are the stub commands on PATH besides uname, which prints STUB_OUT_uname. With
+        data False, CLAUDE_PLUGIN_DATA is not in the environment at all.
         """
-        node = need("node")
+        shell = need("bash")
         bin_dir = tmp / "bin"
         if not bin_dir.is_dir():
-            _ = tool_dir(tmp, ("git", "bash", "sh"), ("shfmt", "shellcheck") if tools else ())
+            _ = tool_dir(tmp, SYSTEM_TOOLS, ("uname", *tools))
         log = tmp / "log.txt"
         env = {
             "PATH": str(bin_dir),
@@ -175,7 +199,7 @@ class BashHookTest(unittest.TestCase):
         }
         if not data:
             del env["CLAUDE_PLUGIN_DATA"]
-        return run_hook([node, str(HOOK)], event, env), logged(log)
+        return run_hook([shell, str(HOOK)], event, env), logged(log)
 
     @staticmethod
     def _bash(tmp: Path) -> dict[str, object]:
@@ -210,7 +234,7 @@ class BashHookTest(unittest.TestCase):
                     self._run(
                         tmp,
                         self._edit(tmp / "work" / "a.sh"),
-                        tools=False,
+                        tools=(),
                         data=data,
                         TMPDIR=str(tmp),
                     )[0]
@@ -219,16 +243,47 @@ class BashHookTest(unittest.TestCase):
                 left = [*folders_named(tmp, "bash-lsp-intelligence"), *folders_named(tmp, "data")]
                 for outcome in runs:
                     self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-                    message = field(outcome.stdout, "systemMessage")
-                    self.assertTrue(
-                        message.startswith(
-                            "bash-lsp-intelligence: not run on a.sh: shfmt is not installed "
-                            "(install it with brew install shfmt"
-                        ),
-                        message,
+                    self.assertEqual(
+                        field(outcome.stdout, "systemMessage"),
+                        "bash-lsp-intelligence: not run on a.sh: shfmt is not installed "
+                        "(install it with go install mvdan.cc/sh/v3/cmd/shfmt@latest, "
+                        "or a binary from https://github.com/mvdan/sh/releases)",
                     )
                     self.assertNotIn("hookSpecificOutput", outcome.stdout)
                 self.assertEqual(left, [])
+
+    def test_install_command_matches_the_system(self) -> None:
+        """The missing tool's install command comes from the system and its package manager."""
+        cases = (
+            ("Darwin", ("shellcheck",), "brew install shfmt"),
+            ("Darwin", ("shellcheck", "port"), "sudo port install shfmt"),
+            ("Linux", ("shellcheck", "apt-get"), "sudo apt install shfmt"),
+            ("Linux", ("shfmt", "apt-get"), "sudo apt install shellcheck"),
+            ("Linux", ("shellcheck", "dnf"), "sudo dnf install shfmt"),
+            ("Linux", ("shfmt", "dnf"), "sudo dnf install ShellCheck"),
+            ("Linux", ("shellcheck", "pacman"), "sudo pacman -S shfmt"),
+            ("Linux", ("shfmt", "zypper"), "sudo zypper install ShellCheck"),
+            ("Linux", ("shellcheck", "apk"), "sudo apk add shfmt"),
+            (
+                "Linux",
+                ("shfmt", "apk"),
+                "a binary from https://github.com/koalaman/shellcheck/releases",
+            ),
+            ("Linux", ("shellcheck", "brew"), "brew install shfmt"),
+        )
+        for system, tools, hint in cases:
+            with self.subTest(system=system, tools=tools), tempfile.TemporaryDirectory() as raw:
+                tmp = Path(raw).resolve()
+                write(tmp / "work" / "a.sh", SCRIPT)
+                outcome, calls = self._run(
+                    tmp, self._edit(tmp / "work" / "a.sh"), tools=tools, STUB_OUT_uname=system
+                )
+                self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                self.assertTrue(
+                    field(outcome.stdout, "systemMessage").endswith(f"(install it with {hint})"),
+                    outcome.stdout,
+                )
+                self.assertFalse(any(call.startswith(("shfmt ", "shellcheck ")) for call in calls))
 
     def test_clean_edit_tells_only_the_user(self) -> None:
         """No errors and no reformat: one line for the user, nothing for Claude."""
@@ -342,6 +397,33 @@ class BashHookTest(unittest.TestCase):
         self.assertEqual((outcome.code, outcome.stderr), (0, ""))
         self.assertTrue(any(call.endswith("kept.sh") for call in calls), calls)
         self.assertFalse(any(call.endswith("hook.sh") for call in calls), calls)
+
+    def test_escaped_path_in_the_event_is_checked(self) -> None:
+        """A path with a quote and an accented letter, escaped in the JSON, reaches the tools."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            path = tmp / "work" / 'dir "q" é' / "s.sh"
+            write(path, SCRIPT)
+            event = json.dumps(self._edit(path), ensure_ascii=True)
+            outcome, calls = self._run(tmp, event)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn('ran shfmt, shellcheck on dir "q" é/s.sh', message)
+        self.assertTrue(any(call.endswith(str(path)) for call in calls), calls)
+
+    def test_other_input_is_left_alone(self) -> None:
+        """Input that is not one event, and tools the hook does not read, give nothing at all."""
+        for event in ("", "not json", "[]", '{"tool_name": "Edit"', '{"tool_name": "Read"}'):
+            with self.subTest(event=event), tempfile.TemporaryDirectory() as raw:
+                outcome, calls = self._run(Path(raw).resolve(), event)
+                self.assertEqual((outcome, calls), (Outcome(0, "", ""), []))
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.sh", SCRIPT)
+            notebook = self._edit(tmp / "work" / "a.sh")
+            notebook["tool_name"] = "NotebookEdit"
+            outcome, calls = self._run(tmp, notebook)
+        self.assertEqual((outcome, calls), (Outcome(0, "", ""), []))
 
     def test_findings_still_block(self) -> None:
         """A finding reaches Claude through stderr and exit 2, with the skill to fix it.
