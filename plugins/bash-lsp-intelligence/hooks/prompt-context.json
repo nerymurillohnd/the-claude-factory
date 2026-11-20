@@ -1,6 +1,6 @@
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "The bash-lsp-intelligence plugin is installed. Its bash-lsp-intelligence:bash-lsp-intelligence skill governs every creation, write or edit of a shell script (*.sh, *.bash, or a script with a sh or bash shebang), whichever tool makes the change: Edit, Write, or a Bash or PowerShell command (a redirect, sed -i, tee, or a script or generator that writes the file). Before the first such change in this conversation, load bash-lsp-intelligence:bash-lsp-intelligence with the Skill tool unless its instructions are still in your context, and apply it to every such change."
+    "additionalContext": "Before you create, write or edit shell scripts (*.sh, *.bash, or a sh or bash script), with any tool or command:\n- Use the Skill tool to call \"bash-lsp-intelligence:bash-lsp-intelligence\".\n- Apply the skill end to end, including its LSP and Grep steps.\nSkipping these steps is a serious defect."
   }
 }

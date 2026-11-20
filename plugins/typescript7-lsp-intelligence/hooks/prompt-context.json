@@ -1,6 +1,6 @@
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "The typescript7-lsp-intelligence plugin is installed. Its typescript7-lsp-intelligence:ts-lifecycle skill governs every creation, write or edit of a TypeScript or JavaScript file (*.ts, *.tsx, *.mts, *.cts, *.js, *.jsx, *.mjs, *.cjs, tsconfig.json or jsconfig.json) in a project on TypeScript 7, whichever tool makes the change: Edit, Write, or a Bash or PowerShell command (a redirect, sed -i, tee, or a script or generator that writes the file). Before the first such change in this conversation, load typescript7-lsp-intelligence:ts-lifecycle with the Skill tool unless its instructions are still in your context, and apply it to every such change."
+    "additionalContext": "Before you create, write or edit TypeScript or JavaScript files (*.ts, *.tsx, *.mts, *.cts, *.js, *.jsx, *.mjs, *.cjs, tsconfig.json, jsconfig.json) of a TypeScript 7 project, with any tool or command:\n- Use the Skill tool to call \"typescript7-lsp-intelligence:ts-lifecycle\".\n- Apply the skill end to end, including its LSP and Grep steps.\nSkipping these steps is a serious defect."
   }
 }

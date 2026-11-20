@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- With each prompt you send, the plugin now tells Claude that the `python-lsp-intelligence:python-lsp-intelligence` skill governs every Python file it creates, writes or edits, whether through Edit, Write or a shell command, and that Claude loads the skill before the first such change. A new `UserPromptSubmit` hook adds this short note to Claude's context; it sends nothing and writes nothing.
+- With each prompt you send, the plugin now tells Claude to call the `python-lsp-intelligence:python-lsp-intelligence` skill with the Skill tool and apply it end to end, including its LSP and Grep steps, before it creates, writes or edits a Python file, with any tool or command. A new `UserPromptSubmit` hook adds this short instruction to Claude's context; it sends nothing and writes nothing.
 
 ### Removed
 
