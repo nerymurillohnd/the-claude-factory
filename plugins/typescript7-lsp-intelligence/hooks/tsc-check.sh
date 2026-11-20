@@ -18,8 +18,8 @@
 #
 # The compiler is the user's own: the project's node_modules first, then a global install
 # found on PATH or in the folders of the common Node version managers, since hooks do not
-# load the user's shell profile. Nothing is installed. typescript7-lsp-intelligence runs the
-# native compiler directly; typescript6-lsp-intelligence runs tsc on Node.
+# load the user's shell profile. Nothing is installed. This plugin runs the native compiler
+# directly.
 #
 # The hook judges only what the tool call changed. Files that a Bash command left under a nested
 # Git work tree count only when Git lists them as modified, untracked or staged there, so a
@@ -33,8 +33,7 @@
 # Any other failure exits non-zero, which hooks.json turns into a block with onFailure. Every
 # message that reaches Claude ends with one line naming the plugin's ts-7-writing-and-navigation skill, so a
 # hook that checks is never taken for the whole workflow; the user-only systemMessage does not
-# carry it. Bash 3.2 or later; no jq, no Python. This file is byte-identical in
-# typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+# carry it. Bash 3.2 or later; no jq, no Python.
 
 set -euo pipefail
 
@@ -476,7 +475,7 @@ use_tsc() {
 # file gets its own, so files of different packages run their own compilers. In the
 # TypeScript 6 and 7 side-by-side setup ("typescript": "npm:@typescript/typescript6", plus
 # "@typescript/native": "npm:typescript@^7"), TypeScript 6 installs as tsc6 and tsc is 7:
-# typescript6-lsp-intelligence tries tsc6 first, typescript7-lsp-intelligence never does.
+# with NATIVE set, as in this plugin, the hook never runs tsc6.
 find_tsc() {
   local dir candidate names=()
   set_tsc ""
