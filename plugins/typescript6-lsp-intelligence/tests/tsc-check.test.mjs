@@ -74,34 +74,33 @@ function project(files, withCompiler = true) {
 }
 
 /**
- * A folder holding only a `node` link and a stub `tsc` whose body is script (bash).
+ * A folder holding only a `node` link and a stub `tsc` whose body is script (bash), which answers
+ * --version with version first.
  * @param {string} script
+ * @param {string} [version]
  * @returns {string}
  */
-function stubBin(script) {
+function stubTsc(script, version = 'Version 6.0.3') {
   const bin = freshDir()
   symlinkSync(process.execPath, join(bin, 'node'))
-  writeFileSync(join(bin, 'tsc'), `#!/usr/bin/env bash\n${script}\n`)
+  writeFileSync(
+    join(bin, 'tsc'),
+    `#!/usr/bin/env bash\n[ "$1" = --version ] && { echo '${version}'; exit 0; }\n${script}\n`,
+  )
   chmodSync(join(bin, 'tsc'), 0o755)
   return bin
 }
 
 /**
- * A stub tsc answering --version and --showConfig, then running main.
- * @param {string} main
- * @param {{ version?: string, showConfig?: string }} [options]
+ * A folder holding a `node` link and a `tsc` link to the real compiler, standing for a global
+ * install on PATH.
  * @returns {string}
  */
-function stubTsc(main, { version = 'Version 6.0.3', showConfig = '{"compilerOptions":{}}' } = {}) {
-  return stubBin(
-    [
-      'case " $* " in',
-      `  *" --version "*) echo '${version}'; exit 0 ;;`,
-      `  *" --showConfig "*) echo '${showConfig}'; exit 0 ;;`,
-      'esac',
-      main,
-    ].join('\n'),
-  )
+function globalTsc() {
+  const bin = freshDir()
+  symlinkSync(process.execPath, join(bin, 'node'))
+  symlinkSync(join(TYPESCRIPT ?? '', 'bin', 'tsc'), join(bin, 'tsc'))
+  return bin
 }
 
 /**
@@ -117,23 +116,58 @@ function edit(folder, file, extra = {}) {
     tool_name: 'Edit',
     cwd: folder,
     tool_input: { file_path: join(folder, file) },
+    tool_response: { filePath: join(folder, file) },
     ...extra,
+  }
+}
+
+/**
+ * The PostToolUse event of a Bash call in folder that changed files (bashEditDiff).
+ * @param {string} folder
+ * @param {string[]} files
+ */
+function bash(folder, files) {
+  return {
+    hook_event_name: 'PostToolUse',
+    session_id: 'session-1',
+    tool_name: 'Bash',
+    cwd: folder,
+    tool_input: { command: 'generate' },
+    tool_response: {
+      stdout: '',
+      bashEditDiff: { changedFiles: files.map((file) => join(folder, file)) },
+    },
+  }
+}
+
+/**
+ * The PostToolBatch event of tool calls in folder, each a [tool name, file] pair.
+ * @param {string} folder
+ * @param {[string, string][]} calls
+ */
+function batch(folder, calls) {
+  return {
+    hook_event_name: 'PostToolBatch',
+    session_id: 'session-1',
+    cwd: folder,
+    tool_calls: calls.map(([tool, file], i) => ({
+      tool_name: tool,
+      tool_input: tool === 'Bash' ? { command: file } : { file_path: join(folder, file) },
+      tool_use_id: `toolu_${i}`,
+      tool_response: 'done',
+    })),
   }
 }
 
 /**
  * Runs the hook with event on stdin.
  * @param {Record<string, unknown>} event
- * @param {{ project?: string, data?: string | null, path?: string, args?: string[], env?: Record<string, string> }} [options]
+ * @param {{ project?: string, data?: string | null, path?: string, args?: string[] }} [options]
  */
 function runHook(event, options = {}) {
   const { CLAUDE_PLUGIN_DATA: _inherited, ...inherited } = process.env
   /** @type {Record<string, string | undefined>} */
-  const env = {
-    ...inherited,
-    ...options.env,
-    CLAUDE_PROJECT_DIR: options.project ?? String(event['cwd'] ?? ROOT),
-  }
+  const env = { ...inherited, CLAUDE_PROJECT_DIR: options.project ?? String(event['cwd'] ?? ROOT) }
   if (options.data !== null) {
     env['CLAUDE_PLUGIN_DATA'] = options.data ?? freshDir()
   }
@@ -151,11 +185,17 @@ function runHook(event, options = {}) {
 /**
  * The JSON object the hook printed on stdout.
  * @param {string} stdout
- * @returns {{ systemMessage?: string, hookSpecificOutput?: { additionalContext?: string } }}
+ * @returns {{ systemMessage?: string, hookSpecificOutput?: { hookEventName?: string, additionalContext?: string } }}
  */
 function output(stdout) {
   assert.notEqual(stdout.trim(), '', 'the hook printed nothing on stdout')
+  assert.doesNotThrow(() => JSON.parse(stdout), `the hook's stdout is not JSON: ${stdout}`)
   return JSON.parse(stdout)
+}
+
+/** @param {string} stdout */
+function message(stdout) {
+  return output(stdout).systemMessage ?? ''
 }
 
 /** @param {string} stdout */
@@ -169,42 +209,64 @@ const CLEAN = 'export const y: number = 1\n'
 const REAL = TYPESCRIPT === null ? 'no typescript package resolves' : false
 
 describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true }, () => {
-  it('blocks an error in the edited file, listing where it is and how to fix it', () => {
+  it('blocks an Edit error on PostToolUse with where it is and the skill to fix it', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN })
     const run = runHook(edit(folder, 'src/a.ts'))
     assert.equal(run.code, 2, run.stderr)
-    assert.match(run.stderr, /Issues were found in these files you changed: src\/a\.ts/)
+    assert.match(run.stderr, /Unresolved type errors in files changed this turn \(src\/a\.ts\)/)
     assert.match(
       run.stderr,
-      /src\/a\.ts:1:14\s+TS2322\s+Type 'string' is not assignable to type 'number'\./,
+      /src\/a\.ts:1:14 {2}TS2322 {2}Type 'string' is not assignable to type 'number'\./,
     )
-    assert.ok(run.stderr.includes(`call the Skill tool with skill "${SKILL}"`), run.stderr)
+    assert.ok(run.stderr.includes(`"${SKILL}"`), run.stderr)
     assert.match(run.stderr, /the LSP tool and Grep/)
-    assert.match(output(run.stdout).systemMessage ?? '', /found 1 issue/)
+    assert.match(message(run.stdout), /found 1 issue in src\/a\.ts/)
+  })
+
+  it('blocks the files a Bash command changed, from bashEditDiff', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN })
+    const run = runHook(bash(folder, ['src/a.ts']))
+    assert.equal(run.code, 2, run.stderr)
+    assert.match(run.stderr, /src\/a\.ts:1:14 {2}TS2322/)
+  })
+
+  it('gives Claude the errors of a whole batch in additionalContext, without stopping the loop', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN, 'src/b.ts': CLEAN })
+    const run = runHook(
+      batch(folder, [
+        ['Edit', 'src/b.ts'],
+        ['Write', 'src/a.ts'],
+        ['Bash', 'ls'],
+      ]),
+    )
+    assert.equal(run.code, 0, run.stderr)
+    assert.equal(output(run.stdout).hookSpecificOutput?.hookEventName, 'PostToolBatch')
+    assert.match(context(run.stdout), /src\/a\.ts:1:14 {2}TS2322/)
+    assert.match(message(run.stdout), /found 1 issue in src\/a\.ts/)
   })
 
   it('reports a clean check without claiming every file was type-checked', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/b.ts': CLEAN })
     const run = runHook(edit(folder, 'src/b.ts'))
     assert.equal(run.code, 0, run.stderr)
-    const message = output(run.stdout).systemMessage ?? ''
     assert.match(
-      message,
+      message(run.stdout),
       /the compiler completed without diagnostics under the project's configuration/,
     )
-    assert.doesNotMatch(message, /all type-checked/)
+    assert.doesNotMatch(message(run.stdout), /all type-checked/)
   })
 
   it('lets errors in other files through with their count', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN, 'src/b.ts': CLEAN })
     const run = runHook(edit(folder, 'src/b.ts'))
     assert.equal(run.code, 0, run.stderr)
-    const message = output(run.stdout).systemMessage ?? ''
-    assert.match(message, /1 issue in other files/)
-    assert.match(message, /pre-existence was not verified/)
+    assert.match(
+      message(run.stdout),
+      /1 issue in other files \(their pre-existence was not verified\)/,
+    )
   })
 
-  it('does not count TS6133 in another file as a blind check', () => {
+  it('counts a TS6133 in another file as an issue there, not as an unchecked run', () => {
     const config = JSON.stringify({ compilerOptions: { noUnusedLocals: true }, include: ['src'] })
     const folder = project({
       'tsconfig.json': config,
@@ -213,16 +275,34 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     })
     const run = runHook(edit(folder, 'src/b.ts'))
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /1 issue in other files/)
-    assert.doesNotMatch(output(run.stdout).systemMessage ?? '', /not type-checked/)
+    assert.match(message(run.stdout), /1 issue in other files/)
+    assert.doesNotMatch(message(run.stdout), /not type-checked/)
   })
 
   it('reports an edited file the program leaves out', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/b.ts': CLEAN, 'scripts/x.ts': BROKEN })
     const run = runHook(edit(folder, 'scripts/x.ts'))
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /scripts\/x\.ts.*not part of the program/)
-    assert.match(context(run.stdout), /tell the user/)
+    assert.match(
+      message(run.stdout),
+      /scripts\/x\.ts \(not part of the program of .*tsconfig\.json\)/,
+    )
+    assert.match(context(run.stdout), /did not cover: scripts\/x\.ts/)
+  })
+
+  it('reports a solution-style tsconfig.json as not covering the edited file', () => {
+    const folder = project({
+      'tsconfig.json': JSON.stringify({ files: [], references: [{ path: './tsconfig.app.json' }] }),
+      'tsconfig.app.json': JSON.stringify({
+        compilerOptions: { composite: true },
+        include: ['src'],
+      }),
+      'src/a.ts': BROKEN,
+    })
+    const run = runHook(edit(folder, 'src/a.ts'))
+    assert.equal(run.code, 0, run.stderr)
+    assert.match(message(run.stdout), /src\/a\.ts \(not part of the program/)
+    assert.doesNotMatch(message(run.stdout), /completed without diagnostics/)
   })
 
   it('never passes a project with noCheck on', () => {
@@ -230,17 +310,41 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     const folder = project({ 'tsconfig.json': config, 'src/a.ts': BROKEN })
     const run = runHook(edit(folder, 'src/a.ts'))
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /noCheck is on/)
-    assert.match(context(run.stdout), /noCheck is on/)
-    assert.doesNotMatch(output(run.stdout).systemMessage ?? '', /completed without diagnostics/)
+    assert.match(message(run.stdout), /did not type-check \(no Check time/)
+    assert.match(context(run.stdout), /did not cover the changed files/)
+    assert.doesNotMatch(message(run.stdout), /completed without diagnostics/)
   })
 
-  it('reports configured JavaScript without checkJs as not type-checked', () => {
-    const config = JSON.stringify({ compilerOptions: { allowJs: true }, include: ['src'] })
-    const folder = project({ 'tsconfig.json': config, 'src/a.js': 'const v = 1\n' })
-    const run = runHook(edit(folder, 'src/a.js'))
+  it('reports a missing type library that stops type-checking, with the error', () => {
+    const config = JSON.stringify({
+      compilerOptions: { types: ['no-such-types'] },
+      include: ['src'],
+    })
+    const folder = project({ 'tsconfig.json': config, 'src/a.ts': BROKEN })
+    const run = runHook(edit(folder, 'src/a.ts'))
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /src\/a\.js.*JavaScript without checkJs/)
+    assert.match(message(run.stdout), /did not type-check/)
+    assert.match(message(run.stdout), /TS2688/)
+  })
+
+  it('reports a syntax error in another file that stops type-checking', () => {
+    const folder = project({
+      'tsconfig.json': TSCONFIG,
+      'src/a.ts': BROKEN,
+      'src/other.ts': 'export const b = (\n',
+    })
+    const run = runHook(edit(folder, 'src/a.ts'))
+    assert.equal(run.code, 0, run.stderr)
+    assert.match(message(run.stdout), /did not type-check/)
+    assert.match(message(run.stdout), /TS1109/)
+    assert.doesNotMatch(message(run.stdout), /in other files/)
+  })
+
+  it('blocks a syntax error in the edited file and says more errors can follow', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': 'export const = 1\n' })
+    const run = runHook(edit(folder, 'src/a.ts'))
+    assert.equal(run.code, 2, run.stderr)
+    assert.match(run.stderr, /tsc stopped before type-checking, so more errors can appear/)
   })
 
   it('checks configured JavaScript that opts in with // @ts-check', () => {
@@ -251,66 +355,7 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     })
     const run = runHook(edit(folder, 'src/a.js'))
     assert.equal(run.code, 2, run.stderr)
-    assert.match(run.stderr, /src\/a\.js:3:7\s+TS2322/)
-  })
-
-  it('reports a file with // @ts-nocheck as not type-checked', () => {
-    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': `// @ts-nocheck\n${BROKEN}` })
-    const run = runHook(edit(folder, 'src/a.ts'))
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /@ts-nocheck/)
-  })
-
-  it('reports an edited declaration file under skipLibCheck as not type-checked', () => {
-    const config = JSON.stringify({ compilerOptions: { skipLibCheck: true }, include: ['src'] })
-    const folder = project({
-      'tsconfig.json': config,
-      'src/types.d.ts': 'export declare const q: number\n',
-    })
-    const run = runHook(edit(folder, 'src/types.d.ts'))
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /skipLibCheck/)
-  })
-
-  it('warns, and tells Claude to report, when a missing type library blinds the check', () => {
-    const config = JSON.stringify({
-      compilerOptions: { types: ['no-such-types'] },
-      include: ['src'],
-    })
-    const folder = project({ 'tsconfig.json': config, 'src/a.ts': BROKEN })
-    const run = runHook(edit(folder, 'src/a.ts'))
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /TS2688/)
-    assert.match(output(run.stdout).systemMessage ?? '', /not type-checked/)
-    assert.match(context(run.stdout), /report this to the user before you end your turn/)
-  })
-
-  it('treats an unknown option in tsconfig.json as a blind check', () => {
-    const config = JSON.stringify({ compilerOptions: { bogusOption: true }, include: ['src'] })
-    const folder = project({ 'tsconfig.json': config, 'src/a.ts': BROKEN })
-    const run = runHook(edit(folder, 'src/a.ts'))
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /TS5023/)
-    assert.match(context(run.stdout), /report this to the user/)
-  })
-
-  it('treats a syntax error in another file as a blind check', () => {
-    const folder = project({
-      'tsconfig.json': TSCONFIG,
-      'src/a.ts': BROKEN,
-      'src/other.ts': 'export const b = (\n',
-    })
-    const run = runHook(edit(folder, 'src/a.ts'))
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /TS1109/)
-    assert.match(context(run.stdout), /report this to the user/)
-  })
-
-  it('blocks a syntax error in the edited file and says the rest went unchecked', () => {
-    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': 'export const = 1\n' })
-    const run = runHook(edit(folder, 'src/a.ts'))
-    assert.equal(run.code, 2, run.stderr)
-    assert.match(run.stderr, /Other files were not type-checked until this is fixed/)
+    assert.match(run.stderr, /src\/a\.js:3:7 {2}TS2322/)
   })
 
   it('finds a nested tsconfig.json from the edited file', () => {
@@ -322,63 +367,78 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     })
     const run = runHook(edit(folder, 'packages/a/src/a.ts'))
     assert.equal(run.code, 2, run.stderr)
-    assert.match(run.stderr, /packages\/a\/src\/a\.ts:1:14\s+TS2322/)
+    assert.match(run.stderr, /packages\/a\/src\/a\.ts:1:14 {2}TS2322/)
   })
 
   it('checks a TypeScript file under no tsconfig.json with the compiler defaults', () => {
     const folder = project({ 'a.ts': BROKEN })
     const run = runHook(edit(folder, 'a.ts'))
     assert.equal(run.code, 2, run.stderr)
-    assert.match(run.stderr, /a\.ts:1:14\s+TS2322/)
+    assert.match(run.stderr, /a\.ts:1:14 {2}TS2322/)
   })
 
   it('reports a JavaScript file under no tsconfig.json as not type-checked', () => {
     const folder = project({ 'a.js': 'const v = 1\n' })
     const run = runHook(edit(folder, 'a.js'))
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /a\.js.*not type-checked/)
+    assert.match(
+      message(run.stdout),
+      /a\.js \(no tsconfig\.json: tsc does not type-check JavaScript/,
+    )
   })
 
-  it('checks the files a Bash command changed, from bashEditDiff', () => {
-    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN })
-    const event = {
-      hook_event_name: 'PostToolUse',
-      session_id: 'session-1',
-      tool_name: 'Bash',
-      cwd: folder,
-      tool_input: { command: 'sed -i s/1/2/ src/a.ts' },
-      tool_response: { bashEditDiff: { changedFiles: [join(folder, 'src/a.ts')] } },
-    }
-    assert.equal(runHook(event).code, 2)
+  it('runs with only a global tsc and no package.json or tsconfig.json', () => {
+    const folder = project({ 'a.ts': BROKEN }, false)
+    const run = runHook(edit(folder, 'a.ts'), { path: globalTsc() })
+    assert.equal(run.code, 2, run.stderr)
+    assert.match(run.stderr, /a\.ts:1:14 {2}TS2322/)
   })
 
-  it('stays silent for a Bash call without bashEditDiff and no files this turn', () => {
+  it('runs a pnpm-style shell shim like any tsc', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN })
-    const event = {
-      hook_event_name: 'PostToolUse',
-      session_id: 's',
-      tool_name: 'Bash',
-      cwd: folder,
-      tool_input: { command: 'ls' },
-    }
+    const shim = join(folder, 'node_modules', '.bin', 'tsc')
+    rmSync(shim)
+    writeFileSync(shim, `#!/bin/sh\nexec node "${join(TYPESCRIPT ?? '', 'bin', 'tsc')}" "$@"\n`)
+    chmodSync(shim, 0o755)
+    const run = runHook(edit(folder, 'src/a.ts'))
+    assert.equal(run.code, 2, run.stderr)
+  })
+
+  it('stays silent for a Bash call that changed no source file', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN })
+    const event = { ...bash(folder, []), tool_response: { stdout: '' } }
     const run = runHook(event)
     assert.equal(run.code, 0, run.stderr)
     assert.equal(run.stdout + run.stderr, '')
   })
 
-  it('stays silent for a file that is not TypeScript or JavaScript', () => {
-    const folder = project({ 'README.md': '# x\n' })
-    const run = runHook(edit(folder, 'README.md'))
-    assert.equal(run.code, 0)
+  it('stays silent for a batch with no Edit or Write of a source file', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN, 'README.md': '# x\n' })
+    const run = runHook(
+      batch(folder, [
+        ['Bash', 'ls'],
+        ['Edit', 'README.md'],
+      ]),
+    )
+    assert.equal(run.code, 0, run.stderr)
     assert.equal(run.stdout + run.stderr, '')
   })
 
-  it('stays silent for a file outside the project', () => {
+  it('stays silent for a file outside the project, or under node_modules or .git', () => {
     const outside = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN })
-    const folder = project({ 'src/b.ts': CLEAN })
-    const run = runHook(edit(outside, 'src/a.ts'), { project: folder })
-    assert.equal(run.code, 0)
-    assert.equal(run.stdout + run.stderr, '')
+    const folder = project({
+      'src/b.ts': CLEAN,
+      'node_modules/pkg/x.ts': BROKEN,
+      '.git/x.ts': BROKEN,
+    })
+    for (const run of [
+      runHook(edit(outside, 'src/a.ts'), { project: folder }),
+      runHook(edit(folder, 'node_modules/pkg/x.ts')),
+      runHook(edit(folder, '.git/x.ts')),
+    ]) {
+      assert.equal(run.code, 0, run.stderr)
+      assert.equal(run.stdout + run.stderr, '')
+    }
   })
 
   it('matches files reached through a symlinked project folder', () => {
@@ -389,15 +449,17 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     assert.equal(run.code, 2, run.stderr)
   })
 
-  it('keeps the report under 10,000 characters with many errors', () => {
+  it('caps the issue list at 100 lines with a count of the rest', () => {
     const lines = Array.from({ length: 300 }, (_, i) => `export const v${i}: number = "a"`).join(
       '\n',
     )
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': `${lines}\n` })
     const run = runHook(edit(folder, 'src/a.ts'))
     assert.equal(run.code, 2)
-    assert.ok(run.stderr.length < 10_000, `stderr is ${run.stderr.length} characters`)
-    assert.match(run.stderr, /more issues in these files/)
+    assert.match(
+      run.stderr,
+      /… 200 more \(run tsc --noEmit --pretty false --strict to see them all\)/,
+    )
   })
 
   it('leaves no .tsbuildinfo in an incremental project', () => {
@@ -405,14 +467,14 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     const folder = project({ 'tsconfig.json': config, 'src/b.ts': CLEAN })
     const run = runHook(edit(folder, 'src/b.ts'))
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /completed without diagnostics/)
+    assert.match(message(run.stdout), /completed without diagnostics/)
     assert.deepEqual(
       readdirSync(folder).filter((name) => name.endsWith('.tsbuildinfo')),
       [],
     )
   })
 
-  it('blocks on an error in a file edited earlier in the same turn', () => {
+  it('blocks on an error in a file changed earlier in the same turn, until the next prompt', () => {
     const folder = project({
       'tsconfig.json': TSCONFIG,
       'src/a.ts': 'const n: number = f()\n',
@@ -423,20 +485,20 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     writeFileSync(join(folder, 'src/b.ts'), 'function f(): string { return "x" }\n')
     const second = runHook(edit(folder, 'src/b.ts'), { data })
     assert.equal(second.code, 2, second.stderr)
-    assert.match(second.stderr, /src\/a\.ts:1:7\s+TS2322/)
+    assert.match(second.stderr, /src\/a\.ts:1:7 {2}TS2322/)
     const prompt = {
       hook_event_name: 'UserPromptSubmit',
       session_id: 'session-1',
       cwd: folder,
-      prompt: 'next',
+      prompt: 'x',
     }
     const reset = runHook(prompt, { data, args: ['--new-turn'] })
     assert.equal(reset.code, 0)
-    assert.equal(reset.stdout, '')
+    assert.equal(reset.stdout + reset.stderr, '')
     writeFileSync(join(folder, 'src/c.ts'), CLEAN)
     const third = runHook(edit(folder, 'src/c.ts'), { data })
     assert.equal(third.code, 0, third.stderr)
-    assert.match(output(third.stdout).systemMessage ?? '', /in other files/)
+    assert.match(message(third.stdout), /in other files/)
   })
 
   it('keeps a subagent turn list apart from the main one', () => {
@@ -445,80 +507,48 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     assert.equal(runHook(edit(folder, 'src/a.ts', { agent_id: 'agent-1' }), { data }).code, 2)
     const main = runHook(edit(folder, 'src/b.ts'), { data })
     assert.equal(main.code, 0, main.stderr)
-    assert.match(output(main.stdout).systemMessage ?? '', /in other files/)
+    assert.match(message(main.stdout), /in other files/)
   })
 
   it('says turn tracking is unavailable without CLAUDE_PLUGIN_DATA', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/b.ts': CLEAN })
     const run = runHook(edit(folder, 'src/b.ts'), { data: null })
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /turn tracking unavailable/)
+    assert.match(message(run.stdout), /turn tracking unavailable/)
   })
 })
 
 describe('tsc-check.sh with a stub or no compiler', { concurrency: true }, () => {
-  it('reports a missing compiler on every run, and tells Claude once per session', () => {
+  it('reports a missing compiler', () => {
     const folder = project({ 'a.ts': BROKEN }, false)
-    const bin = stubBin('exit 0')
+    const bin = stubTsc('exit 0')
     rmSync(join(bin, 'tsc'))
-    const data = freshDir()
-    const first = runHook(edit(folder, 'a.ts'), { data, path: bin })
-    const second = runHook(edit(folder, 'a.ts'), { data, path: bin })
-    assert.equal(first.code, 0, first.stderr)
-    assert.equal(second.code, 0, second.stderr)
-    assert.match(output(first.stdout).systemMessage ?? '', /tsc check skipped/)
-    assert.match(output(second.stdout).systemMessage ?? '', /tsc check skipped/)
-    assert.match(context(first.stdout), /tell the user/)
-    assert.equal(context(second.stdout), '')
-    const unmarked = runHook(edit(folder, 'a.ts'), { data: null, path: bin })
-    assert.match(context(unmarked.stdout), /tell the user/)
+    const run = runHook(edit(folder, 'a.ts'), { path: bin })
+    assert.equal(run.code, 0, run.stderr)
+    assert.match(message(run.stdout), /tsc check skipped: no tsc/)
+    assert.match(context(run.stdout), /did not run/)
   })
 
-  it('skips a tsc that is not TypeScript 6 and has Claude ask the user', () => {
+  it('skips a tsc that is not TypeScript 6 and leaves the decision to the user', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
-    const bin = stubTsc('exit 0', { version: 'Version 7.0.0' })
-    const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
+    const run = runHook(edit(folder, 'src/a.ts'), { path: stubTsc('exit 0', 'Version 7.0.0') })
     assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /Version 7\.0\.0/)
-    assert.match(context(run.stdout), /ask the user what to do/)
+    assert.match(message(run.stdout), /Version 7\.0\.0/)
+    assert.match(context(run.stdout), /the user's decision/)
   })
 
-  it('treats a --showConfig that is not JSON as a blind check', () => {
+  it('reports a tsc that stops with a signal as not checked', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': CLEAN }, false)
-    const bin = stubTsc('exit 0', { showConfig: 'not json' })
-    const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
+    const run = runHook(edit(folder, 'src/a.ts'), { path: stubTsc('kill -9 $$') })
     assert.equal(run.code, 0, run.stderr)
-    assert.match(context(run.stdout), /report this to the user/)
-  })
-
-  it('says the check may be incomplete when it cannot load the compiler to tell the phase', () => {
-    const folder = project(
-      { 'tsconfig.json': TSCONFIG, 'src/a.ts': CLEAN, 'src/o.ts': BROKEN },
-      false,
-    )
-    const bin = stubTsc(
-      'echo "$PWD/src/a.ts"; echo "$PWD/src/o.ts"; echo "src/o.ts(1,14): error TS2322: Nope."; exit 2',
-    )
-    const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /check may be incomplete/)
-    assert.doesNotMatch(output(run.stdout).systemMessage ?? '', /completed without diagnostics/)
-  })
-
-  it('reports a tsc that does not finish in time as not checked', () => {
-    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': CLEAN }, false)
-    const bin = stubTsc('sleep 5; exit 0')
-    const run = runHook(edit(folder, 'src/a.ts'), {
-      path: bin,
-      env: { TSC_CHECK_BUDGET_MS: '1000' },
-    })
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(output(run.stdout).systemMessage ?? '', /tsc check skipped/)
+    assert.match(message(run.stdout), /tsc stopped with status 137/)
   })
 
   it('fails explicitly on tsc output it cannot classify', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': CLEAN }, false)
-    const bin = stubTsc('echo "$PWD/src/a.ts"; echo "something tsc never prints"; exit 2')
+    const bin = stubTsc(
+      'echo "$PWD/src/a.ts"; echo "something tsc never prints"; echo "Check time: 0.1s"; exit 0',
+    )
     const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
     assert.equal(run.code, 1)
     assert.match(run.stderr, /could not classify/)
@@ -526,10 +556,15 @@ describe('tsc-check.sh with a stub or no compiler', { concurrency: true }, () =>
 
   it('fails explicitly when tsc fails without any diagnostic', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': CLEAN }, false)
-    const bin = stubTsc('exit 2')
-    const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
+    const run = runHook(edit(folder, 'src/a.ts'), { path: stubTsc('exit 2') })
     assert.equal(run.code, 1)
-    assert.match(run.stderr, /unhandled result/)
+    assert.match(run.stderr, /without a diagnostic/)
+  })
+
+  it('fails explicitly on input that is not JSON', () => {
+    const run = spawnSync(BASH, [HOOK], { input: 'not json', encoding: 'utf8' })
+    assert.equal(run.status, 1)
+    assert.match(run.stderr, /the hook failed/)
   })
 
   it('treats the turn reset as silent', () => {

@@ -2,7 +2,32 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|Bash",
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
+            "timeout": 120,
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit --pretty false --strict"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
+            "timeout": 120,
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit --pretty false --strict"
+          }
+        ]
+      }
+    ],
+    "PostToolBatch": [
+      {
         "hooks": [
           {
             "type": "command",
