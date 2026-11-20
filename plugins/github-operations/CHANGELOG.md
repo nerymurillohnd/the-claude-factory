@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- The `cc-github-actions` audit reads the workflow lockfile, `.github/workflows/actions.lock`, that GitHub's `gh actions-lock` extension writes. When the extension is installed, the audit runs `gh actions-lock --verify`, which changes no file. It never installs the extension.
+- New audit findings for repositories with a lockfile: a workflow whose actions are missing from the lockfile, which GitHub fails at run time; a local `./` action that the lockfile can't follow; an allowed-actions entry pinned to a tag, which no longer matches a locked workflow; and a lockfile with no code owner or no pull request check.
+- Repair of failing CI recognizes the `lockfile missing pin` error and fixes it by regenerating the lockfile, never by deleting it.
+
+### Changed
+
+- In a workflow the lockfile lists, `cc-github-actions` now writes a readable release tag, such as `actions/checkout@v7.0.1`, and regenerates the lockfile on the approved branch, instead of a commit SHA. GitHub now says the lockfile replaces SHA pinning for those workflows. Everywhere else, it still pins the full commit SHA with the tag as a comment: workflows the lockfile doesn't list, repositories without a lockfile, reusable workflows from another repository, steps of an `action.yml`, and GitHub Enterprise Server. If the extension isn't installed, the patch for a locked workflow waits, and the report gives you the command to run.
+- The version check of `anthropics/claude-code-action` reads the commit a locked workflow really runs from the lockfile, not from what the tag points to today.
+- A repository whose actions are all pinned by SHA but which has no lockfile gets a low finding that recommends adopting one. Adopting it is a separate step you approve, never part of a patch.
+
 ## [0.9.2] - 2026-11-20
 
 ### Changed
