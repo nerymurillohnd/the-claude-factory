@@ -31,7 +31,7 @@
 # not block: the user is told once per session (on every call without CLAUDE_PLUGIN_DATA, where
 # the hook may keep its marker) where it searched, and Claude is told the files were not checked.
 # Any other failure exits non-zero, which hooks.json turns into a block with onFailure. Every
-# message that reaches Claude ends with one line naming the plugin's ts-lifecycle skill, so a
+# message that reaches Claude ends with one line naming the plugin's ts-6-writing-and-navigation skill, so a
 # hook that checks is never taken for the whole workflow; the user-only systemMessage does not
 # carry it. Bash 3.2 or later; no jq, no Python. This file is byte-identical in
 # typescript6-lsp-intelligence and typescript7-lsp-intelligence.
@@ -57,7 +57,7 @@ readonly PLUGIN_ROOT
 PLUGIN="$(grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "${PLUGIN_ROOT}/.claude-plugin/plugin.json" \
   | head -n 1 | sed 's/.*:[[:space:]]*"\([^"]*\)"$/\1/')"
 readonly PLUGIN
-readonly SKILL_HINT="Use the ${PLUGIN}:ts-lifecycle skill and apply all its knowledge when working on TypeScript and JavaScript files."
+readonly SKILL_HINT="Use the ${PLUGIN}:ts-6-writing-and-navigation skill and apply all its knowledge when working on TypeScript and JavaScript files."
 # A mise shim whose tool is missing would install it; this hook installs nothing.
 export MISE_AUTO_INSTALL=false
 case "${PLUGIN}" in
@@ -613,7 +613,7 @@ program_of() {
 # the TypeScript version that introduced it (0 for options older than TypeScript 4.0, which no
 # compiler this hook runs lacks). Only options that hold in any project: nothing of the
 # environment (target, module, moduleResolution, lib, types, paths), which stays the project's.
-# skills/ts-lifecycle/scripts/run-fixtures.sh holds the same block; a test keeps them equal.
+# skills/ts-6-writing-and-navigation/scripts/run-fixtures.sh holds the same block; a test keeps them equal.
 readonly STRICT_POLICY="strict true 0
 noImplicitAny true 0
 strictNullChecks true 0

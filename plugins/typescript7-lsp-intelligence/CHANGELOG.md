@@ -8,11 +8,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- With each prompt you send, the plugin now tells Claude to call the `typescript7-lsp-intelligence:ts-lifecycle` skill with the Skill tool and apply it end to end, including its LSP and Grep steps, before it creates, writes or edits a TypeScript or JavaScript file, with any tool or command. A new `UserPromptSubmit` hook adds this short instruction to Claude's context; it sends nothing and writes nothing.
+- With each prompt you send, the plugin now tells Claude to call the `typescript7-lsp-intelligence:ts-7-writing-and-navigation` skill with the Skill tool and apply it end to end, including its LSP and Grep steps, before it creates, writes or edits a TypeScript or JavaScript file, with any tool or command. A new `UserPromptSubmit` hook adds this short instruction to Claude's context; it sends nothing and writes nothing.
+
+### Changed
+
+- **Breaking:** the skill is now `typescript7-lsp-intelligence:ts-7-writing-and-navigation`, instead of `typescript7-lsp-intelligence:ts-lifecycle`, a name that says what it does and which TypeScript version it is for. If you type the skill's command, use `/typescript7-lsp-intelligence:ts-7-writing-and-navigation` from now on; Claude finds it on its own as before.
 
 ### Removed
 
-- **Breaking:** the first TypeScript or JavaScript edit of a session no longer waits for the skill. The `PreToolUse` hook that denied the first Edit or Write call until Claude loaded `typescript7-lsp-intelligence:ts-lifecycle` is gone, together with the entries that only tracked it (`PostToolUse` on the Skill tool, `UserPromptExpansion` and `PostCompact`). Claude now gets the instructions above with each prompt instead of a denied edit. Nothing for you to do: the marker files it left in the plugin's data folder, under `skill-loads/`, are no longer read, and you can delete them.
+- **Breaking:** the first TypeScript or JavaScript edit of a session no longer waits for the skill. The `PreToolUse` hook that denied the first Edit or Write call until Claude loaded `typescript7-lsp-intelligence:ts-7-writing-and-navigation` is gone, together with the entries that only tracked it (`PostToolUse` on the Skill tool, `UserPromptExpansion` and `PostCompact`). Claude now gets the instructions above with each prompt instead of a denied edit. Nothing for you to do: the marker files it left in the plugin's data folder, under `skill-loads/`, are no longer read, and you can delete them.
 
 ## [0.5.0] - 2026-11-19
 

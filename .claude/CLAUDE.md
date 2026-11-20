@@ -93,7 +93,7 @@ Use these skills to write code in each language, keep its style, and explore and
 
 - Use `python-lsp-intelligence:python-lsp-intelligence` for all Python work.
 - Use `bash-lsp-intelligence:bash-lsp-intelligence` for all Bash work.
-- Use `typescript6-lsp-intelligence:ts-lifecycle` for all TypeScript and JavaScript work.
+- Use `typescript6-lsp-intelligence:ts-6-writing-and-navigation` for all TypeScript and JavaScript work.
 - Use `workflow-authoring` to write a Workflow script.
 
 ### Maintenance
