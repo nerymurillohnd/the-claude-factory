@@ -34,8 +34,8 @@
           {
             "type": "command",
             "shell": "bash",
-            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-reminder.txt\"",
-            "timeout": 10
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/python-lsp-skill-instructions.txt\"",
+            "timeout": 60
           }
         ]
       }

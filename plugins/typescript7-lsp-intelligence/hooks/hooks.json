@@ -33,8 +33,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-reminder.txt\"",
-            "timeout": 10
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/typescript7-lsp-skill-instructions.txt\"",
+            "timeout": 60
           }
         ]
       }
