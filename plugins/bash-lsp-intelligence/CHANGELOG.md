@@ -6,6 +6,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-20
+
+### Added
+
+- With each prompt you send, the plugin now tells Claude to call the `bash-lsp-intelligence:bash-lsp-intelligence` skill with the Skill tool and apply it end to end, including its LSP and Grep steps, before it creates, writes or edits a shell script, with any tool or command. A new `UserPromptSubmit` hook adds this short instruction to Claude's context; it sends nothing and writes nothing.
+
+### Changed
+
+- Post-edit hook messages: you now get one line after every check that says which tools ran on which files, whether shfmt reformatted any of them, and whether they found errors, or why nothing ran (a missing tool, a zsh script, more files than the hook checks). Claude now gets a message only when the tools find errors: the findings, and the instruction to load `bash-lsp-intelligence:bash-lsp-intelligence` with the Skill tool, audit them and fix them before continuing. A clean run, a reformat, a zsh script or a missing tool no longer adds anything to Claude's context.
+- A missing `shfmt` or `shellcheck` is now reported on every call instead of once per session, so the hook no longer writes marker files to the plugin's data folder; you can delete the `notices/` folder it left there.
+- The post-edit hook's matcher now lists NotebookEdit, like the other plugins' hooks. A notebook is never a shell script, so the hook exits without checking anything after a NotebookEdit call.
+- The post-edit hook no longer needs Node.js: `hooks/check.mjs` is replaced by `hooks/bash-gate.sh`, a Bash script (Bash 3.2 or later) that reads the event with POSIX `awk` and uses only `find`, `head`, `date`, `touch`, `mktemp`, `rm` and `cksum` besides `shfmt`, `shellcheck` and, when installed, `git`. What it checks and how it reports are unchanged. bash-language-server, the plugin's language server, still runs on Node.js.
+- When `shfmt` or `shellcheck` is missing, the message now gives the install command for your system: Homebrew or MacPorts on macOS; `apt`, `dnf`, `pacman`, `zypper` or `apk` on Linux, whichever is installed; otherwise the tool's own releases page.
+- When the hook itself fails (it crashes or runs past its 60 seconds), Claude now receives the error, as with a finding (`onFailure: "block"`), instead of the failure passing as a hook error notice.
+
+### Removed
+
+- **Breaking:** the first shell script edit of a session no longer waits for the skill. The `PreToolUse` hook that denied the first Edit or Write call until Claude loaded `bash-lsp-intelligence:bash-lsp-intelligence` is gone, together with the entries that only tracked it (`PostToolUse` on the Skill tool, `UserPromptExpansion` and `PostCompact`). Claude now gets the instructions above with each prompt instead of a denied edit. Nothing for you to do: the marker files it left in the plugin's data folder, under `skill-loads/`, are no longer read, and you can delete them.
+
 ## [0.3.0] - 2026-11-19
 
 ### Added
@@ -117,7 +136,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `bash-lsp-intelligence` skill: navigates shell code with the language server; traces direct and transitive `source` chains before trusting same-named functions; respects the script's real dialect; fixes ShellCheck and shfmt findings without changing quoting, globbing or exit-status behavior; and reports each check's status, the scripts covered and what stayed unverified.
 - Optional controls: a bundled runner checks ShellCheck and shfmt against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.3.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.4.0
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.3.0
 [0.2.9]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.9
 [0.2.8]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.8

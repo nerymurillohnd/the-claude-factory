@@ -4,12 +4,14 @@
 Reads one PostToolUse or PostToolUseFailure event on stdin, finds the Python files the
 tool call changed, runs the tools on each one with the user's own configuration (the
 plugin's defaults in hooks/defaults/ only when ruff or basedpyright would find none) and
-reports: exit 0 with a systemMessage when everything passed, stderr and exit 2 when there
-are findings or a tool failed on a file. Files of other languages are ignored in silence.
+reports in two places. The user always gets one systemMessage line saying which tools ran on
+which files, whether they reformatted any and whether they found errors, or why they did not
+run. Claude gets a message only when the tools found errors or failed on a file: the
+findings on stderr with exit 2, and the instruction to audit and fix them with the plugin's
+skill before continuing. Files of other languages are ignored in silence.
 
 The hook judges only what the tool call changed and never blocks because it cannot check:
-- A tool that is not installed gives one notice per session and exit 0; without
-  CLAUDE_PLUGIN_DATA, where the hook may keep its marker, the notice comes on every call.
+- A tool that is not installed is reported to the user on every call, with exit 0.
 - Files that a Bash command left under a nested Git work tree count only when Git lists
   them as modified, untracked or staged there, so a clone, a checkout or a pull is never checked.
 - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
@@ -19,7 +21,6 @@ Python 3.12 or later, standard library only.
 
 from __future__ import annotations
 
-import contextlib
 import hashlib
 import json
 import os
@@ -36,9 +37,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
 PLUGIN = "python-lsp-intelligence"
-# Closes every message Claude reads, so a hook that checks is never taken for the whole workflow.
-SKILL_HINT = (
-    f"Use the {PLUGIN}:{PLUGIN} skill and apply all its knowledge when working on Python files."
+# Closes the message Claude receives when the tools found errors.
+CLAUDE_INSTRUCTION = (
+    f'Use the Skill tool to load "{PLUGIN}:{PLUGIN}", audit these errors with it and fix them '
+    "before continuing with anything else."
 )
 PYTHON_SUFFIXES = frozenset({".py", ".pyi", ".pyw"})
 NOTEBOOK_SUFFIX = ".ipynb"
@@ -67,9 +69,6 @@ ABNORMAL_EXIT = 2
 DEFAULTS_DIR = Path(__file__).resolve().parent / "defaults"
 DEFAULTS_PYRIGHT = DEFAULTS_DIR / "pyrightconfig.json"
 INSTALL_HINTS = {"ruff": "uv tool install ruff", "basedpyright": "uv tool install basedpyright"}
-# The empty files that keep the "not installed" notice to once per session are deleted after this.
-NOTICE_MAX_AGE_S = 7 * 24 * 60 * 60
-SESSION_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
 
 
 class JsonObject(dict[str, object]):
@@ -465,68 +464,6 @@ def find_tools() -> Tools | str:
     return Tools(found["ruff"], found["basedpyright"])
 
 
-def announced(event: JsonObject, tool: str) -> bool:
-    """True when this session already got the notice about tool; else records it.
-
-    One empty file per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices. When that variable
-    is unset or empty the hook keeps no marker and creates, writes and deletes nothing, not
-    even in the temporary directory, which other users can write to: the notice then repeats.
-    """
-    data = os.environ.get("CLAUDE_PLUGIN_DATA", "")
-    if not data:
-        return False
-    session = SESSION_UNSAFE.sub("_", text_at(event, "session_id") or "unknown")
-    folder = Path(data) / "notices"
-    marker = folder / f"{session}.{tool}"
-    if marker.is_file():
-        return True
-    # Without a marker the notice repeats, which beats never telling the user.
-    with contextlib.suppress(OSError):
-        folder.mkdir(parents=True, exist_ok=True)
-        expired = time.time() - NOTICE_MAX_AGE_S
-        for old in folder.iterdir():
-            if old.is_file() and old.stat().st_mtime < expired:
-                old.unlink()
-        marker.touch()
-    return False
-
-
-def context_json(event: JsonObject, context: str, message: str = "") -> str:
-    """One JSON object that adds context for Claude and, with message, a line for the user."""
-    payload: dict[str, object] = {}
-    if message:
-        payload["systemMessage"] = message
-    payload["hookSpecificOutput"] = {
-        "hookEventName": text_at(event, "hook_event_name") or "PostToolUse",
-        "additionalContext": context,
-    }
-    return json.dumps(payload)
-
-
-def missing_notice(event: JsonObject, tool: str) -> str:
-    """The JSON stdout that says tool is not installed, once per session; "" afterwards."""
-    if announced(event, tool):
-        return ""
-    context = (
-        f"{PLUGIN}: {tool} is not installed, so the hook does not check the Python files "
-        f"changed in this session. Do not treat them as checked. {SKILL_HINT}"
-    )
-    message = (
-        f"{PLUGIN}: {tool} is not installed, so Python files are not checked. "
-        f"Install it: {INSTALL_HINTS[tool]}"
-    )
-    return context_json(event, context, message)
-
-
-def arrival_note(count: int) -> str:
-    """What Claude is told when a command left more loose files than the hook checks."""
-    return (
-        f"{PLUGIN}: this command left {count} Python files outside a Git work tree, more than "
-        f"the {MAX_FILES} the hook checks per command, so none of them was checked or "
-        "reformatted. If you edited them, run ruff check, ruff format and basedpyright on them."
-    )
-
-
 def bounded(text: str, reserve: int) -> str:
     """Cut text on a line boundary so it and reserve more characters fit under MAX_REPORT_CHARS.
 
@@ -556,51 +493,67 @@ def display(path: Path, base: Path | None) -> str:
     return str(path)
 
 
-def report(
+def names_of(paths: Iterable[Path], base: Path | None) -> str:
+    """The paths as a comma-separated list for a message."""
+    return ", ".join(display(path, base) for path in paths)
+
+
+def tools_run(checked: list[Path]) -> str:
+    """The tools the hook ran on checked: basedpyright skips notebooks."""
+    if all(path.suffix == NOTEBOOK_SUFFIX for path in checked):
+        return "ruff check --fix, ruff format"
+    return "ruff check --fix, ruff format, basedpyright"
+
+
+def user_message(parts: list[str]) -> str:
+    """The JSON stdout with the one line the user sees."""
+    return json.dumps({"systemMessage": f"{PLUGIN}: {' · '.join(parts)}"})
+
+
+def arrival_note(count: int) -> str:
+    """What the user is told when a command left more loose files than the hook checks."""
+    return (
+        f"not run on {count} Python files this command left outside a Git work tree "
+        f"(more than the {MAX_FILES} checked per tool call)"
+    )
+
+
+def outcome_parts(
     checked: list[Path],
     results: list[FileResult],
     unchecked: list[Path],
     base: Path | None,
-) -> str:
-    """The stderr text for findings, failures and unchecked files; "" when all is clean."""
-    parts = [text for result in results for text in (*result.findings, *result.failures)]
-    if unchecked:
-        names = "\n".join(f"  {display(path, base)}" for path in unchecked)
-        summary = f"{len(unchecked)} more Python files changed and were not checked"
-        parts.append(f"{summary}; run the toolchain on them:\n{names}")
-    if not parts:
-        return ""
-    names = ", ".join(display(path, base) for path in checked)
-    parts.append(f"Fix these findings in {names} before continuing; do not suppress them.")
-    return "\n".join(parts) + "\n"
-
-
-def success(
-    event: JsonObject,
-    checked: list[Path],
-    results: list[FileResult],
-    base: Path | None,
-    arrival: str,
-) -> str:
-    """The JSON stdout for a clean run: a systemMessage, plus the notes Claude must read.
-
-    The notes are the files ruff rewrote and arrival, the note about loose files left unchecked.
-    """
-    names = ", ".join(display(path, base) for path in checked)
-    notebooks_only = all(path.suffix == NOTEBOOK_SUFFIX for path in checked)
-    tools = "ruff check, ruff format" if notebooks_only else "ruff check, ruff format, basedpyright"
-    message = f"{PLUGIN}: {tools} passed · {names}"
-    rewritten = [
-        display(path, base) for index, path in enumerate(checked) if results[index].rewrote
+) -> list[str]:
+    """What the user is told after the tools ran: what ran, what was formatted, what was found."""
+    pairs = list(zip(checked, results, strict=True))
+    rewritten = [path for path, result in pairs if result.rewrote]
+    with_errors = [path for path, result in pairs if result.findings or result.failures]
+    parts = [
+        f"ran {tools_run(checked)} on {names_of(checked, base)}",
+        f"reformatted {names_of(rewritten, base)}" if rewritten else "no formatting changes",
+        f"errors in {names_of(with_errors, base)}, sent to Claude to fix"
+        if with_errors
+        else "no errors",
     ]
-    notes: list[str] = []
-    if rewritten:
-        notes.append(f"ruff reformatted {', '.join(rewritten)}; re-read before the next edit.")
-    if arrival:
-        notes.append(arrival)
-    if not notes:
-        return json.dumps({"systemMessage": message})
-    return context_json(event, " ".join([*notes, SKILL_HINT]), message)
+    if unchecked:
+        parts.append(
+            f"not run on {names_of(unchecked, base)} "
+            f"(more than the {MAX_FILES} checked per tool call)",
+        )
+    return parts
+
+
+def claude_report(checked: list[Path], results: list[FileResult], base: Path | None) -> str:
+    """The stderr text Claude receives when the tools found errors; "" when there are none."""
+    details = [text for result in results for text in (*result.findings, *result.failures)]
+    if not details:
+        return ""
+    head = (
+        f"{PLUGIN}'s post-edit hook ran {tools_run(checked)} on {names_of(checked, base)} "
+        "and found errors:\n"
+    )
+    body = bounded(head + "\n".join(details) + "\n", len(CLAUDE_INSTRUCTION) + 1)
+    return f"{body}{CLAUDE_INSTRUCTION}\n"
 
 
 def changed_python(event: JsonObject) -> tuple[list[Path], str]:
@@ -615,119 +568,33 @@ def changed_python(event: JsonObject) -> tuple[list[Path], str]:
     return [*verified, *loose], ""
 
 
-# The skill gate: the first edit of a Python file in a session, or in a subagent, waits until
-# Claude has loaded the plugin's skill. It denies that one edit, once, and lets every later edit
-# through, so a session that can't load skills is never locked out. The markers live in
-# ${CLAUDE_PLUGIN_DATA}/skill-loads; without that variable the gate does nothing.
-SKILL_NAMES = frozenset({PLUGIN, f"{PLUGIN}:{PLUGIN}"})
-GATE_DENIAL = (
-    f"{PLUGIN}: before the first Python edit of this session, load the {PLUGIN}:{PLUGIN} "
-    "skill with the Skill tool and apply it, then retry this edit. This check blocks only "
-    "the first edit; later edits go through."
-)
-
-
-def gate_marker(event: JsonObject, state: str) -> Path | None:
-    """The marker of state ("loaded" or "denied") for this session and agent, or None."""
-    data = os.environ.get("CLAUDE_PLUGIN_DATA", "")
-    session = text_at(event, "session_id")
-    if not data or not session:
-        return None
-    key = SESSION_UNSAFE.sub("_", f"{session}-{text_at(event, 'agent_id') or 'main'}")
-    return Path(data) / "skill-loads" / f"{key}.{state}"
-
-
-def touch_marker(marker: Path | None) -> None:
-    """Create marker, pruning markers older than NOTICE_MAX_AGE_S; a failure is ignored."""
-    if marker is None:
-        return
-    with contextlib.suppress(OSError):
-        marker.parent.mkdir(parents=True, exist_ok=True)
-        expired = time.time() - NOTICE_MAX_AGE_S
-        for old in marker.parent.iterdir():
-            if old.is_file() and old.stat().st_mtime < expired:
-                old.unlink()
-        marker.touch()
-
-
-def edited_python(event: JsonObject) -> bool:
-    """True when the edit tool call targets a Python file, judging a new file by its content."""
-    tool_input = event.get("tool_input")
-    name = text_at(tool_input, "file_path") or text_at(tool_input, "notebook_path")
-    if not name:
-        return False
-    path = Path(name.replace("\\", "/"))
-    if path.suffix or path.is_file():
-        return is_python(path)
-    return SHEBANG.match(text_at(tool_input, "content").partition("\n")[0]) is not None
-
-
-def first_edit_denial(event: JsonObject) -> str:
-    """The deny JSON for the session's first Python edit before the skill loaded; else ""."""
-    loaded, denied = gate_marker(event, "loaded"), gate_marker(event, "denied")
-    if loaded is None or denied is None or loaded.is_file() or denied.is_file():
-        return ""
-    if not edited_python(event):
-        return ""
-    touch_marker(denied)
-    decision = {"permissionDecision": "deny", "permissionDecisionReason": GATE_DENIAL}
-    return json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", **decision}})
-
-
-def forget_skill(event: JsonObject) -> None:
-    """Drop the session's markers, so the next Python edit asks for the skill again."""
-    for state in ("loaded", "denied"):
-        marker = gate_marker(event, state)
-        if marker is not None:
-            with contextlib.suppress(OSError):
-                marker.unlink(missing_ok=True)
-
-
-def gate(event: JsonObject) -> bool:
-    """Handle the skill gate's events; False for an event the post-edit check owns."""
-    match text_at(event, "hook_event_name"):
-        case "PreToolUse":
-            _ = sys.stdout.write(first_edit_denial(event))
-        case "PostToolUse" if text_at(event, "tool_name") == "Skill":
-            if text_at(event, "tool_input", "skill").lstrip("/") in SKILL_NAMES:
-                touch_marker(gate_marker(event, "loaded"))
-        case "UserPromptExpansion":
-            if text_at(event, "command_name").lstrip("/") in SKILL_NAMES:
-                touch_marker(gate_marker(event, "loaded"))
-        case "PostCompact":
-            # Compaction can drop the skill's text, so the next Python edit asks for it again.
-            forget_skill(event)
-        case _:
-            return False
-    return True
-
-
 def main() -> int:
-    """Entry point: exit 0 when clean or not applicable, 2 with findings or failures."""
+    """Entry point: exit 0 when clean or not applicable, 2 when the tools found errors."""
     event = read_event()
     if event is None:
         return 0
-    if gate(event):
-        return 0
     files, arrival = changed_python(event)
+    notes = [arrival] if arrival else []
     if not files:
-        if arrival:
-            _ = sys.stdout.write(context_json(event, f"{arrival} {SKILL_HINT}"))
+        if notes:
+            _ = sys.stdout.write(user_message(notes))
         return 0
+    base = project_dir(event)
     tools = find_tools()
     if isinstance(tools, str):
-        _ = sys.stdout.write(missing_notice(event, tools))
+        missing = (
+            f"not run on {names_of(files, base)}: {tools} is not installed "
+            f"(install it with {INSTALL_HINTS[tools]})"
+        )
+        _ = sys.stdout.write(user_message([missing, *notes]))
         return 0
     checked, unchecked = files[:MAX_FILES], files[MAX_FILES:]
     results = [check_file(path, tools) for path in checked]
-    base = project_dir(event)
-    text = report(checked, results, unchecked, base)
+    _ = sys.stdout.write(user_message([*outcome_parts(checked, results, unchecked, base), *notes]))
+    text = claude_report(checked, results, base)
     if text:
-        if arrival:
-            text = f"{text}{arrival}\n"
-        _ = sys.stderr.write(f"{bounded(text, len(SKILL_HINT) + 1)}{SKILL_HINT}\n")
+        _ = sys.stderr.write(text)
         return 2
-    _ = sys.stdout.write(success(event, checked, results, base, arrival))
     return 0
 
 

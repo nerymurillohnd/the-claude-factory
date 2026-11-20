@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-20
+
+### Added
+
+- With each prompt you send, the plugin now tells Claude to call the `python-lsp-intelligence:python-lsp-intelligence` skill with the Skill tool and apply it end to end, including its LSP and Grep steps, before it creates, writes or edits a Python file, with any tool or command. A new `UserPromptSubmit` hook adds this short instruction to Claude's context; it sends nothing and writes nothing.
+
+### Changed
+
+- Post-edit hook messages: you now get one line after every check that says which tools ran on which files, whether ruff reformatted any of them, and whether they found errors, or why nothing ran (a missing tool, more files than the hook checks). Claude now gets a message only when the tools find errors: the findings, and the instruction to load `python-lsp-intelligence:python-lsp-intelligence` with the Skill tool, audit them and fix them before continuing. A clean run, a reformat or a missing tool no longer adds anything to Claude's context.
+- A missing `ruff` or `basedpyright` is now reported on every call instead of once per session, so the hook no longer writes marker files to the plugin's data folder; you can delete the `notices/` folder it left there.
+- When the hook itself fails (`python3` can't start it, it crashes or it runs past its 60 seconds), Claude now receives the error, as with a finding (`onFailure: "block"`), instead of the failure passing as a hook error notice.
+
+### Removed
+
+- **Breaking:** the first Python edit of a session no longer waits for the skill. The `PreToolUse` hook that denied the first Edit, Write or NotebookEdit call until Claude loaded `python-lsp-intelligence:python-lsp-intelligence` is gone, together with the entries that only tracked it (`PostToolUse` on the Skill tool, `UserPromptExpansion` and `PostCompact`). Claude now gets the instructions above with each prompt instead of a denied edit. Nothing for you to do: the marker files it left in the plugin's data folder, under `skill-loads/`, are no longer read, and you can delete them.
+
 ## [0.4.0] - 2026-11-19
 
 ### Added
@@ -107,7 +123,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `python-lsp-intelligence` skill: navigates Python code with the language server; checks aliases, re-exports, entry points and dynamic consumers before a rename or deletion; fixes basedpyright and Ruff findings by validating untrusted data instead of casting, suppressing or weakening rules; and reports each check's status, the files covered and what stayed unverified.
 - Optional controls: a bundled runner checks basedpyright and Ruff against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.4.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.5.0...HEAD
+[0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.5.0
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.4.0
 [0.3.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.4
 [0.3.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.3

@@ -28,11 +28,11 @@
 > [!TIP]
 > **TL;DR** — Install ruff and basedpyright, add this plugin, and every Python file Claude edits comes back linted, formatted and type-checked with your own configuration, while Claude navigates your code by symbol instead of by text search.
 
-Python LSP Intelligence connects the basedpyright language server you install to Claude Code and adds a hook that runs ruff and basedpyright on every Python file Claude changes. Your own `ruff.toml`, `pyproject.toml` or `pyrightconfig.json` decides the rules; a strict baseline applies only when you have none. A skill teaches Claude to navigate by symbol, resolve aliases and imports before a rename, and fix findings instead of suppressing them.
+Python LSP Intelligence connects the basedpyright language server you install to Claude Code and adds a hook that runs ruff and basedpyright on every Python file Claude changes. Your own `ruff.toml`, `pyproject.toml` or `pyrightconfig.json` decides the rules; a strict baseline applies only when you have none. A skill teaches Claude to navigate by symbol, resolve aliases and imports before a rename, and fix findings instead of suppressing them. With each prompt you send, a second hook reminds Claude to load that skill before it creates, writes or edits a Python file.
 
 ## ✨ Why use it
 
-- **Every edit is checked, not just reported** — after each edit to a `.py`, `.pyi` or `.pyw` file, or to an extensionless script with a Python shebang, the plugin runs `ruff check --fix`, `ruff format` and `basedpyright` on that file; a `.ipynb` notebook gets `ruff check --fix` and `ruff format`. Findings go back to Claude as an error it must fix before moving on; a clean run shows you a one-line confirmation.
+- **Every edit is checked, not just reported** — after each edit to a `.py`, `.pyi` or `.pyw` file, or to an extensionless script with a Python shebang, the plugin runs `ruff check --fix`, `ruff format` and `basedpyright` on that file; a `.ipynb` notebook gets `ruff check --fix` and `ruff format`. When they find errors, Claude receives them with the instruction to load the skill, audit them and fix them before continuing. You see one line after every check: which tools ran on which files, whether ruff reformatted any, and whether they found errors, or why nothing ran.
 - **Your configuration, not the plugin's** — the tools read the `ruff.toml`, `pyproject.toml` or `pyrightconfig.json` your project already has, including your user-level ruff config. A strict baseline applies only when you have none.
 - **Type errors caught as Claude edits** — basedpyright's own diagnostics also reach Claude through the language server, so a missing import or a wrong return type is visible without running anything.
 - **Renames that don't miss callers** — Claude finds references by symbol, then checks `import … as` aliases, `__all__`, entry points, pytest fixtures and string-based lookups that a reference search can't see.
@@ -40,12 +40,12 @@ Python LSP Intelligence connects the basedpyright language server you install to
 
 ## 🧩 What's inside
 
-| Component     | Name                                                                 | What it does                                                                                                                                                                                               | How it runs                                                                                                                              |
-| :------------ | :------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| 🧠 LSP server | `basedpyright`                                                       | Connects `basedpyright-langserver` for `.py`, `.pyi` and `.pyw` files                                                                                                                                      | Automatically when Claude opens or edits a Python file                                                                                   |
-| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`                                 | Runs `ruff check --fix`, `ruff format` and `basedpyright` on the Python files an Edit, Write, NotebookEdit or Bash call changed                                                                            | Automatically after each Edit, Write, NotebookEdit or Bash call, and after a Bash call that fails                                        |
-| 🪝 Hook       | `PreToolUse` · `PostToolUse` · `UserPromptExpansion` · `PostCompact` | Denies the first Python edit of a session, once, until Claude has loaded the `python-lsp-intelligence:python-lsp-intelligence` skill; records when the skill loads, and asks for it again after compaction | Before the first Edit, Write or NotebookEdit call on a Python file in a session, and when a skill loads or the conversation is compacted |
-| 🎯 Skill      | `python-lsp-intelligence:python-lsp-intelligence`                    | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with ruff and basedpyright the way your project configures them                              | Automatically when you work on Python code, or `/python-lsp-intelligence:python-lsp-intelligence`                                        |
+| Component     | Name                                              | What it does                                                                                                                                                                                            | How it runs                                                                                       |
+| :------------ | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------ |
+| 🧠 LSP server | `basedpyright`                                    | Connects `basedpyright-langserver` for `.py`, `.pyi` and `.pyw` files                                                                                                                                   | Automatically when Claude opens or edits a Python file                                            |
+| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`              | Runs `ruff check --fix`, `ruff format` and `basedpyright` on the Python files an Edit, Write, NotebookEdit or Bash call changed                                                                         | Automatically after each Edit, Write, NotebookEdit or Bash call, and after a Bash call that fails |
+| 🪝 Hook       | `UserPromptSubmit`                                | Tells Claude to call the `python-lsp-intelligence:python-lsp-intelligence` skill with the Skill tool and apply it end to end before it creates, writes or edits a Python file, with any tool or command | Automatically with each prompt                                                                    |
+| 🎯 Skill      | `python-lsp-intelligence:python-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with ruff and basedpyright the way your project configures them                           | Automatically when you work on Python code, or `/python-lsp-intelligence:python-lsp-intelligence` |
 
 ## 📋 Prerequisites
 
@@ -59,6 +59,8 @@ Python LSP Intelligence connects the basedpyright language server you install to
 | Git (optional)     | —               | `git --version`          |
 
 Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `basedpyright-langserver`, which comes with basedpyright, by name, and the hook starts `ruff` and `basedpyright` by name. `python3` runs the hook, and Claude Code starts it with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`, and run the Python check from the table there.
+
+The plugin also uses `cat`, which comes with macOS and Linux.
 
 ### 🤖 Claude Code
 
@@ -263,13 +265,17 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install python-lsp-intelligence@the-claude-factory
 ```
 
-To confirm it works, ask Claude to add a type error to a Python file and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and a line like `python-lsp-intelligence: ruff check, ruff format, basedpyright passed · app/models.py` from the hook once the file is clean.
+To confirm it works, ask Claude to add a type error to a Python file and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and, once the file is clean, a line like this from the hook:
+
+```text
+python-lsp-intelligence: ran ruff check --fix, ruff format, basedpyright on app/models.py · no formatting changes · no errors
+```
 
 ## 🚀 Usage
 
 You don't need to call anything: the language server starts with the first Python file Claude edits, the hook runs after each edit, and the skill loads when you work on Python code.
 
-When the hook reports a finding or a file it couldn't check, its message also tells Claude to use the `python-lsp-intelligence:python-lsp-intelligence` skill and apply all its knowledge when working on Python files, so a passing check is never mistaken for the whole workflow.
+With each prompt you send, the plugin tells Claude to call the `python-lsp-intelligence:python-lsp-intelligence` skill and apply it end to end before it creates, writes or edits a Python file, with any tool or command. When the post-edit hook finds errors, or a tool fails on a file, Claude gets the findings and the instruction to load that skill, audit them and fix them before continuing with anything else. A clean run, a reformat or a missing tool adds nothing to Claude's context: the hook only tells you.
 
 ### Example: what happens after an edit
 
@@ -277,15 +283,16 @@ When the hook reports a finding or a file it couldn't check, its message also te
 Add a parse_config(path) function to app/config.py that returns the settings dict.
 ```
 
-**Result:** Claude writes the function. If ruff or basedpyright finds something, Claude sees it right away:
+**Result:** Claude writes the function. If ruff or basedpyright finds something, Claude receives it right away, with the instruction that closes the message:
 
 ```text
-basedpyright (app/config.py):
-  app/config.py:12:12 - error: Return type "dict[str, Unknown]" is partially unknown (reportUnknownVariableType)
-Fix these findings in app/config.py before continuing; do not suppress them.
+python-lsp-intelligence's post-edit hook ran ruff check --fix, ruff format, basedpyright on app/config.py and found errors:
+basedpyright (/path/to/project/app/config.py):
+  /path/to/project/app/config.py:12:12 - error: Return type "dict[str, Unknown]" is partially unknown (reportUnknownVariableType)
+Use the Skill tool to load "python-lsp-intelligence:python-lsp-intelligence", audit these errors with it and fix them before continuing with anything else.
 ```
 
-Claude fixes the type, the hook runs again, and the turn ends with `python-lsp-intelligence: ruff check, ruff format, basedpyright passed · app/config.py`.
+Claude fixes the type and the hook runs again. When the file is clean, you see `python-lsp-intelligence: ran ruff check --fix, ruff format, basedpyright on app/config.py · no formatting changes · no errors`.
 
 ### Example: rename a public function
 
@@ -325,13 +332,15 @@ Any configuration file of your own replaces the corresponding default entirely; 
 ## 🔍 What this plugin runs and sends
 
 - **Hooks:**
-  - `PostToolUse` on `Edit|Write|NotebookEdit|Bash` runs `python3 hooks/check.py` through `bash` (60-second limit), which runs `ruff check --fix`, `ruff format` and, except on notebooks, `basedpyright` on each Python file the call changed and tells Claude to fix what they find.
+  - `PostToolUse` on `Edit|Write|NotebookEdit|Bash` runs `python3 hooks/check.py` through `bash` (60-second limit), which runs `ruff check --fix`, `ruff format` and, except on notebooks, `basedpyright` on each Python file the call changed. It shows you one line saying which tools ran on which files, whether ruff reformatted any and whether they found errors, or why nothing ran. Only when the tools find errors, or fail on a file, does Claude get a message: the findings and the instruction to load the skill, audit them and fix them before continuing.
   - `PostToolUseFailure` on `Bash` runs the same script after a command that fails, so files a failed command changed are checked too.
+  - Both entries set `onFailure` to `block`: when the script can't start, crashes or runs past its 60 seconds, Claude receives the error as it does a finding.
+  - `UserPromptSubmit` runs `cat hooks/python-lsp-skill-instructions.txt` (60-second limit), which adds a short instruction to each prompt you send: before Claude creates, writes or edits a Python file, with any tool or command, it calls the `python-lsp-intelligence:python-lsp-intelligence` skill with the Skill tool and applies it end to end, including its LSP and Grep steps. It sends nothing and writes nothing.
 
-  To find the changed files of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` plus `git diff --cached --name-only --relative` (the staged files) in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). After that walk, a file inside a Git repository below your project counts only when those Git commands list it there, so a repository you clone, a branch you check out or a pull is never checked or reformatted. When the walk finds more than 20 Python files outside any Git repository, the hook checks none of them and tells Claude. From the list Claude Code passes, it drops the files Git ignores, which it finds with `git check-ignore --stdin -z`: what a command writes into an ignored folder, such as a build folder, is not checked or reformatted. It checks at most 20 files per call. For each one it runs `ruff check --show-settings` to see whether you have a ruff configuration, then `ruff check --fix`, `ruff format` and `basedpyright -p <config>`, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
+  To find the changed files of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` plus `git diff --cached --name-only --relative` (the staged files) in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). After that walk, a file inside a Git repository below your project counts only when those Git commands list it there, so a repository you clone, a branch you check out or a pull is never checked or reformatted. When the walk finds more than 20 Python files outside any Git repository, the hook checks none of them and tells you. From the list Claude Code passes, it drops the files Git ignores, which it finds with `git check-ignore --stdin -z`: what a command writes into an ignored folder, such as a build folder, is not checked or reformatted. It checks at most 20 files per call. For each one it runs `ruff check --show-settings` to see whether you have a ruff configuration, then `ruff check --fix`, `ruff format` and `basedpyright -p <config>`, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
-- **Files written:** `ruff check --fix` and `ruff format` rewrite the Python files they fix or format, in place. When you have no basedpyright configuration, the hook writes a `pyrightconfig.json` bound to your project into a temporary folder (`python-lsp-intelligence-*` under your system's temporary directory) and deletes it after the check. When ruff or basedpyright isn't installed, the hook writes one empty marker file per session and tool to `${CLAUDE_PLUGIN_DATA}/notices/`, so you get that notice once per session; it deletes markers older than 7 days. When that variable is unset or empty, the hook keeps no marker, in your system's temporary directory or anywhere else, so the notice repeats on every call. Nothing is written to your project's configuration.
+- **Files written:** `ruff check --fix` and `ruff format` rewrite the Python files they fix or format, in place. When you have no basedpyright configuration, the hook writes a `pyrightconfig.json` bound to your project into a temporary folder (`python-lsp-intelligence-*` under your system's temporary directory) and deletes it after the check. The plugin writes nothing to its data directory, and nothing to your project's configuration.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -367,7 +376,7 @@ Installed with `--scope project`:
 claude plugin uninstall python-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The data directory holds only the empty marker files under `notices/` that keep the missing-tool notice to once per session. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. The Python files ruff reformatted stay as they are. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 
@@ -408,20 +417,20 @@ which basedpyright-langserver
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The hook didn't find the tool, so it didn't check the file. It doesn't block Claude: you get one message per session that names the tool and its install command, for example:
+The hook didn't find the tool, so it didn't check the file. It doesn't block Claude: after every call that changed a Python file you get a line that names the files, the missing tool and its install command, for example:
 
 ```text
-python-lsp-intelligence: ruff is not installed, so Python files are not checked. Install it: uv tool install ruff
+python-lsp-intelligence: not run on app/models.py: ruff is not installed (install it with uv tool install ruff)
 ```
 
-Claude is told once that the files weren't checked. Install the tool on the `PATH` of the shell that starts `claude`; the next edit is checked.
+Claude is told nothing about it. Install the tool on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 
 <details>
 <summary><b>The hook reformatted a file I was editing.</b></summary>
 
-That is `ruff format` applying your (or the default) style. Claude is told to re-read the file before its next edit, so nothing is lost.
+That is `ruff format` (and `ruff check --fix`) applying your configuration, or the plugin's default when you have none. The hook's line names each file it reformatted.
 
 </details>
 
@@ -464,7 +473,6 @@ Through Git Bash: start Claude Code from a Git Bash shell that has `python3`, `r
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
-- 🐚 [Bash LSP Intelligence](../bash-lsp-intelligence/README.md) · 🟦 [TypeScript 7 LSP Intelligence](../typescript7-lsp-intelligence/README.md) · 🟦 [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md)
 - 📖 [Claude Code code intelligence docs](https://code.claude.com/docs/en/plugins/code-intelligence)
 - 📖 [basedpyright docs](https://docs.basedpyright.com/latest/) · [Ruff docs](https://docs.astral.sh/ruff/)
 

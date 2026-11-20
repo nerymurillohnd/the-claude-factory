@@ -42,12 +42,12 @@ TypeScript 7 LSP Intelligence connects the native TypeScript 7 language server y
 
 ## 🧩 What's inside
 
-| Component     | Name                                                                 | What it does                                                                                                                                                                                                                                                                                                                             | How it runs                                                                                                                                  |
-| :------------ | :------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🧠 LSP server | `typescript`                                                         | Starts your TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files                                                                                                                                                                                                          | Automatically when Claude opens or edits one of those files                                                                                  |
-| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`                                 | Runs your native `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed                                                                                                                                                  | Automatically after each Edit, Write, Bash or PowerShell call, and after a Bash or PowerShell call that fails                                |
-| 🪝 Hook       | `PreToolUse` · `PostToolUse` · `UserPromptExpansion` · `PostCompact` | Denies the first TypeScript or JavaScript edit of a session, once, until Claude has loaded the `typescript7-lsp-intelligence:ts-lifecycle` skill; records when the skill loads, and asks for it again after compaction                                                                                                                   | Before the first Edit or Write call on a TypeScript or JavaScript file in a session, and when a skill loads or the conversation is compacted |
-| 🎯 Skill      | `typescript7-lsp-intelligence:ts-lifecycle`                          | Teaches Claude that the TypeScript 7 server pushes no diagnostics for your source files, to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:ts-lifecycle`                                     |
+| Component     | Name                                                       | What it does                                                                                                                                                                                                                                                                                                                             | How it runs                                                                                                             |
+| :------------ | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| 🧠 LSP server | `typescript`                                               | Starts your TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files                                                                                                                                                                                                          | Automatically when Claude opens or edits one of those files                                                             |
+| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`                       | Runs your native `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed                                                                                                                                                  | Automatically after each Edit, Write, Bash or PowerShell call, and after a Bash or PowerShell call that fails           |
+| 🪝 Hook       | `UserPromptSubmit`                                         | Tells Claude to call the `typescript7-lsp-intelligence:ts-7-writing-and-navigation` skill with the Skill tool and apply it end to end before it creates, writes or edits a TypeScript or JavaScript file, with any tool or command                                                                                                       | Automatically with each prompt                                                                                          |
+| 🎯 Skill      | `typescript7-lsp-intelligence:ts-7-writing-and-navigation` | Teaches Claude that the TypeScript 7 server pushes no diagnostics for your source files, to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:ts-7-writing-and-navigation` |
 
 ## 📋 Prerequisites
 
@@ -59,7 +59,7 @@ TypeScript 7 LSP Intelligence connects the native TypeScript 7 language server y
 | Node.js        | 16.20.0         | `node --version`   |
 | Git (optional) | —               | `git --version`    |
 
-The plugin also uses `sed`, `awk`, `grep`, `tr`, `cut`, `head`, `sort`, `find`, `dirname`, `mktemp` and `date`, which come with macOS and Linux.
+The plugin also uses `sed`, `awk`, `grep`, `tr`, `cut`, `head`, `sort`, `find`, `dirname`, `mktemp`, `date` and `cat`, which come with macOS and Linux.
 
 The language server is a global TypeScript 7 `tsc` on the `PATH` of the shell you start `claude` from; the hook uses your project's TypeScript in `node_modules` first, then the global one. Node.js runs the `tsc` command that starts the language server; the hook runs the native compiler without it. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship. Git is optional: in a Git repository the hook asks Git which files a Bash or PowerShell command changed, and without it the hook compares modification times. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
 
@@ -82,7 +82,7 @@ winget install --id Git.Git -e --source winget
 
 ### 🟦 TypeScript 7
 
-If your project is still on TypeScript 6, install [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) instead.
+The plugin is for projects on TypeScript 7.
 
 <details>
 <summary>🌐 <b>npm, global</b> — any platform</summary>
@@ -196,14 +196,13 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 
 To confirm it works, ask Claude to add a type error to a TypeScript file and fix it. The hook reports the error under the edit and, once the file is clean, a line like `typescript7-lsp-intelligence: tsc <version> · the edited files pass the strictest policy · src/app.ts`.
 
-> [!IMPORTANT]
-> Enable only one TypeScript plugin at a time. Each file extension gets one language server: with this plugin and `typescript6-lsp-intelligence` (or the official `typescript-lsp`) both enabled, only the first registered serves `.ts` files and `/plugin` → **Errors** shows the other isn't used.
+Enable only one plugin that serves TypeScript files at a time. Each file extension gets one language server: with this plugin and another TypeScript language server plugin both enabled, only the first registered serves `.ts` files and `/plugin` → **Errors** shows the other isn't used.
 
 ## 🚀 Usage
 
-You don't need to call anything: the language server starts with the first TypeScript file Claude edits, the hook runs after each edit, and the skill loads when you work on TypeScript or JavaScript.
+You don't need to call anything: the language server starts with the first TypeScript file Claude edits, the hook runs after each edit, and the skill loads when you work on TypeScript or JavaScript. With each prompt you send, a hook also reminds Claude to load the skill before it creates, writes or edits a TypeScript or JavaScript file.
 
-When the hook reports an error or a file it couldn't check, its message also tells Claude to use the `typescript7-lsp-intelligence:ts-lifecycle` skill and apply all its knowledge when working on TypeScript and JavaScript files, so a passing or failing check is never mistaken for the whole workflow.
+When the hook reports an error or a file it couldn't check, its message also tells Claude to use the `typescript7-lsp-intelligence:ts-7-writing-and-navigation` skill and apply all its knowledge when working on TypeScript and JavaScript files, so a passing or failing check is never mistaken for the whole workflow.
 
 ### Example: what happens after an edit
 
@@ -278,10 +277,11 @@ The plugin never edits your `tsconfig.json`. The only one it creates in your pro
 - **Hooks:**
   - `PostToolUse` on `Edit|Write|Bash|PowerShell` runs `bash hooks/tsc-check.sh` (120-second limit), which type-checks each TypeScript or JavaScript file the call changed with your native `tsc --noEmit` under the strictest policy and tells Claude what to fix; if the hook can't start, the edit is blocked.
   - `PostToolUseFailure` on `Bash|PowerShell` runs the same script after a command that fails, so files a failed command changed are checked too.
+  - `UserPromptSubmit` runs `cat hooks/typescript7-lsp-skill-instructions.txt` (60-second limit), which adds a short instruction to each prompt you send: before Claude creates, writes or edits a TypeScript or JavaScript file, with any tool or command, it calls the `typescript7-lsp-intelligence:ts-7-writing-and-navigation` skill with the Skill tool and applies it end to end, including its LSP and Grep steps. It sends nothing and writes nothing.
 
   To find the changed files of a Bash or PowerShell call, the script uses the list Claude Code passes, plus, when that list is missing, incomplete or at its 200-path cap, `git ls-files --modified --others --exclude-standard` and `git diff --cached --name-only` in a Git repository, or `find` for files changed since the command started otherwise (at most 20,000, never in your home folder or the disk root). After that `find`, a file inside a Git repository below your project counts only when the same Git commands list it there, so a repository you clone, a branch you check out or a pull is never type-checked. When the `find` gives more than 20 TypeScript or JavaScript files outside any Git repository, the hook checks none of them and tells Claude. From the list Claude Code passes, it drops the files Git ignores, which it finds with `git check-ignore -q`: what a command writes into an ignored folder, such as a build folder, is not type-checked. It looks for `tsc` in your project's `node_modules`, on your `PATH` and in the folders of common Node version managers, and installs nothing. It runs your native `tsc --showConfig` to read your config chain, `tsc --noEmit -p <config>` with the strictest policy and, when other files have errors, `tsc --noEmit -p <config>` again under your own config. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
-- **Network:** the hook makes no network calls. The skill tells Claude to read official docs and release notes through the first that works: WebFetch or WebSearch, `curl` to the official domain (such as typescriptlang.org), or `gh` on the official GitHub repository (such as `microsoft/TypeScript`). Each runs under your own permission rules.
+- **Network:** the hooks make no network calls. The skill tells Claude to read official docs and release notes through the first that works: WebFetch or WebSearch, `curl` to the official domain (such as typescriptlang.org), or `gh` on the official GitHub repository (such as `microsoft/TypeScript`). Each runs under your own permission rules.
 - **Files written:** the hook writes its temporary configs and build-info files to a temporary folder and deletes it when it exits. When no usable compiler is found, it writes one empty marker file per session to `${CLAUDE_PLUGIN_DATA}/notices/`, so you get that notice once per session. When that variable is unset or empty, it keeps no marker, in `$TMPDIR`, `/tmp` or anywhere else, so the notice repeats on every call. The skill's `scripts/run-fixtures.sh` creates one `lsp-fixture-XXXXXX/` folder at a time in your program's `rootDir`, or beside the owning `tsconfig.json`; each holds a fixture `.ts` file and its own `tsconfig.json`, which extends yours, and the script deletes it after the check. With `--outside`, it uses a temporary folder outside your project instead. Claude Code asks you before the skill runs this script; choose **Yes, and don't ask again** to let it run the script without asking. Neither the hook nor the skill edits your source files or your `tsconfig.json`.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
@@ -348,7 +348,7 @@ Run `/reload-plugins`, then type `/typescript7-lsp-intelligence:` to list its sk
 <details>
 <summary><b>Which TypeScript does the hook check with?</b></summary>
 
-Whichever TypeScript it finds, your project's copy first, then the global one. It doesn't compare versions, so keep the plugin and your TypeScript on the same major version: on TypeScript 6, use [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) instead.
+Whichever TypeScript it finds, your project's copy first, then the global one. It doesn't compare versions, so keep your project on TypeScript 7, the version this plugin is for.
 
 </details>
 
@@ -370,7 +370,7 @@ This plugin fits it: the project's `tsc` is TypeScript 7, and the hook runs its 
 npm install -g typescript@7
 ```
 
-Only one global `tsc` can be on your `PATH`. In this setup [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) needs a global `typescript@6`, and this plugin a global `typescript@7`, so if you work on projects of both majors, keep only one of the two plugins enabled at a time, with the global TypeScript that plugin asks for. To turn this plugin off:
+Only one global `tsc` can be on your `PATH`, and this plugin needs it to be TypeScript 7. If you also work on projects that use another major version, turn this plugin off while you do. To turn this plugin off:
 
 ```bash
 claude plugin disable typescript7-lsp-intelligence@the-claude-factory
@@ -381,8 +381,6 @@ To turn it on again:
 ```bash
 claude plugin enable typescript7-lsp-intelligence@the-claude-factory
 ```
-
-Turn TypeScript 6 LSP Intelligence off and on the same way, with its own name.
 
 </details>
 
@@ -450,7 +448,6 @@ Through Git Bash: start Claude Code from a Git Bash shell that has Node.js and a
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
-- 🟦 [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) for projects that can't move to TypeScript 7 yet · 🐍 [Python LSP Intelligence](../python-lsp-intelligence/README.md) · 🐚 [Bash LSP Intelligence](../bash-lsp-intelligence/README.md)
 - 📖 [Claude Code code intelligence docs](https://code.claude.com/docs/en/plugins/code-intelligence)
 - 📖 [TSConfig reference](https://www.typescriptlang.org/tsconfig/)
 

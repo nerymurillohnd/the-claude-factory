@@ -6,6 +6,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-20
+
+### Added
+
+- With each prompt you send, the plugin now tells Claude to call the `typescript6-lsp-intelligence:ts-6-writing-and-navigation` skill with the Skill tool and apply it end to end, including its LSP and Grep steps, before it creates, writes or edits a TypeScript or JavaScript file, with any tool or command. A new `UserPromptSubmit` hook adds this short instruction to Claude's context; it sends nothing and writes nothing.
+
+### Changed
+
+- **Breaking:** the post-edit check now runs your project's own `tsc --noEmit --pretty false --strict` after each Edit, Write or Bash call that changes a TypeScript or JavaScript file, and once more when a batch of parallel tool calls ends, so a file that one check misses during a parallel edit is still checked. `--strict` is deliberate: it applies the strict family even where your `tsconfig.json` sets `"strict": false`, while a strict option you set explicitly keeps its value. Beyond that, tsc loads your `tsconfig.json` as it does from a terminal, starting from the edited file's folder; with no `tsconfig.json` above the file, it checks the edited TypeScript files with the compiler's defaults. The plugin no longer applies its own strictest policy.
+- **Breaking:** Claude gets every error in a TypeScript or JavaScript file it changed since your last prompt, with where each issue is and the `typescript6-lsp-intelligence:ts-6-writing-and-navigation` skill to fix them with. Errors only in files Claude did not change let it continue, and you see how many there are.
+- Every run tells you what it did: the compiler it used, its version and folder, and whether the check passed, found issues, or could not run. tsc itself says whether it type-checked: when its `--extendedDiagnostics` report shows no check time, because of a broken `tsconfig.json`, a missing type library, a syntax error in another file or `noCheck`, you are told the changed files were not type-checked, with the errors that stopped it. A changed file your `tsconfig.json` leaves out, including under a `tsconfig.json` that only lists `references`, is named as not type-checked. A tsc that is not TypeScript 6 is not used, and the choice of what to do is left to you.
+- **Breaking:** the hook no longer runs after PowerShell calls or after a Bash call that fails, and after a Bash call it sees only the files Claude Code lists as changed, which it records in auto and bypassPermissions mode or when `bashEditDiffEnabled` is on. It does not tell you when `skipLibCheck` skips a changed `.d.ts` file or when a changed JavaScript file has neither `checkJs` nor `// @ts-check`. Yarn Plug'n'Play projects, which have no `node_modules/.bin/tsc`, use the first `tsc` on your `PATH`.
+- **Breaking:** the hook runs on macOS and Linux only; Windows is not supported.
+- **Breaking:** the skill is now `typescript6-lsp-intelligence:ts-6-writing-and-navigation`, instead of `typescript6-lsp-intelligence:ts-lifecycle`, a name that says what it does and which TypeScript version it is for. If you type the skill's command, use `/typescript6-lsp-intelligence:ts-6-writing-and-navigation` from now on; Claude finds it on its own as before.
+
+### Removed
+
+- **Breaking:** the first TypeScript or JavaScript edit of a session no longer waits for the skill. The `PreToolUse` hook that denied the first Edit or Write call until Claude loaded `typescript6-lsp-intelligence:ts-6-writing-and-navigation` is gone, together with the entries that only tracked it (`PostToolUse` on the Skill tool, `UserPromptExpansion` and `PostCompact`). Claude now gets the instructions above with each prompt instead of a denied edit. Nothing for you to do: the marker files it left in the plugin's data folder, under `skill-loads/`, are no longer read, and you can delete them.
+
 ## [0.4.0] - 2026-11-19
 
 ### Added
@@ -117,7 +136,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Post-edit hook: after each Edit, Write or Bash call, the pinned `tsc --noEmit` checks the `tsconfig.json` program of every TypeScript or JavaScript file it changed; errors in the edited file first, breakage elsewhere in the program after, a file outside every program reported, compiler defaults when no `tsconfig.json` exists.
 - `typescript6-lsp-intelligence` skill: LSP operations first with a routing table against Grep, five checks before trusting a reference result, the blind spots to grep, an impact checklist for renames and deletions, server gotchas verified on fixtures, and a `toolchain.md` reference for the pinned compiler, TypeScript 6 vs 7, configuration, a strict profile, CI and IDE.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript6-lsp-intelligence--v0.4.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript6-lsp-intelligence--v0.5.0...HEAD
+[0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.5.0
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.4.0
 [0.3.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.3.6
 [0.3.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.3.5

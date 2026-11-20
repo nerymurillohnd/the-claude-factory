@@ -93,7 +93,15 @@
       "Read",
       "Edit",
       "Write",
-      "Bash"
+      "Bash",
+      "Bash(curl *://github.com/*)",
+      "Bash(curl *://*.github.com/*)",
+      "Bash(curl *://cloudflare.com/*)",
+      "Bash(curl *://*.cloudflare.com/*)",
+      "Bash(curl *://claude.com/*)",
+      "Bash(curl *://*.claude.com/*)",
+      "Bash(curl *://google.com/*)",
+      "Bash(curl *://*.google.com/*)"
     ],
     "ask": [
       "Bash(git push*)",

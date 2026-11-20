@@ -2,25 +2,15 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|Bash",
+        "matcher": "Edit|Write|NotebookEdit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/bash-gate.sh\"",
             "shell": "bash",
             "timeout": 60,
-            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts"
-          }
-        ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
-            "shell": "bash",
-            "timeout": 10
+            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts",
+            "onFailure": "block"
           }
         ]
       }
@@ -31,47 +21,23 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/bash-gate.sh\"",
             "shell": "bash",
             "timeout": 60,
-            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts"
+            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts",
+            "onFailure": "block"
           }
         ]
       }
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
-            "shell": "bash",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "UserPromptExpansion": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/bash-lsp-skill-instructions.txt\"",
             "shell": "bash",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
-            "shell": "bash",
-            "timeout": 10
+            "timeout": 60
           }
         ]
       }

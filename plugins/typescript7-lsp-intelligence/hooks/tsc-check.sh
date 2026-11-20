@@ -18,8 +18,8 @@
 #
 # The compiler is the user's own: the project's node_modules first, then a global install
 # found on PATH or in the folders of the common Node version managers, since hooks do not
-# load the user's shell profile. Nothing is installed. typescript7-lsp-intelligence runs the
-# native compiler directly; typescript6-lsp-intelligence runs tsc on Node.
+# load the user's shell profile. Nothing is installed. This plugin runs the native compiler
+# directly.
 #
 # The hook judges only what the tool call changed. Files that a Bash command left under a nested
 # Git work tree count only when Git lists them as modified, untracked or staged there, so a
@@ -31,10 +31,9 @@
 # not block: the user is told once per session (on every call without CLAUDE_PLUGIN_DATA, where
 # the hook may keep its marker) where it searched, and Claude is told the files were not checked.
 # Any other failure exits non-zero, which hooks.json turns into a block with onFailure. Every
-# message that reaches Claude ends with one line naming the plugin's ts-lifecycle skill, so a
+# message that reaches Claude ends with one line naming the plugin's ts-7-writing-and-navigation skill, so a
 # hook that checks is never taken for the whole workflow; the user-only systemMessage does not
-# carry it. Bash 3.2 or later; no jq, no Python. This file is byte-identical in
-# typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+# carry it. Bash 3.2 or later; no jq, no Python.
 
 set -euo pipefail
 
@@ -57,7 +56,7 @@ readonly PLUGIN_ROOT
 PLUGIN="$(grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "${PLUGIN_ROOT}/.claude-plugin/plugin.json" \
   | head -n 1 | sed 's/.*:[[:space:]]*"\([^"]*\)"$/\1/')"
 readonly PLUGIN
-readonly SKILL_HINT="Use the ${PLUGIN}:ts-lifecycle skill and apply all its knowledge when working on TypeScript and JavaScript files."
+readonly SKILL_HINT="Use the ${PLUGIN}:ts-7-writing-and-navigation skill and apply all its knowledge when working on TypeScript and JavaScript files."
 # A mise shim whose tool is missing would install it; this hook installs nothing.
 export MISE_AUTO_INSTALL=false
 case "${PLUGIN}" in
@@ -476,7 +475,7 @@ use_tsc() {
 # file gets its own, so files of different packages run their own compilers. In the
 # TypeScript 6 and 7 side-by-side setup ("typescript": "npm:@typescript/typescript6", plus
 # "@typescript/native": "npm:typescript@^7"), TypeScript 6 installs as tsc6 and tsc is 7:
-# typescript6-lsp-intelligence tries tsc6 first, typescript7-lsp-intelligence never does.
+# with NATIVE set, as in this plugin, the hook never runs tsc6.
 find_tsc() {
   local dir candidate names=()
   set_tsc ""
@@ -613,7 +612,7 @@ program_of() {
 # the TypeScript version that introduced it (0 for options older than TypeScript 4.0, which no
 # compiler this hook runs lacks). Only options that hold in any project: nothing of the
 # environment (target, module, moduleResolution, lib, types, paths), which stays the project's.
-# skills/ts-lifecycle/scripts/run-fixtures.sh holds the same block; a test keeps them equal.
+# skills/ts-7-writing-and-navigation/scripts/run-fixtures.sh holds the same block; a test keeps them equal.
 readonly STRICT_POLICY="strict true 0
 noImplicitAny true 0
 strictNullChecks true 0
@@ -1191,97 +1190,8 @@ emit() {
 
 # ── Main ────────────────────────────────────────────────────────────────────────────────
 
-# ── Skill gate ──────────────────────────────────────────────────────────────────────────────
-# The first edit of a TypeScript or JavaScript file in a session, or in a subagent, waits until
-# Claude has loaded the plugin's ts-lifecycle skill. The gate denies that one edit, once, and lets
-# every later edit through, so a session that can't load skills is never locked out. The markers
-# live in ${CLAUDE_PLUGIN_DATA}/skill-loads; without that variable the gate does nothing.
-
-readonly GATE_DENIAL="${PLUGIN}: before the first TypeScript or JavaScript edit of this session, load the ${PLUGIN}:ts-lifecycle skill with the Skill tool and apply it, then retry this edit. This check blocks only the first edit; later edits go through."
-readonly GATE_FILE_PATTERN='(\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)|(^|/)[tj]sconfig(\.[^/]*)?\.json)$'
-readonly GATE_MAX_AGE_DAYS=7
-
-# Sets MARKER to the marker of state $1 (loaded or denied) for this session and agent, or to
-# empty when the gate is off.
-MARKER=""
-gate_marker() {
-  local session key
-  MARKER=""
-  json_string session_id
-  session="${VALUE}"
-  [[ -n ${CLAUDE_PLUGIN_DATA:-} && -n ${session} ]] || return 0
-  json_string agent_id
-  key="$(printf '%s' "${session}-${VALUE:-main}" | LC_ALL=C tr -c 'A-Za-z0-9_-' '_')"
-  MARKER="${CLAUDE_PLUGIN_DATA}/skill-loads/${key}.$1"
-}
-
-# Creates MARKER, pruning markers older than GATE_MAX_AGE_DAYS. A marker that can't be written
-# only lets the gate deny once more.
-touch_marker() {
-  local folder="${MARKER%/*}"
-  [[ -n ${MARKER} ]] || return 0
-  mkdir -p "${folder}" 2> /dev/null || return 0
-  if ! find "${folder}" -type f -mtime +"${GATE_MAX_AGE_DAYS}" -exec rm -f {} + 2> /dev/null; then
-    : # An old marker that stays only takes a few bytes.
-  fi
-  : 2> /dev/null > "${MARKER}" || return 0
-}
-
-# Records a load when $1, from the Skill tool or a typed command, names this plugin's skill.
-record_load() {
-  local name="${1#/}"
-  [[ ${name} == ts-lifecycle || ${name} == "${PLUGIN}:ts-lifecycle" ]] || return 0
-  gate_marker loaded
-  touch_marker
-}
-
-# Handles the skill gate's events. Sets GATED to yes, or to no for an event the post-edit
-# check owns.
-GATED=no
-gate() {
-  local path
-  GATED=yes
-  json_string hook_event_name
-  case "${VALUE}" in
-    PreToolUse)
-      json_member tool_input file_path
-      path="${VALUE//\\//}"
-      [[ -n ${path} && ${path} =~ ${GATE_FILE_PATTERN} ]] || return 0
-      gate_marker loaded
-      [[ -n ${MARKER} && ! -f ${MARKER} ]] || return 0
-      gate_marker denied
-      [[ ! -f ${MARKER} ]] || return 0
-      touch_marker
-      json_escape "${GATE_DENIAL}"
-      printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}' \
-        "${ESCAPED}"
-      ;;
-    PostToolUse)
-      json_string tool_name
-      if [[ ${VALUE} != Skill ]]; then
-        GATED=no
-        return 0
-      fi
-      json_member tool_input skill
-      record_load "${VALUE}"
-      ;;
-    UserPromptExpansion)
-      json_string command_name
-      record_load "${VALUE}"
-      ;;
-    PostCompact)
-      # Compaction can drop the skill's text, so the next edit asks for it again.
-      gate_marker loaded
-      [[ -z ${MARKER} ]] || rm -f "${MARKER}" "${MARKER%.loaded}.denied"
-      ;;
-    *) GATED=no ;;
-  esac
-}
-
 main() {
   local raw path files="" file keys="" listed key group passed="" unchecked="" left_out="" used=""
-  gate
-  [[ ${GATED} == no ]] || return 0
   json_string tool_name
   if [[ -z ${VALUE} ]]; then
     echo "${PLUGIN}: the hook event has no tool_name; it is not the JSON Claude Code sends" >&2

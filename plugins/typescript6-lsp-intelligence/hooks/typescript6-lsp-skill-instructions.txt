@@ -1,0 +1,4 @@
+Follow these instructions before, when and throughout creating, writing or editing TypeScript or JavaScript files (*.ts, *.tsx, *.mts, *.cts, *.js, *.jsx, *.mjs, *.cjs, tsconfig.json, jsconfig.json) of a TypeScript 6 project, with any tool or command:
+- Use the Skill tool to call "typescript6-lsp-intelligence:ts-6-writing-and-navigation".
+- Apply the skill end to end, including its LSP and Grep steps.
+Skipping these steps is a serious defect.

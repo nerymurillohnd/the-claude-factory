@@ -2,72 +2,55 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 120,
-            "onFailure": "block",
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on each changed TypeScript/JavaScript file, project environment and strictest policy"
-          }
-        ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 120,
-            "onFailure": "block",
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on each changed TypeScript/JavaScript file, project environment and strictest policy"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
         "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 10
+            "timeout": 120,
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit --pretty false --strict"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
+            "timeout": 120,
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit --pretty false --strict"
           }
         ]
       }
     ],
-    "UserPromptExpansion": [
+    "PostToolBatch": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 10
+            "timeout": 120,
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit --pretty false --strict"
           }
         ]
       }
     ],
-    "PostCompact": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 10
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/typescript6-lsp-skill-instructions.txt\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\" --new-turn",
+            "timeout": 60
           }
         ]
       }
