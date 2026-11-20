@@ -1,6 +1,0 @@
-{
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": "Follow these instructions before, when and throughout creating, writing or editing shell scripts (*.sh, *.bash, or a sh or bash script), with any tool or command:\n- Use the Skill tool to call \"bash-lsp-intelligence:bash-lsp-intelligence\".\n- Apply the skill end to end, including its LSP and Grep steps.\nSkipping these steps is a serious defect."
-  }
-}

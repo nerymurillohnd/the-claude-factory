@@ -34,7 +34,7 @@
           {
             "type": "command",
             "shell": "bash",
-            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/prompt-context.json\"",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-reminder.txt\"",
             "timeout": 10
           }
         ]

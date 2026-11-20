@@ -1,0 +1,4 @@
+Follow these instructions before, when and throughout creating, writing or editing Python files (*.py, *.pyi, *.pyw, *.ipynb), with any tool or command:
+- Use the Skill tool to call "python-lsp-intelligence:python-lsp-intelligence".
+- Apply the skill end to end, including its LSP and Grep steps.
+Skipping these steps is a serious defect.
