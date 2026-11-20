@@ -27,6 +27,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/prompt-context.json\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

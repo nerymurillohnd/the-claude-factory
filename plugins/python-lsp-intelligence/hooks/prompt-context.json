@@ -1,0 +1,6 @@
+{
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptSubmit",
+    "additionalContext": "The python-lsp-intelligence plugin is installed. Its python-lsp-intelligence:python-lsp-intelligence skill governs every creation, write or edit of a Python file (*.py, *.pyi, *.pyw, *.ipynb, or a script with a Python shebang), whichever tool makes the change: Edit, Write, NotebookEdit, or a Bash or PowerShell command (a redirect, sed -i, tee, or a script or generator that writes the file). Before the first such change in this conversation, load python-lsp-intelligence:python-lsp-intelligence with the Skill tool unless its instructions are still in your context, and apply it to every such change."
+  }
+}
