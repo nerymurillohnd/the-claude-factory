@@ -23,7 +23,7 @@
 
 ---
 
-💻 **Claude Code only** — it connects a language server, and only Claude Code runs language servers. Claude can install it, but there the language server doesn't start and the post-edit hook runs only where Claude can run tasks and finds `node`, `shfmt` and `shellcheck`.
+💻 **Claude Code only** — it connects a language server, and only Claude Code runs language servers. Claude can install it, but there the language server doesn't start and the post-edit hook runs only where Claude can run tasks and finds `bash`, `shfmt` and `shellcheck`.
 
 > [!TIP]
 > **TL;DR** — Install bash-language-server, shfmt and ShellCheck, add this plugin, and every shell script Claude edits comes back formatted and checked with your own `.editorconfig` and `.shellcheckrc`, while Claude tells same-named functions apart by what each script sources.
@@ -32,7 +32,7 @@ Bash LSP Intelligence connects bash-language-server to Claude Code and adds a ho
 
 ## ✨ Why use it
 
-- **Every edit is formatted and checked** — after each edit to a `.sh`, `.bash` or extensionless Bash script, the plugin runs `shfmt -w` and then `shellcheck` on that file. Findings go back to Claude as an error it must fix before moving on; a clean run shows you a one-line confirmation.
+- **Every edit is formatted and checked** — after each edit to a `.sh`, `.bash` or extensionless Bash script, the plugin runs `shfmt -w` and then `shellcheck` on that file. Findings go back to Claude as an error it must fix before moving on; after every check you get a one-line summary of what ran, what shfmt reformatted and whether it found errors.
 - **Your style and rules, not the plugin's** — shfmt reads your `.editorconfig` and ShellCheck your `.shellcheckrc` and `SHELLCHECK_OPTS`. A strict baseline (two-space indent, every optional check) applies only when you have none.
 - **ShellCheck findings as Claude edits** — the language server also pushes ShellCheck diagnostics for `.sh`, `.inc`, `.bash` and `.command` files, including scripts under `.github/` and `.claude/`.
 - **Renames that respect `source`** — two `render` functions in unrelated scripts aren't one rename target; Claude traces which definition each caller reaches through `source` chains, traps and dispatch before editing.
@@ -43,7 +43,7 @@ Bash LSP Intelligence connects bash-language-server to Claude Code and adds a ho
 | Component     | Name                                          | What it does                                                                                                                                                                                         | How it runs                                                                                     |
 | :------------ | :-------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
 | 🧠 LSP server | `shellscript`                                 | Connects `bash-language-server` for `.sh`, `.inc`, `.bash` and `.command` files, indexing `.github/` and `.claude/` too                                                                              | Automatically when Claude opens or edits a shell file                                           |
-| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`          | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed                                                                                                            | Automatically after each Edit, Write or Bash call, and after a Bash call that fails             |
+| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`          | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed, tells you what it did and sends Claude only the errors                                                    | Automatically after each Edit, Write or Bash call, and after a Bash call that fails             |
 | 🪝 Hook       | `UserPromptSubmit`                            | Tells Claude to call the `bash-lsp-intelligence:bash-lsp-intelligence` skill with the Skill tool and apply it end to end before it creates, writes or edits a shell script, with any tool or command | Automatically with each prompt                                                                  |
 | 🎯 Skill      | `bash-lsp-intelligence:bash-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with shfmt and ShellCheck the way your project configures them                         | Automatically when you work on shell scripts, or `/bash-lsp-intelligence:bash-lsp-intelligence` |
 
@@ -56,12 +56,12 @@ Bash LSP Intelligence connects bash-language-server to Claude Code and adds a ho
 | shfmt                | —               | `shfmt --version`                |
 | ShellCheck           | —               | `shellcheck --version`           |
 | Node.js              | 20              | `node --version`                 |
-| Bash                 | —               | `bash --version`                 |
+| Bash                 | 3.2             | `bash --version`                 |
 | Git (optional)       | —               | `git --version`                  |
 
-The plugin also uses `sh` and `cat`, which come with macOS and Linux.
+The plugin also uses `awk`, `cat`, `cksum`, `date`, `find`, `head`, `mktemp`, `readlink`, `rm`, `touch` and `uname`, which come with macOS and Linux.
 
-Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server, which needs Node.js 20 or later, and the hook, which runs on Node.js 18 or later. Claude Code starts the hook with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
+Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server, which needs Node.js 20 or later; the hook itself needs no Node.js. Claude Code starts the hook with `bash`, a Bash script that needs Bash 3.2 or later. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
 
 ### 🤖 Claude Code
 
@@ -272,13 +272,15 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install bash-lsp-intelligence@the-claude-factory
 ```
 
-To confirm it works, ask Claude to write `echo $name` in a script and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and, once the file is clean, a line like `bash-lsp-intelligence: shfmt, shellcheck passed · scripts/deploy.sh` from the hook.
+To confirm it works, ask Claude to write `echo $name` in a script and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and, once the file is clean, a line like `bash-lsp-intelligence: ran shfmt, shellcheck on scripts/deploy.sh · no formatting changes · no errors` from the hook.
 
 ## 🚀 Usage
 
 You don't need to call anything: the language server starts with the first shell file Claude edits, the hook runs after each edit, and the skill loads when you work on shell scripts.
 
-When the hook reports a finding or a script it couldn't check, its message also tells Claude to use the `bash-lsp-intelligence:bash-lsp-intelligence` skill and apply all its knowledge when working on shell scripts, so a passing check is never mistaken for the whole workflow.
+With each prompt you send, the plugin also tells Claude to call the `bash-lsp-intelligence:bash-lsp-intelligence` skill with the Skill tool and apply it end to end before it creates, writes or edits a shell script, so a passing check is never mistaken for the whole workflow. When the tools find errors, the hook's message to Claude repeats that: load the skill, audit the errors with it and fix them before continuing with anything else.
+
+After every check, the hook shows you one line: which tools ran on which files, whether shfmt reformatted any of them and whether they found errors, or why nothing ran (a missing tool, a Zsh script, more files than the hook checks). Claude gets a message only when there are errors.
 
 ### Example: what happens after an edit
 
@@ -289,14 +291,15 @@ Add a --dry-run flag to scripts/deploy.sh.
 **Result:** Claude edits the script. If shfmt or ShellCheck finds something, Claude sees it right away:
 
 ```text
-shellcheck (scripts/deploy.sh):
-In scripts/deploy.sh line 14:
+bash-lsp-intelligence's post-edit hook ran shfmt, shellcheck on scripts/deploy.sh and found errors:
+shellcheck (/path/to/project/scripts/deploy.sh):
+In /path/to/project/scripts/deploy.sh line 14:
   rsync $opts "$src" "$dest"
         ^-- SC2086 (info): Double quote to prevent globbing and word splitting.
-Fix these findings in scripts/deploy.sh before continuing; do not suppress them.
+Use the Skill tool to load "bash-lsp-intelligence:bash-lsp-intelligence", audit these errors with it and fix them before continuing with anything else.
 ```
 
-Claude turns `opts` into an array, the hook runs again, and the turn ends with `bash-lsp-intelligence: shfmt, shellcheck passed · scripts/deploy.sh`.
+You see `bash-lsp-intelligence: ran shfmt, shellcheck on scripts/deploy.sh · no formatting changes · errors in scripts/deploy.sh, sent to Claude to fix`. Claude loads the skill, turns `opts` into an array, the hook runs again, and you see `bash-lsp-intelligence: ran shfmt, shellcheck on scripts/deploy.sh · no formatting changes · no errors`.
 
 ### Example: rename a function used across scripts
 
@@ -336,14 +339,15 @@ An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces 
 ## 🔍 What this plugin runs and sends
 
 - **Hooks:**
-  - `PostToolUse` on `Edit|Write|Bash` runs `node hooks/check.mjs` through `bash` (60-second limit), which runs `shfmt -w` (it rewrites the file in place) and then `shellcheck` on each shell script the call changed and tells Claude to fix what they find.
+  - `PostToolUse` on `Edit|Write|NotebookEdit|Bash` runs `bash "${CLAUDE_PLUGIN_ROOT}/hooks/bash-gate.sh"` (60-second limit), which runs `shfmt -w` (it rewrites the file in place) and then `shellcheck` on each shell script an Edit, Write or Bash call changed. It ignores any other tool, including NotebookEdit. It shows you one line about every check and sends Claude a message only when the tools find errors.
   - `PostToolUseFailure` on `Bash` runs the same script after a command that fails, so scripts a failed command changed are checked too.
-  - `UserPromptSubmit` runs `cat hooks/bash-lsp-skill-instructions.txt` (10-second limit), which adds a short instruction to each prompt you send: before Claude creates, writes or edits a shell script, with any tool or command, it calls the `bash-lsp-intelligence:bash-lsp-intelligence` skill with the Skill tool and applies it end to end, including its LSP and Grep steps. It sends nothing and writes nothing.
+  - Both set `onFailure` to `block`: when the script itself crashes or runs past its limit, Claude receives that error like a finding.
+  - `UserPromptSubmit` runs `cat "${CLAUDE_PLUGIN_ROOT}/hooks/bash-lsp-skill-instructions.txt"`, which adds a short instruction to each prompt you send: before Claude creates, writes or edits a shell script, with any tool or command, it calls the `bash-lsp-intelligence:bash-lsp-intelligence` skill with the Skill tool and applies it end to end, including its LSP and Grep steps. It sends nothing and writes nothing.
 
-  To find the changed scripts of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` plus `git diff --cached --name-only --relative` (the staged files) in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). After that walk, a script inside a Git repository below your project counts only when those Git commands list it there, so a repository you clone, a branch you check out or a pull is never checked or reformatted. When the walk finds more than 20 shell scripts outside any Git repository, the hook checks none of them and tells Claude. From the list Claude Code passes, it drops the scripts Git ignores, which it finds with `git check-ignore --stdin -z`: what a command writes into an ignored folder, such as the hook scripts a package manager generates on install, is not checked or reformatted. It finds `shfmt` and `shellcheck` with `sh -c 'command -v …'`, then runs them on at most 20 scripts per call, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
+  To find the changed scripts of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` plus `git diff --cached --name-only --relative` (the staged files) in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). After that walk, a script inside a Git repository below your project counts only when those Git commands list it there, so a repository you clone, a branch you check out or a pull is never checked or reformatted. When the walk finds more than 20 shell scripts outside any Git repository, the hook checks none of them and tells you. From the list Claude Code passes, it drops the scripts Git ignores, which it finds with `git check-ignore --stdin -z`: what a command writes into an ignored folder, such as the hook scripts a package manager generates on install, is not checked or reformatted. It finds `shfmt` and `shellcheck` with `command -v`, and when one is missing it uses `command -v` and `uname -s` to pick the install command it shows you for your system. It runs the tools on at most 20 scripts per call. It skips `node_modules`, `.venv`, `venv` and `site-packages`, and its walk skips `.git`, `dist`, `build`, `__pycache__` and `.cache`. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
-- **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. When shfmt or ShellCheck isn't installed, the hook writes one empty marker file per session and tool to `${CLAUDE_PLUGIN_DATA}/notices/`, so you get that notice once per session; it deletes markers older than 7 days. When that variable is unset or empty, the hook keeps no marker, in your system's temporary directory or anywhere else, so the notice repeats on every call. The plugin writes nothing else.
+- **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. On each Edit, Write or Bash call, the hook creates one temporary folder under `TMPDIR` (`/tmp` when unset) named `bash-lsp-intelligence.XXXXXX`, keeps its working files there and deletes it when it exits. The plugin writes nothing to its data folder and nothing else to your project.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -380,7 +384,7 @@ Installed with `--scope project`:
 claude plugin uninstall bash-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The data directory holds only the empty marker files under `notices/` that keep the missing-tool notice to once per session. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 
@@ -394,7 +398,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-The skill loads in Claude, but it relies on the language server, which Claude doesn't run. The hook runs `node`, `shfmt` and `shellcheck`, so it works only on a machine where they're installed; in Claude Code that's your computer. Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
+The skill loads in Claude, but it relies on the language server, which Claude doesn't run. The hook runs `bash`, `shfmt` and `shellcheck`, so it works only on a machine where they're installed; in Claude Code that's your computer. Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
 
 **Platforms:** macOS and Linux, and Windows through Git Bash.
 
@@ -423,20 +427,27 @@ ShellCheck must be on the same `PATH` for the server to report its findings.
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The hook didn't find the tool, so it didn't check the script. It doesn't block Claude: you get one message per session that names the tool and where to get it, for example:
+The hook didn't find the tool, so it didn't check the script. It doesn't block Claude and adds nothing to its context: you get a line after every call that names the script and the tool and gives the install command for your system, for example:
 
 ```text
-bash-lsp-intelligence: shfmt is not installed, so shell files are not checked. Install it: brew install shfmt (macOS) or your distribution package, see the README
+bash-lsp-intelligence: not run on scripts/deploy.sh: shfmt is not installed (install it with brew install shfmt)
 ```
 
-Claude is told once that the scripts weren't checked. Install the tool on the `PATH` of the shell that starts `claude`; the next edit is checked.
+The command comes from the package manager the hook finds: Homebrew or MacPorts on macOS; `apt`, `dnf`, `pacman`, `zypper` or `apk` on Linux; otherwise the tool's releases page. Install the tool on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 
 <details>
 <summary><b>The hook reformatted a file I was editing.</b></summary>
 
-That is `shfmt -w` applying your `.editorconfig` (or the default style). Claude is told to re-read the file before its next edit, so nothing is lost.
+That is `shfmt -w` applying your `.editorconfig` (or the default style). The line the hook shows you after the check names the file under `reformatted`; Claude isn't told.
+
+</details>
+
+<details>
+<summary><b>Claude got a message that the post-edit hook failed.</b></summary>
+
+The script crashed or ran past its 60-second limit, so it didn't check the changed scripts, for example `bash-lsp-intelligence: the post-edit hook failed at line 123, so the changed shell scripts were not checked.` Claude receives that error like a finding. Run `bash --version` to confirm Bash is 3.2 or later, then ask Claude to edit the script again; open an issue from the link below if it keeps failing.
 
 </details>
 
@@ -450,7 +461,7 @@ No. The hook checks only the scripts Claude changes in the session, never the wh
 <details>
 <summary><b>A Zsh script was "not checked".</b></summary>
 
-ShellCheck supports sh, bash, dash and ksh only. The hook tells Claude the file was not checked instead of reporting it clean; use Bash, or a Zsh-aware linter, for that script.
+ShellCheck supports sh, bash, dash and ksh only. The hook tells you the file was not checked (`not run on <file>: ShellCheck does not support zsh`) instead of reporting it clean; use Bash, or a Zsh-aware linter, for that script.
 
 </details>
 
@@ -464,7 +475,7 @@ Each file extension gets one server. When two enabled plugins claim `.sh`, the f
 <details>
 <summary><b>Does it work on Windows?</b></summary>
 
-Through Git Bash: start Claude Code from a Git Bash shell that has `node`, `shfmt`, `shellcheck` and `bash-language-server` on its `PATH`.
+Through Git Bash: start Claude Code from a Git Bash shell that has `shfmt`, `shellcheck` and `bash-language-server` (with Node.js) on its `PATH`.
 
 </details>
 

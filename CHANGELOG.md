@@ -9,6 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Changed
 
 - **github-operations** 0.9.2 — the `init-pr-lifecycle` and `init-cleanup-and-debug` commands mark each stage with a plain label instead of a Markdown heading; what they do is unchanged.
+- **python-lsp-intelligence** 0.5.0 — **Breaking:** the first-edit wait for the skill is gone; Claude now gets the skill instructions with each prompt. After each check you see which tools ran, whether ruff reformatted and whether errors were found, and Claude is told only when there are errors, with the skill to fix them before continuing.
+- **bash-lsp-intelligence** 0.4.0 — **Breaking:** the same change to the first-edit wait, the prompt instructions and the post-edit messages; the post-edit hook is now a Bash script that no longer needs Node.js, and a missing `shfmt` or `shellcheck` comes with the install command for your system.
+- **typescript6-lsp-intelligence** 0.5.0 — **Breaking:** the skill is now `ts-6-writing-and-navigation`; the first-edit wait is gone in favor of instructions with each prompt; the post-edit check runs your project's own `tsc --noEmit --strict` under your `tsconfig.json` after edits and after each batch of parallel calls, reports errors in the files Claude changed since your last prompt, and runs on macOS and Linux only.
+- **typescript7-lsp-intelligence** 0.6.0 — **Breaking:** the skill is now `ts-7-writing-and-navigation`, and the first-edit wait is gone in favor of instructions with each prompt.
 
 ## 2026-11-19
 

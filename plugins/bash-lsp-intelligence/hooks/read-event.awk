@@ -1,5 +1,5 @@
 # Reads one Claude Code hook event (a JSON object) on standard input and prints the fields
-# check.sh needs, one per line as "<path>\t<value>":
+# bash-gate.sh needs, one per line as "<path>\t<value>":
 #   tool_name, cwd, duration_ms (a non-negative integer), tool_input.file_path, and each
 #   string of tool_response.bashEditDiff.changedFiles as "tool_response.bashEditDiff.changedFiles[]",
 #   after one "tool_response.bashEditDiff.changedFiles\t" line that says the list is present.
