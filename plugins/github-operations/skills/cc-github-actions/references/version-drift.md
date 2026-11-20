@@ -25,8 +25,8 @@ Dated facts other references rely on, checked on 2026-11-13 unless an entry give
 
 - **Workflow dependency lockfiles, checked on 2026-11-20.** General availability on 2026-10-28 for the Free, Team, Enterprise Cloud and GHE.com plans; not on GitHub Enterprise Server, which has no `$/` references either. The newest `github/gh-actions-lock` release is v0.5.1. The Require lockfile policy's Evaluate mode exists only on Enterprise Cloud.
 - **Scanners and lockfiles, checked on 2026-11-20.** actionlint 1.7.12 parses `uses: $/…` as a repository action and reports "ref is missing". zizmor supports lockfiles experimentally since 1.32.0.
-- **`pull_request_target` default policy.** GitHub adds a default policy that blocks `pull_request_target` in public repositories that have no Actions event policy. It runs in evaluate mode now; enforcement for affected repositories begins on 2026-12-02.
-- **`actions/checkout` credential layout, checked at v7.0.1 (`3d3c42e`).** v6.0.0 and later keep the token in a file under `$RUNNER_TEMP`, which the local `.git/config` includes through an `includeIf` entry. v5.0.1 and earlier, and the backports v5.1.0 and v4.4.0, keep it in the local `.git/config`. v7 and the backports refuse to check out a fork's code under `pull_request_target` or `workflow_run` unless `allow-unsafe-pr-checkout: true` is set.
+- **`pull_request_target` default rule, checked on 2026-11-20.** From 2026-12-02 GitHub blocks `pull_request_target` in public repositories unless an Actions event policy allows it; until then the rule runs in evaluate mode and blocks nothing, except during GitHub's announced brownouts. A blocked attempt creates a failed run with an error annotation, and the workflow doesn't execute. Private and internal repositories aren't affected.
+- **`actions/checkout` credential layout and fork checkouts, checked on 2026-11-20 at v7.0.1 (`3d3c42e`).** v6.0.0 and later keep the token in a file under `$RUNNER_TEMP`, which the local `.git/config` includes through an `includeIf` entry; earlier versions keep it in the local `.git/config`. v7.0.0 and the backports v6.1.0, v5.1.0, v4.4.0, v3.7.0 and v2.8.0 refuse to check out a fork's code under `pull_request_target`, or under `workflow_run` from a pull request event, unless `allow-unsafe-pr-checkout: true` is set; v1 never got the change.
 - **GitHub-hosted runner labels.** `macos-14` was retired on 2026-11-02. `ubuntu-slim` has a 15-minute job limit.
 - **`anthropics/claude-plugins-official`** publishes no version tags: pin it by commit.
 
@@ -83,13 +83,19 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
    - A full 40-character SHA is the commit. A successful fetch doesn't prove it is upstream's: GitHub also serves the heads of pull requests anyone can open. It is an upstream commit only when it is on the default branch's history or a release tag points to it. In one shell call:
 
      ```bash
+     export GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never
      TMP=$(mktemp -d) && echo "$TMP"
-     git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none https://github.com/anthropics/claude-code-action refs/heads/main:refs/remotes/upstream/main
-     git -C "$TMP" merge-base --is-ancestor <sha> upstream/main; echo "on main: $?"
-     git ls-remote --tags https://github.com/anthropics/claude-code-action | awk -v s=<sha> '$1 == s { print "release tag: " $2 }'
+     git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none https://github.com/anthropics/claude-code-action refs/heads/main:refs/remotes/upstream/main && echo "fetch: ok" || echo "fetch: failed"
+     git -C "$TMP" merge-base --is-ancestor <sha> upstream/main 2>/dev/null; echo "on main: $?"
+     git ls-remote --tags https://github.com/anthropics/claude-code-action > "$TMP/tags" && echo "tags: ok" || echo "tags: failed"
+     awk -v s=<sha> '$1 == s { print "release tag: " $2 }' "$TMP/tags"
      ```
 
-     `on main: 0` or a `release tag:` line means upstream. Anything else, `fatal: remote error: upload-pack: not our ref <sha>` included, is not an upstream commit: treat it exactly like step 2. Reuse the folder for the comparison, and delete it at the end.
+     The first line keeps git from waiting on a credential prompt nobody can answer. Read the result in this order:
+     - `fetch: failed` or `tags: failed`: nothing was decided, so never read it as "not an upstream commit". Check the commit with MCP (`list_tags`, and `list_commits` on `main` with `sha` set to the commit), or follow [When nothing can be read](#when-nothing-can-be-read).
+     - Both `ok`: `on main: 0` or a `release tag:` line means upstream. Any other `on main:` value (1, or 128 when the commit isn't in `main`'s history) with no `release tag:` line is not an upstream commit: treat it exactly like step 2.
+
+     Delete the folder before you leave this step, with `rm -rf <folder>` and the literal path the block printed first: a variable doesn't survive between calls, and the comparison below makes its own folder.
    - A tag or branch, such as `v1` or `v1.0.275`:
 
      ```bash
@@ -109,6 +115,7 @@ git ls-remote --tags --sort=-v:refname https://github.com/<owner>/<action> | awk
 ```
 
 - It prints a line such as `refs/tags/v1.0.275 4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8`. Write the pin as the [Pinning policy](#pinning-policy) says: the tag, `uses: anthropics/claude-code-action@v1.0.275`, in a workflow the lockfile lists; otherwise the commit with the tag as a comment, `uses: anthropics/claude-code-action@<commit> # v1.0.275`.
+- A blank line, or a `fatal:` line, means no release was picked: either git couldn't read the tags (run it again after `export GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never`; for a private action, read its tags with `gh api repos/<owner>/<action>/tags --paginate` or MCP `list_tags`), or the action has no `vX.Y.Z` tag in that major (pin the commit the user names, or ask). Never pin from a blank result.
 - Never take the last line of a plain `git ls-remote --tags`: its order is lexical, so it ends at `v1.0.99`.
 - Stay in the pin's current major unless the user approves a jump. To keep the major, replace `v[0-9]+` in the pattern with the major, for example `v1`. A jump lists the breaking changes from the release notes as residual risk.
 - With MCP only: `get_latest_release` gives the tag GitHub marks as latest, and `list_tags` gives its commit. Check that the tag is in the current major.
@@ -132,11 +139,11 @@ Every `uses:` a patch adds or changes follows this policy. A repository's lockfi
    | A container image (`docker://`, `container:`, `services:`) | A digest, `@sha256:<digest>`: the lockfile doesn't lock images |
 
    Never write a branch or a partial tag such as `v1`: in an onboarded workflow it keeps running its locked commit after the ref moves, and a lockfile change that moves it back to an older commit goes undetected.
-2. Regenerate the lockfile on the approved branch, after the workflow files are written, when the patch touches a workflow the lockfile lists:
-   1. Check that `gh extension list` shows `github/gh-actions-lock`, and read `gh actions-lock --help` before the first run: the installed version's flags win over this page. When the extension is missing, hold the patch for that workflow and give the user the command to run, `gh actions-lock <workflow file>`: without the entry the job fails at run time with `lockfile missing pin for <action>@<ref>`. Never install the extension.
-   2. Run `gh actions-lock <workflow file>...` with every changed workflow. Run it with no path only when the patch deletes a workflow, to prune its entries. Writing the lockfile needs the `workflow` scope on the `gh` token.
-   3. Read the exit code: 0 means the lockfile was written; 1 means findings block it and nothing was written; 2 means the tool failed. On 1 or 2, report its output and hold the patch.
-   4. Review the lockfile's diff as part of the patch: a changed `commit` is new code the workflow will run; a changed `owner_id` or `repo_id` means another repository now stands behind the name, so stop and report it.
+2. When the patch touches a workflow the lockfile lists, regenerate the lockfile only after the user approves the patch, on the approved branch, once the workflow files are written (step 7 of the audit route). While you build and validate the patch, never run the extension: the patch names the regeneration it needs, `gh actions-lock` and the workflow files.
+   1. Check that `gh extension list` shows `github/gh-actions-lock`, and read `gh actions-lock --help` before the first run: the installed version's flags win over this page. When the extension is missing, hold the patch for that workflow, and give the user the patch and the two commands to run on the branch after applying it: `gh extension install github/gh-actions-lock`, then `gh actions-lock <workflow file>` for each changed workflow, such as `.github/workflows/ci.yml`. Without the entry the job fails at run time with `lockfile missing pin for <action>@<ref>`. Never install the extension yourself.
+   2. Run `gh actions-lock <workflow file>...; echo "gh actions-lock exit: $?"` with every changed workflow, never with no path: a run with no path scans every workflow under `.github/workflows/` and onboards the ones the lockfile doesn't list, which no patch may do. When the patch deletes a workflow, its leftover entry is only a `stale-workflow` warning: list the pruning run, `gh actions-lock` with no path, under "Left for you".
+   3. Read the exit code on the last line: 0 means the lockfile was written; 1 means findings block it and nothing was written; 2 means the tool failed. On 1 or 2, report its output and hold the patch. The trailing `echo` keeps a long report whole, because the Bash tool cuts the output of a command that exits non-zero to about 10,000 characters.
+   4. Review the whole diff the run left, workflows and lockfile together: the extension also narrows a partial tag such as `v4` to a full release tag in the workflows it locks. A workflow line that differs from the checked patch goes back through [Validate the patches](workflow-audit.md#validate-the-patches). A changed `owner_id` or `repo_id` means another repository now stands behind the name: stop and report it. Every changed or new `commit` is new code the workflow will run: list each one (action, old commit, new commit, direct or transitive) in Version provenance, show the list to the user, and land only after they confirm it.
 3. Never edit `actions.lock` by hand or delete it to clear an error, never pass `--accept-moved`, and pass `--relock` or `--migrate-local-actions` only with the user's approval: the first moves refs to new commits, the second rewrites `./` references across the repository.
 
 ## Compare with the snapshot
@@ -146,16 +153,17 @@ Do this for the commit from [Find the commit a step runs](#find-the-commit-a-ste
 **With git** (Claude Code with a shell):
 
 ```bash
+export GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never
 TMP=$(mktemp -d) && echo "$TMP"
-git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none --depth=1 https://github.com/anthropics/claude-code-action <snapshot> <pin>
-git -C "$TMP" diff --name-only <snapshot> <pin> -- action.yml base-action/action.yml base-action/package.json base-action/src src scripts docs/security.md
+git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none --depth=1 https://github.com/anthropics/claude-code-action <snapshot> <pin> && git -C "$TMP" diff --name-only <snapshot> <pin> -- action.yml base-action/action.yml base-action/package.json base-action/src src scripts docs/security.md && echo "compare: ok" || echo "compare: failed"
 ```
 
 Run these three lines in one shell call. A variable doesn't survive between calls, so write the folder it printed, as a literal path, in every later command, the cleanup included.
 
-The fetch downloads trees, not file contents, so it takes about a second. Read the list it prints:
+The fetch downloads trees, not file contents, so it takes about a second. Read what it prints:
 
-- **Nothing printed:** every fact holds at the pin, whatever its version number. On GitHub Enterprise Server the Drift result is still `unverified: GHES`: the instance's copy of the action and its behavior weren't checked.
+- **`compare: failed`:** nothing was compared, whatever else printed. Use the MCP route below when a GitHub MCP server answers; otherwise follow [When nothing can be read](#when-nothing-can-be-read).
+- **Nothing printed before `compare: ok`:** every fact holds at the pin, whatever its version number. On GitHub Enterprise Server the Drift result is still `unverified: GHES`: the instance's copy of the action and its behavior weren't checked.
 - **A path in the Source files table:** the topics on its row are unverified. Read `git -C <folder> diff <snapshot> <pin> -- <path>`, then apply what the code at the pin says, not what `action-contract.md` says. Name each such topic in Version provenance.
 - **A path not in the table:** an unmapped change. Read its diff and say in Version provenance whether it changes anything the route relies on.
 

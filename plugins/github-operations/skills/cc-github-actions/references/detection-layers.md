@@ -33,7 +33,9 @@ GitHub's code scanning may already analyze the repository's workflows: CodeQL do
 
 ## Layer 2: zizmor, actionlint and gh actions-lock, when already installed
 
-zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock` is GitHub's extension that keeps the lockfile. Run each only when it is already installed: check with `command -v zizmor`, `command -v actionlint` and `gh extension list`. Never install any of them; when one is missing, record it as "not run: not installed" and go on. None of them changes a file when run as below.
+zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock` is GitHub's extension that keeps the lockfile. Run each only when it is already installed: check with `command -v zizmor`, `command -v actionlint` and `gh extension list`. Never install any of them; when one is missing, record it as "not run: not installed" and go on, and for a repository with a lockfile list `gh extension install github/gh-actions-lock` under "Left for you". None of them changes a file when run as below.
+
+Each tool exits non-zero when it finds something, and the Bash tool cuts the output of a command that exits non-zero to about 10,000 characters, with no file to read the rest from. So each command below keeps its own exit status out of the shell's: zizmor through `--no-exit-codes`, the other two through a trailing `echo` of the code.
 
 ### zizmor
 
@@ -41,11 +43,11 @@ zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock
 2. Run it from the repository's root, exactly so:
 
    ```bash
-   zizmor --offline --collect=workflows,actions --format=json-v1 --no-progress .
+   zizmor --offline --no-exit-codes --collect=workflows,actions --format=json-v1 --no-progress .
    ```
 
    `--offline` is required, not optional: zizmor goes online by itself whenever `GH_TOKEN` or `GITHUB_TOKEN` is set, which is the usual case. Never pass `--fix`, which rewrites the files.
-3. Read the exit code: 0 means no findings; 11 to 14 mean findings, 14 the most severe; 3 means it found no workflow or action files; 1 and 2 mean it failed, so record it as "not run" with what it printed on stderr.
+3. Read the exit code: 0 means it ran, and its findings, if any, are in the JSON array, inline or, when long, in the file the tool result names; 3 means it found no workflow or action files; 1 and 2 mean it failed, so record it as "not run" with what it printed on stderr.
 4. Read each finding from the JSON array: the audit ID in `ident`, its severity and confidence in `determinations`, and its file and line from the location whose `symbolic.kind` is `Primary` (`symbolic.key.Local.verbatim_path`, and `concrete.location.start_point.row` plus 1, because zizmor counts lines from 0).
 5. When the repository has a zizmor configuration (`.github/zizmor.yml`, `.github/zizmor.yaml`, or `zizmor.yml` or `zizmor.yaml` at its root, or a `ZIZMOR_CONFIG` variable in the environment), or `# zizmor: ignore[...]` comments in its workflows, it has silenced some findings on purpose, and zizmor doesn't print them. Respect that, and say in the report that the repository silences some zizmor findings. Layer 3 still checks every point, so nothing goes unchecked.
 6. Some audits never run offline (`impostor-commit`, `known-vulnerable-actions`, `ref-confusion`, `stale-action-refs`), and some need a persona this run doesn't use. Their absence proves nothing.
@@ -57,10 +59,10 @@ zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock
 2. Run it from the repository's root, with its own add-ons turned off so that no other program runs:
 
    ```bash
-   actionlint -format '{{json .}}' -shellcheck= -pyflakes=
+   actionlint -format '{{json .}}' -shellcheck= -pyflakes=; echo "actionlint exit: $?"
    ```
 
-3. Read the exit code: 0 means no problems; 1 means problems found; 2 and 3 mean it failed, so record it as "not run" with what it printed.
+3. Read the exit code on the last line, `actionlint exit: <n>`: 0 means no problems; 1 means problems found; 2 and 3 mean it failed, so record it as "not run" with what it printed.
 4. Each problem has `filepath`, `line`, `kind` and `message`. A file that doesn't parse gets only its parse error: actionlint stops checking that file there. Record actionlint as "partial: `<file>` didn't parse", and report the parse error as W-12.
 5. Discard every problem about the inputs of `anthropics/claude-code-action`: actionlint checks them against a list it carries, which is older than the action, and skips the check entirely when the action is pinned to a commit SHA. Check those inputs as `workflow-audit.md` says instead (C-01).
 6. Discard "ref is missing" on a `uses: $/…` line: actionlint doesn't know GitHub's same-repository syntax yet and parses it as `owner/repo@ref`.
@@ -73,14 +75,17 @@ Run it only when the repository has `.github/workflows/actions.lock` and `gh ext
 2. Run it from the repository's root, exactly so, with an authenticated `gh`:
 
    ```bash
-   gh actions-lock --verify --json
+   gh actions-lock --verify --json; echo "gh actions-lock exit: $?"
    ```
 
    `--verify` runs the same checks as a run that writes the lockfile, writes nothing, and reads upstream repositories over the network. Never run it without `--verify` in the audit: that form rewrites workflows and the lockfile.
-3. Read the exit code: 0 means no errors remain; 1 means findings block the lockfile, and the JSON on stdout is complete; 2 means it failed, so record it as "not run" with what it printed on stderr.
-4. Each finding has a `category`, a `severity` (`error`, `warning` or `info`) and a `doc_url`. Map them to W-04 in this order:
-   - `repo-replaced`, `misleading-sha`, `unreachable-pin` and `tag-commit-mismatch` mean the name, the ref or the locked commit is no longer what upstream published: rate them as "not an upstream commit", and never patch them with `--accept-moved` or `--relock`; the user reviews upstream first.
-   - Any other `error` is medium, because GitHub fails the job.
+3. Read the exit code on the last line, `gh actions-lock exit: <n>`: 0 means no errors remain; 1 means findings block the lockfile, and the JSON before that line is complete; 2 means it failed, so record it as "not run" with what it printed on stderr.
+4. Each finding has a `category`, a `severity` (`error`, `warning` or `info`), a `remediation`, a `doc_url` and sometimes `retryable`. Read its `remediation` and open its `doc_url` before you rate it, then map it to W-04 in this order:
+   - `retryable: true`, such as `ancestry-unknown` or `reachability-unknown`: GitHub didn't answer. Record gh actions-lock as "not inspected" for that dependency; it is no finding.
+   - `repo-replaced` and `misleading-sha`: the name or the SHA isn't what upstream published. Rate them as "not an upstream commit".
+   - `unreachable-pin`: the locked commit left the ref's history, through a force-push, a moved tag or an edited lockfile, which the tool can't tell apart. Rate it as "not an upstream commit" until the user has checked which.
+   - `tag-commit-mismatch`: the entry locks an older commit from the tag's own history, because the publisher moved the tag or the lockfile was edited. Rate it medium; its patch is `gh actions-lock --relock`, proposed only after the user has checked that the lockfile wasn't edited by hand and reviewed the upstream change, since a moved release tag is exactly what the lockfile guards against.
+   - Never patch a finding with `--accept-moved`. Any other `error` is medium, because GitHub fails the job.
    - A `warning` such as `sha-as-ref`, `version-ref` or `container-image` is low; `info` is no finding.
 
 ## Layer 3: the audit's own checks

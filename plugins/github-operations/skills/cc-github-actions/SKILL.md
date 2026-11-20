@@ -8,7 +8,7 @@ argument-hint: "[run URL, workflow file or PR number]"
 
 ## What this skill does
 
-This skill takes care of a repository's GitHub Actions workflows, above all the ones that run Claude through `anthropics/claude-code-action`. It has three routes. Read this map before choosing one: the routes hand work to each other, and the one you start may need another.
+It has three routes. Read this map before choosing one: the routes hand work to each other, and the one you start may need another.
 
 | Route | When | It ends with |
 | :-- | :-- | :-- |
@@ -22,7 +22,6 @@ How they connect:
 - Repair sends a failing Claude step to Diagnose.
 - Diagnose and Repair build and validate every workflow patch with the Audit route's rules before it lands.
 - Every change lands through `github-operations:auto-pr-lifecycle`, and a cause in the project's own code goes there too.
-- What no route covers, and which skill does: "When not to use" below.
 
 ## Where it can run
 
@@ -38,7 +37,6 @@ Without admin rights on the repository, the runners list and some settings can't
 
 ## Before you start
 
-- Go ahead when the user asked for this work in any words that name a run, a workflow, a Claude step or the repository's CI.
 - Ask first, naming the repository and the workflow or run, only when you loaded this skill during other work, or when the request names no route and no target. Start after the user says yes.
 - Check the surface against "Where it can run" and say which routes it allows.
 
@@ -55,7 +53,7 @@ Without admin rights on the repository, the runners list and some settings can't
 - Ask the user before any rerun, any workflow change, enabling or disabling a workflow, and every push. A change to a workflow's triggers, permissions, secrets or permission mode is its own approval.
 - Fix the cause with the smallest change. Never weaken a test or a check, suppress a warning, or broaden a workflow's permissions to get a green run.
 - Take every claude-code-action fact from [references/action-contract.md](references/action-contract.md), and only after [the drift check](references/version-drift.md#compare-with-the-snapshot) for the commit the step runs; never from memory, documentation or examples.
-- Write every new or changed `uses:` by the [Pinning policy](references/version-drift.md#pinning-policy): the newest release in the current major unless the user approves a jump, as a tag under the lockfile, else a SHA. Never a branch or a moving tag.
+- Write every new or changed `uses:` by the [Pinning policy](references/version-drift.md#pinning-policy): the newest release in the current major unless the user approves a jump; in a workflow the repository's lockfile lists, its full release tag, else its commit SHA with the tag in a comment. Never a branch or a partial tag such as `v1`.
 - Every patch to a claude-code-action step freezes the step's current effective mode, by [Permission mode in patches](references/auth-and-permissions.md#permission-mode-in-patches). Changing the mode is its own approval. Never `bypassPermissions` or `--dangerously-skip-permissions`; auto is never assumed off, and never refused by default. A mode that can't be known is a question, not a guess.
 - For a claude-code-action step, pass only inputs the pinned `action.yml` declares; set no `--model` unless the user asks, and then resolve the ID live.
 - Pass `structured_output`, step outputs and any text from an issue, comment or pull request to a shell only through `env:`, never with `${{ }}` inside `run:`.
@@ -65,12 +63,12 @@ Without admin rights on the repository, the runners list and some settings can't
 ## Gotchas
 
 - The official materials lag the actions they use: the examples in `anthropics/claude-code-action` pin moving major tags, point some actions at `@main` and name retired model IDs. Resolve every version and ID live, and never copy an upstream example as it is.
-- Since claude-code-action v1.0.273 a step that sets no permission mode runs in auto mode, where `--allowedTools` pre-approves instead of limiting (SE-18). Only deny rules stop a tool there.
+- Since claude-code-action v1.0.273 a step runs in auto mode unless `claude_args` sets a mode or an exclusion in [Permission mode](references/action-contract.md#permission-mode) holds. There `--allowedTools` pre-approves instead of limiting (SE-18): only a deny rule, or a `--tools` list that leaves out a built-in tool, keeps a tool out.
 - The action's prompt tells Claude not to approve or merge, but that is an instruction, not a control. An allow rule naming the whole GitHub MCP server pre-approves merge and approve in every mode.
 - A green Claude step can be a no-op (SE-04, or SE-15 on the pull request that changes the workflow), or degraded: comments dropped (SE-16), code-running commands denied (SE-19), findings left only in the log. Read the log before calling a run successful.
-- A filtered run list returns at most 1,000 results: read each workflow's latest run, not its whole history. In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity.
-- GitHub's lockfile, `.github/workflows/actions.lock`, supersedes SHA pins in the workflows it lists: they run the locked commit whatever the tag says, and a `uses:` missing from it fails the job.
-- A green rerun is not a fix. Rerun only with evidence that the failure was transient, and a Claude step at most once.
+- A filtered run list returns at most 1,000 results: read each workflow's latest run, not its whole history.
+- A workflow `.github/workflows/actions.lock` lists runs the locked commit whatever the tag says, and a `uses:` missing from the lockfile fails the job.
+- A green rerun is not a fix. Rerun only with the user's approval and evidence that the failure was transient, or after a cause outside the repository was fixed (a renewed secret); a Claude step at most once.
 - Fork pull requests get no secrets and a read-only token; Dependabot's get Dependabot secrets, not Actions secrets (SE-11). A credential failure there is configuration, not code.
 - The GitHub MCP tools load on demand, and their full names carry the server's prefix (`mcp__<server>__<tool>`). Before the first call, load the ones the step uses with `ToolSearch`, querying their tool names (for example `actions_list get_job_logs`); use `gh` when no server answers.
 
@@ -117,7 +115,7 @@ Progress:
 4. **Layer 2.** Run each tool "Layer 2" names as it says, only when installed; record a missing one as not run.
 5. **Layer 3.** Read [references/trust-boundaries.md](references/trust-boundaries.md) and run W-01 to W-13 on every file. For each claude-code-action step, read `action-contract.md`, [references/auth-and-permissions.md](references/auth-and-permissions.md) and `sharp-edges.md`, then run C-01 to C-17. For each step whose effective mode is auto (C-13), follow [references/auto-mode-audit.md](references/auto-mode-audit.md) from its first section. A check you can't settle follows [When a check can't be decided](references/workflow-audit.md#when-a-check-cant-be-decided).
 6. **Findings and patches.** Merge the layers as "Merge the layers into findings" in `detection-layers.md` says, rate each finding by the [Severity scale](references/workflow-audit.md#severity-scale), write it as "Each finding" says, build one set of patches by [Build the patches](references/workflow-audit.md#build-the-patches), and check them by [Validate the patches](references/workflow-audit.md#validate-the-patches). On a surface with only a GitHub MCP server, stop here and report.
-7. **Approval.** Show the findings and the checked patches, and apply only what the user approves, each separate approval on its own, on a branch. When the applied files differ from the checked patches, check them again.
+7. **Approval.** Show the findings and the checked patches, and apply only what the user approves, each separate approval on its own, on a branch. For a workflow the lockfile lists, then regenerate the lockfile by the [Pinning policy](references/version-drift.md#pinning-policy), step 2, and get the user's confirmation of its commit changes. When the applied files differ from the checked patches, check them again.
 8. **Land** the patches through `github-operations:auto-pr-lifecycle`, only when every check passes.
 
 ### Repair CI on the default branch

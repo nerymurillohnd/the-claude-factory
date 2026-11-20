@@ -67,5 +67,5 @@ When nothing matched, decide between these, and rank the hypotheses, each with t
 
 - **A cause in the project's code or tests** is CI repair ([ci-repair.md](ci-repair.md)) on the default branch, or `github-operations:auto-pr-lifecycle`'s work on a pull request. Report it and stop.
 - **A workflow cause:** write the patch by [Build the patches](workflow-audit.md#build-the-patches), check it by [Validate the patches](workflow-audit.md#validate-the-patches), and apply it only after the user approves.
-- **Reruns:** only with evidence that the failure was transient, and at most once (SE-09).
+- **Reruns:** only as the rerun rule in SKILL.md's Gotchas says (SE-09).
 - **A debug rerun needs the user's approval.** The action prints the session's full output only when `show_full_output` is true or `ACTIONS_STEP_DEBUG` is `true` in the step's environment [unverified: whether re-running with debug logging alone puts it there]. In a public repository that output is public (C-14).
