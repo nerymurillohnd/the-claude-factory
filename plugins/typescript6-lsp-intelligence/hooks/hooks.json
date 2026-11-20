@@ -2,28 +2,14 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|Bash|PowerShell",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.mjs\"",
             "timeout": 120,
             "onFailure": "block",
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on each changed TypeScript/JavaScript file, project environment and strictest policy"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
-            "timeout": 120,
-            "onFailure": "block",
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on each changed TypeScript/JavaScript file, project environment and strictest policy"
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on the changed TypeScript and JavaScript files"
           }
         ]
       }
