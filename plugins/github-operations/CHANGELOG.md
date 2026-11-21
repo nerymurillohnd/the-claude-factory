@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- The `cc-github-actions` audit reads the workflow lockfile, `.github/workflows/actions.lock`, that GitHub's `gh actions-lock` extension writes. When the extension is installed, the audit runs `gh actions-lock --verify`, which changes no file. It never installs the extension.
+- The `cc-github-actions` audit reads the workflow lockfile, `.github/workflows/actions.lock`, that GitHub's `gh actions-lock` extension writes. When the extension is installed, the audit runs `gh actions-lock --verify`, which changes no file. It installs the extension only after you approve.
 - New audit findings for repositories with a lockfile: a workflow whose actions are missing from the lockfile, which GitHub fails at run time; a local `./` action that the lockfile can't follow; an allowed-actions entry pinned to a tag, which no longer matches a locked workflow; and a lockfile with no code owner or no pull request check.
 - Repair of failing CI recognizes the `lockfile missing pin` error and fixes it by regenerating the lockfile, never by deleting it.
 - The README explains how to use the plugin in Claude Code cloud sessions, which don't load plugins from user or repository settings: add it to your claude.ai account. It also explains the GitHub permission a push that changes workflow files needs there.
