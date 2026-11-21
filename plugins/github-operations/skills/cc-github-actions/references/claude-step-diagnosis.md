@@ -25,8 +25,8 @@ Check these in order, and stop at the first that explains it:
 
 1. **The default branch's copy.** Comment, issue and schedule events run the workflow file on the default branch. Read that copy: does `on:` list the event, and do its `types:` include the action that happened? `types: [edited]` never runs on a new comment.
 2. **The workflow's state:** `gh workflow list --all`, or `gh api repos/<owner>/<repo>/actions/workflows`. `disabled_manually` and `disabled_inactivity` start nothing.
-3. **An invalid workflow file:** runs of that workflow with zero jobs and `failure`, or `startup_failure`, on recent commits; or a file over 500 KB. The workflow's state doesn't show a parse error. This is W-12.
-4. **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` answering `enabled: false`.
+3. **An invalid workflow file:** runs of that workflow with zero jobs and `failure`, or `startup_failure`, on recent commits; or a file over the workflow file size limit on GitHub's [Actions limits](https://docs.github.com/en/actions/reference/limits) page. The workflow's state doesn't show a parse error. This is W-12.
+4. **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` answering `enabled: false`. Actions policies can also block runs: Require lockfile blocks every targeted workflow the repository's lockfile doesn't list, and actor or event rules block the rest. The repository's **Policy insights** page, under its Actions policies, lists the runs a policy blocked [unverified: whether a blocked run also appears in the run list].
 5. **An event caused by `GITHUB_TOKEN`:** a comment or label made by another workflow with the job's token starts no run.
 6. **A comment edited, not created**, against a trigger that lists only `created`, or the other way round.
 
@@ -67,5 +67,5 @@ When nothing matched, decide between these, and rank the hypotheses, each with t
 
 - **A cause in the project's code or tests** is CI repair ([ci-repair.md](ci-repair.md)) on the default branch, or `github-operations:auto-pr-lifecycle`'s work on a pull request. Report it and stop.
 - **A workflow cause:** write the patch by [Build the patches](workflow-audit.md#build-the-patches), check it by [Validate the patches](workflow-audit.md#validate-the-patches), and apply it only after the user approves.
-- **Reruns:** only with evidence that the failure was transient, and at most once (SE-09).
+- **Reruns:** only as the rerun rule in SKILL.md's Gotchas says (SE-09).
 - **A debug rerun needs the user's approval.** The action prints the session's full output only when `show_full_output` is true or `ACTIONS_STEP_DEBUG` is `true` in the step's environment [unverified: whether re-running with debug logging alone puts it there]. In a public repository that output is public (C-14).

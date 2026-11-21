@@ -25,7 +25,7 @@ Copy the scripts, never retype or edit them: a copy that matches the plugin's fi
 
 ## Dependencies
 
-`check-forms.py` needs Python 3.12 or later with ruamel.yaml 0.19.1 and check-jsonschema 0.39.0; `labels-sync.py` needs only Python 3.12 or later and `gh`. check-jsonschema 0.39.0 itself requires Python 3.11 or later, so a repository that supports an older Python would fail to resolve or install it: always declare both pins with the marker `; python_version >= "3.12"`, which skips them on older Pythons. Declare them where the repository already declares development tools, and install nothing without the user's approval:
+`check-forms.py` needs Python 3.12 or later with ruamel.yaml 0.19.1 and check-jsonschema 0.39.0; `labels-sync.py` needs only Python 3.12 or later and `gh`. check-jsonschema 0.39.0 itself requires Python 3.11 or later, so a repository that supports an older Python would fail to resolve or install it: always declare both pins with the marker `; python_version >= "3.12"`, which skips them on older Pythons. Declare them where the repository already declares development tools:
 
 | The repository has | Declare them in |
 | :-- | :-- |

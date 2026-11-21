@@ -4,6 +4,13 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-21
+
+### Changed
+
+- **github-operations** 0.10.0 — `cc-github-actions` follows GitHub's workflow lockfile: in a workflow `actions.lock` lists, patches write a readable release tag and regenerate the lockfile after your approval, and SHA pins stay where GitHub still needs them; the audit adds lockfile findings and reads `gh actions-lock --verify`, scanner reports are no longer cut short, patches reach you only after every check passes or is recorded as not run, volatile facts are looked up live instead of stored, a failed tool no longer stops a step at "not verified" before other routes are tried, and the README explains how to use the plugin in cloud sessions.
+- **skills-engineering** 0.3.1 — `authoring-skills` no longer tells the skills it writes to install nothing globally, and `auditing-skills` no longer flags scripts that do.
+
 ## 2026-11-20
 
 ### Changed

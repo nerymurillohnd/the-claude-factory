@@ -69,7 +69,7 @@ jobs:
           claude_args: --allowedTools "mcp__github__*"
 ```
 
-`v1` resolves to the Snapshot's commit, so the drift check finds nothing changed.
+`v1` resolves to the Snapshot's commit, so the drift check finds nothing changed. The repository has no `.github/workflows/actions.lock`.
 
 **Report excerpt.**
 
@@ -115,7 +115,7 @@ jobs:
 **Why each value.**
 - Mode auto before: a tag run on v1.0.273 or later with no exclusion ([Permission mode](action-contract.md#permission-mode)). `--permission-mode auto` is written to freeze it ([Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches)), so after is auto too, and the check of the patches confirms each layer patch on the patched file.
 - C-11 and layer B are two findings with one patch block ([Each finding](workflow-audit.md#each-finding)). The workflow shows no GitHub tool the task uses, so the patch grants none and asks ([C-11](workflow-audit.md#checks-for-steps-that-run-claude-code-action)); the deny list is the hard block under auto.
-- W-04 high: a moving tag in a job that holds a secret. W-08 medium: layer E's row for an agent job outsiders reach. Layer C medium: nothing caps the agent's writes ([the rating table](auto-mode-audit.md#4-rate-and-report)).
+- W-04 high: a moving tag in a job that holds a secret, with no lockfile to lock it. The patch pins by commit with the tag as a comment because the repository has no lockfile ([Pinning policy](version-drift.md#pinning-policy)); adopting one is a separate recommendation with its own approval, and with it the line would read `@<tag>` with the commit in `actions.lock`. W-08 medium: layer E's row for an agent job outsiders reach. Layer C medium: nothing caps the agent's writes ([the rating table](auto-mode-audit.md#4-rate-and-report)).
 - Layers A and F high, each its own approval: A adds `github_token` and job scopes, at the costs in [Costs of each change](auth-and-permissions.md#costs-of-each-change) (Claude's pushes then start no CI); F adds `if: ${{ !github.event.issue.pull_request }}`, which changes when the job runs. Both stay out of the combined patch until the user decides.
 - No `--tools` and no deny on `Edit` or `Write`: a tag workflow that changes code needs them ([Costs of each change](auth-and-permissions.md#costs-of-each-change)).
 
@@ -147,6 +147,6 @@ jobs:
 
 **Why each value.**
 - A finding, not a wait: GitHub documents no queue limit for GitHub-hosted runners, so a long queue sends you to the runner table ([ci-repair.md](ci-repair.md), section 1, step 3), where the label matches no runner (W-10).
-- W-10 medium: a `runs-on` label that matches no runner ([W-10](workflow-audit.md#checks-every-workflow-gets)); the retirement is a dated fact in [the Snapshot](version-drift.md#snapshot).
+- W-10 medium: a `runs-on` label that matches no runner ([W-10](workflow-audit.md#checks-every-workflow-gets)); the retirement comes from GitHub's runner table, read on the day of the repair, not from memory.
 - `macos-15`: the nearest newer label of the same OS and architecture in GitHub's table, so the fewest things change. Not `macos-latest`, which moves on its own.
-- The fix lands through a pull request, and the repair is done only when the next run on the default branch passes.
+- The fix lands through a pull request. The repair is confirmed when the next run on the default branch passes; until that run exists, the Validation row says "not run" with the reason.

@@ -6,6 +6,37 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-21
+
+### Added
+
+- The `cc-github-actions` audit reads the workflow lockfile, `.github/workflows/actions.lock`, that GitHub's `gh actions-lock` extension writes. When the extension is installed, the audit runs `gh actions-lock --verify`, which changes no file.
+- New audit findings for repositories with a lockfile: a workflow whose actions are missing from the lockfile, which GitHub fails at run time; a local `./` action that the lockfile can't follow; an allowed-actions entry pinned to a tag, which no longer matches a locked workflow; and a lockfile with no code owner or no pull request check.
+- Repair of failing CI recognizes the `lockfile missing pin` error and fixes it by regenerating the lockfile, never by deleting it.
+- The README explains how to use the plugin in Claude Code cloud sessions, which don't load plugins from user or repository settings: add it to your claude.ai account. It also explains the GitHub permission a push that changes workflow files needs there.
+
+### Changed
+
+- In a workflow the lockfile lists, `cc-github-actions` now writes a readable release tag, such as `actions/checkout@v7.0.1`, and regenerates the lockfile on the approved branch, instead of a commit SHA. GitHub now says the lockfile replaces SHA pinning for those workflows. Everywhere else, and for an action with no release tag, it still pins the full commit SHA with the tag as a comment: workflows the lockfile doesn't list, repositories without a lockfile, reusable workflows from another repository, steps of an `action.yml`, and GitHub Enterprise Server. The lockfile is regenerated only after you approve the patch, and Claude shows you every commit it changes before the change lands. If the extension isn't installed, the patch for a locked workflow waits, and the report gives you the commands to install it and regenerate the lockfile.
+- The version check of `anthropics/claude-code-action` reads the commit a locked workflow really runs from the lockfile, not from what the tag points to today.
+- On github.com, workflows whose actions are all pinned by SHA and that no lockfile lists get one low finding per repository that recommends the lockfile. Adopting it is a separate step you approve, never part of a patch.
+- Reruns follow one rule everywhere in the skill: only with your approval, and only for a transient failure or after a cause outside the repository is fixed.
+- `cc-github-actions` no longer stores tool versions, policy dates, runner labels, GitHub's Actions limits, `actions/checkout` backports or Claude Code's model lists, which go stale. It looks each one up when a step needs it, from the official source it names, and records what it found in the report. What stays is the verified `anthropics/claude-code-action` baseline, checked against the version each workflow runs, and a few documented defaults, such as the 360-minute job timeout.
+- A patch reaches you only after every check on it passes or is recorded as not run with its reason; a patch that keeps failing the same check is held and listed for you instead. Every route, repair included, lands a fix only when each of its checks passed or was not run with its reason, and the repair route confirms the next run or says why it couldn't.
+- When a tool or command a step names fails, prints nothing or is missing, `cc-github-actions` no longer stops at "not verified": it reaches the step's goal with any method it knows and can access, within your permissions and the skill's own limits, and asks you before anything outside them. It reports what failed and which route worked. The skill no longer limits itself to a fixed list of commands.
+- The descriptions of all four skills now open with when to use them, so Claude picks the right one sooner. `auto-pr-lifecycle` leaves a failing check whose cause is a workflow file or a Claude action step to `cc-github-actions`, and `cleanup-and-debug` leaves repairing failing CI and workflows to it; `github-files-setup` names the files it writes in its trigger instead of "any of these".
+- The skill's description names the `actions.lock` lockfile and pull-request failures caused by a workflow file, so Claude picks it for those requests, and says it doesn't write new workflows.
+
+### Fixed
+
+- zizmor, actionlint and `gh actions-lock` reports are no longer cut short when they find problems. Claude Code shortens the output of a command that ends with an error code, so long reports used to lose findings.
+- The version check of `anthropics/claude-code-action` no longer reports an upstream commit as "not an upstream commit" when GitHub can't be reached, and git commands no longer wait on a credential prompt.
+- The audit no longer rates a moved release tag found by `gh actions-lock` (`tag-commit-mismatch`) as a foreign commit, and no longer reports a network failure of the extension as a finding.
+- Audits decide whether a pinned `actions/checkout` refuses fork checkouts by reading that tag's `action.yml`, so versions that have the protection, backports included, are no longer flagged.
+- The skill no longer says GitHub already blocks `pull_request_target` in public repositories: it reads GitHub's current policy page when a finding depends on it.
+- Lookups in `cc-github-actions` no longer return an empty or misleading answer. A missing tag or branch gives an exit code. A tag object is no longer taken for a commit, and a failed fetch is no longer read as "not upstream". A lockfile-only Claude Code or SDK bump shows in the drift check. A validator that crashes now holds the patch, and actionlint checks patches from the repository's root, so the repository's own configuration and local actions apply.
+- The skill descriptions no longer say that a sibling skill covers work none of them does, such as writing a new workflow.
+
 ## [0.9.2] - 2026-11-20
 
 ### Changed
@@ -288,7 +319,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.9.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.10.0...HEAD
+[0.10.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.10.0
 [0.9.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.2
 [0.9.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.1
 [0.9.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.0

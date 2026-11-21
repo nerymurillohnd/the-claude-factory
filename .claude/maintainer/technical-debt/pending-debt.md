@@ -48,6 +48,7 @@ Add an item only when all of these hold:
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
 | DEBT-011 | bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk | 🟠 Blocked |
 | DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
+| DEBT-014 | cc-github-actions references still mix old-style placeholders, inline commands and cross-file links | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -314,6 +315,36 @@ Add an item only when all of these hold:
 - **Next action:** the owner approves or amends the plan; then implement it test-first, starting with its Task 0 probes.
 - **Review condition:** the owner's decision.
 - **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
+
+### DEBT-014 — cc-github-actions references still mix old-style placeholders, inline commands and cross-file links
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | github-operations |
+| **Logged** | 2026-11-21 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-11-21, PR #118 rewrote only the blocks and lines it changed in `plugins/github-operations/skills/cc-github-actions/references/` to `[…]` placeholders, fenced commands and plain-text names of other files, as `skills-engineering:authoring-skills` (Phase 2 embedding and style) and `.claude/rules/code-quality/skill-style.md` ask.
+  - The teammates that applied those edits flagged what remains in the untouched text:
+    - `<…>` placeholders, for example `claude-step-diagnosis.md:11,27,29,38,39`, `trust-boundaries.md:70` and `ci-repair.md:7-9,15,19,37`;
+    - runnable commands inline in prose, for example `ci-repair.md:7-9`, `claude-step-diagnosis.md:27,29,39`;
+    - Markdown links to other files of the skill, for example `trust-boundaries.md:3,25,28,48,59-69`, `claude-step-diagnosis.md:3,33,38,40,44,68,69` and `ci-repair.md:7,26,36`;
+    - `## Verify against` sections with bare URLs, and no `## Gotchas`, `## Official sources` or `## Exit` sections (`trust-boundaries.md:74-80`, `claude-step-diagnosis.md`, `ci-repair.md`).
+  - Verification grep: `grep -nE '<[a-z][a-z ]*>' plugins/github-operations/skills/cc-github-actions/references/*.md` and `grep -nE '\]\([a-z-]+\.md' plugins/github-operations/skills/cc-github-actions/references/*.md`, plus lines that start with `- ` and hold a bare `https://` URL under `## Verify against`.
+- **Inferences:** within one file, a model reading both placeholder styles and both link styles can take them for two conventions.
+- **Open questions:** whether the owner wants the remaining files converted in one dedicated pass, or file by file as each is next edited.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the skill's references read in two styles. Commands inline in prose are easier to run with a placeholder left in, and a cross-file link starts a second reference level that Claude may read only in part.
+- **Why it is not fixed now:** the owner limited PR #118 to the explicit edits of its plan, and converting every reference file is a separate scope that needs the owner's decision.
+- **Next action:** the owner chooses one pass or file by file; then convert the files with `skills-engineering:authoring-skills`, one plan per pass.
+- **Review condition:** both greps return nothing, and each reference has `## Gotchas`, `## Official sources` and `## Exit`.
+- **Related records:** [#118](https://github.com/nerymurillohnd/the-claude-factory/pull/118).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

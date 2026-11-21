@@ -21,6 +21,7 @@
 | 2026-11-13 | DEBT-004 | resolved | Changelog versions link to their release pages in the files, the procedure and the script | none |
 | 2026-11-19 | DEBT-007 | resolved | The fourteen plugin subagents follow the house agent format | none |
 | 2026-11-19 | DEBT-003 | resolved | The five mods pass strict, portable and hooks-catch validation, and the checks gate every merge | none |
+| 2026-11-21 | DEBT-013 | resolved | cc-github-actions reaches a failed step's goal by any method within the session's permissions | none |
 
 ## 🏁 Closed items
 
@@ -154,6 +155,37 @@ On 2026-11-19 the owner scheduled the fixes. `file-tree-pane` and `project-maint
 - **Residual risk:** no test makes the new `.catch` handlers of `turn-meter` run, so those paths have only been type-checked. The mods' tests are still not type-checked in the Git pre-commit gate, and the `typescript6-lsp-intelligence` post-edit hook checks a mod file against the root `tsconfig.json`, which reports errors the mod's own config does not.
 - **Closed by:** commits 86c5b19, cbb8c19, a35d506, f670e39, c9e56db and 7baba17 on branch `claude/tech-debt-parallel-9lsn8d`.
 - **Related records:** DEBT-006.
+- **Superseded by:** none
+
+### DEBT-013 — cc-github-actions reaches a failed step's goal by any method within the session's permissions
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-21 |
+| **Logged on** | 2026-11-21 |
+| **Owner** | github-operations |
+
+#### ❗ The problem
+
+`cc-github-actions`' `SKILL.md` Rules limited every command to `git`, `gh`, the GitHub MCP tools, installed scanners and a few POSIX utilities, and ended "Never install any program, and never run any other". When the named tool failed, Claude could not reach the step's goal by another method it knew, such as `curl` to a raw file when `gh api` was refused, so the goal was recorded as not verified.
+
+#### 🔧 The closure
+
+On 2026-11-21 the owner asked for the change in the current 0.10.0 branch instead of a follow-up. The allowlist rule was removed. A rule now has Claude use first the tool a step names and, when it fails or is missing, keep the step's goal first, reach it with any method it knows and can access within its permissions, ask the user for anything outside them (installing a program included), and report what failed and which route worked. `references/detection-layers.md` and `references/version-drift.md` install a missing scanner or the `gh actions-lock` extension only after the user approves, and the plugin README and the 0.10.0 notes say the same.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `grep -n 'any method you know' plugins/github-operations/skills/cc-github-actions/SKILL.md` prints line 61; `claude plugin validate --strict plugins/github-operations` prints "Validation passed". |
+| 🚫 **Negative:** the original failure or condition is gone | `grep -rn 'never run any other' plugins/github-operations/skills/cc-github-actions plugins/github-operations/README.md` prints nothing (exit 1). |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none.
+- **Closed by:** commit e4611c6 on branch `ccr-2448a691-7xbgcg`.
+- **Related records:** none.
 - **Superseded by:** none
 
 <!--

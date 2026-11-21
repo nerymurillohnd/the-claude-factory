@@ -6,7 +6,7 @@
 
 **Result:** <n> critical · <n> high · <n> medium · <n> low · <n> questions — <one line: what was examined, and the cause or the main finding>
 **Scope:** <workflows, runs or files examined> · checked <YYYY-MM-DD HH:MM UTC>
-**Detection layers** (audit route; in the other routes write `not run: <route> route`): code scanning <run: n alerts on workflows | not set up | unavailable: reason | not inspected: reason> · zizmor <version | not installed | not run: reason> · actionlint <version | partial: <file> didn't parse | not installed | not run: reason>; <the repository silences some zizmor findings, when it does>
+**Detection layers** (audit route; in the other routes write `not run: <route> route`): code scanning <run: n alerts on workflows | not set up | unavailable: reason | not inspected: reason> · zizmor <version | not installed | not run: reason> · actionlint <version | partial: <file> didn't parse | not installed | not run: reason> · gh actions-lock <version | no lockfile | not installed | not run: reason>; <the repository silences some zizmor findings, when it does>
 **Left for you:** <each decision or action only the user can take, questions included>, or `none`
 
 ## Fix first
@@ -96,13 +96,14 @@
 
 | Reference | Pinned as | Commit | Snapshot | Drift | Resolved with, when |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-<!-- One row per distinct `uses:` string, listing every line it appears on. -->
-| `anthropics/claude-code-action` | `<ref in the file>` (lines <n, m>) | `<full SHA>` | `<snapshot short SHA>` (<tag>) | <none | topics: …, read at the pin | not an upstream commit | unverified: reason> | <`git ls-remote` | "Set up job" log | MCP>, <YYYY-MM-DD> |
-| `<owner>/<action>` | `<ref>` | `<full SHA>` | — | — | <how>, <YYYY-MM-DD> |
+<!-- One row per distinct `uses:` string, listing every line it appears on. For a workflow the lockfile lists, "Commit" is the locked commit, whatever the tag points to now. -->
+| `anthropics/claude-code-action` | `<ref in the file>` (lines <n, m>) | `<full SHA>` | `<snapshot short SHA>` (<tag>) | <none | topics: …, read at the pin | not an upstream commit | unverified: reason> | <`actions.lock` | `git ls-remote` | "Set up job" log | MCP>, <YYYY-MM-DD> |
+| `<owner>/<action>` | `<ref>` | `<full SHA>` | — | — | <`actions.lock` | how>, <YYYY-MM-DD> |
 
 - **Unmapped changes:** <files changed between the snapshot and the pin that hold none of the skill's facts, and what they change>, or `none`, or `not checked (MCP only)`
 - **Release notes read:** <tags>, or `none needed`
 - **How each new tag was chosen:** <the pick pipeline, in the current major | a major jump the user approved>
+- **Lockfile:** <regenerated with `gh actions-lock` <version>, diff reviewed | held: the user runs `<command>` | no lockfile>, and the workflows it lists
 
 ## Validation
 

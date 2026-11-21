@@ -45,10 +45,10 @@ Which mode a step runs in: [Permission mode](action-contract.md#permission-mode)
 
 - **What GitHub gives these runs.** A fork's `pull_request` run gets no secrets and a read-only `GITHUB_TOKEN`; write scopes, `id-token` among them, are downgraded to read unless an admin of a private repository enables sending write tokens. A Dependabot run gets Dependabot secrets, not Actions secrets, and a read-only token that `permissions:` can raise [unverified: whether that allows `id-token: write`; GitHub's Dependabot-on-Actions docs or one run settle it]. Skip both with a job-level `if:` unless the design below is used.
 - **`workflow_run`** gets secrets and write tokens even when the run that triggered it didn't, and the untrusted-PR deny list never applies to it.
-- **`pull_request_target`** runs with the base's privileges. GitHub's new default policy blocks it in public repositories that set no Actions event policy; the enforcement date is in [the Snapshot](version-drift.md#snapshot).
+- **`pull_request_target`** runs with the base's privileges. GitHub's default rule can block it in public repositories that set no Actions event policy allowing it; whether it is enforced yet is a [fact to look up live](version-drift.md#facts-to-look-up-live).
 - **Tag mode on `pull_request_target`** (`track_progress`) checks out the open pull request's head into the workspace itself. Treat that job like a `pull_request` job with the base's secrets (W-02).
 - **When Claude must read the head** under `pull_request_target` or `workflow_run`:
-  1. Fetch the head outside the workspace, for example under `$RUNNER_TEMP`, and pass it with `--add-dir`. `actions/checkout` v7 and its backports refuse this unless `allow-unsafe-pr-checkout: true` is set: set it only here, with a comment saying why.
+  1. Fetch the head outside the workspace, for example under `$RUNNER_TEMP`, and pass it with `--add-dir`. When the pinned `actions/checkout` declares `allow-unsafe-pr-checkout`, which the Facts to look up live section of `version-drift.md` checks, it refuses this unless that input is `true`: set it only here, with a comment saying why.
   2. Before the run, remove or rename that copy's `.claude/`.
   3. Leave `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` unset, so the copy's `CLAUDE.md` doesn't load.
   4. Build, test or run nothing from the head.
@@ -62,7 +62,7 @@ Which mode a step runs in: [Permission mode](action-contract.md#permission-mode)
 - Keep untrusted build and test runs apart from the job that runs the agent, and both apart from publishing.
 - In a workflow file or repository variable, never `secrets: inherit`, `ACTIONS_STEP_DEBUG`, `set -x` beside secrets, a broad Bash grant, or `*` in `allowed_bots` or `allowed_non_write_users`. `show_full_output` and `--debug` follow C-14; a one-off debug rerun is step 6 of [the diagnosis](claude-step-diagnosis.md#6-hand-off-or-propose-the-fix), with the user's approval.
 - Run Claude jobs on an egress-controlled runner when the organization has one; otherwise deny the network tools the job doesn't need in `--disallowedTools` (`WebFetch`, `WebSearch`, `Monitor`), as layer B in [auto-mode-audit.md](auto-mode-audit.md#3-check-each-layer) says; Bash can reach the network too.
-- Pin actions, reusable workflows and plugin marketplaces to resolved commits ([Pick the newest release](version-drift.md#pick-the-newest-release)).
+- Write every `uses:` by the [Pinning policy](version-drift.md#pinning-policy), and pin plugin marketplaces to a local checkout at a resolved commit (C-15).
 
 ## Approval, merge and branch-write tools
 
