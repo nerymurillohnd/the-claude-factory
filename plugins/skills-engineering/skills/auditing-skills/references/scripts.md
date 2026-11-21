@@ -385,7 +385,7 @@ The same script meets different environments:
 
 - **Claude API (Skills API and the code execution tool):** "no network access and no runtime package installation"; "Only pre-installed packages are available. You cannot install new packages during execution" (documented behavior). The code execution tool page lists the container's Python version (3.11 when this file was written), its operating system ("Linux-based container"), its preinstalled Python libraries and a few command-line tools; it states "a higher focus on Python" (documented behavior). Check each script's interpreter version, packages and tools against that page's current list.
 - **claude.ai:** "Depending on user/admin settings, Skills might have full, partial, or no network access" (documented behavior), and Claude "can install packages from standard repositories (Python PyPI, JavaScript npm) when loading skills" (documented behavior).
-- **Claude Code:** "Full network access" and "Global package installation discouraged: Skills should only install packages locally to avoid interfering with the user's computer" (documented behavior and recommendation).
+- **Claude Code:** "Full network access" (documented behavior).
 
 A runner that installs on first use, such as `uv run` with a PEP 723 block, `npx`, `pipx run` or `bunx`, needs the network the first time it meets a package, so on the API it fails unless the package is already in the container, and `uv` itself isn't among the tools the page lists (inference from the documented constraints). Where the support article for claude.ai shows a `dependencies` frontmatter field, Claude Code's skills page says an upload accepts only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools` and fails on any other key; the Agent Skills guide points runtime requirements to "the `compatibility` frontmatter field" (sources disagree; follow the upload rule).
 
@@ -399,7 +399,6 @@ When you audit:
 
 - For each script and each target surface, compare the interpreter version, packages and command-line tools the script needs with what that surface provides, and flag each mismatch.
 - Flag script code that installs packages at runtime, or calls an installing runner, on a skill that targets the API.
-- Flag script code that installs globally on a user's machine: `pip install` outside a virtual environment, `npm install -g`, `sudo` installs, or edits to shell startup files.
 - Flag a skill that targets claude.ai and whose scripts need the network with no stated fallback for sessions where it is off.
 - Flag a script that opens its output in a browser, for example with `webbrowser.open`, `open`, `xdg-open` or `start`, on a target that runs in a container, such as the Claude API or a cloud session: the docs describe this pattern only as "interactive HTML files that open in your browser" on the user's machine, and a container has no browser of the user's to open (inference). Recommend that the script also print the output file's path, and that the skill tell Claude to give the user that path where no browser opens.
 - Recommend, for a script that must run on several surfaces, the version that uses only what every target provides, or the per-surface statement the skill should carry.
