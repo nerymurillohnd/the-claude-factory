@@ -21,6 +21,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Reruns follow one rule everywhere in the skill: only with your approval, and only for a transient failure or after a cause outside the repository is fixed.
 - `cc-github-actions` no longer stores tool versions, policy dates, runner labels and limits, `actions/checkout` backports or Claude Code's model lists, which go stale. It looks each one up when a step needs it, from the official source it names, and records what it found in the report. Only the verified `anthropics/claude-code-action` baseline stays, checked against the version each workflow runs.
 - A patch reaches you only after every check on it passes; a patch that keeps failing the same check is held and listed for you instead. Every route, repair included, lands a fix only when its checks passed, and the repair route confirms the next run or says why it couldn't.
+- When a tool or command a step names fails, `cc-github-actions` no longer stops at "not verified": it reaches the step's goal by another route it may use, such as the GitHub MCP server or the official page a reference cites, reports what failed and which route worked, and proposes to you any route it isn't allowed to take.
 - The skill's description names the `actions.lock` lockfile and pull-request failures caused by a workflow file, so Claude picks it for those requests, and says it doesn't write new workflows.
 
 ### Fixed
