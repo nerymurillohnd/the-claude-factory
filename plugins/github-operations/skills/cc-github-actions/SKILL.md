@@ -45,11 +45,11 @@ Without admin rights, the runners list and some settings can't be read either: e
 - A pull request's failures whose cause is its own code or tests, and its reviews and merge: load `github-operations:auto-pr-lifecycle`.
 - A sweep of run state, artifacts, caches and runners, which is a repository audit: load `github-operations:cleanup-and-debug`.
 - A repository's templates, forms, labels or Dependabot configuration: load `github-operations:github-files-setup`.
-- Writing a new workflow from scratch: not covered yet; tell the user.
+- Writing a new workflow from scratch: not covered; tell the user.
 
 ## Rules
 
-- This skill owns every failure whose cause is a workflow definition or a Claude action step, on the default branch and on a pull request. On a pull request, diagnose read-only.
+- This skill owns every failure whose cause is a workflow definition or a Claude action step, on the default branch and on a pull request. On a pull request, diagnose read-only and land the patch through `github-operations:auto-pr-lifecycle`.
 - Ask the user before any rerun, any workflow change, enabling or disabling a workflow, and every push. A change to a workflow's triggers, permissions, secrets or permission mode is its own approval.
 - Fix the cause with the smallest change. Never weaken a test or a check, suppress a warning, or broaden a workflow's permissions to get a green run.
 - Take every claude-code-action fact from [references/action-contract.md](references/action-contract.md), and only after [the drift check](references/version-drift.md#compare-with-the-snapshot) for the commit the step runs; never from memory, documentation or examples.
