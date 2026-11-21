@@ -13,7 +13,13 @@ The checks the audit runs in layer 3 of [detection-layers.md](detection-layers.m
 Read, and record what you couldn't:
 
 - **Files.** Every file under `.github/workflows/`, every composite action (`action.yml` or `action.yaml` anywhere in the repository) and every reusable workflow the files call: a remote one at the ref the caller pins, a local one as the job's workspace holds it when it runs.
-- **The default branch's copy.** Comment, issue and schedule events run the workflow file on the default branch, so audit that copy too when the working tree is on another branch: `git show origin/<default>:.github/workflows/<file>`, or `get_file_contents` with `ref` set to the default branch.
+- **The default branch's copy.** Comment, issue and schedule events run the workflow file on the default branch, so audit that copy too when the working tree is on another branch. Read it with `get_file_contents` and `ref` set to the default branch, or:
+
+  ```bash
+  gh api -H 'Accept: application/vnd.github.raw' 'repos/[owner]/[repo]/contents/.github/workflows/[file]?ref=[default branch]'; echo "gh api exit: $?"
+  ```
+
+  Use the file only with `gh api exit: 0`. When neither route answers, read `git show origin/[default branch]:.github/workflows/[file]`, and say in the report that this copy is as old as the clone's last fetch.
 - **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` and `gh api repos/<owner>/<repo>/actions/permissions/workflow` (the default token permission).
 - **The rules on the default branch:** `gh api repos/<owner>/<repo>/rules/branches/<default branch>`.
 - **Secret and variable names at every level** (names only, never values): `gh secret list`, `gh secret list --env <environment>` for each environment a job uses, `gh secret list --app dependabot`, `gh secret list --org <org>` when readable, and `gh variable list`.
@@ -110,7 +116,7 @@ Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-po
   - a lockfile with no CODEOWNERS entry, or no pull request check that runs `gh actions-lock --verify`;
   - a version comment that doesn't match the SHA;
   - a stale pin: its tag, written or locked, is older than the newest release in its major ([Pick the newest release](version-drift.md#pick-the-newest-release)).
-- **Not a finding when** the `uses:` is a `$/` reference, a local path (`./...`) in a workflow the lockfile doesn't list, or a Docker image pinned by digest; or when a full release tag stands in a workflow the lockfile lists with a matching entry. On GitHub Enterprise Server the lockfile cases don't apply: GHES has no lockfiles.
+- **Not a finding when** the `uses:` is a `$/` reference, a local path (`./...`) in a workflow the lockfile doesn't list, or a Docker image pinned by digest; or when a full release tag stands in a workflow the lockfile lists with a matching entry, or a SHA in a listed workflow for an action with no release tag. On GitHub Enterprise Server the lockfile cases don't apply: GHES has no lockfiles.
 - **Severity:**
   - an unlocked tag or branch, or not an upstream commit: high when the job holds secrets or a write token, medium otherwise;
   - a missing lockfile entry, or a `./` action that uses remote actions in a listed workflow: medium, because the run fails; a `--verify` finding: as detection-layers.md maps it;
@@ -171,12 +177,18 @@ Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-po
 ### W-10. References to things that no longer exist
 
 - **Look for:**
-  - branches in `on:` filters (`git ls-remote --heads`);
+  - branches in `on:` filters, each pattern checked with:
+
+    ```bash
+    GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code --heads https://github.com/[owner]/[repo] '[branch filter]'; echo "ls-remote exit: $?"
+    ```
+
+    `[branch filter]` is the pattern as `on:` writes it. Exit 2 means no branch matches it; 128 means nothing was read.
   - secrets the repository doesn't have, at every level read in [Scope and inputs](#scope-and-inputs);
   - files under `paths:` or used by steps, and scripts named in a script-caps value;
   - `runs-on` labels: compare GitHub-hosted labels with GitHub's current runner table, read live ([Facts to look up live](version-drift.md#facts-to-look-up-live)): a label the table no longer lists is retired; compare self-hosted and larger-runner labels with the runners list, which needs admin access.
 - **When it can't be decided:** organization and environment secrets and self-hosted labels may not be readable. Each is a Questions row, not a missing reference.
-- **Severity:** low; medium when the missing piece is a required check's or a deployment's, or when a `runs-on` label matches no runner. Such a job waits in the queue and, for self-hosted routing, ends after 24 hours; GitHub's pages describe that end as failed in one place and cancelled in another, so report whichever the run shows.
+- **Severity:** low; medium when the missing piece is a required check's or a deployment's, or when a `runs-on` label matches no runner. Such a job waits in the queue and, for self-hosted routing, ends at the self-hosted queue limit on GitHub's [Actions limits](https://docs.github.com/en/actions/reference/limits) page; GitHub's pages describe that end as failed in one place and cancelled in another, so report whichever the run shows.
 - **Patch:** fix or remove the reference; for a retired label, the nearest newer label of the same OS and architecture in GitHub's table, not a `-latest` label, which moves on its own.
 - **Scanners:** none. actionlint checks labels against its own list, which can lag GitHub's.
 
@@ -192,7 +204,7 @@ Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-po
 - **Look for, in this order:**
   1. actionlint's parse errors, when it is installed. A `uses: $/…` it reports as "ref is missing" is valid syntax actionlint doesn't know yet, not an error.
   2. Runs of the workflow with zero jobs and conclusion `failure`, or conclusion `startup_failure`: GitHub creates a failed run for every commit while a workflow file is invalid.
-  3. Reading the file: a plain (unquoted) value containing `: `; tabs in indentation; duplicate keys, compared without case (`my-job` and `MY-JOB` collide); an `if:` value that starts with `!` and isn't quoted or wrapped in `${{ }}`; a `job_id` that doesn't start with a letter or `_` or holds other than letters, digits, `-` and `_`; a file over 500 KB, which starts no runs.
+  3. Reading the file: a plain (unquoted) value containing `: `; tabs in indentation; duplicate keys, compared without case (`my-job` and `MY-JOB` collide); an `if:` value that starts with `!` and isn't quoted or wrapped in `${{ }}`; a `job_id` that doesn't start with a letter or `_` or holds other than letters, digits, `-` and `_`; a file over the workflow file size limit on GitHub's Actions limits page, which starts no runs.
 - **Also look for silent truncation:** ` #` inside an unquoted value starts a comment, so `run: echo a #b` runs `echo a`. Rate it by what the cut text did.
 - **Severity:** medium: the workflow doesn't run, which blocks merges or leaves a job undone.
 - **Patch:** one patch per file that fixes the parse error and carries every other finding in that file, because every one of them becomes live when the file runs again. Rate those other findings as if the file ran.
@@ -252,9 +264,19 @@ Before you show the patches to the user, check them on the patched files:
 1. **Re-derive the effective mode** of every claude-code-action step the patches touch, from [Permission mode](action-contract.md#permission-mode). The mode after must equal the mode before, unless the user approved a change.
 2. **Run the W and C checks again on what the patches change.** A patch can raise a finding of its own, for example a bump that crosses a breaking release ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)).
 3. **Auto mode:** when a patch makes a step's mode auto that wasn't auto before, run [auto-mode-audit.md](auto-mode-audit.md) on that step. In the audit route, also confirm that every layer patch is in place.
-4. **Parse the files:** actionlint when it is available, run on copies of the patched files outside the repository, with `; echo "actionlint exit: $?"` appended so a long report isn't cut ([detection-layers.md](detection-layers.md)); otherwise read them again for W-12.
+4. **Parse the files:** when actionlint is available, write each patched workflow into a temporary folder, then run actionlint from the repository's root on it through stdin, so the repository's actionlint configuration and local actions resolve and nothing in the repository changes:
+
+   ```bash
+   TMP=$(mktemp -d) || exit 1; echo "tmp: $TMP"
+   ```
+
+   ```bash
+   actionlint -format '{{json .}}' -shellcheck= -pyflakes= -stdin-filename .github/workflows/[file] - < [tmp]/[file]; echo "actionlint exit: $?"
+   ```
+
+   `[file]` is the workflow's file name and `[tmp]` the path after `tmp:`, written literally because a variable doesn't survive between calls. Read the exit code as in the actionlint section of `detection-layers.md`, except that 2 or 3 is a failed row here, not "not run". When a patch also changes a local action, check it again on the approved branch. Delete the folder with `rm -rf [tmp]` when you're done. Without actionlint, read the files again for W-12.
 5. **Stay in the route.** In the diagnosis and repair routes, something this check notices on lines the patches don't touch isn't a finding of that route: put it in Observations and offer the audit route.
-6. **Decide.** Each check above passes, or is recorded as not run with its reason, such as actionlint not installed. When one fails, read what it reports and fix the patch: for a mode that changed, write the frozen mode by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches); for a finding the patch raised, merge its fix by [Build the patches](#build-the-patches). Then run every check again on the fixed patch. Show the patches to the user only when every check passes. When the same check fails on the same lines two rounds in a row, stop: hold that patch, record the check as failed with what it reported in the report's Validation table, and list the patch under "Left for you".
+6. **Decide.** Each check above passes, or is recorded as not run with its reason, such as actionlint not installed. When one fails, read what it reports and fix the patch: for a mode that changed, write the frozen mode by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches); for a finding the patch raised, merge its fix by [Build the patches](#build-the-patches). Then run every check again on the fixed patch. Show the patches to the user only when every check passes or is not run with its reason. When the same check fails on the same lines two rounds in a row, stop: hold that patch, record the check as failed with what it reported in the report's Validation table, and list the patch under "Left for you".
 
 Apply the patches only after the user approves them, on a branch. Land them through `github-operations:auto-pr-lifecycle` only when every row of the report's Validation table for them reads passed, or not run with its reason. When the applied files differ from the checked patches, check them again.
 

@@ -1,6 +1,6 @@
 # Detection layers
 
-The audit looks for problems in three layers, in this order: the alerts GitHub's code scanning already holds, the scanners the user already has installed, and the checks in [workflow-audit.md](workflow-audit.md). Each layer finds what the one before it missed, and none replaces the last: the checks in `workflow-audit.md` always run in full, whatever the first two found.
+The audit looks for problems in three layers, in this order: the alerts GitHub's code scanning already holds, the zizmor, actionlint and `gh actions-lock` scanners, and the checks of `workflow-audit.md`. Each layer finds what the one before it missed, and none replaces the last: the checks in `workflow-audit.md` always run in full, whatever the first two found.
 
 ## Contents
 
@@ -13,7 +13,16 @@ The audit looks for problems in three layers, in this order: the alerts GitHub's
 
 GitHub's code scanning may already analyze the repository's workflows: CodeQL does it for every repository with default setup (rule IDs `actions/...`); a repository on CodeQL's advanced setup analyzes workflows only when its configuration adds the `actions` language, and some repositories upload zizmor results too (rule IDs `zizmor/<audit>`). Reading those alerts first costs one call and starts the audit from what GitHub already knows.
 
-1. **Read the open alerts.** Use the GitHub MCP tool `list_code_scanning_alerts` when a GitHub server offers it. When more than one GitHub MCP server is connected, any server that exposes the tool will do for this read; `ToolSearch` with the tool's name finds it. It belongs to the server's `code_security` toolset, which is off by default, so look for it with `ToolSearch` (query `code_scanning`) and don't assume it exists. Pass `owner`, `repo`, `state: open` and `perPage: 100`, and read every page. Otherwise run `gh api "repos/<owner>/<repo>/code-scanning/alerts?state=open&per_page=100" --paginate`.
+1. **Read the open alerts.** Use the GitHub MCP tool `list_code_scanning_alerts` when a GitHub server offers it. When more than one GitHub MCP server is connected, any server that exposes the tool will do for this read; `ToolSearch` with the tool's name finds it. It belongs to the server's `code_security` toolset, which is off by default, so look for it with `ToolSearch` (query `code_scanning`) and don't assume it exists. Pass `owner`, `repo`, `state: open` and `perPage: 100`, and read every page.
+
+   Otherwise run:
+
+   ```bash
+   gh api "repos/[owner]/[repo]/code-scanning/alerts?state=open&per_page=100" --paginate; echo "gh api exit: $?"
+   ```
+
+   Use the list only with `gh api exit: 0`; any other exit means a page failed, so decide from the error as the table below says.
+
 2. **Decide from the answer:**
 
    | Answer | Meaning | What you do |
@@ -33,7 +42,19 @@ GitHub's code scanning may already analyze the repository's workflows: CodeQL do
 
 ## Layer 2: zizmor, actionlint and gh actions-lock
 
-zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock` is GitHub's extension that keeps the lockfile. Check for each with `command -v zizmor`, `command -v actionlint` and `gh extension list`. Install one only after the user approves; when one is missing and the user doesn't approve installing it, record it as "not run: not installed" and go on, and for a repository with a lockfile list `gh extension install github/gh-actions-lock` under "Left for you". None of them changes a file when run as below.
+zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock` is GitHub's extension that keeps the lockfile. None of them changes a file when run as below. Check for each:
+
+```bash
+command -v zizmor; command -v actionlint; gh extension list
+```
+
+Record a tool that prints no path, or an extension missing from the list, as "not installed". Their setup is on zizmor's [Installation](https://docs.zizmor.sh/installation/) page and actionlint's [Installation](https://github.com/rhysd/actionlint/blob/main/docs/install.md) page, and the extension installs with:
+
+```bash
+gh extension install github/gh-actions-lock --pin [release tag]
+```
+
+`[release tag]` is the newest tag on the extension's [releases](https://github.com/github/gh-actions-lock/releases) page.
 
 Each tool exits non-zero when it finds something, and the Bash tool cuts the output of a command that exits non-zero to about 10,000 characters, with no file to read the rest from. So each command below keeps its own exit status out of the shell's: zizmor through `--no-exit-codes`, the other two through a trailing `echo` of the code.
 
@@ -43,7 +64,7 @@ Each tool exits non-zero when it finds something, and the Bash tool cuts the out
 2. Run it from the repository's root, exactly so:
 
    ```bash
-   zizmor --offline --no-exit-codes --collect=workflows,actions --format=json-v1 --no-progress .
+   zizmor --offline --no-exit-codes --quiet --collect=workflows,actions --format=json-v1 --no-progress .
    ```
 
    `--offline` is required, not optional: zizmor goes online by itself whenever `GH_TOKEN` or `GITHUB_TOKEN` is set, which is the usual case. Never pass `--fix`, which rewrites the files.

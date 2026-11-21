@@ -48,7 +48,7 @@ Which mode a step runs in: [Permission mode](action-contract.md#permission-mode)
 - **`pull_request_target`** runs with the base's privileges. GitHub's default rule can block it in public repositories that set no Actions event policy allowing it; whether it is enforced yet is a [fact to look up live](version-drift.md#facts-to-look-up-live).
 - **Tag mode on `pull_request_target`** (`track_progress`) checks out the open pull request's head into the workspace itself. Treat that job like a `pull_request` job with the base's secrets (W-02).
 - **When Claude must read the head** under `pull_request_target` or `workflow_run`:
-  1. Fetch the head outside the workspace, for example under `$RUNNER_TEMP`, and pass it with `--add-dir`. `actions/checkout` v7 and its backports refuse this unless `allow-unsafe-pr-checkout: true` is set: set it only here, with a comment saying why.
+  1. Fetch the head outside the workspace, for example under `$RUNNER_TEMP`, and pass it with `--add-dir`. When the pinned `actions/checkout` declares `allow-unsafe-pr-checkout`, which the Facts to look up live section of `version-drift.md` checks, it refuses this unless that input is `true`: set it only here, with a comment saying why.
   2. Before the run, remove or rename that copy's `.claude/`.
   3. Leave `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` unset, so the copy's `CLAUDE.md` doesn't load.
   4. Build, test or run nothing from the head.
