@@ -11,7 +11,7 @@ The audit looks for problems in three layers, in this order: the alerts GitHub's
 
 ## Layer 1: code scanning alerts
 
-GitHub's code scanning may already analyze the repository's workflows: CodeQL does it for every repository with default setup since April 2025 (rule IDs `actions/...`); a repository on CodeQL's advanced setup analyzes workflows only when its configuration adds the `actions` language, and some repositories upload zizmor results too (rule IDs `zizmor/<audit>`). Reading those alerts first costs one call and starts the audit from what GitHub already knows.
+GitHub's code scanning may already analyze the repository's workflows: CodeQL does it for every repository with default setup (rule IDs `actions/...`); a repository on CodeQL's advanced setup analyzes workflows only when its configuration adds the `actions` language, and some repositories upload zizmor results too (rule IDs `zizmor/<audit>`). Reading those alerts first costs one call and starts the audit from what GitHub already knows.
 
 1. **Read the open alerts.** Use the GitHub MCP tool `list_code_scanning_alerts` when a GitHub server offers it. When more than one GitHub MCP server is connected, any server that exposes the tool will do for this read; `ToolSearch` with the tool's name finds it. It belongs to the server's `code_security` toolset, which is off by default, so look for it with `ToolSearch` (query `code_scanning`) and don't assume it exists. Pass `owner`, `repo`, `state: open` and `perPage: 100`, and read every page. Otherwise run `gh api "repos/<owner>/<repo>/code-scanning/alerts?state=open&per_page=100" --paginate`.
 2. **Decide from the answer:**

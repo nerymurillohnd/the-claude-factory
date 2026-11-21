@@ -149,4 +149,4 @@ jobs:
 - A finding, not a wait: GitHub documents no queue limit for GitHub-hosted runners, so a long queue sends you to the runner table ([ci-repair.md](ci-repair.md), section 1, step 3), where the label matches no runner (W-10).
 - W-10 medium: a `runs-on` label that matches no runner ([W-10](workflow-audit.md#checks-every-workflow-gets)); the retirement comes from GitHub's runner table, read on the day of the repair, not from memory.
 - `macos-15`: the nearest newer label of the same OS and architecture in GitHub's table, so the fewest things change. Not `macos-latest`, which moves on its own.
-- The fix lands through a pull request, and the repair is done only when the next run on the default branch passes.
+- The fix lands through a pull request. The repair is confirmed when the next run on the default branch passes; until that run exists, the Validation row says "not run" with the reason.

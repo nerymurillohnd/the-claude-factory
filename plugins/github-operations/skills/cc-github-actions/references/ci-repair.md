@@ -33,6 +33,6 @@ A job that fails with `lockfile missing pin for <action>@<ref>`, at a `uses:` st
 
 ## 4. Land the fix
 
-1. Land each cause in its own pull request, through `github-operations:auto-pr-lifecycle`.
+1. Land each cause in its own pull request, through `github-operations:auto-pr-lifecycle`, only after its workflow patch passed [Validate the patches](workflow-audit.md#validate-the-patches) and the user approved it.
 2. Re-enable a scheduled workflow GitHub disabled only with the user's approval, after the fix lands: `gh workflow enable <workflow>`.
-3. After the merge, confirm the next run on the default branch passes.
+3. After the merge, read the next run of that workflow on the default branch. When it passes, record it as passed in the report's Validation table. When it fails, go back to section 2 with its log; when it fails again for the same cause, stop and report both runs and what would unlock the fix. When it hasn't started by the end of the session, for a schedule or a path filter, record it as "not run" with the reason and when it is due, and list "confirm the next run" under "Left for you".

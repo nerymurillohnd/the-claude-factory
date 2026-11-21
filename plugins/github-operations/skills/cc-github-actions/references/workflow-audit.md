@@ -254,8 +254,9 @@ Before you show the patches to the user, check them on the patched files:
 3. **Auto mode:** when a patch makes a step's mode auto that wasn't auto before, run [auto-mode-audit.md](auto-mode-audit.md) on that step. In the audit route, also confirm that every layer patch is in place.
 4. **Parse the files:** actionlint when installed, run on copies of the patched files outside the repository, with `; echo "actionlint exit: $?"` appended so a long report isn't cut ([detection-layers.md](detection-layers.md)); otherwise read them again for W-12.
 5. **Stay in the route.** In the diagnosis and repair routes, something this check notices on lines the patches don't touch isn't a finding of that route: put it in Observations and offer the audit route.
+6. **Decide.** Each check above passes, or is recorded as not run with its reason, such as actionlint not installed. When one fails, read what it reports and fix the patch: for a mode that changed, write the frozen mode by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches); for a finding the patch raised, merge its fix by [Build the patches](#build-the-patches). Then run every check again on the fixed patch. Show the patches to the user only when every check passes. When the same check fails on the same lines two rounds in a row, stop: hold that patch, record the check as failed with what it reported in the report's Validation table, and list the patch under "Left for you".
 
-Apply the patches only after the user approves them, on a branch, and land the change through `github-operations:auto-pr-lifecycle`. When the applied files differ from the checked patches, check them again.
+Apply the patches only after the user approves them, on a branch. Land them through `github-operations:auto-pr-lifecycle` only when every row of the report's Validation table for them reads passed, or not run with its reason. When the applied files differ from the checked patches, check them again.
 
 ## Each finding
 
