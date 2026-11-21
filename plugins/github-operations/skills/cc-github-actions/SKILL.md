@@ -30,6 +30,7 @@ How they connect:
 | Claude Code with `git` but no authenticated `gh` and no GitHub MCP server | The audit of the repository's files, with the drift check through `git`. Runs, the Actions policy, secrets and runners can't be read: each becomes a Questions row when it decides a rating |
 | A GitHub MCP server only | Diagnose and audit, read-only, with the drift check through MCP. Patches go in the report, unapplied; nothing lands; no zizmor, actionlint or `gh actions-lock` |
 | None of `git`, `gh` or a GitHub MCP server | Stop, and name what's missing: the plugin README lists the prerequisites |
+| A Claude Code cloud session | As above, by what the session's GitHub access reaches; the plugin loads there only when turned on for the user's claude.ai account. A push that changes a workflow file needs a GitHub connection allowed to change workflows: when it is refused, hold the patch and give the user the branch |
 | GitHub Enterprise Server | The routes run, but the action's facts and the drift check describe github.com's action: count them as unverified |
 
 Without admin rights, the runners list and some settings can't be read either: each is a Questions row when it decides a rating.

@@ -521,7 +521,7 @@ In one step (Claude Code v2.1.292+):
 claude plugin install github-operations --marketplace nerymurillohnd/the-claude-factory
 ```
 
-For everyone working in the current repository:
+For everyone working in the current repository, on their own machines (cloud sessions don't load it this way; see [Cloud sessions](#️-cloud-sessions)):
 
 ```bash
 claude plugin install github-operations@the-claude-factory --scope project
@@ -539,6 +539,12 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin marketplace add nerymurillohnd/the-claude-factory
 /plugin install github-operations@the-claude-factory
 ```
+
+### ☁️ Cloud sessions
+
+Claude Code on the web and other cloud sessions don't install plugins enabled only in your user settings, or the ones a repository declares in its `.claude/settings.json` ([What carries over from your setup](https://code.claude.com/docs/en/cloud-environments#what-carries-over-from-your-setup)). To use this plugin there, add it to your claude.ai account: in [**Customize > Plugins**](https://claude.ai/customize/plugins), add the marketplace `nerymurillohnd/the-claude-factory`, then add `github-operations`. A plugin on your account also reaches Claude Code as a synced plugin ([Platform support](https://claude.com/docs/plugins/platform-support)).
+
+In a cloud session, a push that changes a workflow file needs a GitHub connection allowed to change workflows. With `/web-setup`, that is a `gh` token with the `workflow` scope; without it, GitHub can reject the push ([Claude Code on the web](https://code.claude.com/docs/en/web-quickstart)). When a push is refused, Claude keeps the patch on its branch and tells you.
 
 ## 🚀 Usage
 
