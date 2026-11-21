@@ -107,7 +107,7 @@ Run it only when the repository has `.github/workflows/actions.lock` and `gh ext
    - `unreachable-pin`: the locked commit left the ref's history, through a force-push, a moved tag or an edited lockfile, which the tool can't tell apart. Rate it as "not an upstream commit" until the user has checked which.
    - `tag-commit-mismatch`: the entry locks an older commit from the tag's own history, because the publisher moved the tag or the lockfile was edited. Rate it medium; its patch is `gh actions-lock --relock`, proposed only after the user has checked that the lockfile wasn't edited by hand and reviewed the upstream change, since a moved release tag is exactly what the lockfile guards against.
    - Never patch a finding with `--accept-moved`. Any other `error` is medium, because GitHub fails the job.
-   - A `warning` such as `sha-as-ref`, `version-ref` or `container-image` is low; `info` is no finding.
+   - A `warning` such as `sha-as-ref`, `version-ref` or `container-image` is low; `info` is no finding. A `sha-as-ref` warning on an action that has no `vX.Y.Z` release tag is no finding, as W-04 says.
 
 ## Layer 3: the audit's own checks
 

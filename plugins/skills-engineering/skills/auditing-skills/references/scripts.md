@@ -383,7 +383,7 @@ When you audit:
 
 The same script meets different environments:
 
-- **Claude API (Skills API and the code execution tool):** "no network access and no runtime package installation"; "Only pre-installed packages are available. You cannot install new packages during execution" (documented behavior). The code execution tool page lists the container's Python version (3.11 when this file was written), its operating system ("Linux-based container"), its preinstalled Python libraries and a few command-line tools; it states "a higher focus on Python" (documented behavior). Check each script's interpreter version, packages and tools against that page's current list.
+- **Claude API (Skills API and the code execution tool):** "no network access and no runtime package installation"; "Only pre-installed packages are available. You cannot install new packages during execution" (documented behavior). The code execution tool page lists the container's Python version, its operating system ("Linux-based container"), its preinstalled Python libraries and a few command-line tools; it states "a higher focus on Python" (documented behavior). Check each script's interpreter version, packages and tools against that page's current list.
 - **claude.ai:** "Depending on user/admin settings, Skills might have full, partial, or no network access" (documented behavior), and Claude "can install packages from standard repositories (Python PyPI, JavaScript npm) when loading skills" (documented behavior).
 - **Claude Code:** "Full network access" (documented behavior).
 

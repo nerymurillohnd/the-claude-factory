@@ -34,7 +34,7 @@ This skill holds no versions, dates or lists that change outside the baseline. L
 - **`actions/checkout` and fork checkouts.** Whether the version a workflow pins refuses a fork's checkout by default: read that tag's `action.yml`. A version that declares `allow-unsafe-pr-checkout` refuses unless it is set to `true`; one that doesn't declare it checks out whatever it is told.
 
   ```bash
-  if a=$(gh api -H 'Accept: application/vnd.github.raw' 'repos/actions/checkout/contents/action.yml?ref=[tag]'); then printf '%s\n' "$a" | grep -cE '^  allow-unsafe-pr-checkout:'; else echo "read: failed"; fi
+  if a=$(gh api -H 'Accept: application/vnd.github.raw' 'repos/actions/checkout/contents/action.yml?ref=[tag]'); then printf '%s\n' "$a" | grep -cE '^  allow-unsafe-pr-checkout:' || true; else echo "read: failed"; fi
   ```
 
   `[tag]` is the tag the workflow pins. `1` or more means it refuses by default; `0` means it doesn't; `read: failed` means nothing was decided. With MCP only, read the same file with `get_file_contents` at that `ref`. The credential layout is in [Git, branches and credentials](action-contract.md#git-branches-and-credentials).
@@ -42,7 +42,7 @@ This skill holds no versions, dates or lists that change outside the baseline. L
 - **Version tags of a marketplace or action.** Before pinning one by tag, list its tags:
 
   ```bash
-  GIT_TERMINAL_PROMPT=0 git ls-remote --tags [repository URL]; echo "ls-remote exit: $?"
+  GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never git ls-remote --tags [repository URL]; echo "ls-remote exit: $?"
   ```
 
   A repository with no `vX.Y.Z` tags, with exit 0, is pinned by commit; any other exit means nothing was read.
@@ -107,7 +107,7 @@ Every path that a `Sources:` line in `action-contract.md` names, and the `packag
      export GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never
      TMP=$(mktemp -d) || exit 1; echo "tmp: $TMP"
      git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none https://github.com/anthropics/claude-code-action refs/heads/main:refs/remotes/upstream/main && echo "fetch: ok" || echo "fetch: failed"
-     git -C "$TMP" merge-base --is-ancestor [sha] upstream/main; echo "on main: $?"
+     git -C "$TMP" merge-base --is-ancestor [sha] upstream/main 2>"$TMP/mb.err"; echo "on main: $?"; grep -m1 'fatal:' "$TMP/mb.err"
      git ls-remote --tags https://github.com/anthropics/claude-code-action > "$TMP/tags" && echo "tags: ok" || echo "tags: failed"
      awk -v s=[sha] '$1 == s && $2 ~ /\^\{\}$/ { t=$2; sub(/\^\{\}$/,"",t); print "release tag: " t; next } $1 == s { lt[$2]=1 } $2 ~ /\^\{\}$/ { p=$2; sub(/\^\{\}$/,"",p); peeled[p]=1 } END { for (t in lt) if (t in peeled) print "tag object, not a commit: " t; else print "release tag (lightweight): " t }' "$TMP/tags"
      ```
@@ -115,8 +115,10 @@ Every path that a `Sources:` line in `action-contract.md` names, and the `packag
      `[sha]` is the full 40-character SHA. The first line keeps git from waiting on a credential prompt nobody can answer. Read the result in this order:
 
      - `fetch: failed` or `tags: failed`: nothing was decided, so never read it as "not an upstream commit". Check the commit with MCP (`list_tags`, and `list_commits` on `main` with `sha` set to the commit), or follow [When nothing can be read](#when-nothing-can-be-read).
-     - `on main: 128` after a `fatal: remote error` line: git couldn't fetch the commit to test it, so nothing was decided either.
-     - Otherwise, `on main: 0`, a `release tag:` line or a `release tag (lightweight):` line means upstream. A `tag object, not a commit:` line is W-04's annotated-tag case. Any other `on main:` value with none of those lines is not an upstream commit: treat it exactly like step 2.
+     - A `tag object, not a commit:` line: W-04's annotated-tag case, even with `on main: 0`, because `merge-base` resolves the tag to its commit.
+     - `on main: 0`, a `release tag:` line or a `release tag (lightweight):` line: upstream.
+     - `on main: 1`, or `on main: 128` with a `fatal:` line that says `not our ref`, and no tag line: not an upstream commit, because GitHub serves no such commit or upstream's history doesn't hold it. Treat it exactly like step 2.
+     - `on main: 128` with any other `fatal:` line, such as `unable to access`: git couldn't reach GitHub to test the commit, so nothing was decided. Follow [When nothing can be read](#when-nothing-can-be-read).
 
      Delete the folder before you leave this step with `rm -rf [tmp]`, where `[tmp]` is the literal path after `tmp:`: a variable doesn't survive between calls, and the comparison below makes its own folder.
    - A tag or branch, such as `v1` or `v1.0.275`:
@@ -135,14 +137,16 @@ Every path that a `Sources:` line in `action-contract.md` names, and the `packag
 Use this when a patch pins or bumps the action. It needs git 2.18 or later and no clone. It keeps only exact `vX.Y.Z` tags, sorts them by version, and prints the newest with its commit, taking the `^{}` line for an annotated tag:
 
 ```bash
-export GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never; set -o pipefail
-git ls-remote --tags --sort=-v:refname https://github.com/[owner]/[action] | awk -v major=[major] '$2 ~ ("^refs/tags/v" major "\\.[0-9]+\\.[0-9]+(\\^\\{\\})?$") { t=$2; sub(/\^\{\}$/,"",t); if (!seen) { seen=t } if (t==seen) { sha=$1; if ($2 ~ /\^\{\}$/) peeled=$1 } } END { if (!seen) exit 1; print seen, (peeled?peeled:sha) }'; echo "pick exit: $?"
+export GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never
+TMP=$(mktemp -d) || exit 1; echo "tmp: $TMP"
+git ls-remote --tags --sort=-v:refname https://github.com/[owner]/[action] > "$TMP/tags"; echo "ls-remote exit: $?"
+awk -v major=[major] '$2 ~ ("^refs/tags/v" major "\\.[0-9]+\\.[0-9]+(\\^\\{\\})?$") { t=$2; sub(/\^\{\}$/,"",t); if (!seen) { seen=t } if (t==seen) { sha=$1; if ($2 ~ /\^\{\}$/) peeled=$1 } } END { if (!seen) exit 1; print seen, (peeled?peeled:sha) }' "$TMP/tags"; echo "pick exit: $?"
 ```
 
-`[owner]/[action]` is the action's repository, and `[major]` is the pin's current major, such as `1`; write `[0-9]+` only after the user approves a jump.
+`[owner]/[action]` is the action's repository, and `[major]` is the pin's current major, such as `1`; write `[0-9]+` only after the user approves a jump. Delete the folder with `rm -rf [tmp]`, where `[tmp]` is the literal path after `tmp:`.
 
 - It prints a line such as `refs/tags/v1.0.275 4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8`. Write the pin as the [Pinning policy](#pinning-policy) says: the tag, `uses: anthropics/claude-code-action@v1.0.275`, in a workflow the lockfile lists; otherwise the commit with the tag as a comment, `uses: anthropics/claude-code-action@<commit> # v1.0.275`.
-- A `pick exit:` other than 0 means no release was picked: either git couldn't read the tags (for a private action, read its tags with `gh api repos/[owner]/[action]/tags --paginate` or MCP `list_tags`), or the action has no `vX.Y.Z` tag in that major (pin the commit the user names, or ask). Never pin unless `pick exit:` is 0.
+- An `ls-remote exit:` other than 0 means git couldn't read the tags: for a private action, read them with `gh api repos/[owner]/[action]/tags --paginate` or MCP `list_tags`. `ls-remote exit: 0` with `pick exit: 1` means the action has no `vX.Y.Z` tag in that major: pin the commit the user names, or ask. Pin only when both are 0.
 - Never take the last line of a plain `git ls-remote --tags`: its order is lexical, so it ends at `v1.0.99`.
 - Stay in the pin's current major unless the user approves a jump. A jump lists the breaking changes from the release notes as residual risk.
 - With MCP only: `get_latest_release` gives the tag GitHub marks as latest, and `list_tags` gives its commit. Check that the tag is in the current major.

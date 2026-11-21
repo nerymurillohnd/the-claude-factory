@@ -19,7 +19,7 @@ Read, and record what you couldn't:
   gh api -H 'Accept: application/vnd.github.raw' 'repos/[owner]/[repo]/contents/.github/workflows/[file]?ref=[default branch]'; echo "gh api exit: $?"
   ```
 
-  Use the file only with `gh api exit: 0`. When neither route answers, read `git show origin/[default branch]:.github/workflows/[file]`, and say in the report that this copy is as old as the clone's last fetch.
+  Use the file only with `gh api exit: 0`. A `Not Found (HTTP 404)` means the default branch has no such file, so no comment, issue or schedule event runs it: record that, and read no other copy. For any other error, read `git show origin/[default branch]:.github/workflows/[file]`, and say in the report that this copy is as old as the clone's last fetch.
 - **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` and `gh api repos/<owner>/<repo>/actions/permissions/workflow` (the default token permission).
 - **The rules on the default branch:** `gh api repos/<owner>/<repo>/rules/branches/<default branch>`.
 - **Secret and variable names at every level** (names only, never values): `gh secret list`, `gh secret list --env <environment>` for each environment a job uses, `gh secret list --app dependabot`, `gh secret list --org <org>` when readable, and `gh variable list`.
@@ -177,13 +177,13 @@ Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-po
 ### W-10. References to things that no longer exist
 
 - **Look for:**
-  - branches in `on:` filters, each pattern checked with:
+  - branches in `on:` filters. List every branch once:
 
     ```bash
-    GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code --heads https://github.com/[owner]/[repo] '[branch filter]'; echo "ls-remote exit: $?"
+    GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never git ls-remote --heads https://github.com/[owner]/[repo]; echo "ls-remote exit: $?"
     ```
 
-    `[branch filter]` is the pattern as `on:` writes it. Exit 2 means no branch matches it; 128 means nothing was read.
+    With exit 0, strip `refs/heads/` and match each filter against the whole names by GitHub's [Filter pattern cheat sheet](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet), never by git's globbing, which matches the end of a name and lets `*` cross `/`. Skip a `!` pattern, which only excludes. A filter that matches no branch is the finding. Any other exit means nothing was read.
   - secrets the repository doesn't have, at every level read in [Scope and inputs](#scope-and-inputs);
   - files under `paths:` or used by steps, and scripts named in a script-caps value;
   - `runs-on` labels: compare GitHub-hosted labels with GitHub's current runner table, read live ([Facts to look up live](version-drift.md#facts-to-look-up-live)): a label the table no longer lists is retired; compare self-hosted and larger-runner labels with the runners list, which needs admin access.
@@ -274,9 +274,9 @@ Before you show the patches to the user, check them on the patched files:
    actionlint -format '{{json .}}' -shellcheck= -pyflakes= -stdin-filename .github/workflows/[file] - < [tmp]/[file]; echo "actionlint exit: $?"
    ```
 
-   `[file]` is the workflow's file name and `[tmp]` the path after `tmp:`, written literally because a variable doesn't survive between calls. Read the exit code as in the actionlint section of `detection-layers.md`, except that 2 or 3 is a failed row here, not "not run". When a patch also changes a local action, check it again on the approved branch. Delete the folder with `rm -rf [tmp]` when you're done. Without actionlint, read the files again for W-12.
+   `[file]` is the workflow's file name and `[tmp]` the path after `tmp:`, written literally because a variable doesn't survive between calls. Read the exit code as in the actionlint section of `detection-layers.md`, except that 2 or 3 is a failed row here, not "not run", and exit 1 with no JSON array before it means the copy wasn't read: check that `[tmp]/[file]` was written, and run it again. actionlint applies the repository's configuration only when `.github/workflows/[file]` already exists; for a new workflow, add `-config-file .github/actionlint.yaml` when the repository has that file. When a patch adds a workflow or changes a local action, check it again on the approved branch. Delete the folder with `rm -rf [tmp]` when you're done. Without actionlint, read the files again for W-12.
 5. **Stay in the route.** In the diagnosis and repair routes, something this check notices on lines the patches don't touch isn't a finding of that route: put it in Observations and offer the audit route.
-6. **Decide.** Each check above passes, or is recorded as not run with its reason, such as actionlint not installed. When one fails, read what it reports and fix the patch: for a mode that changed, write the frozen mode by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches); for a finding the patch raised, merge its fix by [Build the patches](#build-the-patches). Then run every check again on the fixed patch. Show the patches to the user only when every check passes or is not run with its reason. When the same check fails on the same lines two rounds in a row, stop: hold that patch, record the check as failed with what it reported in the report's Validation table, and list the patch under "Left for you".
+6. **Decide.** Each check above passes, or is recorded as not run with its reason, such as `not run: actionlint not installed`. When one fails, read what it reports and fix the patch: for a mode that changed, write the frozen mode by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches); for a finding the patch raised, merge its fix by [Build the patches](#build-the-patches). Then run every check again on the fixed patch. Show the patches to the user only when every check passes or is not run with its reason. When the same check fails on the same lines two rounds in a row, stop: hold that patch, record the check as failed with what it reported in the report's Validation table, and list the patch under "Left for you".
 
 Apply the patches only after the user approves them, on a branch. Land them through `github-operations:auto-pr-lifecycle` only when every row of the report's Validation table for them reads passed, or not run with its reason. When the applied files differ from the checked patches, check them again.
 
