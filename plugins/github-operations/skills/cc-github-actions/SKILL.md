@@ -83,7 +83,7 @@ Progress:
 - [ ] 2. Check the commit the step ran against the snapshot
 - [ ] 3. Match the sharp-edge catalog
 - [ ] 4. Rank the remaining hypotheses, or hand off a code cause
-- [ ] 5. Build and validate the patch; gate: every check passes
+- [ ] 5. Build and validate the patch; gate: every check passes or is not run with its reason
 - [ ] 6. The user approves; land it
 ```
 
@@ -105,7 +105,7 @@ Progress:
 - [ ] 4. Layer 2: zizmor, actionlint and gh actions-lock
 - [ ] 5. Layer 3: every check, and auto mode where it is the effective mode
 - [ ] 6. Merge the layers into findings and questions, and build the patches
-- [ ] Gate: every check in Validate the patches passes
+- [ ] Gate: every check in Validate the patches passes or is not run with its reason
 - [ ] 7. The user approves; apply on a branch; regenerate the lockfile, its commits confirmed
 - [ ] Gate: every Validation row reads passed, or not run with its reason
 - [ ] 8. Land through `github-operations:auto-pr-lifecycle`
@@ -126,7 +126,7 @@ Progress:
 Progress:
 - [ ] 1. Find the failing workflows
 - [ ] 2. Diagnose each failure
-- [ ] 3. Repair: build and validate each fix; gate: every check passes, the user approves
+- [ ] 3. Repair: build and validate each fix; gate: every check passes or is not run with its reason, the user approves
 - [ ] 4. Land each fix; gate: the next run passes, or the report says why not
 ```
 

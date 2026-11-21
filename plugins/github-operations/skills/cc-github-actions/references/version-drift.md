@@ -142,7 +142,7 @@ git ls-remote --tags --sort=-v:refname https://github.com/[owner]/[action] | awk
 `[owner]/[action]` is the action's repository, and `[major]` is the pin's current major, such as `1`; write `[0-9]+` only after the user approves a jump.
 
 - It prints a line such as `refs/tags/v1.0.275 4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8`. Write the pin as the [Pinning policy](#pinning-policy) says: the tag, `uses: anthropics/claude-code-action@v1.0.275`, in a workflow the lockfile lists; otherwise the commit with the tag as a comment, `uses: anthropics/claude-code-action@<commit> # v1.0.275`.
-- A `pick exit:` other than 0 means no release was picked: either git couldn't read the tags (for a private action, read its tags with `gh api repos/<owner>/<action>/tags --paginate` or MCP `list_tags`), or the action has no `vX.Y.Z` tag in that major (pin the commit the user names, or ask). Never pin unless `pick exit:` is 0.
+- A `pick exit:` other than 0 means no release was picked: either git couldn't read the tags (for a private action, read its tags with `gh api repos/[owner]/[action]/tags --paginate` or MCP `list_tags`), or the action has no `vX.Y.Z` tag in that major (pin the commit the user names, or ask). Never pin unless `pick exit:` is 0.
 - Never take the last line of a plain `git ls-remote --tags`: its order is lexical, so it ends at `v1.0.99`.
 - Stay in the pin's current major unless the user approves a jump. A jump lists the breaking changes from the release notes as residual risk.
 - With MCP only: `get_latest_release` gives the tag GitHub marks as latest, and `list_tags` gives its commit. Check that the tag is in the current major.
