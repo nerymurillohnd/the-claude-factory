@@ -176,7 +176,7 @@ Sources: `src/entrypoints/post-buffered-inline-comments.ts`, `src/mcp/install-mc
 
 - `plugin_marketplaces` takes newline-separated entries: an `https://` URL ending in `.git`, with no ref, or a local path starting with `./`, `../` or `/`. A URL installs the marketplace's moving default branch on every run; to pin, check the marketplace out at a resolved commit in an earlier step and pass the local path.
 - `plugins` takes `plugin-name@marketplace-name`, where the marketplace name comes from its manifest, not from the repository URL.
-- Anthropic's plugins, `code-review` among them, live in `anthropics/claude-plugins-official` (marketplace `claude-plugins-official`), which has no version tags (see [the Snapshot](version-drift.md#snapshot)). The `claude-code-plugins` marketplace in `anthropics/claude-code` only redirects each entry there.
+- Anthropic's plugins, `code-review` among them, live in `anthropics/claude-plugins-official` (marketplace `claude-plugins-official`), which had no version tags at the baseline: list its tags before you pin it ([Facts to look up live](version-drift.md#facts-to-look-up-live)). The `claude-code-plugins` marketplace in `anthropics/claude-code` only redirects each entry there.
 - Check the repository out before the action step when the prompt runs a repository skill.
 
 Sources: `base-action/src/install-plugins.ts`
@@ -200,8 +200,8 @@ Sources: `action.yml`
 ## Claude Code version, models and auto availability
 
 - Each release bundles one Claude Code version (`CLAUDE_CODE_VERSION` in `base-action/action.yml`); the snapshot's is in [the Snapshot](version-drift.md#snapshot). v1.0.274 moved it from 2.1.322 to 2.1.323 without saying so in its notes.
-- **No default model.** The action sets none, so Claude Code's applies: Opus 5.5 with an API key, an OAuth token, Bedrock or Vertex, and Sonnet 4.5 on Foundry (Claude Code's model configuration docs). `ANTHROPIC_MODEL` in the step's environment beats `--model` in `claude_args` [unverified: whether a job-level `env:` reaches the composite step].
-- **Models that support auto** (Claude Code's permission-modes docs): on the Anthropic API, Opus 4.6 or later, Sonnet 4.6 or later, Haiku 5.5 and Fable models; on Bedrock, Vertex and Foundry, Sonnet 5 or later, Opus 4.7 or later, Haiku 5.5 (Claude Code 2.1.293 or later) and Fable. Sonnet 4.5, Opus 4.5 and Haiku 4.5 are unsupported everywhere, so a Foundry run with no `--model` can't use auto.
+- **No default model.** The action sets none, so Claude Code's default for the run's provider applies; read it live ([Facts to look up live](version-drift.md#facts-to-look-up-live)). `ANTHROPIC_MODEL` in the step's environment beats `--model` in `claude_args` [unverified: whether a job-level `env:` reaches the composite step].
+- **Models that support auto** depend on the provider and change with model releases; read them live ([Facts to look up live](version-drift.md#facts-to-look-up-live)). When the provider's default model doesn't support auto, a run with no `--model` can't use auto.
 - **Auto is also unavailable** when `disableAutoMode` is set in any settings file or managed settings, when auto is turned off or refused server-side, and, since 2.1.323, behind an `ANTHROPIC_BASE_URL` gateway for a model whose name contains "haiku".
 - **Auto's own costs:** where the server-side review doesn't reach a session, Claude Code makes its own classifier requests, which count toward token usage. On Bedrock the account may need access to the classifier's model, or calls that need review are blocked.
 

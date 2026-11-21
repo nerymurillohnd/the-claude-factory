@@ -51,7 +51,7 @@ Each tool exits non-zero when it finds something, and the Bash tool cuts the out
 4. Read each finding from the JSON array: the audit ID in `ident`, its severity and confidence in `determinations`, and its file and line from the location whose `symbolic.kind` is `Primary` (`symbolic.key.Local.verbatim_path`, and `concrete.location.start_point.row` plus 1, because zizmor counts lines from 0).
 5. When the repository has a zizmor configuration (`.github/zizmor.yml`, `.github/zizmor.yaml`, or `zizmor.yml` or `zizmor.yaml` at its root, or a `ZIZMOR_CONFIG` variable in the environment), or `# zizmor: ignore[...]` comments in its workflows, it has silenced some findings on purpose, and zizmor doesn't print them. Respect that, and say in the report that the repository silences some zizmor findings. Layer 3 still checks every point, so nothing goes unchecked.
 6. Some audits never run offline (`impostor-commit`, `known-vulnerable-actions`, `ref-confusion`, `stale-action-refs`), and some need a persona this run doesn't use. Their absence proves nothing.
-7. From 1.32.0 zizmor reads `.github/workflows/actions.lock`, as an experimental feature, and stops reporting `unpinned-uses` on the workflows it covers. That silence doesn't prove the lockfile is current: W-04 and `gh actions-lock --verify` decide it.
+7. A zizmor release that reads `.github/workflows/actions.lock` (its release notes say from when) stops reporting `unpinned-uses` on the workflows the lockfile covers. That silence doesn't prove the lockfile is current: W-04 and `gh actions-lock --verify` decide it.
 
 ### actionlint
 
@@ -65,7 +65,7 @@ Each tool exits non-zero when it finds something, and the Bash tool cuts the out
 3. Read the exit code on the last line, `actionlint exit: <n>`: 0 means no problems; 1 means problems found; 2 and 3 mean it failed, so record it as "not run" with what it printed.
 4. Each problem has `filepath`, `line`, `kind` and `message`. A file that doesn't parse gets only its parse error: actionlint stops checking that file there. Record actionlint as "partial: `<file>` didn't parse", and report the parse error as W-12.
 5. Discard every problem about the inputs of `anthropics/claude-code-action`: actionlint checks them against a list it carries, which is older than the action, and skips the check entirely when the action is pinned to a commit SHA. Check those inputs as `workflow-audit.md` says instead (C-01).
-6. Discard "ref is missing" on a `uses: $/…` line: actionlint doesn't know GitHub's same-repository syntax yet and parses it as `owner/repo@ref`.
+6. Discard "ref is missing" on a `uses: $/…` line when the installed actionlint's changelog doesn't list `$/` support: a release that predates GitHub's same-repository syntax parses it as `owner/repo@ref`.
 
 ### gh actions-lock
 
@@ -110,4 +110,4 @@ No scanner covers these, so only this layer finds them: workflow-command injecti
 - actionlint, usage: https://github.com/rhysd/actionlint/blob/main/docs/usage.md
 - gh actions-lock, output and categories: https://github.com/github/gh-actions-lock/blob/main/docs/troubleshooting.md
 
-The zizmor and actionlint versions these steps were checked against are in [the Snapshot](version-drift.md#snapshot).
+Record each tool's version in the report. When a step here disagrees with the installed version's `--help` or release notes, they win ([Facts to look up live](version-drift.md#facts-to-look-up-live)).

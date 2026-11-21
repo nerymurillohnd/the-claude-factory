@@ -80,9 +80,9 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 - **Look for:** `pull_request_target` or `workflow_run` jobs that check out the pull request's head into the workspace (`ref:` naming the head branch or `head.sha`, or `repository:` naming the fork), or that build, test or run it; `actions/checkout` with `allow-unsafe-pr-checkout: true`; a claude-code-action step with `track_progress` under `pull_request_target`, which checks out the head itself ([trust-boundaries.md](trust-boundaries.md#fork-dependabot-and-pull_request_target-designs)).
 - **Not a finding when** the job checks out only the base, or fetches the head outside the workspace and runs nothing from it, as the design in trust-boundaries.md describes.
 - **Severity:** critical.
-- **Patch:** that design, or move the job to `pull_request`. Name in the finding GitHub's default rule that blocks `pull_request_target` in public repositories once it is enforced (date and scope in [the Snapshot](version-drift.md#snapshot)), and that `actions/checkout` v7 and its backports refuse a fork's checkout under these triggers unless `allow-unsafe-pr-checkout: true` is set.
+- **Patch:** that design, or move the job to `pull_request`. Name in the finding GitHub's default rule for `pull_request_target`, as its page says on the day you read it, and whether the pinned `actions/checkout` refuses a fork's checkout under these triggers unless `allow-unsafe-pr-checkout: true` is set; look both up as [Facts to look up live](version-drift.md#facts-to-look-up-live) says.
 - **Why:** these triggers run with the base repository's secrets and write token, whatever the approval settings, while the head is code anyone can submit.
-- **Scanners:** zizmor `dangerous-triggers` flags the trigger; its `dangerous-checkout`, which would flag `allow-unsafe-pr-checkout`, is documented for a zizmor release newer than the Snapshot's, so only this check covers that input. CodeQL `actions/untrusted-checkout/*`.
+- **Scanners:** zizmor `dangerous-triggers` flags the trigger; a release with the `dangerous-checkout` audit (its audit list says which) also flags `allow-unsafe-pr-checkout`; without it, only this check covers that input. CodeQL `actions/untrusted-checkout/*`.
 
 ### W-03. Token permissions wider than the job uses
 
@@ -117,11 +117,11 @@ Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-po
   - a container image without a digest: low;
   - a fully SHA-pinned workflow that no lockfile lists: low, because its direct pins hold and only transitive dependencies stay open; report it once per repository, naming the workflows;
   - a bare SHA or partial tag in a listed workflow, a lockfile without CODEOWNERS or a `--verify` check: low;
-  - a stale pin: low, or medium when it misses a security release: claude-code-action below v1.0.273; `actions/checkout` older than its major's first refusing release (the Snapshot lists them) in a `pull_request_target` or `workflow_run` job;
+  - a stale pin: low, or medium when it misses a security release: claude-code-action below v1.0.273; an `actions/checkout` that doesn't refuse fork checkouts, by its `action.yml` ([Facts to look up live](version-drift.md#facts-to-look-up-live)), in a `pull_request_target` or `workflow_run` job;
   - a wrong version comment: low.
 - **Patch:** write each `uses:` as the Pinning policy says, from the release the pick pipeline prints; the lockfile is regenerated after approval, by its step 2. A `./` action becomes `$/` through `gh actions-lock --migrate-local-actions`, with the user's approval. Adopting the lockfile in a repository without one is a recommendation with its own approval, never part of the patch; until then pin by SHA. Add `.github/workflows/actions.lock` to CODEOWNERS, and a check that runs `gh actions-lock --verify` on pull requests (GitHub's example is `verify-lockfile.yml` in `github/gh-actions-lock`), as items with their own approval. Bumping claude-code-action across a breaking release is a patch with its own impact ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)). To keep refs current, hand a `github-actions` Dependabot entry to `github-operations:github-files-setup`: Dependabot regenerates the lockfile entry in the same pull request for a workflow the lockfile lists, and raises security alerts only for actions referenced by version, not by SHA.
 - **Why:** a tag or branch can be moved to new code after the review, a fork's commit is code upstream never reviewed, and a SHA in a workflow file pins nothing the action itself pulls in.
-- **Scanners:** zizmor `unpinned-uses`, `ref-version-mismatch`, and offline-skipped `impostor-commit` and `ref-confusion`; from 1.32.0 zizmor reads the lockfile, experimentally, so its silence on a listed workflow proves nothing. `gh actions-lock --verify`, when installed. Staleness none.
+- **Scanners:** zizmor `unpinned-uses`, `ref-version-mismatch`, and offline-skipped `impostor-commit` and `ref-confusion`; a zizmor release that reads the lockfile stays silent on a listed workflow, which proves nothing. `gh actions-lock --verify`, when installed. Staleness none.
 
 ### W-05. Checkout credentials left on disk
 
@@ -174,7 +174,7 @@ Judge every `uses:` by the case the [Pinning policy](version-drift.md#pinning-po
   - branches in `on:` filters (`git ls-remote --heads`);
   - secrets the repository doesn't have, at every level read in [Scope and inputs](#scope-and-inputs);
   - files under `paths:` or used by steps, and scripts named in a script-caps value;
-  - `runs-on` labels: compare GitHub-hosted labels with GitHub's current runner table, read live (for example `macos-14`, retired: see [the Snapshot](version-drift.md#snapshot)); compare self-hosted and larger-runner labels with the runners list, which needs admin access.
+  - `runs-on` labels: compare GitHub-hosted labels with GitHub's current runner table, read live ([Facts to look up live](version-drift.md#facts-to-look-up-live)): a label the table no longer lists is retired; compare self-hosted and larger-runner labels with the runners list, which needs admin access.
 - **When it can't be decided:** organization and environment secrets and self-hosted labels may not be readable. Each is a Questions row, not a missing reference.
 - **Severity:** low; medium when the missing piece is a required check's or a deployment's, or when a `runs-on` label matches no runner. Such a job waits in the queue and, for self-hosted routing, ends after 24 hours; GitHub's pages describe that end as failed in one place and cancelled in another, so report whichever the run shows.
 - **Patch:** fix or remove the reference; for a retired label, the nearest newer label of the same OS and architecture in GitHub's table, not a `-latest` label, which moves on its own.

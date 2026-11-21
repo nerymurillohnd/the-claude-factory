@@ -6,6 +6,7 @@ Run it once per claude-code-action step a route touches, before you rely on any 
 
 **Contents**
 - [Snapshot](#snapshot)
+- [Facts to look up live](#facts-to-look-up-live)
 - [Source files](#source-files)
 - [Find the commit a step runs](#find-the-commit-a-step-runs)
 - [Pick the newest release](#pick-the-newest-release)
@@ -17,18 +18,29 @@ Run it once per claude-code-action step a route touches, before you rely on any 
 
 ## Snapshot
 
-| claude-code-action | Commit | Claude Code bundled | Agent SDK locked | GitHub MCP server image | zizmor | actionlint | Checked |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| v1.0.275 | `4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8` | 2.1.323 | 0.3.323 | `ghcr.io/github/github-mcp-server:sha-23fa0dd` (v0.17.1) | 1.32.0 | 1.7.12 | 2026-11-13 |
+The baseline: the one commit of `anthropics/claude-code-action` whose behavior `action-contract.md` and `sharp-edges.md` were verified against, read from its source. It is not the newest release, and it doesn't need to be: [Compare with the snapshot](#compare-with-the-snapshot) tells you which facts still hold at the commit a step runs, and sends you to the code for the rest.
 
-Dated facts other references rely on, checked on 2026-11-13 unless an entry gives another date. Re-check one before you rely on it after its date:
+| claude-code-action | Commit | Claude Code bundled | Agent SDK locked | GitHub MCP server image |
+| :-- | :-- | :-- | :-- | :-- |
+| v1.0.275 | `4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8` | 2.1.323 | 0.3.323 | `ghcr.io/github/github-mcp-server:sha-23fa0dd` (v0.17.1) |
 
-- **Workflow dependency lockfiles, checked on 2026-11-20.** General availability on 2026-10-28 for the Free, Team, Enterprise Cloud and GHE.com plans; not on GitHub Enterprise Server, which has no `$/` references either. The newest `github/gh-actions-lock` release is v0.5.1. The Require lockfile policy's Evaluate mode exists only on Enterprise Cloud.
-- **Scanners and lockfiles, checked on 2026-11-20.** actionlint 1.7.12 parses `uses: $/…` as a repository action and reports "ref is missing". zizmor supports lockfiles experimentally since 1.32.0.
-- **`pull_request_target` default rule, checked on 2026-11-20.** From 2026-12-02 GitHub blocks `pull_request_target` in public repositories unless an Actions event policy allows it; until then the rule runs in evaluate mode and blocks nothing, except during GitHub's announced brownouts. A blocked attempt creates a failed run with an error annotation, and the workflow doesn't execute. Private and internal repositories aren't affected.
-- **`actions/checkout` credential layout and fork checkouts, checked on 2026-11-20 at v7.0.1 (`3d3c42e`).** v6.0.0 and later keep the token in a file under `$RUNNER_TEMP`, which the local `.git/config` includes through an `includeIf` entry; earlier versions keep it in the local `.git/config`. v7.0.0 and the backports v6.1.0, v5.1.0, v4.4.0, v3.7.0 and v2.8.0 refuse to check out a fork's code under `pull_request_target`, or under `workflow_run` from a pull request event, unless `allow-unsafe-pr-checkout: true` is set; v1 never got the change.
-- **GitHub-hosted runner labels.** `macos-14` was retired on 2026-11-02. `ubuntu-slim` has a 15-minute job limit.
-- **`anthropics/claude-plugins-official`** publishes no version tags: pin it by commit.
+## Facts to look up live
+
+This skill holds no versions, dates or lists that change outside the baseline. Look each of these up when a step depends on it, from the source named, and record what you found and where in the report's Version provenance or Observations:
+
+- **The tools' versions and behavior.** Record `zizmor --version`, `actionlint -version` and the `gh actions-lock` version `gh extension list` shows. When a step on these pages disagrees with the installed version's `--help` or its release notes ([zizmor](https://docs.zizmor.sh/release-notes/), [actionlint](https://github.com/rhysd/actionlint/blob/main/CHANGELOG.md), [gh-actions-lock](https://github.com/github/gh-actions-lock/releases)), the installed version wins.
+- **Where lockfiles and `$/` exist.** Both are github.com and GHE.com features ([Workflow dependency lockfiles](https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles)). On GitHub Enterprise Server, treat the instance as having neither unless its own documentation, for the instance's version, has a lockfile page.
+- **The `pull_request_target` default rule.** Whether GitHub enforces it yet, on which repositories, and what a blocked attempt looks like: [Default policy for `pull_request_target`](https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target#default-policy-for-pull_request_target) and the [GitHub changelog](https://github.blog/changelog/label/actions/). Say in the finding what the page said on the day you read it.
+- **`actions/checkout` and fork checkouts.** Whether the version a workflow pins refuses a fork's checkout by default: read that tag's `action.yml`. A version that declares `allow-unsafe-pr-checkout` refuses unless it is set to `true`; one that doesn't declare it checks out whatever it is told.
+
+  ```bash
+  if a=$(gh api -H 'Accept: application/vnd.github.raw' 'repos/actions/checkout/contents/action.yml?ref=<tag>'); then printf '%s\n' "$a" | grep -c allow-unsafe-pr-checkout; else echo "read: failed"; fi
+  ```
+
+  `1` or more means it refuses by default; `0` means it doesn't; `read: failed` means nothing was decided. With MCP only, read the same file with `get_file_contents` at that `ref`. The credential layout is in [Git, branches and credentials](action-contract.md#git-branches-and-credentials).
+- **Runner labels and limits.** Read GitHub's [runner table](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#supported-runners-and-hardware-resources) and [Actions limits](https://docs.github.com/en/actions/reference/limits) on the day of the audit, never a label or a limit from memory.
+- **Version tags of a marketplace or action.** Before pinning one by tag, list its tags with `git ls-remote --tags <repository URL>`; a repository with no `vX.Y.Z` tags is pinned by commit.
+- **Claude Code's models.** The default model per provider and the models that support auto mode change with each model release: read [Default model behavior](https://code.claude.com/docs/en/model-config#default-model-behavior) and [Eliminate permission prompts with auto mode](https://code.claude.com/docs/en/permission-modes#eliminate-permission-prompts-with-auto-mode) before a finding rests on them.
 
 ## Source files
 
