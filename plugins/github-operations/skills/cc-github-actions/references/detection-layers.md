@@ -5,7 +5,7 @@ The audit looks for problems in three layers, in this order: the alerts GitHub's
 ## Contents
 
 - [Layer 1: code scanning alerts](#layer-1-code-scanning-alerts)
-- [Layer 2: zizmor, actionlint and gh actions-lock, when already installed](#layer-2-zizmor-actionlint-and-gh-actions-lock-when-already-installed)
+- [Layer 2: zizmor, actionlint and gh actions-lock](#layer-2-zizmor-actionlint-and-gh-actions-lock)
 - [Layer 3: the audit's own checks](#layer-3-the-audits-own-checks)
 - [Merge the layers into findings](#merge-the-layers-into-findings)
 
@@ -31,9 +31,9 @@ GitHub's code scanning may already analyze the repository's workflows: CodeQL do
 
 3. **Check each alert against the file as it is now.** An alert describes the commit in `most_recent_instance.commit_sha`. When the line it names no longer has the problem, report the alert as "fixed in the file, still open on GitHub" instead of as a finding. Dismissed and closed alerts aren't read: the repository already decided on them.
 
-## Layer 2: zizmor, actionlint and gh actions-lock, when already installed
+## Layer 2: zizmor, actionlint and gh actions-lock
 
-zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock` is GitHub's extension that keeps the lockfile. Run each only when it is already installed: check with `command -v zizmor`, `command -v actionlint` and `gh extension list`. Never install any of them; when one is missing, record it as "not run: not installed" and go on, and for a repository with a lockfile list `gh extension install github/gh-actions-lock` under "Left for you". None of them changes a file when run as below.
+zizmor and actionlint are free scanners for GitHub Actions, and `gh actions-lock` is GitHub's extension that keeps the lockfile. Check for each with `command -v zizmor`, `command -v actionlint` and `gh extension list`. Install one only after the user approves; when one is missing and the user doesn't approve installing it, record it as "not run: not installed" and go on, and for a repository with a lockfile list `gh extension install github/gh-actions-lock` under "Left for you". None of them changes a file when run as below.
 
 Each tool exits non-zero when it finds something, and the Bash tool cuts the output of a command that exits non-zero to about 10,000 characters, with no file to read the rest from. So each command below keeps its own exit status out of the shell's: zizmor through `--no-exit-codes`, the other two through a trailing `echo` of the code.
 
