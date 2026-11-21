@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The `cc-github-actions` audit reads the workflow lockfile, `.github/workflows/actions.lock`, that GitHub's `gh actions-lock` extension writes. When the extension is installed, the audit runs `gh actions-lock --verify`, which changes no file. It never installs the extension.
 - New audit findings for repositories with a lockfile: a workflow whose actions are missing from the lockfile, which GitHub fails at run time; a local `./` action that the lockfile can't follow; an allowed-actions entry pinned to a tag, which no longer matches a locked workflow; and a lockfile with no code owner or no pull request check.
 - Repair of failing CI recognizes the `lockfile missing pin` error and fixes it by regenerating the lockfile, never by deleting it.
+- The README explains how to use the plugin in Claude Code cloud sessions, which don't load plugins from user or repository settings: add it to your claude.ai account. It also explains the GitHub permission a push that changes workflow files needs there.
 
 ### Changed
 
@@ -18,6 +19,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The version check of `anthropics/claude-code-action` reads the commit a locked workflow really runs from the lockfile, not from what the tag points to today.
 - A repository whose actions are all pinned by SHA but which has no lockfile gets a low finding that recommends adopting one. Adopting it is a separate step you approve, never part of a patch.
 - Reruns follow one rule everywhere in the skill: only with your approval, and only for a transient failure or after a cause outside the repository is fixed.
+- `cc-github-actions` no longer stores tool versions, policy dates, runner labels and limits, `actions/checkout` backports or Claude Code's model lists, which go stale. It looks each one up when a step needs it, from the official source it names, and records what it found in the report. Only the verified `anthropics/claude-code-action` baseline stays, checked against the version each workflow runs.
+- A patch reaches you only after every check on it passes; a patch that keeps failing the same check is held and listed for you instead. Every route, repair included, lands a fix only when its checks passed, and the repair route confirms the next run or says why it couldn't.
+- The skill's description names the `actions.lock` lockfile and pull-request failures caused by a workflow file, so Claude picks it for those requests, and says it doesn't write new workflows.
 
 ### Fixed
 
