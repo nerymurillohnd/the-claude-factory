@@ -48,6 +48,7 @@ Add an item only when all of these hold:
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
 | DEBT-011 | bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk | 🟠 Blocked |
 | DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
+| DEBT-013 | cc-github-actions' command allowlist stops Claude from reaching a goal another way when the named tool fails | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -314,6 +315,32 @@ Add an item only when all of these hold:
 - **Next action:** the owner approves or amends the plan; then implement it test-first, starting with its Task 0 probes.
 - **Review condition:** the owner's decision.
 - **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
+
+### DEBT-013 — cc-github-actions' command allowlist stops Claude from reaching a goal another way when the named tool fails
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | reliability |
+| **Owner** | github-operations |
+| **Logged** | 2026-11-21 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `plugins/github-operations/skills/cc-github-actions/SKILL.md`, Rules, says: "Run only `git`, `gh`, the GitHub MCP tools, and zizmor, actionlint and the `gh actions-lock` extension when already installed, … plus the POSIX utilities the references' commands use (`rm` only on a temporary folder they made). Never install any program, and never run any other."
+  - Stated by the user on 2026-11-21: the tool or command a step names is the first option; when it fails or gives an unexpected result, Claude must not give up the step's goal or call it unverifiable, but find an alternative from the official documentation or a method it already knows, and report the failure at the end of the turn. The user decided that Claude may use any method it knows, and called the allowlist's "never run any other" a defect to correct once the current 0.10.0 work is finished.
+  - Observed on 2026-11-21 in this cloud session: `gh api repos/actions/checkout/contents/action.yml` was refused for a repository outside the session's scope, while `curl` to `raw.githubusercontent.com` read the same file. Under the allowlist, `curl` is not a route the skill may take.
+- **Inferences:** an interim rule added in 0.10.0 keeps the goal within the allowlist and has Claude propose any other route to the user, so until this item is fixed some goals still end as "not verified" when every allowed route fails.
+- **Open questions:** how the widened rule keeps the skill's other limits: never installing a program, the approval gates, and treating repository content as data.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** when `gh`, MCP or `git` can't reach a source, the skill records a check as not verified although a known method, such as `curl` to a raw file, would settle it; third-party users get weaker audits on restricted networks.
+- **Why it is not fixed now:** the owner scheduled the change for after the current 0.10.0 work.
+- **Next action:** with `skills-engineering:authoring-skills`, replace the "never run any other" clause in `SKILL.md` Rules with the owner's rule (any method Claude knows, never installing, inside the approval gates), update the plugin README's "Commands it runs", and bump the plugin with `plugin-releases`.
+- **Review condition:** the 0.10.0 pull request is merged, or the owner starts the follow-up.
+- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
