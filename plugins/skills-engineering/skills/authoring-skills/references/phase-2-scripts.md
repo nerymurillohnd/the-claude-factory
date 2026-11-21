@@ -81,7 +81,6 @@ Keep dependencies to what each surface can run:
 - Prefer the standard library. A script with no dependencies runs everywhere the interpreter exists.
 - When a package is needed, declare it inside the script with its version pinned: PEP 723 metadata run with `uv run`, or `npm:` imports run with `deno run`. State in the body that the runner is required.
 - A plugin's Node.js packages go in its `package.json` with an npm lockfile: Claude Code installs registry packages pinned to exact versions when it caches the plugin, without running their install scripts. Install anything else, such as Python packages, from a hook into `${CLAUDE_PLUGIN_DATA}`.
-- Install nothing globally: install into the skill's, the plugin's data or the project's environment.
 - For a skill that must also run as an upload to the Claude API, use only the standard library or packages that surface already provides.
 - State in the body, where the script is introduced, every interpreter, package and tool it needs, and list them in the plugin's prerequisites. For a skill that is also uploaded, put the runtime requirements in the `compatibility` field too, as the frontmatter file of Phase 2 shows: Claude Code accepts it without acting on it, and it travels with the upload.
 
@@ -139,7 +138,7 @@ Run `bash ${CLAUDE_PLUGIN_ROOT}/../shared/build.sh`.
 <!-- Strong: the shared script lives at the plugin root -->
 Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/build.sh`.
 
-<!-- Weak: installs globally, with no version, and assumes `python` -->
+<!-- Weak: the package has no version, and the command assumes `python` -->
 Run `pip install pypdf`, then `python scripts/fill.py form.pdf`.
 
 <!-- Strong: the dependency is pinned inside the script, and the body names the runner -->
