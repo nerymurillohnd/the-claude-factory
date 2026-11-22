@@ -46,7 +46,6 @@ Add an item only when all of these hold:
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
-| DEBT-011 | bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk | 🟠 Blocked |
 | DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
 | DEBT-014 | cc-github-actions references still mix old-style placeholders, inline commands and cross-file links | 🟠 Blocked |
 | DEBT-015 | A typescript6-lsp-intelligence hook test fails now and then in CI | 🟡 Pending |
@@ -264,33 +263,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the wording depends on the owner's decision about the fixtures section.
 - **Next action:** the owner decides the fixtures; then correct the "Scope" bullet and the `run-fixtures.sh` header with `skills-engineering:authoring-skills`, with a patch bump.
 - **Review condition:** the owner's decision, or the next change to the skill.
-- **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
-
-### DEBT-011 — bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | compatibility |
-| **Owner** | bash-lsp-intelligence |
-| **Logged** | 2026-11-20 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - bash-lsp-intelligence 0.4.0, released from [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117) on 2026-11-20, replaced `hooks/check.mjs` with `hooks/bash-gate.sh`, `hooks/read-event.awk` and `hooks/json-string.awk`, and its README states Bash 3.2 or later.
-  - The 13 tests in `plugins/bash-lsp-intelligence/tests/test_check.py` pass with GNU Bash 5.2.21 and mawk 1.3.4 on Linux; ShellCheck (`-o all`), `shfmt -d` and `bash -n` are clean.
-  - Building Bash 3.2.57 in the cloud session to run the tests was refused by the session's permission classifier on 2026-11-20, and no BSD awk was available there. The script was reviewed by hand against Bash 3.2's limits only.
-  - Update, 2026-11-22, on macOS 27.2 with `/usr/bin/awk` (`awk version 20200816`) and Homebrew Bash 5.3.20: `python3 -m unittest discover -s plugins/bash-lsp-intelligence/tests -p 'test_*.py'` fails about one run in three, on a different test each time (`test_edit_inside_a_nested_work_tree_is_checked`, `test_clone_into_a_plain_folder_is_left_alone`, `test_staged_edit_in_a_work_tree_is_checked`). A copy of the hook whose ERR trap prints `BASH_COMMAND` and `$?` shows the failing command: the `awk` that formats the timestamp in `mark_since()` (`hooks/bash-gate.sh:205-212`), exiting 139, a segmentation fault. The same awk program run 601 times by hand on the timestamps the hook uses exits 0 every time, so the crash depends on the hook's context, not on the value.
-- **Inferences:** `utf8()` in `read-event.awk` prints bytes with `sprintf("%c", n)`; an awk that encodes code points above 127 as UTF-8 would garble a `\uXXXX` escape outside ASCII. Claude Code sends such characters unescaped, so the case is rare.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** an incompatibility with macOS's `/bin/bash` 3.2 or its awk would make the hook fail on every edit there, which `onFailure: "block"` turns into an error Claude receives after each call.
-- **Why it is not fixed now:** it needs a macOS machine, or approval to build Bash 3.2 in the cloud session.
-- **Next action:** in its own pull request with a patch bump, take the timestamp out of awk in `mark_since()` (for example `date -u -r` on macOS and `date -u -d @` with GNU date, both feeding `touch -t`), find why `/usr/bin/awk` crashes in the hook's context and whether `read-event.awk` and `json-string.awk` can crash the same way, then run the tests on macOS with `/bin/bash` 3.2 and `/usr/bin/awk` until 20 runs in a row pass.
-- **Review condition:** that run, or a user report from macOS.
 - **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
 
 ### DEBT-012 — The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH

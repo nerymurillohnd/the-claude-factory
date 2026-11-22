@@ -22,6 +22,7 @@
 | 2026-11-19 | DEBT-007 | resolved | The fourteen plugin subagents follow the house agent format | none |
 | 2026-11-19 | DEBT-003 | resolved | The five mods pass strict, portable and hooks-catch validation, and the checks gate every merge | none |
 | 2026-11-21 | DEBT-013 | resolved | cc-github-actions reaches a failed step's goal by any method within the session's permissions | none |
+| 2026-11-22 | DEBT-011 | resolved | bash-lsp-intelligence's post-edit hook passes its tests on macOS's Bash 3.2 and Homebrew's Bash 5.3 | none |
 
 ## 🏁 Closed items
 
@@ -186,6 +187,45 @@ On 2026-11-21 the owner asked for the change in the current 0.10.0 branch instea
 - **Residual risk:** none.
 - **Closed by:** commit e4611c6 on branch `ccr-2448a691-7xbgcg`.
 - **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-011 — bash-lsp-intelligence's post-edit hook passes its tests on macOS's Bash 3.2 and Homebrew's Bash 5.3
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-22 |
+| **Logged on** | 2026-11-20 |
+| **Owner** | bash-lsp-intelligence |
+
+#### ❗ The problem
+
+bash-lsp-intelligence 0.4.0's `hooks/bash-gate.sh` had been tested only with GNU Bash 5.2 and mawk on Linux. On macOS 27.2 its tests failed:
+
+- With `/bin/bash` 3.2.57, 15 runs of 15 failed, at `bash-gate.sh` lines 440, 547 and 548.
+- With Homebrew's Bash 5.3.20, 7 runs of 20 failed, with exit 139.
+
+Since the hook declares `onFailure: "block"`, Claude received "the post-edit hook failed at line …" after its edits on those systems.
+
+#### 🔧 The closure
+
+[#120](https://github.com/nerymurillohnd/the-claude-factory/pull/120), released as bash-lsp-intelligence 0.4.1, removes both causes:
+
+- **Bash 3.2:** `set -E` hands the ERR trap to command substitutions, and Bash 3.2 ran it there for failures the caller handled, such as `SHFMT=$(command -v shfmt) || missing=shfmt`. The trap now reports only in the hook's own shell, and inside a subshell it only exits 1.
+- **Bash 5.3:** Bash crashed in a command substitution's child, inside CoreFoundation, while it set the locale for an `LC_ALL=C awk` prefix assignment. The macOS crash reports show `SIGSEGV` under `os_log_type_enabled` and `CFPreferences`. The hook now passes `LC_ALL` and `TZ` through `env`.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On macOS 27.2 with `/usr/bin/awk` 20200816, `python3 -m unittest discover -s plugins/bash-lsp-intelligence/tests -p 'test_*.py'` passed 20 runs of 20 with `/bin/bash` 3.2.57 first on `PATH`, and 20 of 20 with Homebrew Bash 5.3.20, with no new bash crash report. Validate on [#120](https://github.com/nerymurillohnd/the-claude-factory/pull/120) (run 45019615036) and on `main` after the merge (run 45020156503) passed, and the release created `bash-lsp-intelligence--v0.4.1` at `5ee0292`. |
+| 🚫 **Negative:** the original failure or condition is gone | The same suite on 0.4.0 failed 15 of 15 runs on Bash 3.2 and 7 of 20 on Bash 5.3. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** CI runs on Linux only, so a macOS regression shows only in a local run on macOS. `plugins/block-no-verify/hooks/block-no-verify.sh` uses the same `set -E` and ERR-trap pattern and has no tests, so it is unverified on Bash 3.2. Carried over from the pending entry, as an inference: `utf8()` in `read-event.awk` prints bytes with `sprintf("%c", n)`, so an awk that encodes code points above 127 as UTF-8 would garble a `\uXXXX` escape outside ASCII; Claude Code sends such characters unescaped, so the case is rare.
+- **Closed by:** [#120](https://github.com/nerymurillohnd/the-claude-factory/pull/120), squash commit `5ee0292`.
+- **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
 - **Superseded by:** none
 
 <!--
