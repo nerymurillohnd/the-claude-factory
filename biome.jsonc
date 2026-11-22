@@ -278,7 +278,25 @@
         "noYamlBooleanKeys": "error",
         "useObjectFromEntries": "error",
         "useSetSize": "error",
-        "useWhileLoopCondition": "error"
+        "useWhileLoopCondition": "error",
+        // Recommended nursery rules added in 2.6.7 and 2.6.8 (biome explain on 2.6.8).
+        "noAsyncPromiseFinally": "error",
+        "noConfusingArraySplice": "error",
+        "noDuplicateTypeConstituents": "error",
+        "noInvalidFetchOptions": "error",
+        "noLateCurrentTargetAccess": "error",
+        "noRedundantTypeConstituents": "error",
+        "noScssNullComparison": "error",
+        "noTripleSlashReference": "error",
+        "noUselessFallbackInSpread": "error",
+        "noUselessSpread": "error",
+        "noYamlEmptyMapKeys": "error",
+        "noYamlEmptyMapValues": "error",
+        "noYamlEmptySequenceEntries": "error",
+        "useGlobalRegexInMatchAll": "error",
+        "useGlobalRegexInReplaceAll": "error",
+        "usePackageJsonValidLicense": "error",
+        "useValidCharacterComparison": "error"
       }
     }
   },

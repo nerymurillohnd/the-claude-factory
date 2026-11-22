@@ -50,7 +50,7 @@
     "validate:portable": "for d in plugins/*/; do claude plugin validate --profile directory --strict \"$d\" || exit 1; done"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.6",
+    "@biomejs/biome": "2.6.8",
     "@types/node": "26.6.6",
     "typescript": "6.0.3",
     "typescript-language-server": "6.1.0"
