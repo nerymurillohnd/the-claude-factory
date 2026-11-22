@@ -42,13 +42,13 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on Biome findings in plugin files | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
-| DEBT-011 | bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk | 🟠 Blocked |
 | DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
 | DEBT-014 | cc-github-actions references still mix old-style placeholders, inline commands and cross-file links | 🟠 Blocked |
+| DEBT-015 | A typescript6-lsp-intelligence hook test fails now and then in CI | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -93,6 +93,7 @@ Add an item only when all of these hold:
   - Update, 2026-11-15, after #108 (merged as 6e3afec): the owner removed `.github/workflows/claude-code-review.yml`, so no pull-request review covers the semantic part. Rechecked on `main` at a079f1a: `.claude/rules/readme-consistency.md` still doesn't exist, and `grep -n 'catalog.mjs' README.md` still finds 9 lines.
   - Update, 2026-11-16, after #109 and #110 (merged as 119932a and a55cd4e): the catalog holds 23 plugins with `work-lifecycle`; its README, catalog row and dropdowns were caught by mechanical checks only (`check:consistency`, `lint:github`), and Validate's `Checks` now also runs Biome on the changed files. Rechecked on `main` at a55cd4e: `.claude/rules/readme-consistency.md` still doesn't exist, and `grep -c 'catalog.mjs' README.md` gives 9.
   - Update, 2026-11-18, on branch `claude/project-thread-983v3d`: the review condition was met. A manual review found the `skills-engineering` catalog row describing the plugin's old three-reviewer audit while its `plugin.json` and `marketplace.json` described two skills and nine reviewers; `check:consistency` passed on it, because it checks the row's name, version and category, not its text. Fixed in eda419a. The same review found `plugin-engineering`'s description different across its `plugin.json`, its `marketplace.json` entry and its catalog row, still open. Rechecked: `.claude/rules/readme-consistency.md` still doesn't exist, and `grep -c 'catalog.mjs' README.md` gives 9.
+  - Update, 2026-11-22, on branch `chore/scripts-hygiene`: the maintainer scripts now live in `scripts/checks/`, `scripts/release/`, `scripts/generators/` and `scripts/tests/`, and `npm run check:consistency` runs `scripts/checks/plugin_consistency/`. `.claude/architecture/refactor.md`, which planned the catalog generator and the other consistency scripts, was retired from the repository. The 9 root `README.md` comments now read `kept by hand; npm run check:consistency checks the rows and counts`, which is what holds the catalog today (PC-08); `grep -c 'catalog.mjs' README.md` gives 0. Still open: the semantic part.
 - **Inferences:**
   - Names, versions and catalog rows are mechanical and suit scripts, run through npm and CI.
   - Descriptions, prerequisites and links between plugins need judgment and suit the audit agents.
@@ -105,9 +106,9 @@ Add an item only when all of these hold:
 
 #### 📈 Impact and next step
 
-- **Impact / risk:** a name, version, description or catalog row can disagree between `plugin.json`, `marketplace.json`, a plugin README, its CHANGELOG and the root catalog. Nothing catches it before it reaches the people who install these plugins. The stale comment on line 106 of the root README points maintainers to a script that does not exist.
+- **Impact / risk:** a name, version, description or catalog row can disagree between `plugin.json`, `marketplace.json`, a plugin README, its CHANGELOG and the root catalog. Nothing catches the semantic drift before it reaches the people who install these plugins.
 - **Why it is not fixed now:** it waits on the owner's decision about the semantic rule and on the open questions. The owner asked on 2026-11-12 to log it rather than build it now; the mechanical scripts were built on 2026-11-13.
-- **Next action:** the owner answers the open questions, then `.claude/rules/readme-consistency.md` is written from the 2026-11-12 draft, narrowed to semantic consistency, and the stale `catalog.mjs` comments in the root `README.md` are removed or the generator is built.
+- **Next action:** the owner answers the open questions, then `.claude/rules/readme-consistency.md` is written from the 2026-11-12 draft, narrowed to semantic consistency.
 - **Review condition:** the owner's decision, or the first README or catalog drift found in review.
 - **Related records:** none.
 
@@ -146,7 +147,7 @@ Add an item only when all of these hold:
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** none.
 
-### DEBT-006 — npm run lint:js fails on 24 Biome findings in plugin files
+### DEBT-006 — npm run lint:js fails on Biome findings in plugin files
 
 | Field | Value |
 | --- | --- |
@@ -171,6 +172,7 @@ Add an item only when all of these hold:
   - Update, 2026-11-19: the Claude Code pre-push hook is removed, so nothing runs `biome-changed` before a push any more; it still runs in Validate's `Checks` job and in `npm run check:pr`. The Git pre-commit gate (`.githooks/pre-commit`) now runs Biome on each commit's staged `.ts`, `.mjs`, `.md` and `.json` files, so a file with one of the 24 findings can't be committed until it is fixed.
   - Update, 2026-11-19, on branch `claude/tech-debt-parallel-9lsn8d`: the DEBT-003 fixes staged `file-tree-pane/hooks/register.tsx`, `project-maintainer/hooks/debt.ts` and `project-maintainer/hooks/guard.ts`, so the pre-commit gate required their findings fixed: `noNegatedArrayPredicate` ×3 and `noUselessLengthCheck` ×1, by equivalent rewrites. `npm run lint:js` now checks 742 files and finds 20 errors, exit 1.
   - Rechecked 2026-11-20 on `main` at 12c404d, after [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117): `npm run lint:js` checks 744 files and finds 20 errors, unchanged; #117 added none.
+  - Update, 2026-11-22, on branch `chore/scripts-hygiene`: Biome 2.6.8 and its 17 newly recommended nursery rules add one finding, `noUselessSpread` in `plugins/file-tree-pane/hooks/register.tsx`, so `npm run lint:js` finds 21 errors, all under `plugins/`. `pr-checks.sh` moved to `scripts/checks/`.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -178,7 +180,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** `npm run lint` and `npm run check` fail on the existing findings, so they can't serve as the local check; `npm run check:pr` replaces them. A finding in a file a pull request doesn't touch still goes unreported.
 - **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes.
-- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/validators/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
+- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/checks/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
 - **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** none.
 
@@ -263,32 +265,6 @@ Add an item only when all of these hold:
 - **Review condition:** the owner's decision, or the next change to the skill.
 - **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
 
-### DEBT-011 — bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | compatibility |
-| **Owner** | bash-lsp-intelligence |
-| **Logged** | 2026-11-20 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - bash-lsp-intelligence 0.4.0, released from [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117) on 2026-11-20, replaced `hooks/check.mjs` with `hooks/bash-gate.sh`, `hooks/read-event.awk` and `hooks/json-string.awk`, and its README states Bash 3.2 or later.
-  - The 13 tests in `plugins/bash-lsp-intelligence/tests/test_check.py` pass with GNU Bash 5.2.21 and mawk 1.3.4 on Linux; ShellCheck (`-o all`), `shfmt -d` and `bash -n` are clean.
-  - Building Bash 3.2.57 in the cloud session to run the tests was refused by the session's permission classifier on 2026-11-20, and no BSD awk was available there. The script was reviewed by hand against Bash 3.2's limits only.
-- **Inferences:** `utf8()` in `read-event.awk` prints bytes with `sprintf("%c", n)`; an awk that encodes code points above 127 as UTF-8 would garble a `\uXXXX` escape outside ASCII. Claude Code sends such characters unescaped, so the case is rare.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** an incompatibility with macOS's `/bin/bash` 3.2 or its awk would make the hook fail on every edit there, which `onFailure: "block"` turns into an error Claude receives after each call.
-- **Why it is not fixed now:** it needs a macOS machine, or approval to build Bash 3.2 in the cloud session.
-- **Next action:** run `python3 -m unittest discover -s plugins/bash-lsp-intelligence/tests -p 'test_*.py'` on macOS with `/bin/bash` and `/usr/bin/awk`, and fix what fails.
-- **Review condition:** that run, or a user report from macOS.
-- **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
-
 ### DEBT-012 — The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH
 
 | Field | Value |
@@ -345,6 +321,33 @@ Add an item only when all of these hold:
 - **Next action:** the owner chooses one pass or file by file; then convert the files with `skills-engineering:authoring-skills`, one plan per pass.
 - **Review condition:** both greps return nothing, and each reference has `## Gotchas`, `## Official sources` and `## Exit`.
 - **Related records:** [#118](https://github.com/nerymurillohnd/the-claude-factory/pull/118).
+
+### DEBT-015 — A typescript6-lsp-intelligence hook test fails now and then in CI
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality |
+| **Owner** | typescript6-lsp-intelligence |
+| **Logged** | 2026-11-22 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `plugins/typescript6-lsp-intelligence/tests/tsc-check.test.mjs:452`, "caps the issue list at 100 lines with a count of the rest", failed with `AssertionError 1 !== 2` at its `assert.equal(run.code, 2)`. That means `hooks/tsc-check.sh` exited 1 instead of 2. Seen in Validate run [44870074007](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/44870074007), at head `863dd596` of an earlier pull request, and in run [45018914400](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/45018914400) of [#119](https://github.com/nerymurillohnd/the-claude-factory/pull/119), which changes nothing under that plugin.
+  - Later runs of the earlier branch passed, and Validate on `main` at `b58e2d21` passed all 34 tests in that file ([44900889726](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/44900889726)).
+  - The hook exits 1 from its ERR trap (line 24) and from two explicit `exit 1` paths (lines 237 and 242). The test asserts the code without printing `run.stderr`, so the log does not say which path it took.
+  - In run 45018914400 the "real compiler" suite took 32.2 s against 22.9 s on `main`, and this test took 11.0 s against 7.8 s. The file runs its cases with `concurrency: true`.
+- **Inferences:** a timing-dependent failure under CI load, such as the hook's time limit or a slow `tsc` run, ends on an `exit 1` path. Not reproduced.
+- **Open questions:** which of the three `exit 1` paths runs.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** Validate's `Checks` job can fail on a pull request that doesn't touch the plugin, which costs a rerun. If the cause is in the hook, users would see the same failure under load.
+- **Why it is not fixed now:** the failure is not reproduced, and the fix is a change to the plugin, in its own pull request.
+- **Next action:** make the test print the hook's stderr (`assert.equal(run.code, 2, run.stderr)`, as the file's symlink test does). On the next failure, fix the `exit 1` path it names.
+- **Review condition:** the next failure of this test, or the test's stderr change merged.
+- **Related records:** [#119](https://github.com/nerymurillohnd/the-claude-factory/pull/119).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

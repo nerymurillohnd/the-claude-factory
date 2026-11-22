@@ -16,7 +16,7 @@ How to create a plugin's `plugin.json` from `.claude/templates/plugin-template.m
 Read 2026-11-10:
 
 - Claude Code docs `plugins/manifest-reference`: `name` is the only required key ("Use kebab-case"); `homepage` "Must parse as a URL, or the plugin fails to load"; `license` is an SPDX identifier; `metadata` is a free-form object Claude Code doesn't read; `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl` and `termsOfServiceUrl` are read by Anthropic's directory, ignored by Claude Code, set only in `plugin.json` (a marketplace entry reports them as unknown fields), `icon` a path to an image inside the plugin and each URL `https://`; `claude plugin validate` stops reporting them as unknown from v2.1.281.
-- `.claude/skills/building-plugins/references/manifest-and-components.md` (this repository): `license` (SPDX) or a `LICENSE` file is required by Anthropic's directory; each `userConfig` option needs `type`, `title` and `description`, unknown option keys fail validation, and `"sensitive": true` masks the value and keeps it in the platform's credential store.
+- Anthropic's directory requirements, which `claude plugin validate --profile directory` checks: `license` (SPDX) or a `LICENSE` file is required; each `userConfig` option needs `type`, `title` and `description`, unknown option keys fail validation, and `"sensitive": true` masks the value and keeps it in the platform's credential store.
 - Claude Code docs `plugins/manifest-reference` → `name`: the reserved-name errors (`claude-`, `anthropic-` prefixes, `official` beside `claude` or `anthropic`) and warnings.
 
 ## Placeholders
@@ -35,7 +35,7 @@ Read 2026-11-10:
 | `{{privacyPolicyUrl}}` | The privacy policy | This repository: `…/blob/main/PRIVACY.md` |
 | `{{license}}` | SPDX identifier | The plugin's `LICENSE` |
 | `{{keyword}}` | Discovery tags, one per item | The plugin's purpose |
-| `{{category}}` | Category id | `scripts/categories.json` (skill `plugin-categories`) |
+| `{{category}}` | Category id | The table in `.claude/rules/plugins/categories.md` |
 | `{{surfacesJson}}` | JSON array of surface ids, unquoted in the template | `["claude-code"]` or `["claude-code", "claude-app"]`, per `docs/compatibility.md` |
 
 ## Procedure
@@ -44,7 +44,7 @@ Read 2026-11-10:
 2. Fill every value; `{{surfacesJson}}` becomes a real JSON array.
 3. Add component keys (`userConfig`, `dependencies`, `hooks`, `mcpServers` and the rest) after `keywords`, only when the plugin needs them. A credential goes in `userConfig` with `"sensitive": true`, never in a file.
 4. Add `termsOfServiceUrl` only when a terms of service exists.
-5. Run `npm run generate` so `marketplace.json` and the catalog pick the plugin up.
+5. Add the plugin's entry to `.claude-plugin/marketplace.json` and its row to the root `README.md` catalog by hand, as `.claude/rules/plugins/categories.md` says.
 6. Run the checks.
 
 ## Rules
@@ -58,14 +58,13 @@ Official:
 This repository:
 
 - `version` lives only in `plugin.json`; the marketplace entry and `marketplace.json` carry none.
-- `metadata.category` and `metadata.surfaces` are set on every plugin; `npm run generate` copies the category into the marketplace entry and the catalog.
+- `metadata.category` and `metadata.surfaces` are set on every plugin; the same category goes by hand into the marketplace entry, the README badge and the root catalog row, as `.claude/rules/plugins/categories.md` says.
 - Every plugin ships `.claude-plugin/icon.png`, declared as `"icon": "./.claude-plugin/icon.png"`.
-- `scripts/schemas/` is strict: a field its schema lacks fails validation; add it to the schema from the official docs.
 
 ## Checks
 
 - `claude plugin validate --strict plugins/<plugin>` and `claude plugin validate --profile directory plugins/<plugin>`.
-- `npm run validate` and `npm run generate:check`.
+- `npm run validate` and `npm run check:consistency`.
 
 ## Never
 

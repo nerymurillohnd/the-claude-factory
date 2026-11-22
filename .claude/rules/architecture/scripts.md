@@ -1,16 +1,19 @@
 ---
 paths:
   - "scripts/**"
+  - "/typings/**"
 ---
 
 # Maintainer scripts
 
-- Put a check of a repository file in `validators/`, a check beyond the file (a free name, a live URL) in `checkers/`, a script that writes repository files in `generators/`, and the release scripts in `release/`.
-- Put one JSON Schema per file shape in `schemas/`, and stubs for an untyped dependency in `typings/<package>/`.
-- Put tests in `testers/`, mirroring the package under test, in `test_*.py` files written with `unittest`, never pytest.
-- Ask the owner before creating a subfolder that is not listed here.
-- Look up a script in `.claude/architecture/refactor.md` before writing it, and rebuild it to current official practice instead of copying it from `main`.
-- Start every new `.py` file under `validators/` and `testers/` with `#!/usr/bin/env python3` and give it mode 100755.
-- Import package modules absolutely (`from validators.skill_lint.model import Finding`).
-- Add each ruamel.yaml member a script uses to the stubs in `typings/ruamel/yaml/`.
-- Delete a subfolder's `.gitkeep` in the same commit as its first script.
+- Put each maintainer script in one of the four folders of `scripts/`, by what it does:
+  - `checks/`: read-only checks of the repository or of what it links to, the runners that sequence them over the repository or its plugins, and the Git-hook installer.
+  - `release/`: versions, release notes, changelogs, tags and the install check.
+  - `generators/`: a script run on demand that writes repository files or GitHub state.
+  - `tests/`: the tests, mirroring the folder under test (`tests/checks/skill_lint/` tests `checks/skill_lint/`), in `test_*.py` files written with `unittest`, never pytest.
+- Ask the owner before adding a fifth folder. Keep the data a script reads beside it, as `generators/plugin-icons/` and `checks/live-urls.ignore` are.
+- Treat `scripts/` as one Python package: import its modules absolutely (`from scripts.checks.skill_lint.model import Finding`), and give each package folder an `__init__.py` with a one-line docstring.
+- Write Python modules without a shebang or executable bit: they run only through `python -m`. Give shell scripts and `plugin-icons.mjs` a shebang and mode 100755.
+- Take the repository root from `scripts.REPO_ROOT`, never from a count of parent folders.
+- Write new logic that parses files in Python, and keep shell for the Git hook, CI glue, loops over plugins and short pipelines of CLI tools, as `live-urls.sh` and `check-install.sh` are.
+- Add each member of an untyped dependency a script uses to its stubs in `typings/<package>/`, as `typings/ruamel/yaml/` holds ruamel.yaml's.

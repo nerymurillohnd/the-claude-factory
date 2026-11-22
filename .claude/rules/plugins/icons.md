@@ -3,7 +3,7 @@ paths:
   - "scripts/generators/plugin-icons/**"
   - "scripts/generators/plugin-icons.mjs"
   - "plugins/*/.claude-plugin/icon.png"
-  - "scripts/validators/plugin_consistency/listing.py"
+  - "scripts/checks/plugin_consistency/listing.py"
 ---
 
 # Plugin icons

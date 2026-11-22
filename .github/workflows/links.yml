@@ -27,4 +27,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Check every URL
-        run: bash scripts/checkers/live-urls.sh
+        run: bash scripts/checks/live-urls.sh

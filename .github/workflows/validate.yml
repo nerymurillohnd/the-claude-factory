@@ -38,51 +38,51 @@ jobs:
       # step runs its pr-checks.sh step, the source it shares with `npm run check:pr`.
       - name: Lint (Python, shell, workflows, GitHub files)
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh lint
+        run: bash scripts/checks/pr-checks.sh lint
       # lint:js is held back by DEBT-006 in `debt`; this gates the files the pull request changed.
       - name: Biome on changed files
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
           CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
-        run: bash scripts/validators/pr-checks.sh biome-changed
+        run: bash scripts/checks/pr-checks.sh biome-changed
       - name: Type check
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh typecheck
+        run: bash scripts/checks/pr-checks.sh typecheck
       - name: Maintainer script tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh test-scripts
+        run: bash scripts/checks/pr-checks.sh test-scripts
       - name: Plugin hook tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh test-plugins
+        run: bash scripts/checks/pr-checks.sh test-plugins
       - name: claude plugin validate --strict (every plugin, the marketplace, .claude), portable and hooks-catch
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh validate
+        run: bash scripts/checks/pr-checks.sh validate
       - name: Mod tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh mods
+        run: bash scripts/checks/pr-checks.sh mods
       # A pull request is checked as main will be after the merge: an empty [Unreleased] (PC-05,
       # --main) and a dated section for every current version. Otherwise the push to main fails
       # Checks and its Release job never runs.
       - name: Consistency
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh consistency
+        run: bash scripts/checks/pr-checks.sh consistency
       # Each plugin's Release body must build: release.yml stops at the first plugin whose notes
       # are missing. Every plugin is checked, and every failure is reported.
       - name: Release notes for every plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: bash scripts/validators/pr-checks.sh release-notes
+        run: bash scripts/checks/pr-checks.sh release-notes
       - name: Install check for each changed plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
           CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
-        run: bash scripts/validators/pr-checks.sh install
+        run: bash scripts/checks/pr-checks.sh install
       # The URLs in the files the pull request adds or changes must answer (404, 410 or no
       # connection fails); the weekly Links workflow checks every file.
       - name: Live URLs in changed files
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
           CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
-        run: bash scripts/validators/pr-checks.sh links
+        run: bash scripts/checks/pr-checks.sh links
 
   debt:
     name: Debt (non-blocking)

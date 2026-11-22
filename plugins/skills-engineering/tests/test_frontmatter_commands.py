@@ -60,12 +60,15 @@ def _messages(entry: JsonObject) -> list[str]:
 
 def validated_files(plugin: Path) -> dict[str, list[str]]:
     """Each file validate read in a temporary plugin, with its warning and error messages."""
+    # validate echoes each file under the path it was given, and on macOS the temporary folder is
+    # /var, a symlink to /private/var: give it the resolved path once.
+    plugin = plugin.resolve()
     done = sh(fill(VALIDATE, {"temporary plugin": str(plugin)}))
     contents = parse_object(done.stdout).get("contents")
     files: dict[str, list[str]] = {}
     for entry in contents if is_list(contents) else []:
         if isinstance(entry, JsonObject) and isinstance(file := entry.get("file"), str):
-            files[str(Path(file).relative_to(plugin.resolve()))] = _messages(entry)
+            files[str(Path(file).relative_to(plugin))] = _messages(entry)
     return files
 
 
