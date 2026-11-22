@@ -11,7 +11,7 @@ set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
-ignore="scripts/checkers/live-urls.ignore"
+ignore="scripts/checks/live-urls.ignore"
 # This repository's own tag and compare links: a CHANGELOG links each new version's tag before
 # release.yml creates it at the merge, and check:consistency (PC-04) already matches tags.
 origin="$(git remote get-url origin)"

@@ -15,8 +15,8 @@ import unittest
 from scripts import REPO_ROOT
 
 ROOT = REPO_ROOT
-GATE = ROOT / "scripts" / "validators" / "pre-commit-gate.sh"
-INSTALLER = ROOT / "scripts" / "install-git-hooks.sh"
+GATE = ROOT / "scripts" / "checks" / "pre-commit-gate.sh"
+INSTALLER = ROOT / "scripts" / "checks" / "install-git-hooks.sh"
 HOOK = ROOT / ".githooks" / "pre-commit"
 
 CLEAN_PY = (
@@ -27,7 +27,7 @@ CLEAN_PY = (
 )
 CLEAN_SH = '#!/usr/bin/env bash\nset -euo pipefail\nprintf "%s\\n" "hi"\n'
 CLEAN_MJS = "/** @param {number} value */\nexport const double = (value) => value * 2\n"
-PROBE_PY = "scripts/validators/gate_probe.py"
+PROBE_PY = "scripts/checks/gate_probe.py"
 # A stand-in for the tsconfig.json Claude Code writes at a mod's root (git-ignored).
 MOD_TSCONFIG = '{"extends": "../../tsconfig.base.json", "compilerOptions": {"types": []}}\n'
 AGENT_HEAD = "---\nname: gate-probe\ndescription: A probe agent\n---\n\n"
@@ -162,7 +162,7 @@ class PreCommitGateTest(unittest.TestCase):
     def test_basedpyright_checks_stub_files(self) -> None:
         """A .pyi stub is type-checked too."""
         stub = "def double(value: Undefined) -> int: ...\n"
-        self.box.stage("scripts/validators/gate_probe.pyi", stub)
+        self.box.stage("scripts/checks/gate_probe.pyi", stub)
         self.assert_blocks(self.box.gate(), "basedpyright")
 
     def test_shfmt_fixes_are_staged(self) -> None:
@@ -259,7 +259,7 @@ class PreCommitGateTest(unittest.TestCase):
 
     def test_only_staged_files_are_checked(self) -> None:
         """A broken file that is not staged does not block the commit."""
-        self.box.write("scripts/validators/gate_broken.py", "import os\n")
+        self.box.write("scripts/checks/gate_broken.py", "import os\n")
         self.box.stage(PROBE_PY, CLEAN_PY)
         self.assert_passes(self.box.gate())
 
@@ -271,7 +271,7 @@ class PreCommitGateTest(unittest.TestCase):
 
     def test_deleted_files_are_skipped(self) -> None:
         """A staged deletion has no content to check."""
-        _ = run(["git", "rm", "--quiet", "scripts/validators/pr-checks.sh"], cwd=self.box.repo)
+        _ = run(["git", "rm", "--quiet", "README.md"], cwd=self.box.repo)
         self.assert_passes(self.box.gate())
 
     def test_partially_staged_file_blocks(self) -> None:
@@ -305,7 +305,8 @@ class PreCommitGateTest(unittest.TestCase):
         repo = self.box.repo
         (repo / ".githooks").mkdir(exist_ok=True)
         _ = shutil.copy2(HOOK, repo / ".githooks" / "pre-commit")
-        _ = shutil.copy2(GATE, repo / "scripts" / "validators" / "pre-commit-gate.sh")
+        (repo / "scripts" / "checks").mkdir(parents=True, exist_ok=True)
+        _ = shutil.copy2(GATE, repo / "scripts" / "checks" / "pre-commit-gate.sh")
         _ = run(["bash", str(INSTALLER)], cwd=repo)
         identity = ["-c", "user.name=Probe", "-c", "user.email=probe@example.invalid"]
         self.box.stage(PROBE_PY, CLEAN_PY + "\n\nassert double(1) == 2\n")

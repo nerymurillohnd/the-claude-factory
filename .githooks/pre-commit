@@ -3,4 +3,4 @@
 # sets it). The gate checks the staged files; git commit --no-verify skips it.
 set -euo pipefail
 root="$(git rev-parse --show-toplevel)"
-exec bash "${root}/scripts/validators/pre-commit-gate.sh"
+exec bash "${root}/scripts/checks/pre-commit-gate.sh"

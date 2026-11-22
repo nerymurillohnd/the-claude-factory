@@ -21,7 +21,8 @@ cd "${root}"
 base="${CHECKS_BASE:-origin/main}"
 
 step_lint() {
-  # lint:js is held back by DEBT-006; biome-changed gates the files a branch changes instead.
+  # Every part of `npm run lint` except lint:js, held back by DEBT-006; biome-changed gates the
+  # files a branch changes instead.
   npm run lint:agents
   npm run lint:python
   npm run lint:shell
@@ -36,11 +37,10 @@ step_biome_changed() {
 }
 
 step_validate() {
-  local dir status=0
-  for dir in plugins/*/; do
-    claude plugin validate --strict "${dir}" || status=1
-  done
-  claude plugin validate --strict . || status=1
+  # Every script of `npm run validate` except validate:mods, which is the mods step.
+  local status=0
+  npm run validate:plugins || status=1
+  npm run validate:marketplace || status=1
   npm run validate:claude || status=1
   # What the Anthropic directory checks, and a .catch on every gating hook of a mod.
   npm run validate:portable || status=1
@@ -85,7 +85,7 @@ step_links() {
     echo "No file changed."
     return 0
   fi
-  bash scripts/checkers/live-urls.sh "${changed[@]}"
+  npm run check:links -- "${changed[@]}"
 }
 
 run_step() {

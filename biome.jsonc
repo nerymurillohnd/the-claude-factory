@@ -34,12 +34,7 @@
       // ambient declare module 'claude-code', which Biome does not resolve; tsc -p still reads them.
       // Drop this once Biome resolves ambient modules and noUnresolvedImports stops flagging the
       // mods' claude-code imports.
-      "!!plugins/*/.claude-plugin/types",
-      // Workflow scripts: Claude Code runs each as the body of an async function, with a
-      // top-level return and the injected globals agent, parallel, pipeline, phase, log and args,
-      // so they do not parse as a module or a script. scripts/testers/<plugin>/workflow.test.mjs
-      // checks them instead.
-      "!!plugins/*/workflows"
+      "!!plugins/*/.claude-plugin/types"
     ]
   },
   "assist": {
@@ -383,8 +378,7 @@
       // beside its assertion, where it runs once.
       "includes": [
         "**/tests/**",
-        "**/*.test.*",
-        "scripts/testers/**"
+        "**/*.test.*"
       ],
       "linter": {
         // Biome does not detect node:test, so the test domain is on here, for test files only:
