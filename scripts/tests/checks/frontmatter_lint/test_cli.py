@@ -107,7 +107,9 @@ class CliTest(unittest.TestCase):
     def test_subfolder_of_the_repository_is_checked(self) -> None:
         """A folder inside the repository gets the repository's files under it."""
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            # Resolved, as REPO_ROOT is: on macOS the temporary folder is a symlink (/var to
+            # /private/var), and the CLI compares the folder it is given, resolved, with ROOT.
+            root = Path(tmp).resolve()
             _ = _write(root, "plugins/p/agents/group/a.md", BAD)
             _ = _write(root, "plugins/p/skills/s/references/r.md", BAD)
             _ = _write(root, "plugins/q/agents/b.md", BAD)
