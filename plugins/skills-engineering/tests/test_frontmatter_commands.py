@@ -65,7 +65,12 @@ def validated_files(plugin: Path) -> dict[str, list[str]]:
     files: dict[str, list[str]] = {}
     for entry in contents if is_list(contents) else []:
         if isinstance(entry, JsonObject) and isinstance(file := entry.get("file"), str):
-            files[str(Path(file).relative_to(plugin.resolve()))] = _messages(entry)
+            # validate echoes the path it was given; on macOS the temporary folder is /var, a
+            # symlink to /private/var. Resolve the folders, not the file, which may be a symlink.
+            path = Path(file)
+            files[str((path.parent.resolve() / path.name).relative_to(plugin.resolve()))] = (
+                _messages(entry)
+            )
     return files
 
 
