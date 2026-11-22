@@ -32,12 +32,10 @@ runs:
         set -euo pipefail
         # devEngines requires npm ^12.2.1; install it outside the checkout, where devEngines applies.
         (cd "${RUNNER_TEMP}" && npm install -g npm@12.2.1 --no-audit --no-fund)
-        npm ci --no-audit --no-fund
-        # typecheck:ts follows plugin imports into plugin code that needs its runtime packages.
-        npm run setup:plugins
         uv python install
-        uv sync --locked
-        npm run tools:install
+        # The same setup as a maintainer's: npm ci, each plugin's own lockfile, uv sync and the
+        # uv tools, so CI and local setup can't drift apart.
+        npm run setup
         # uv puts the tools in ~/.local/bin; link them where every later step finds them.
         for tool in ruff basedpyright zizmor check-jsonschema; do
           sudo ln -sf "${HOME}/.local/bin/${tool}" "/usr/local/bin/${tool}"

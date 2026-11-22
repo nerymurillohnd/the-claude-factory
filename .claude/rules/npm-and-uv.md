@@ -23,4 +23,4 @@ paths:
 - Write each npm script that runs maintainer Python as `uv run python -m scripts.<folder>.<module>`, never by file path, bare `python3` or `.venv/bin/python`: npm runs it from the repository root, where `scripts` imports as a package.
 - Add a package a maintainer script imports with `uv add --dev <package>`, and commit `pyproject.toml` and `uv.lock` together.
 - Run `uv sync --locked` before `npm run typecheck:python`: basedpyright reads `.venv` directly.
-- Pin ruff, basedpyright, zizmor and check-jsonschema each in its own `tools:<tool>` npm script, which `tools:install` chains, then run `npm run tools:install`; install them with `uv tool install`, never `uv add --dev`.
+- Pin ruff, basedpyright, zizmor and check-jsonschema with `uv tool install <tool>==<version>`, never `uv add --dev`, then run `npm run tools:install`.

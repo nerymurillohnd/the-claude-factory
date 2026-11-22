@@ -20,32 +20,10 @@ root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 base="${CHECKS_BASE:-origin/main}"
 
-step_lint() {
-  # Every part of `npm run lint` except lint:js, held back by DEBT-006; biome-changed gates the
-  # files a branch changes instead.
-  npm run lint:agents
-  npm run lint:python
-  npm run lint:shell
-  npm run lint:workflows
-  npm run lint:github
-}
-
 step_biome_changed() {
   # New Biome findings only: the files changed since the base, so DEBT-006 can't hide them.
   npx biome check --changed --since="${base}" --error-on-warnings --max-diagnostics=none \
     --no-errors-on-unmatched
-}
-
-step_validate() {
-  # Every script of `npm run validate` except validate:mods, which is the mods step.
-  local status=0
-  npm run validate:plugins || status=1
-  npm run validate:marketplace || status=1
-  npm run validate:claude || status=1
-  # What the Anthropic directory checks, and a .catch on every gating hook of a mod.
-  npm run validate:portable || status=1
-  npm run validate:hooks-catch || status=1
-  return "${status}"
 }
 
 step_release_notes() {
@@ -90,12 +68,15 @@ step_links() {
 
 run_step() {
   case "$1" in
-    lint) step_lint ;;
+    # lint:pr is `npm run lint` without lint:js, held back by DEBT-006; biome-changed gates the
+    # files a branch changes instead.
+    lint) npm run lint:pr ;;
     biome-changed) step_biome_changed ;;
     typecheck) npm run typecheck ;;
     test-scripts) npm run test:scripts ;;
     test-plugins) npm run test:plugins ;;
-    validate) step_validate ;;
+    # validate:pr is `npm run validate` without validate:mods, which is the mods step.
+    validate) npm run validate:pr ;;
     mods) npm run validate:mods ;;
     # A branch is checked as main will be after the merge (PC-05, --main).
     consistency) npm run check:consistency -- --main ;;

@@ -24,12 +24,8 @@ set -Eeuo pipefail
 trap 'exit 1' ERR
 
 # The gate's own tree, found with builtins only: the tool check below must be able to report a
-# missing tool, so nothing runs before it that needs one.
-gate_dir="${BASH_SOURCE[0]%/*}"
-if [[ ${gate_dir} == "${BASH_SOURCE[0]}" ]]; then
-  gate_dir="."
-fi
-gate_root="$(cd "${gate_dir}/../.." && pwd)"
+# missing tool, so nothing runs before it that needs one. Every caller runs it by a path.
+gate_root="$(cd "${BASH_SOURCE[0]%/*}/../.." && pwd)"
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 

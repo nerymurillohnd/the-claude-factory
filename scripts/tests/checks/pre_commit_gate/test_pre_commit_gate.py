@@ -14,10 +14,9 @@ import unittest
 
 from scripts import REPO_ROOT
 
-ROOT = REPO_ROOT
-GATE = ROOT / "scripts" / "checks" / "pre-commit-gate.sh"
-INSTALLER = ROOT / "scripts" / "checks" / "install-git-hooks.sh"
-HOOK = ROOT / ".githooks" / "pre-commit"
+GATE = REPO_ROOT / "scripts" / "checks" / "pre-commit-gate.sh"
+INSTALLER = REPO_ROOT / "scripts" / "checks" / "install-git-hooks.sh"
+HOOK = REPO_ROOT / ".githooks" / "pre-commit"
 
 CLEAN_PY = (
     '"""A clean module."""\n\n\n'
@@ -49,9 +48,10 @@ class Sandbox:
         """Clone the repository and share its installed node_modules and .venv."""
         self.tmp: Path = Path(tempfile.mkdtemp(prefix="pre-commit-gate-"))
         self.repo: Path = self.tmp / "repo"
-        _ = run(["git", "clone", "--quiet", "--local", str(ROOT), str(self.repo)], cwd=self.tmp)
+        clone = ["git", "clone", "--quiet", "--local", str(REPO_ROOT), str(self.repo)]
+        _ = run(clone, cwd=self.tmp)
         for shared in ("node_modules", ".venv"):
-            (self.repo / shared).symlink_to(ROOT / shared)
+            (self.repo / shared).symlink_to(REPO_ROOT / shared)
         self.base: str = run(["git", "rev-parse", "HEAD"], cwd=self.repo).stdout.strip()
 
     def write(self, rel: str, text: str) -> None:

@@ -7,7 +7,7 @@ paths:
 # Maintainer scripts
 
 - Put each maintainer script in one of the four folders of `scripts/`, by what it does:
-  - `checks/`: a read-only check of the repository or of what it links to, the runners that sequence checks (`pre-commit-gate.sh`, `pr-checks.sh`, `plugins.sh`), and `install-git-hooks.sh`, which `prepare` runs to turn the pre-commit gate on.
+  - `checks/`: read-only checks of the repository or of what it links to, the runners that sequence them over the repository or its plugins, and the Git-hook installer.
   - `release/`: versions, release notes, changelogs, tags and the install check.
   - `generators/`: a script run on demand that writes repository files or GitHub state.
   - `tests/`: the tests, mirroring the folder under test (`tests/checks/skill_lint/` tests `checks/skill_lint/`), in `test_*.py` files written with `unittest`, never pytest.

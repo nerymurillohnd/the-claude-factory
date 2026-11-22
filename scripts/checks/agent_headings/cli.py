@@ -10,7 +10,6 @@ from scripts import REPO_ROOT
 from scripts.checks.agent_headings.checks import Finding, check_text
 from scripts.checks.agent_headings.discover import discover
 
-ROOT = REPO_ROOT
 EXIT_USAGE = 2
 EPILOG = """\
 rules:
@@ -55,13 +54,13 @@ def _parser() -> argparse.ArgumentParser:
 def _files(paths: list[Path]) -> list[Path]:
     """Return the files to check: the repository's, or those the arguments name."""
     if not paths:
-        return discover(ROOT)
+        return discover(REPO_ROOT)
     files: list[Path] = []
     for path in paths:
         if path.is_dir():
             folder = path.resolve()
-            if folder.is_relative_to(ROOT):
-                files += [file for file in discover(ROOT) if file.is_relative_to(folder)]
+            if folder.is_relative_to(REPO_ROOT):
+                files += [file for file in discover(REPO_ROOT) if file.is_relative_to(folder)]
             else:
                 files += discover(folder)
         elif path.is_file():

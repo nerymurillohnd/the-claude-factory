@@ -7,8 +7,8 @@ Two rules, checked offline:
   one in .github/labels.json or a generated "plugin: <name>" label. GitHub skips a missing
   label silently.
 
-Maintainer tooling: run it through `npm run lint:github`, which uses the project's .venv Python
-(it needs ruamel.yaml from the dev dependency group).
+Maintainer tooling: run it through `npm run lint:github-files`, which uses the project's .venv
+Python (it needs ruamel.yaml from the dev dependency group).
 """
 
 import argparse
@@ -25,10 +25,9 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
 
-ROOT = REPO_ROOT
-GITHUB = ROOT / ".github"
+GITHUB = REPO_ROOT / ".github"
 LABELS_FILE = GITHUB / "labels.json"
-MARKETPLACE_FILE = ROOT / ".claude-plugin" / "marketplace.json"
+MARKETPLACE_FILE = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 DEPENDABOT_FILE = GITHUB / "dependabot.yml"
 VULNERABILITY_FORM = GITHUB / "VULNERABILITY_REPORT.yml"
 # Dropdown options allowed next to the plugin names, such as the question form's
@@ -80,7 +79,7 @@ def is_list(value: object) -> TypeGuard[list[object]]:
 
 def relative(path: Path) -> str:
     """Show a path relative to the repository root."""
-    return path.relative_to(ROOT).as_posix()
+    return path.relative_to(REPO_ROOT).as_posix()
 
 
 def read_text(path: Path) -> str:
@@ -203,7 +202,7 @@ def run_checks() -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     """Parse the arguments, run the checks and report."""
     parser = argparse.ArgumentParser(
-        prog="check-github-files",
+        prog="lint:github-files",
         description=__doc__.splitlines()[0] if __doc__ else None,
         epilog=EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,

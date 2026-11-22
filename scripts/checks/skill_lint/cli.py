@@ -17,7 +17,6 @@ from scripts.checks.skill_lint.discover import Skill, discover, load_skill
 from scripts.checks.skill_lint.model import Family, Finding, Severity
 from scripts.checks.skill_lint.report import render_json, render_manifest, render_text
 
-ROOT = REPO_ROOT
 EXIT_USAGE = 2
 CHECKS = (
     rules_content.check,
@@ -78,7 +77,7 @@ def _parser() -> argparse.ArgumentParser:
 def _skills(paths: list[Path]) -> list[Skill]:
     """Load the skills named on the command line, or discover every skill."""
     if not paths:
-        return discover(ROOT)
+        return discover(REPO_ROOT)
     skills: list[Skill] = []
     for path in paths:
         skill_md = path if path.name == "SKILL.md" else path / "SKILL.md"

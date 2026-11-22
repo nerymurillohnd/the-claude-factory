@@ -23,9 +23,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
 
-ROOT = REPO_ROOT
-LABELS_FILE = ROOT / ".github" / "labels.json"
-MARKETPLACE_FILE = ROOT / ".claude-plugin" / "marketplace.json"
+LABELS_FILE = REPO_ROOT / ".github" / "labels.json"
+MARKETPLACE_FILE = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 PLUGIN_LABEL_COLOR = "EDEDED"
 
 DESCRIPTION = """\
@@ -127,7 +126,7 @@ class Plan:
 
 def read_json(path: Path) -> object:
     """Read a JSON file of the repository."""
-    relative = path.relative_to(ROOT)
+    relative = path.relative_to(REPO_ROOT)
     try:
         return parse_json(path.read_text(encoding="utf-8"))
     except OSError as error:
@@ -285,7 +284,7 @@ def apply(repo: str, plan: Plan) -> None:
 def main(argv: list[str] | None = None) -> int:
     """Parse the arguments, compare the labels and apply the changes on request."""
     parser = argparse.ArgumentParser(
-        prog="sync-labels",
+        prog="labels:sync",
         description=DESCRIPTION,
         epilog=EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
