@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-22
+
+### Fixed
+
+- **bash-lsp-intelligence** 0.4.1 — on macOS, the post-edit hook no longer fails with "the post-edit hook failed at line …": with the system's Bash 3.2 it failed on nearly every call, and with Homebrew's Bash 5.3 now and then.
+
 ## 2026-11-21
 
 ### Changed
