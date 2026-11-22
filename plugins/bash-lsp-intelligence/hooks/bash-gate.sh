@@ -19,8 +19,8 @@
 # - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
 #   (an extracted archive, a generated tree), not an edit: none is checked, and the user is told.
 #
-# Needs Bash 3.2 or later and POSIX awk, find, head, date, touch, mktemp, rm and cksum; uses git
-# when it is installed. The event is read with read-event.awk and the user's line is encoded
+# Needs Bash 3.2 or later and POSIX awk, env, find, head, date, touch, mktemp, rm and cksum;
+# uses git when it is installed. The event is read with read-event.awk and the user's line is encoded
 # with json-string.awk, both next to this script. Every helper reports through a variable and
 # returns 0, so set -e stays in force inside it; any unexpected failure exits 1 with a message.
 
@@ -28,7 +28,10 @@ set -Eeuo pipefail
 
 readonly PLUGIN='bash-lsp-intelligence'
 TMP=''
-trap 'printf "%s: the post-edit hook failed at line %s, so the changed shell scripts were not checked.\n" "${PLUGIN}" "${LINENO}" >&2; exit 1' ERR
+# set -E hands this trap to every command substitution too, and Bash 3.2 runs it there for a
+# failure its caller handles, such as `x=$(command -v shfmt) || missing=shfmt`. Inside a
+# subshell it only exits 1 and leaves the caller to decide; only the hook itself reports.
+trap '((BASH_SUBSHELL == 0)) || exit 1; printf "%s: the post-edit hook failed at line %s, so the changed shell scripts were not checked.\n" "${PLUGIN}" "${LINENO}" >&2; exit 1' ERR
 trap '[[ -z ${TMP} ]] || rm -rf -- "${TMP}"' EXIT
 
 HERE=${BASH_SOURCE[0]%/*}
@@ -202,7 +205,7 @@ drop_ignored() {
 mark_since() {
   local now stamp
   now=$(date +%s)
-  stamp=$(LC_ALL=C awk -v t="$((now - $1))" 'BEGIN {
+  stamp=$(env LC_ALL=C awk -v t="$((now - $1))" 'BEGIN {
     days = int(t / 86400); secs = t - days * 86400
     z = days + 719468; era = int(z / 146097); doe = z - era * 146097
     yoe = int((doe - int(doe / 1460) + int(doe / 36524) - int(doe / 146096)) / 365)
@@ -210,7 +213,7 @@ mark_since() {
     d = doy - int((153 * mp + 2) / 5) + 1; m = mp < 10 ? mp + 3 : mp - 9; y = yoe + era * 400 + (m <= 2)
     printf "%04d%02d%02d%02d%02d.%02d", y, m, d, int(secs / 3600), int(secs % 3600 / 60), secs % 60
   }')
-  TZ=UTC0 touch -t "${stamp}" "${TMP}/since"
+  env TZ=UTC0 touch -t "${stamp}" "${TMP}/since"
 }
 
 # Sets FILES to the files under $1 modified since ${TMP}/since: Git's view in a work tree, else
@@ -408,7 +411,7 @@ user_message() {
     line+="${separator}${part}"
     separator=' · '
   done
-  quoted=$(printf '%s' "${line}" | LC_ALL=C awk -f "${HERE}/json-string.awk")
+  quoted=$(printf '%s' "${line}" | env LC_ALL=C awk -f "${HERE}/json-string.awk")
   printf '{"systemMessage":%s}\n' "${quoted}"
 }
 
@@ -437,7 +440,7 @@ bounded() {
 # modified while it ran. Exits 0 for any other tool or for input that is not an event.
 changed_files() {
   local fields key value tool='' cwd='' duration='' file_path='' bash_list=0 changed=() window
-  if ! fields=$(printf '%s' "$1" | LC_ALL=C awk -f "${HERE}/read-event.awk"); then
+  if ! fields=$(printf '%s' "$1" | env LC_ALL=C awk -f "${HERE}/read-event.awk"); then
     exit 0
   fi
   while IFS=$'\t' read -r key value; do

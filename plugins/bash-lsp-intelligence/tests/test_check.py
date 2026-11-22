@@ -154,6 +154,7 @@ SYSTEM_TOOLS = (
     "bash",
     "sh",
     "awk",
+    "env",
     "find",
     "head",
     "date",
