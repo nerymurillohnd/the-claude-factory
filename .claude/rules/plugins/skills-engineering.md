@@ -18,7 +18,7 @@ paths:
 - No agent or reference names another reviewer or what another covers.
 - Each agent reads only its reference and `assets/audit-report.md`, by `${CLAUDE_PLUGIN_ROOT}` paths.
 - `references/` holds the reviewers' references and the lookups they are given; `MECHANICAL-CHECKS.md`, at the skill root, is the main session's playbook, which no reviewer reads.
-- Plugin files never name the maintainer validators, their rule ids or any repository path.
+- Plugin files never name the maintainer checks in `scripts/checks/`, their rule ids or any repository path.
 
 ## Release gate
 

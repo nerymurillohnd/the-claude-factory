@@ -42,7 +42,7 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on 24 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on Biome findings in plugin files | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
@@ -93,6 +93,7 @@ Add an item only when all of these hold:
   - Update, 2026-11-15, after #108 (merged as 6e3afec): the owner removed `.github/workflows/claude-code-review.yml`, so no pull-request review covers the semantic part. Rechecked on `main` at a079f1a: `.claude/rules/readme-consistency.md` still doesn't exist, and `grep -n 'catalog.mjs' README.md` still finds 9 lines.
   - Update, 2026-11-16, after #109 and #110 (merged as 119932a and a55cd4e): the catalog holds 23 plugins with `work-lifecycle`; its README, catalog row and dropdowns were caught by mechanical checks only (`check:consistency`, `lint:github`), and Validate's `Checks` now also runs Biome on the changed files. Rechecked on `main` at a55cd4e: `.claude/rules/readme-consistency.md` still doesn't exist, and `grep -c 'catalog.mjs' README.md` gives 9.
   - Update, 2026-11-18, on branch `claude/project-thread-983v3d`: the review condition was met. A manual review found the `skills-engineering` catalog row describing the plugin's old three-reviewer audit while its `plugin.json` and `marketplace.json` described two skills and nine reviewers; `check:consistency` passed on it, because it checks the row's name, version and category, not its text. Fixed in eda419a. The same review found `plugin-engineering`'s description different across its `plugin.json`, its `marketplace.json` entry and its catalog row, still open. Rechecked: `.claude/rules/readme-consistency.md` still doesn't exist, and `grep -c 'catalog.mjs' README.md` gives 9.
+  - Update, 2026-11-22, on branch `chore/scripts-hygiene`: the maintainer scripts now live in `scripts/checks/`, `scripts/release/`, `scripts/generators/` and `scripts/tests/`, and `npm run check:consistency` runs `scripts/checks/plugin_consistency/`. `.claude/architecture/refactor.md`, which planned the catalog generator and the other consistency scripts, was retired from the repository. The 9 root `README.md` comments now read `kept by hand; npm run check:consistency checks the rows and counts`, which is what holds the catalog today (PC-08); `grep -c 'catalog.mjs' README.md` gives 0. Still open: the semantic part.
 - **Inferences:**
   - Names, versions and catalog rows are mechanical and suit scripts, run through npm and CI.
   - Descriptions, prerequisites and links between plugins need judgment and suit the audit agents.
@@ -105,9 +106,9 @@ Add an item only when all of these hold:
 
 #### 📈 Impact and next step
 
-- **Impact / risk:** a name, version, description or catalog row can disagree between `plugin.json`, `marketplace.json`, a plugin README, its CHANGELOG and the root catalog. Nothing catches it before it reaches the people who install these plugins. The stale comment on line 106 of the root README points maintainers to a script that does not exist.
+- **Impact / risk:** a name, version, description or catalog row can disagree between `plugin.json`, `marketplace.json`, a plugin README, its CHANGELOG and the root catalog. Nothing catches the semantic drift before it reaches the people who install these plugins.
 - **Why it is not fixed now:** it waits on the owner's decision about the semantic rule and on the open questions. The owner asked on 2026-11-12 to log it rather than build it now; the mechanical scripts were built on 2026-11-13.
-- **Next action:** the owner answers the open questions, then `.claude/rules/readme-consistency.md` is written from the 2026-11-12 draft, narrowed to semantic consistency, and the stale `catalog.mjs` comments in the root `README.md` are removed or the generator is built.
+- **Next action:** the owner answers the open questions, then `.claude/rules/readme-consistency.md` is written from the 2026-11-12 draft, narrowed to semantic consistency.
 - **Review condition:** the owner's decision, or the first README or catalog drift found in review.
 - **Related records:** none.
 
@@ -146,7 +147,7 @@ Add an item only when all of these hold:
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** none.
 
-### DEBT-006 — npm run lint:js fails on 24 Biome findings in plugin files
+### DEBT-006 — npm run lint:js fails on Biome findings in plugin files
 
 | Field | Value |
 | --- | --- |
@@ -171,6 +172,7 @@ Add an item only when all of these hold:
   - Update, 2026-11-19: the Claude Code pre-push hook is removed, so nothing runs `biome-changed` before a push any more; it still runs in Validate's `Checks` job and in `npm run check:pr`. The Git pre-commit gate (`.githooks/pre-commit`) now runs Biome on each commit's staged `.ts`, `.mjs`, `.md` and `.json` files, so a file with one of the 24 findings can't be committed until it is fixed.
   - Update, 2026-11-19, on branch `claude/tech-debt-parallel-9lsn8d`: the DEBT-003 fixes staged `file-tree-pane/hooks/register.tsx`, `project-maintainer/hooks/debt.ts` and `project-maintainer/hooks/guard.ts`, so the pre-commit gate required their findings fixed: `noNegatedArrayPredicate` ×3 and `noUselessLengthCheck` ×1, by equivalent rewrites. `npm run lint:js` now checks 742 files and finds 20 errors, exit 1.
   - Rechecked 2026-11-20 on `main` at 12c404d, after [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117): `npm run lint:js` checks 744 files and finds 20 errors, unchanged; #117 added none.
+  - Update, 2026-11-22, on branch `chore/scripts-hygiene`: Biome 2.6.8 and its 17 newly recommended nursery rules add one finding, `noUselessSpread` in `plugins/file-tree-pane/hooks/register.tsx`, so `npm run lint:js` finds 21 errors, all under `plugins/`. `pr-checks.sh` moved to `scripts/checks/`.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -178,7 +180,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** `npm run lint` and `npm run check` fail on the existing findings, so they can't serve as the local check; `npm run check:pr` replaces them. A finding in a file a pull request doesn't touch still goes unreported.
 - **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes.
-- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/validators/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
+- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/checks/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
 - **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** none.
 

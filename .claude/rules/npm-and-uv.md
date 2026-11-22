@@ -16,11 +16,11 @@ paths:
 - Move `.nvmrc` or the machine's Node, whichever is older, to the newest Node 26 LTS release only with the owner's approval; `release.yml` reads `.nvmrc`, so the change also moves CI.
 - Install npm 12 with `npm install -g npm@12` only with the owner's approval; Node 26 ships npm 11, which `devEngines` rejects.
 - Add an npm script for each new maintainer script before its first run.
-- Never run a script as `./<file>.py`: its shebang picks the machine's OS Python, not the `.venv` one.
+- Give each npm script one command or one pipeline (`lint:shellcheck`). Make a script that runs several only a chain of other npm scripts by name (`npm run lint:ruff && npm run lint:ruff-format`), and put a loop in a file under `scripts/`, as `scripts/checks/plugins.sh` holds the loops over plugins.
 - Add or change a dev dependency with `npm install -D <package>@<version>`, and commit `package.json` and `package-lock.json` together.
 - Add a package to `allowScripts` with `npm approve-scripts <package>` only when it needs its install script to work.
 - Install the Python version in `.python-version` with `uv python install`.
-- Write each npm script that runs maintainer Python as `uv run python scripts/<file>.py`, never bare `python3` or `.venv/bin/python`.
+- Write each npm script that runs maintainer Python as `uv run python -m scripts.<folder>.<module>`, never by file path, bare `python3` or `.venv/bin/python`: npm runs it from the repository root, where `scripts` imports as a package.
 - Add a package a maintainer script imports with `uv add --dev <package>`, and commit `pyproject.toml` and `uv.lock` together.
 - Run `uv sync --locked` before `npm run typecheck:python`: basedpyright reads `.venv` directly.
-- Pin ruff, basedpyright, zizmor and check-jsonschema in the `tools:install` npm script, then run `npm run tools:install`; install them with `uv tool install`, never `uv add --dev`.
+- Pin ruff, basedpyright, zizmor and check-jsonschema each in its own `tools:<tool>` npm script, which `tools:install` chains, then run `npm run tools:install`; install them with `uv tool install`, never `uv add --dev`.

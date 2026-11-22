@@ -56,7 +56,7 @@ This repository:
 
 - `claude plugin validate --strict plugins/<plugin>`.
 - `claude plugin details plugins/<plugin>`: the skill is listed, with its size.
-- `python3 scripts/validators/skill-names-consistency.py` and `python3 scripts/validators/skill-size.py`.
+- `npm run lint:skills -- plugins/<plugin>/skills/<skill>` and `npm run lint:frontmatter -- plugins/<plugin>/skills/<skill>/SKILL.md`.
 
 ## Never
 

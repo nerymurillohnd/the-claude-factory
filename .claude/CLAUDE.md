@@ -44,7 +44,7 @@
 **CI/CD**
 
 - Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
-- Run `npm run check:links -- <file>...` to check that the URLs in those files answer, or with no file for every tracked file; 404, 410 and no connection fail, other answers warn. List a URL that only works for a tool, or a documented example, in `scripts/checkers/live-urls.ignore`. Validate runs it on a pull request's changed files, and the weekly Links workflow on every file.
+- Run `npm run check:links -- <file>...` to check that the URLs in those files answer, or with no file for every tracked file; 404, 410 and no connection fail, other answers warn. List a URL that only works for a tool, or a documented example, in `scripts/checks/live-urls.ignore`. Validate runs it on a pull request's changed files, and the weekly Links workflow on every file.
 - Run `npm run check:pr` before a push to run the checks of Validate's `Checks` job, or `npm run check:pr -- <step>` for one of them.
 - Expect each commit to run the Git pre-commit gate, which `npm ci` turns on through `prepare`: on the staged `.sh`, `.ts`, `.mjs`, `.md`, `.py`, `.pyi` and `.json` files only, it applies Biome's and Ruff's lint and format fixes and `shfmt -w`, stages those fixes, then runs Biome, Ruff, basedpyright, ShellCheck, `tsc --noEmit` and, on subagent files, `agent-headings`, and it refuses a file with unstaged changes on top. Run `npm run check:staged` to run it before committing, and fix what it reports instead of committing with `--no-verify`.
 
@@ -60,7 +60,8 @@
 | `plugins/` | One self-contained plugin per folder |
 | `.claude/` | Project settings, rules, skills, subagents, memory, handoffs, ADRs, technical debt, specs, plans, audits, references and templates |
 | `.github/` | Workflows, the CI setup action, issue forms, PR templates, labels, Dependabot, CODEOWNERS |
-| `scripts/` | Maintainer validators, checkers, generators, release and test scripts, schemas and typings |
+| `scripts/` | Maintainer scripts, one Python package: `checks/`, `release/`, `generators/` and their `tests/` |
+| `typings/` | Type stubs for the maintainer scripts' untyped dependencies |
 | `docs/` | User guides and their assets |
 
 ## Skills by task

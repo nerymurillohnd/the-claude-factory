@@ -13,8 +13,8 @@ paths:
 - Bump `CLAUDE_CODE_VERSION` in `.github/actions/setup/action.yml` to the `claude --version` the maintainers run, as an exact build of Anthropic's signed apt repository.
 - Give each issue form its labels and default issue type (`type:`), and keep blank issues off.
 - Keep `pull_request_template.md` identical to `PULL_REQUEST_TEMPLATE/standard.md`.
-- Define the fixed labels in `labels.json`, never the `plugin: <name>` labels, which `sync-labels.py` generates.
-- Bump the uv tools in the `tools:install` npm script by hand: Dependabot does not read it.
+- Define the fixed labels in `labels.json`, never the `plugin: <name>` labels, which `npm run labels:sync` generates.
+- Bump the uv tools in their `tools:<tool>` npm scripts by hand: Dependabot does not read them.
 - Record each zizmor finding accepted on purpose in `zizmor.yml`, with its reason.
 - Keep every "plugin" dropdown equal to the plugins of `marketplace.json`, in catalog order.
 - Keep the contact links in `ISSUE_TEMPLATE/config.yml`, `SUPPORT.md` and the root README's Support section the same.

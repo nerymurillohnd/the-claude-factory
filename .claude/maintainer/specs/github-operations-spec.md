@@ -74,19 +74,19 @@ The repository has GitHub's default types `Task`, `Bug`, `Feature` (REST `repos/
 - **Labels:** `area: ci` and `type: dependencies`.
 - **Commit messages:** `include: scope`.
 
-The maintainer Python tools are uv tools pinned in `tools:install`, which Dependabot does not read, so they are bumped by hand. Decisions: ADR_2026-11-12_dependabot-cooldown-and-groups and ADR_2026-11-12_maintainer-tools-as-pinned-uv-tools.
+The maintainer Python tools are uv tools, each pinned in its own `tools:<tool>` npm script that `tools:install` chains; Dependabot does not read them, so they are bumped by hand.
 
 ## 2. Commands
 
 | Command | What it does | Writes to GitHub |
 | --- | --- | --- |
 | `npm run tools:install` | Installs ruff, basedpyright, zizmor and check-jsonschema at their pinned versions as uv tools | No |
-| `npm run lint:github` | Schema-checks the forms, `VULNERABILITY_REPORT.yml`, `config.yml` and `dependabot.yml` (check-jsonschema 0.39.0 built-in schemas), then runs `scripts/check-github-files.py` | No |
-| `npm run labels:sync` | Dry run of `scripts/sync-labels.py`: prints a JSON plan (`create`, `update`, `in_sync`, `not_managed`); exit 1 when changes are pending | No |
+| `npm run lint:github` | Schema-checks the forms, `VULNERABILITY_REPORT.yml`, `config.yml` and `dependabot.yml` (check-jsonschema 0.39.0 built-in schemas), then runs `scripts/checks/github_files.py` | No |
+| `npm run labels:sync` | Dry run of `scripts/generators/labels.py`: prints a JSON plan (`create`, `update`, `in_sync`, `not_managed`); exit 1 when changes are pending | No |
 | `npm run labels:sync -- --apply` | Creates and updates labels; never deletes, renames or archives | Yes |
 | `npm run check` | Maintainer lint, type checks and `claude plugin validate --strict` for every plugin and the marketplace | No |
 
-`scripts/check-github-files.py` exits 1 when:
+`scripts/checks/github_files.py` exits 1 when:
 - a plugin dropdown does not list exactly the catalog's plugins in catalog order (the question form may add `None (marketplace question)`);
 - a form or Dependabot names a label the repository does not define.
 
@@ -139,21 +139,20 @@ PR rules (CLAUDE.md, Pull requests): a change to a plugin's components needs a P
 | --- | --- | --- |
 | Claude Code cloud session | `gh api` REST on `repos/<owner>/<repo>/...`; the GitHub MCP server | **GraphQL is blocked:** `gh label list`, `gh pr checks` and `gh repo view --json` fail with HTTP 403. **Paths outside the repository are blocked:** `users/...`, `user/...`, `repositories/<id>/...`. The auto-mode classifier refused a label write once; writes need the owner's explicit approval in the conversation. Bare `python3` is 3.13.18; the maintainer scripts use `.venv/bin/python` (3.15.2). |
 | Owner's terminal | Full `gh` | Python is managed by uv and is on PATH. The tools run bare after `npm run tools:install`. |
-| CI | Not configured | `.github/workflows/` holds only `release.yml`, whose `workflow_run` trigger names the deleted `Validate` workflow, so it runs only through `workflow_dispatch`. A maintainer workflow would run `npm ci`, `uv sync --locked` and `npm run tools:install`, then the npm checks. |
+| CI | `.github/workflows/validate.yml`, `release.yml` and `links.yml` | Validate's `Checks` job runs `scripts/checks/pr-checks.sh` step by step after the setup action installs the toolchain; Release runs on Validate's success on `main`, and Links runs weekly. |
 
 ## 5. Traps already found
 
 | Trap | Evidence | Handling |
 | --- | --- | --- |
-| `gh` fills `{owner}/{repo}` only in `gh api` paths, not in `--repo` | `gh label create --repo {owner}/{repo}` went to `repos/%7Bowner%7D/%7Brepo%7D` and got HTTP 403 | `sync-labels.py` resolves OWNER/NAME first (commit `94e03fd`) |
-| GitHub skips a label a form names when the label does not exist, without a warning | GitHub docs, "Syntax for issue forms" | `check-github-files.py` rule (b) |
+| `gh` fills `{owner}/{repo}` only in `gh api` paths, not in `--repo` | `gh label create --repo {owner}/{repo}` went to `repos/%7Bowner%7D/%7Brepo%7D` and got HTTP 403 | `scripts/generators/labels.py` resolves OWNER/NAME first (commit `94e03fd`) |
+| GitHub skips a label a form names when the label does not exist, without a warning | GitHub docs, "Syntax for issue forms" | `scripts/checks/github_files.py` rule (b) |
 | A dropdown answer applies no label | GitHub form schema docs list no label key for dropdowns | Triage adds `plugin:` by hand |
 | check-jsonschema 0.39.0 rejects `min_length` in `VULNERABILITY_REPORT.yml`, which GitHub documents | `Additional properties are not allowed ('min_length' was unexpected)` | `min_length` was dropped; revisit when the vendored schema adds it |
 | If GitHub cannot parse a custom vulnerability form, it shows its default form silently | GitHub docs, "Configuring private vulnerability reporting for a repository" | Keep `lint:github` passing |
 | `blank_issues_enabled: false` still shows "Blank issue (Maintainers only)" to users with write access | GitHub docs, "Configuring issue templates" | Expected; no action |
 | Label archiving on personal-account repositories is not documented | GitHub REST labels docs and the 2026-08-27 changelog mention no account type | Probe one label before archiving the rest |
 | Issue types exist only on issues, not on pull requests | ADR_2026-11-12_issue-forms-set-default-issue-types | Keep the `type:` labels |
-| Biome reads `pyrightconfig.json` as strict JSON | Parse errors on comments in `scripts/pyrightconfig.json` | No comments in that file |
 
 ## 6. Candidate skills
 

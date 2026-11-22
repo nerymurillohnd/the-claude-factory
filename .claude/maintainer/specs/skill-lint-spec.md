@@ -140,7 +140,7 @@ The manifest always lists these.
 
 ### Not checked here (owned elsewhere)
 
-- **Python syntax at the 3.12 floor:** ruff covers it. `ruff.toml` sets `per-file-target-version` to `py312` for `plugins/**/*.py` and `.claude/skills/**/*.py`. Confirmed: ruff reports syntax newer than py312. `ruff check --no-cache --isolated --target-version py312` on `def f[T = int](): ...` exits 1 with `invalid-syntax: Cannot set default type for a type parameter on Python 3.12 (syntax was added in Python 3.13)`. No rule is needed here.
+- **Python syntax at the 3.12 floor:** ruff covers it. `pyproject.toml` sets `per-file-target-version` to `py312` for `plugins/**/*.py`. Confirmed: ruff reports syntax newer than py312. `ruff check --no-cache --isolated --target-version py312` on `def f[T = int](): ...` exits 1 with `invalid-syntax: Cannot set default type for a type parameter on Python 3.12 (syntax was added in Python 3.13)`. No rule is needed here.
 - **Basic frontmatter parsing:** `claude plugin validate`.
 - **Semantics:** agents and `/doctor prompt-audit`.
 - **Cross-checks against files outside the skill folder** (the README surface badge, Prerequisites): excluded by the skill-folder-only rule. If the owner wants them, they become a separate script.
@@ -148,27 +148,29 @@ The manifest always lists these.
 ## Architecture
 
 ```text
-scripts/validators/
+scripts/checks/
 ├── __init__.py
-├── skill-lint.py            # thin shim: from skill_lint.cli import main
 └── skill_lint/
     ├── __init__.py
-    ├── cli.py               # argparse, run, exit code
+    ├── cli.py               # argparse, run, exit code; the entry, run as python -m
     ├── model.py             # Skill, Finding, Severity, Family
     ├── discover.py          # the two skill globs; plugin or project from the path; git ls-files -s modes
     ├── frontmatter.py       # ruamel.yaml strict load (duplicate keys), line numbers
     ├── markdown.py          # line scan: fences, indented code, HTML comments, headings
     ├── markdown_model.py    # the MarkdownDoc parts, slugs, links, inline code, ! commands
     ├── refs.py              # reference graph: links, path mentions, imports, source lines
+    ├── script_refs.py       # what a skill's scripts load: Python sibling imports, shell source lines
+    ├── commands.py          # what a skill's Markdown runs and what its scripts call
     ├── rules_content.py
+    ├── rules_content_files.py # CO-07 to CO-12: links, reference depth and files
     ├── rules_portability.py
     ├── rules_scripts.py
     ├── rules_capabilities.py
     ├── rules_substitutions.py # CA-05, CA-06: text Claude Code replaces when SKILL.md loads
     └── report.py            # table, details, --manifest, --json
-scripts/testers/
+scripts/tests/checks/
 ├── __init__.py
-└── skill_lint/              # importable name, so unittest discovery reaches it
+└── skill_lint/
     ├── __init__.py
     ├── helpers.py           # builds each fixture skill in a temporary directory
     └── test_*.py
@@ -176,15 +178,15 @@ scripts/testers/
 
 ### Runtime and conventions
 
-- **Python and packages:** Python 3.15. Only the stdlib plus `ruamel.yaml==0.19.1`, already in the `dev` dependency group of `pyproject.toml` and in `uv.lock`. No new package is added.
-- **Conventions:** the same as `scripts/check-github-files.py`.
-- **How it runs:** `package.json` runs it as `uv run python …` (ADR_2026-11-12_maintainer-scripts-run-through-uv-run). The shebang of maintainer scripts is only informative.
+- **Python and packages:** Python 3.15. Only the stdlib plus `ruamel.yaml`, in the `dev` dependency group of `pyproject.toml` and in `uv.lock`.
+- **Conventions:** those of every maintainer script, in `.claude/rules/architecture/scripts.md`.
+- **How it runs:** `npm run lint:skills`, which runs `uv run python -m scripts.checks.skill_lint.cli` from the repository root.
 - **SC-01 and SC-02 scope:** they apply to scripts inside skills, not to maintainer scripts.
 - **Module size:** each module stays at or under about 250 lines.
 
 ### Discovery
 
-- **Globs:** only `plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`. Today they match 26 skills: 25 plugin skills and 1 project skill.
+- **Globs:** only `plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`.
 - **Fixtures:** tests build each fixture skill in a temporary directory, so no broken skill is committed and none can be discovered.
 - **Command names:** each skill's command name is `plugin:skill` or `project:skill`. That name tells apart the two `ts-lifecycle` skills (typescript6 and typescript7).
 - **Files listed:** every file and symlink in the skill folder, except inside `.git/`, `node_modules/` and `.venv/` (owner decision, 2026-11-12: vendored trees would flood CO-12). A file over 1 MiB is listed but not read.
@@ -193,22 +195,15 @@ scripts/testers/
 ### Testability
 
 - **SC-02:** the rule reads index modes through a function that tests can replace. Its integration test builds a temporary git repository in a temporary directory.
-- **Imports in tests:** the tests import `skill_lint` from `scripts/validators`, so they need two things:
-  - The unittest command adds that directory: `-t scripts`, plus a `sys.path` setup in `scripts/testers/skill_lint/__init__.py`, or the equivalent.
-  - basedpyright resolves it: `"extraPaths": ["validators"]` in `scripts/pyrightconfig.json`.
-- **Settled in step 1 of the plan (observed):**
-  - `npm run test:scripts` runs `uv run python -m unittest discover -s scripts/testers -t scripts -p 'test_*.py'`. With `-t scripts`, `from validators.skill_lint import ...` resolves in the tests with no `sys.path` change and no `sys.path` setup in `scripts/testers/skill_lint/__init__.py`.
-  - `basedpyright -p scripts` resolves `validators.skill_lint` in the tests with no `extraPaths` entry. The entry script `scripts/validators/skill-lint.py` (`from skill_lint.cli import main`) needed `"extraPaths": ["validators"]` in `scripts/pyrightconfig.json`: without it basedpyright reported `reportImplicitRelativeImport`. `"."` was not needed.
-  - ruff reported N999 on `skill-lint.py` and did not report INP001 on it or on the new packages (each has an `__init__.py`). `ruff.toml` now has `[lint.per-file-ignores]` with `"scripts/validators/skill-lint.py" = ["N999"]`.
-  - ruff D104 requires a docstring in every `__init__.py`, so the package `__init__.py` files hold a one-line docstring and are not empty.
+- **Imports in tests:** the tests import `scripts.checks.skill_lint` absolutely. `npm run test:scripts` runs unittest from the repository root with `-t .`, and basedpyright resolves the package through the `scripts` execution environment's `extraPaths = ["."]` in `pyproject.toml`.
 
 ### Checks
 
-- `ruff check` (`ALL`), and `basedpyright -p scripts`, which is already part of `npm run typecheck:python`.
+- `ruff check` (`ALL`), and `basedpyright`, which is part of `npm run typecheck:python`.
 
 ### CLI
 
-- **Usage:** `skill-lint.py [paths…] [--only families] [--strict] [--manifest] [--json]`
+- **Usage:** `npm run lint:skills -- [paths…] [--only families] [--strict] [--manifest] [--json]`
 - **Exit codes:**
   - 0: no ✗.
   - 1: at least one ✗ (or ⚠ with `--strict`).
@@ -223,25 +218,8 @@ scripts/testers/
 
 ### npm scripts
 
-- `"lint:skills": "uv run python scripts/validators/skill-lint.py"`. It is not chained into any other script.
-- `"test:scripts"`: `uv run python -m unittest discover` over `scripts/testers`, with the exact flags settled in step 1 (see Testability).
-
-## Files to create or change
-
-- **New:**
-  - `scripts/validators/skill-lint.py`
-  - `scripts/validators/skill_lint/*.py`
-  - `scripts/validators/__init__.py` and `scripts/testers/__init__.py`
-  - `scripts/testers/skill_lint/` (`__init__.py`, `helpers.py`, `test_*.py`)
-- **Changed:**
-  - `package.json`: the `lint:skills` and `test:scripts` scripts.
-  - `scripts/pyrightconfig.json`: `extraPaths`, if step 1 confirms it is needed.
-  - `ruff.toml`: a per-file ignore for the shim, only if step 1 shows N999 or INP001 fire.
-- **Records:**
-  - `.claude/maintainer/specs/skill-lint-spec.md`: this design, committed.
-  - One ADR through `project-maintainer:write-records`. It records the own linter, the severity model, the skill-folder-only scope and one owner per check.
-- **Removed:** the `.gitkeep` files in `scripts/validators/` and `scripts/testers/`, once real files exist.
-- **Unchanged:** no file under `plugins/` changes.
+- `"lint:skills": "uv run python -m scripts.checks.skill_lint.cli"`. It is not chained into any other script.
+- `"test:scripts"`: `uv run python -m unittest discover -s scripts/tests -t . -p 'test_*.py'`.
 
 ## Verification
 
@@ -263,5 +241,5 @@ scripts/testers/
 ## Execution sequence
 
 1. Save this spec to `.claude/maintainer/specs/skill-lint-spec.md` and commit it.
-2. Invoke `superpowers:writing-plans` for the step-by-step TDD implementation plan. Its first step settles the open items in Testability. The owner picks the execution method.
+2. Invoke `superpowers:writing-plans` for the step-by-step TDD implementation plan. The owner picks the execution method.
 3. Implement and commit by topic. Push nothing without the owner's authorization.
