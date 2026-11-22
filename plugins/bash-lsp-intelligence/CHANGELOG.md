@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-22
+
+### Fixed
+
+- On macOS's own Bash 3.2 (`/bin/bash`), the post-edit hook failed on nearly every call with "the post-edit hook failed at line …, so the changed shell scripts were not checked", even with nothing to check: Bash 3.2 ran the hook's error handler inside its command substitutions, for failures the hook expected and handled, such as a tool that isn't installed. Since the hook blocks on its own failure, Claude received that error after its edits. The handler now reports only failures of the hook itself.
+- With Homebrew's Bash 5.3 on macOS, the post-edit hook failed now and then with the same message: Bash crashed in the child process of a command substitution while it set the locale for `awk`. The hook now passes the locale and the time zone through `env`, so Bash no longer changes its own. The hook now also uses `env`, which comes with macOS and Linux.
+
 ## [0.4.0] - 2026-11-20
 
 ### Added
@@ -136,7 +143,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `bash-lsp-intelligence` skill: navigates shell code with the language server; traces direct and transitive `source` chains before trusting same-named functions; respects the script's real dialect; fixes ShellCheck and shfmt findings without changing quoting, globbing or exit-status behavior; and reports each check's status, the scripts covered and what stayed unverified.
 - Optional controls: a bundled runner checks ShellCheck and shfmt against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.4.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.4.1...HEAD
+[0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.4.1
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.4.0
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.3.0
 [0.2.9]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.9

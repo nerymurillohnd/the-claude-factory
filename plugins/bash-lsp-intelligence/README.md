@@ -59,7 +59,7 @@ Bash LSP Intelligence connects bash-language-server to Claude Code and adds a ho
 | Bash                 | 3.2             | `bash --version`                 |
 | Git (optional)       | —               | `git --version`                  |
 
-The plugin also uses `awk`, `cat`, `cksum`, `date`, `find`, `head`, `mktemp`, `readlink`, `rm`, `touch` and `uname`, which come with macOS and Linux.
+The plugin also uses `awk`, `cat`, `cksum`, `date`, `env`, `find`, `head`, `mktemp`, `readlink`, `rm`, `touch` and `uname`, which come with macOS and Linux.
 
 Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server, which needs Node.js 20 or later; the hook itself needs no Node.js. Claude Code starts the hook with `bash`, a Bash script that needs Bash 3.2 or later. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
 
