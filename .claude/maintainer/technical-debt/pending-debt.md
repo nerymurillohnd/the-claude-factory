@@ -49,6 +49,7 @@ Add an item only when all of these hold:
 | DEBT-011 | bash-lsp-intelligence's bash-gate.sh is untested on macOS's Bash 3.2 and awk | 🟠 Blocked |
 | DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
 | DEBT-014 | cc-github-actions references still mix old-style placeholders, inline commands and cross-file links | 🟠 Blocked |
+| DEBT-015 | A typescript6-lsp-intelligence hook test fails now and then in CI | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -348,6 +349,33 @@ Add an item only when all of these hold:
 - **Next action:** the owner chooses one pass or file by file; then convert the files with `skills-engineering:authoring-skills`, one plan per pass.
 - **Review condition:** both greps return nothing, and each reference has `## Gotchas`, `## Official sources` and `## Exit`.
 - **Related records:** [#118](https://github.com/nerymurillohnd/the-claude-factory/pull/118).
+
+### DEBT-015 — A typescript6-lsp-intelligence hook test fails now and then in CI
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality |
+| **Owner** | typescript6-lsp-intelligence |
+| **Logged** | 2026-11-22 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `plugins/typescript6-lsp-intelligence/tests/tsc-check.test.mjs:452`, "caps the issue list at 100 lines with a count of the rest", failed with `AssertionError 1 !== 2` at its `assert.equal(run.code, 2)`. That means `hooks/tsc-check.sh` exited 1 instead of 2. Seen in Validate run [44870074007](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/44870074007), at head `863dd596` of an earlier pull request, and in run [45018914400](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/45018914400) of [#119](https://github.com/nerymurillohnd/the-claude-factory/pull/119), which changes nothing under that plugin.
+  - Later runs of the earlier branch passed, and Validate on `main` at `b58e2d21` passed all 34 tests in that file ([44900889726](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/44900889726)).
+  - The hook exits 1 from its ERR trap (line 24) and from two explicit `exit 1` paths (lines 237 and 242). The test asserts the code without printing `run.stderr`, so the log does not say which path it took.
+  - In run 45018914400 the "real compiler" suite took 32.2 s against 22.9 s on `main`, and this test took 11.0 s against 7.8 s. The file runs its cases with `concurrency: true`.
+- **Inferences:** a timing-dependent failure under CI load, such as the hook's time limit or a slow `tsc` run, ends on an `exit 1` path. Not reproduced.
+- **Open questions:** which of the three `exit 1` paths runs.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** Validate's `Checks` job can fail on a pull request that doesn't touch the plugin, which costs a rerun. If the cause is in the hook, users would see the same failure under load.
+- **Why it is not fixed now:** the failure is not reproduced, and the fix is a change to the plugin, in its own pull request.
+- **Next action:** make the test print the hook's stderr (`assert.equal(run.code, 2, run.stderr)`, as the file's symlink test does). On the next failure, fix the `exit 1` path it names.
+- **Review condition:** the next failure of this test, or the test's stderr change merged.
+- **Related records:** [#119](https://github.com/nerymurillohnd/the-claude-factory/pull/119).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
