@@ -23,7 +23,13 @@
 set -Eeuo pipefail
 trap 'exit 1' ERR
 
-gate_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# The gate's own tree, found with builtins only: the tool check below must be able to report a
+# missing tool, so nothing runs before it that needs one.
+gate_dir="${BASH_SOURCE[0]%/*}"
+if [[ ${gate_dir} == "${BASH_SOURCE[0]}" ]]; then
+  gate_dir="."
+fi
+gate_root="$(cd "${gate_dir}/../.." && pwd)"
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 
@@ -164,9 +170,10 @@ fi
 if ((${#agent_files[@]} > 0)); then
   find_tool uv uv
   if [[ -n ${uv} ]]; then
-    # The validator beside this script, so the gate and its validator always come from one tree.
-    run_tool agent-headings "${uv}" run --quiet python "${gate_dir}/agent-headings.py" \
-      "${agent_files[@]}"
+    # The validator from the gate's own tree, so the gate and its validator always match: -P keeps
+    # the committed tree's folder off the import path, and PYTHONPATH puts the gate's tree on it.
+    run_tool agent-headings env "PYTHONPATH=${gate_root}" "${uv}" run --quiet python -P \
+      -m scripts.checks.agent_headings.cli "${agent_files[@]}"
   fi
 fi
 

@@ -20,7 +20,7 @@ target="${TARGET_SHA:-$(git rev-parse HEAD)}"
 
 # release-notes needs only the standard library, so no project dependencies are installed in the
 # step that holds the write token.
-notes=(uv run --no-project python "${root}/scripts/release/release-notes.py" --root .)
+notes=(env "PYTHONPATH=${root}" uv run --no-project python -P -m scripts.release.notes --root .)
 
 git fetch -q origin main
 
