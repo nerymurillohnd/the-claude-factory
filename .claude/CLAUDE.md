@@ -22,7 +22,7 @@
 
 **Runtimes**
 
-- In the cloud, expect the SessionStart hook `.claude/hooks/cloud-setup.sh` to run `npm run setup` (`npm ci`, `uv sync --locked` and the tools) when a lockfile changed or `node_modules/` or `.venv/` is missing; when its message reports a failure, read its log, fix the cause and run `npm run setup` again.
+- In the cloud, expect the SessionStart hook `.claude/hooks/cloud-setup.sh` to run `npm run setup` (`npm ci`, each plugin's own lockfile, `uv sync --locked` and the tools) when a lockfile changed or `node_modules/` or `.venv/` is missing; when its message reports a failure, read its log, fix the cause and run `npm run setup` again.
 - Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins before any npm command; `devEngines` also requires npm 12, which Node 26 does not ship (see `.claude/rules/npm-and-uv.md`). In the cloud, the SessionStart hook runs `nvm use` and installs the npm 12 that `devEngines` requires.
 - Run `uv sync --locked` to set up Python 3.15 and its dev dependencies before the first Python command of a session and after `uv.lock` changes.
 

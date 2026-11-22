@@ -78,15 +78,11 @@ install_dependencies() {
     return 0
   fi
 
+  # npm run setup also installs each plugin's own lockfile (setup:plugins).
   if ! npm run setup; then
     problems+=("npm run setup failed")
     return 0
   fi
-  for lock in plugins/*/package-lock.json; do
-    if [[ -f ${lock} ]] && ! npm ci --prefix "${lock%/package-lock.json}" --no-audit --no-fund; then
-      problems+=("npm ci failed in ${lock%/package-lock.json}")
-    fi
-  done
   if ((${#problems[@]} == 0)); then
     sha256sum "${inputs[@]}" > "${stamp_file}"
     notes+=("installed the project dependencies")

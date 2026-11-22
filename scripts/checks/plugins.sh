@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Runs one check on every plugin under plugins/, so package.json holds one command per script.
+# Runs one step on every plugin under plugins/, so package.json holds one command per script.
 #
-# Usage: plugins.sh validate | portable | mods | tests
+# Usage: plugins.sh install | validate | portable | mods | tests
+#   install   npm ci in each plugin that has a package-lock.json: tsc follows the repository's
+#             imports into plugin code, which needs its runtime packages
 #   validate  claude plugin validate --strict on each plugin
 #   portable  the same with --profile directory: what the Anthropic directory checks
 #   mods      claude plugin test on each plugin with tests/*.test.ts or *.test.tsx
@@ -15,9 +17,9 @@ trap 'exit 1' ERR
 
 check="${1:-}"
 case "${check}" in
-  validate | portable | mods | tests) ;;
+  install | validate | portable | mods | tests) ;;
   *)
-    echo "usage: plugins.sh validate | portable | mods | tests" >&2
+    echo "usage: plugins.sh install | validate | portable | mods | tests" >&2
     exit 2
     ;;
 esac
@@ -28,6 +30,11 @@ cd "${root}"
 failed=()
 for dir in plugins/*/; do
   case "${check}" in
+    install)
+      if [[ -f ${dir}package-lock.json ]]; then
+        npm ci --prefix "${dir%/}" --no-audit --no-fund || failed+=("${dir}")
+      fi
+      ;;
     validate)
       claude plugin validate --strict "${dir}" || failed+=("${dir}")
       ;;

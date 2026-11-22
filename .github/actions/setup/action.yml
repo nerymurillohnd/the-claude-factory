@@ -34,10 +34,7 @@ runs:
         (cd "${RUNNER_TEMP}" && npm install -g npm@12.2.1 --no-audit --no-fund)
         npm ci --no-audit --no-fund
         # typecheck:ts follows plugin imports into plugin code that needs its runtime packages.
-        for lock in plugins/*/package-lock.json; do
-          [[ -e ${lock} ]] || continue
-          npm ci --prefix "$(dirname "${lock}")" --no-audit --no-fund
-        done
+        npm run setup:plugins
         uv python install
         uv sync --locked
         npm run tools:install
