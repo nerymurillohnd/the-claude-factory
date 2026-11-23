@@ -78,6 +78,18 @@ class NameFormatTest(NameTestCase):
         ]
         self.assertEqual(charset, [["upload"]])
 
+    def test_compatibility_letter_is_open_spec(self) -> None:
+        """skills-ref tests lowercase after NFKC: U+210C becomes `H`, so open-spec rejects it."""
+        result = self.result(NAME, "name: \N{BLACK-LETTER CAPITAL H}elp", folder="x")
+        findings = result.get("findings")
+        items: list[object] = findings if is_list(findings) else []
+        charset = [
+            item.get("surfaces")
+            for item in items
+            if isinstance(item, JsonObject) and item.get("rule") == "charset"
+        ]
+        self.assertEqual(charset, [["open-spec", "upload"]])
+
     def test_length(self) -> None:
         """65 characters are one too many."""
         name = "a" * 65

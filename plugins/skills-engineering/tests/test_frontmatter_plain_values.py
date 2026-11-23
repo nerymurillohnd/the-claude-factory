@@ -78,6 +78,12 @@ class PlainValuesTest(unittest.TestCase):
         """A metadata value read as a boolean, on its own line."""
         self.assertEqual(rules(self.result("metadata:\n  flag: on")), [("reads-as-boolean", 3)])
 
+    def test_metadata_boolean_and_null_are_upload_only(self) -> None:
+        """The open-spec validator reads every metadata scalar as text; uploads type them."""
+        for yaml in ("metadata:\n  flag: on", "metadata:\n  gone: ~"):
+            with self.subTest(yaml=yaml):
+                self.assertEqual(self.first(yaml).get("surfaces"), ["upload"])
+
     def test_boolean_field_is_fine(self) -> None:
         """A boolean field may hold a boolean form."""
         self.assertEqual(rules(self.result("user-invocable: no")), [])

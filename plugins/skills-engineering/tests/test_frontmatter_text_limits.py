@@ -81,6 +81,34 @@ class DescriptionTest(TextLimitTestCase):
         """A number isn't a description."""
         self.assertEqual(self.rule_names(DESCRIPTION, "description: 5"), ["not-a-string"])
 
+    def test_not_a_string_surfaces(self) -> None:
+        """A scalar of another type fails uploads only: the open-spec validator reads it as text.
+
+        A list is no text on either surface.
+        """
+        self.assertEqual(
+            self.found(DESCRIPTION, "description: 5"), [("not-a-string", "description", ["upload"])]
+        )
+        self.assertEqual(
+            self.found(DESCRIPTION, "description: [a]"),
+            [("not-a-string", "description", ["open-spec", "upload"])],
+        )
+
+    def test_yaml11_only_boolean_is_text(self) -> None:
+        """`n` and `1e3` are text to PyYAML, which uploads load with."""
+        self.assertEqual(self.rule_names(DESCRIPTION, "description: n"), [])
+        self.assertEqual(self.rule_names(DESCRIPTION, "description: 1e3"), [])
+
+    def test_when_to_use_angle_brackets_without_description(self) -> None:
+        """With no description, `<` in when_to_use is still reported; findings sort by position."""
+        self.assertEqual(
+            self.found(DESCRIPTION, "when_to_use: Use for <branch> work"),
+            [
+                ("angle-bracket", "when_to_use", ["claude-code"]),
+                ("missing", "description", ["open-spec", "upload"]),
+            ],
+        )
+
     def test_empty(self) -> None:
         """Blanks only."""
         self.assertEqual(self.rule_names(DESCRIPTION, 'description: "  "'), ["empty"])
@@ -193,6 +221,10 @@ class CompatibilityTest(TextLimitTestCase):
     def test_not_a_string(self) -> None:
         """A number."""
         self.assertEqual(self.rule_names(COMPATIBILITY, "compatibility: 7"), ["not-a-string"])
+
+    def test_yaml11_only_boolean_is_text(self) -> None:
+        """`y` is text to PyYAML and to the open-spec validator."""
+        self.assertEqual(self.rule_names(COMPATIBILITY, "compatibility: y"), [])
 
     def test_compatibility_raw_length(self) -> None:
         """500 characters plus a block scalar's newline: no validator strips it, on any surface."""

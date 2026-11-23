@@ -58,11 +58,12 @@ def _refused(name: str) -> bool:
 def _open_spec_letters(name: str) -> bool:
     """True when the open-spec validator, skills-ref, accepts the name's characters.
 
-    It wants the name lowercase and, after NFKC, made only of letters and digits of any script
-    and hyphens.
+    It strips the name and normalizes it with NFKC, then wants it lowercase and made only of
+    letters and digits of any script and hyphens; a character NFKC turns into a capital, such as
+    U+210C, fails there.
     """
-    normalized = unicodedata.normalize("NFKC", name)
-    return name == name.lower() and all(ch.isalnum() or ch == "-" for ch in normalized)
+    normalized = unicodedata.normalize("NFKC", name.strip())
+    return normalized == normalized.lower() and all(ch.isalnum() or ch == "-" for ch in normalized)
 
 
 def _format_findings(name: str, node: Node, folder: str) -> list[Finding]:

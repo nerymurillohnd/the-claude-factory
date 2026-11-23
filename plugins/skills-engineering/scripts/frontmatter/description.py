@@ -11,7 +11,7 @@ import re
 from typing import Final
 
 from common.context import Context
-from common.frontmatter import NO_BLOCK_REASON, load
+from common.frontmatter import NO_BLOCK_REASON, Loaded, load
 from common.report import CheckResult, Finding
 from common.text import utf16_len
 from common.text_field import TextField, as_text, not_run
@@ -22,6 +22,27 @@ FIELD: Final = TextField(
     CHECK, "description", MAX_LENGTH, ("open-spec", "upload"), upload_strips=True
 )
 XML_TAG: Final = re.compile(r"<[A-Za-z/!?][^<>]*>")
+
+
+def _when_to_use(loaded: Loaded) -> list[Finding]:
+    """An angle-bracket finding when `when_to_use` holds `<` or `>`."""
+    when = loaded.fields.get("when_to_use")
+    when_text = as_text(when[1]) if when is not None else None
+    if when is None or when_text is None or ("<" not in when_text and ">" not in when_text):
+        return []
+    return [
+        Finding(
+            check=CHECK,
+            rule="angle-bracket",
+            line=when[1].line,
+            column=when[1].column,
+            field="when_to_use",
+            found=when_text,
+            expected="No `<` or `>`: Claude Code shows them escaped in the skill listing.",
+            basis="official",
+            surfaces=("claude-code",),
+        )
+    ]
 
 
 def check(ctx: Context) -> CheckResult:
@@ -48,7 +69,8 @@ def check(ctx: Context) -> CheckResult:
             "xml_tags": [],
             "claude_code_fallback": "first non-empty body line",
         }
-        return CheckResult(CHECK, "ran", None, ctx.folder_name, [missing], data)
+        findings = [missing, *_when_to_use(loaded)]
+        return CheckResult(CHECK, "ran", None, ctx.folder_name, findings, data)
     node = pair[1]
     findings = FIELD.findings(node)
     text = as_text(node) or ""
@@ -66,22 +88,7 @@ def check(ctx: Context) -> CheckResult:
                 surfaces=("claude-code", "upload"),
             )
         )
-    when = loaded.fields.get("when_to_use")
-    when_text = as_text(when[1]) if when is not None else None
-    if when is not None and when_text is not None and ("<" in when_text or ">" in when_text):
-        findings.append(
-            Finding(
-                check=CHECK,
-                rule="angle-bracket",
-                line=when[1].line,
-                column=when[1].column,
-                field="when_to_use",
-                found=when_text,
-                expected="No `<` or `>`: Claude Code shows them escaped in the skill listing.",
-                basis="official",
-                surfaces=("claude-code",),
-            )
-        )
+    findings.extend(_when_to_use(loaded))
     data = {
         "length": len(text),
         "utf16_length": utf16_len(text),

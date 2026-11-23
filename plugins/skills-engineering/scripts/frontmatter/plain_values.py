@@ -19,6 +19,7 @@ YAML11_BOOLEANS: Final = frozenset({"yes", "no", "on", "off"})
 BOOLEANS: Final = frozenset({"true", "false"}) | YAML11_BOOLEANS
 NULLS: Final = frozenset({"null", "~"})
 LEADING_INDICATORS: Final = "-?:"
+UPLOAD: Final[tuple[Surface, ...]] = ("upload",)
 YAML11_CONDITION: Final = (
     "YAML 1.1 parsers, such as PyYAML, read it as a boolean; YAML 1.2 keeps it as text"
 )
@@ -154,8 +155,10 @@ def check(ctx: Context) -> CheckResult:
             if node.kind == "scalar" and node.style == "plain" and node.value:
                 findings.extend(_plain_findings(loaded, node, field))
                 if field == "metadata":
+                    # The open-spec validator reads every metadata scalar as text; only uploads,
+                    # which load with PyYAML, turn it into a boolean or null.
                     extra = _boolean_or_null(node, field)
-                    findings.extend([] if extra is None else [extra])
+                    findings.extend([] if extra is None else [replace(extra, surfaces=UPLOAD)])
     return CheckResult(
         check=CHECK,
         status="ran",

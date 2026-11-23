@@ -38,10 +38,14 @@ def _distance(a: str, b: str) -> int:
 
 
 def suggestion(key: str) -> str | None:
-    """The field a key most likely means: an alias first, else the field within two edits."""
-    if key in ALIASES:
-        return ALIASES[key]
-    scored = [(_distance(key.lower(), field), field) for field in CLAUDE_CODE_FIELDS]
+    """The field a key most likely means: an alias first, else the field within two edits.
+
+    Both ignore case, so `Tools` means `allowed-tools` as `tools` does.
+    """
+    lowered = key.lower()
+    if lowered in ALIASES:
+        return ALIASES[lowered]
+    scored = [(_distance(lowered, field), field) for field in CLAUDE_CODE_FIELDS]
     best = min(scored)
     return best[1] if best[0] <= MAX_EDITS else None
 
