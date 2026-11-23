@@ -16,7 +16,7 @@ paths:
 
 - Each audit rule has one owner: a rule two references would judge stays in one and leaves the other.
 - No agent or reference names another reviewer or what another covers.
-- Each agent reads only its reference and `assets/audit-report.md`, by `${CLAUDE_PLUGIN_ROOT}` paths.
+- Each agent reads only its reference and `assets/audit-report.md`, by `${CLAUDE_PLUGIN_ROOT}` paths, and the skill-checks results folder its prompt names.
 - `references/` holds the reviewers' references and the lookups they are given; `MECHANICAL-CHECKS.md`, at the skill root, is the main session's playbook, which no reviewer reads.
 - Plugin files never name the maintainer checks in the repository's `scripts/checks/`, their rule ids or any repository path.
 
