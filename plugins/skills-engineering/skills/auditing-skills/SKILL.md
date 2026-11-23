@@ -1,7 +1,7 @@
 ---
 name: auditing-skills
 description: Use when the user asks to review, audit, check or improve a Claude skill, or reports one that misbehaves, such as a skill Claude never uses or loads for the wrong requests, a weak or truncated description, frontmatter that fails, a skill that breaks on claude.ai or in a plugin, or one too long for its budget. Also to judge whether a skill is worth installing, and, right after a skill is written or edited, to offer the user an audit of it. Covers skills in plugins, personal, project and managed folders, claude.ai accounts, URLs and repositories, one skill or several at once. Not for writing a new skill. Runs only the specialized reviewers the request needs, such as one for the description alone, each as its own agent against current Anthropic and Agent Skills best practices, once the user confirms them, and returns each reviewer's full report with file-and-line evidence, the fix for every finding and suggested improvements.
-allowed-tools: Bash(python3 "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_SKILL_DIR}/scripts/frontmatter-checks.py" *), Bash(python3 "${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py" *), Bash(python "${CLAUDE_PLUGIN_ROOT}/skills/auditing-skills/scripts/frontmatter-checks.py" *)
+allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" *), Bash(python "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" *)
 argument-hint: "[content-patterns] [runtime-contract] [size-limits-and-budgets] [knowledge-delta] [task-mechanisms] [frontmatter-description] [comprehension] [feature-fit] [scripts] [skill path, name or URL]"
 ---
 
