@@ -204,6 +204,20 @@ class TscHookTest(unittest.TestCase):
                     self.assertIn("no usable TypeScript compiler was found", message)
                 self.assertEqual(left, [])
 
+    def test_node_below_the_floor_is_skipped(self) -> None:
+        """A Node.js older than 24, the floor the README states, is listed as skipped."""
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn(f"{old}/node (22.12.0; needs 24.0.0 or later)", message)
+
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: the hook prints nothing."""
         with tempfile.TemporaryDirectory() as raw:

@@ -62,13 +62,13 @@ export MISE_AUTO_INSTALL=false
 case "${PLUGIN}" in
   typescript7-*)
     readonly NATIVE=yes
-    readonly NODE_MIN=16.20.0
     ;;
   *)
     readonly NATIVE=no
-    readonly NODE_MIN=14.17.0
     ;;
 esac
+# The Node.js floor the plugin's README states; a lower tsc minimum does not lower it.
+readonly NODE_MIN=24.0.0
 readonly README_URL="https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/${PLUGIN}#-prerequisites"
 
 # Canonical, so the paths tsc prints relative to it resolve back to the same files.
