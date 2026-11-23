@@ -8,7 +8,7 @@ Format: claim | source | status
 - On a merged account tasks run in the cloud, with no option to run them locally | support.claude.com/en/articles/15811196 | verified
 - Cloud Cowork sessions need the desktop app open for local files, local MCP servers (including plugins that bundle them), browser use and computer use | support.claude.com/en/articles/15811196 | verified
 - Cowork and cloud sessions, including cloud scheduled tasks, don't read `~/.claude/skills/`; they load skills enabled for the claude.ai account, synced at session start | skills.md "Use skills in Cowork and cloud sessions" | verified
-- Project cloud threads load each repo's CLAUDE.md, `.claude/CLAUDE.md` and root `.claude/rules/`, but not `.claude/skills/`, agents, commands, `.mcp.json`, settings plugins, permission rules, hooks or env | claude-projects.md "What threads pick up from your repositories" | verified. Ruling: docs govern over the extended-memory line "use repo skills, agents and hooks only when project instructions name them"; reported to Nery
+- Project cloud threads load each repo's CLAUDE.md, `.claude/CLAUDE.md` and root `.claude/rules/`, but not `.claude/skills/`, agents, commands, `.mcp.json`, settings plugins, permission rules, hooks or env | claude-projects.md "What threads pick up from your repositories" | verified
 - Other cloud sessions may load repo `.claude/skills/`; plugins in repo `.claude/settings.json` and plugins enabled only in user settings don't load in cloud sessions | skills.md same section | verified
 - Desktop scheduled tasks run locally and load `~/.claude/skills/` | skills.md same section | verified
 - Some self-hosted sessions don't load account skills | skills.md same section | verified
