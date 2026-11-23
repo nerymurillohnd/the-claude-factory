@@ -61,7 +61,7 @@ runs:
         tar -xzf actionlint.tar.gz actionlint
         sudo install -m 755 actionlint "${bin}/actionlint"
     # An eval run's Bash sandbox needs bubblewrap and socat on Linux; without them every run that
-    # grants Bash is refused (plugin-testing-and-debugging, references/evals.md, section 8).
+    # grants Bash is refused (plugin-engineering's test-and-evals skill, references/eval-runs-and-ci.md).
     - name: Python and the Bash sandbox for eval runs
       if: inputs.toolchain == 'evals'
       shell: bash

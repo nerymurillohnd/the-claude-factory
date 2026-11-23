@@ -26,7 +26,6 @@ body:
         - model-trace
         - mods-engineering
         - plugin-engineering
-        - plugin-evals
         - plugin-test-bench
         - project-maintainer
         - prompt-writer

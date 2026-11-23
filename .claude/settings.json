@@ -240,7 +240,6 @@
   },
   "enableWorkflows": true,
   "enabledPlugins": {
-    "plugin-evals@the-claude-factory": true,
     "project-maintainer@the-claude-factory": true,
     "github-operations@the-claude-factory": true,
     "bash-lsp-intelligence@the-claude-factory": true,
