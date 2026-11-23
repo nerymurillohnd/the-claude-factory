@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for frontmatter.name and frontmatter.name-plain, run through frontmatter-checks.py.
+"""Tests for frontmatter.name and frontmatter.name-plain, run through skill-checks.py.
 
 frontmatter.name checks the name's format, its folder, the characters Claude Code refuses and
 the reserved words; frontmatter.name-plain checks that the name is written as one plain line.

@@ -24,7 +24,7 @@ A check no command in this file covers is not run: name it to the reviewer as no
 
 ## Running the frontmatter checks
 
-Every frontmatter check runs through one entry script, whose path step 3 of `SKILL.md` gives already quoted. Below, `<entry>` stands for exactly that quoted path: the skill's permission rules approve only that spelling, and only in the turn that invoked the skill, so run all four commands below in that turn, before you ask the user anything. If the path doesn't exist, every frontmatter check is not run.
+Every frontmatter check runs through one entry script, whose path step 3 of `SKILL.md` gives already quoted. Below, `<entry>` stands for exactly that quoted path: the skill's permission rules approve only that spelling, and only in the turn that invoked the skill, so run `run`, `show` and `clean` in that turn, before you ask the user anything. If the path doesn't exist, every frontmatter check is not run.
 
 - `python3 <entry> run <SKILL.md>`, once: runs every frontmatter check. It prints one line per check, `<check> <status> <n> finding(s) -> <receivers>`, then `results: <folder>`. Keep the folder's path exactly as printed, because the commands below take it as written.
 - `python3 <entry> show <folder> --reviewer <name>`, once for each reviewer the summary names: the results that reviewer receives, one JSON line each. Keep each output to write into that reviewer's prompt verbatim in step 4, whichever reviewers the user confirms. `--check <id>` prints one check's result instead.

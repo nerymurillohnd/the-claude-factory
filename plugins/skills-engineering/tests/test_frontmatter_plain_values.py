@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the plain-value check, frontmatter.plain-values, run through frontmatter-checks.py.
+"""Tests for the plain-value check, frontmatter.plain-values, run through skill-checks.py.
 
 It reports plain values a YAML parser reads differently than they are written: a comment that
 cuts the text, a leading indicator, a collection, properties, and text read as a boolean or null.

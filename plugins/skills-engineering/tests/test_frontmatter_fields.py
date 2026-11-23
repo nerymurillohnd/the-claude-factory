@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for frontmatter.metadata and frontmatter.field-values, run through frontmatter-checks.py.
+"""Tests for frontmatter.metadata and frontmatter.field-values, run through skill-checks.py.
 
 frontmatter.metadata checks that `metadata` is a map of strings whose keys aren't field names;
 frontmatter.field-values checks the values Claude Code documents for its other fields.
