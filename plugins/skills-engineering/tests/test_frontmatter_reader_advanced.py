@@ -20,7 +20,7 @@ from frontmatter_helpers import SCRIPTS, is_list, parse_json
 sys.path.insert(0, str(SCRIPTS))
 
 from common.yaml_reader import Node, ReadError, read
-from common.yaml_types import to_python, yaml11_tag, yaml12_tag
+from common.yaml_types import pyyaml_tag, to_python, yaml11_tag, yaml12_tag
 
 # Reads a JSON array of YAML texts on stdin and prints, for each, the repr of what
 # ruamel.yaml loads or "error".
@@ -333,6 +333,47 @@ class Yaml11Test(AdvancedTestCase):
         """Type resolution applies to scalars only."""
         with self.assertRaises(TypeError):
             _ = yaml11_tag(self.scalar("[a]"))
+
+
+class PyYamlTest(AdvancedTestCase):
+    """PyYAML's resolver, which the upload validator loads frontmatter with."""
+
+    def test_pyyaml_tag_table(self) -> None:
+        """Each plain value resolves as yaml/pyyaml lib/yaml/resolver.py's patterns read it.
+
+        Its bool list has no `y` or `n`, its float needs a dot and a signed exponent, and its
+        octal needs a leading 0.
+        """
+        cases = {
+            "y": "str",
+            "N": "str",
+            "1e3": "str",
+            "1.5e3": "str",
+            "1.5e+3": "float",
+            "1.5": "float",
+            ".5": "float",
+            ".inf": "float",
+            "yes": "bool",
+            "On": "bool",
+            "FALSE": "bool",
+            "017": "int",
+            "7": "int",
+            "0o7": "str",
+            "0x1F": "int",
+            "1:30": "int",
+            "2026-11-17": "timestamp",
+            "~": "null",
+            "": "null",
+            "demo": "str",
+        }
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(pyyaml_tag(self.scalar(text)), expected)
+
+    def test_quoted_and_tagged(self) -> None:
+        """Quoted values are strings, and an explicit tag decides."""
+        self.assertEqual(pyyaml_tag(self.scalar("'yes'")), "str")
+        self.assertEqual(pyyaml_tag(self.scalar("!!str yes")), "str")
 
 
 class Yaml12Test(AdvancedTestCase):

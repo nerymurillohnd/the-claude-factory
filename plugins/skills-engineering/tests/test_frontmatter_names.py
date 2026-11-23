@@ -135,10 +135,11 @@ class NamePlainTest(NameTestCase):
         self.assertEqual(self.rule_names(NAME_PLAIN, "name: &a demo"), ["anchor-alias-tag"])
 
     def test_yaml11_types(self) -> None:
-        """A date and a float as names."""
-        for name in ("2026-11-17", "1e3"):
+        """A date and a float as names, as PyYAML, which uploads use, types them."""
+        for name in ("2026-11-17", "1.5"):
             with self.subTest(name=name):
                 self.assertEqual(self.rule_names(NAME_PLAIN, f"name: {name}"), ["yaml11-type"])
+        self.assertEqual(self.rule_names(NAME_PLAIN, "name: 1e3"), [])
 
     def test_boolean_is_left_to_plain_values(self) -> None:
         """`on` belongs to frontmatter.plain-values."""

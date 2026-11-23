@@ -97,6 +97,17 @@ class MetadataTest(FieldTestCase):
         """An empty value reads as null."""
         self.assertEqual(self.rule_names(METADATA, "metadata:\n  a:"), ["non-string-value"])
 
+    def test_upload_metadata_y_n_1e3(self) -> None:
+        """PyYAML, which uploads load with, reads `y`, `n` and `1e3` as strings."""
+        self.assertEqual(self.rule_names(METADATA, "metadata: {flag: y, other: n, v: 1e3}"), [])
+
+    def test_scalar_type_findings_are_upload_only(self) -> None:
+        """The open-spec validator reads every scalar as a string; only uploads type them."""
+        finding = self.first_finding(METADATA, "metadata: {a: 1}")
+        self.assertEqual(
+            (finding.get("rule"), finding.get("surfaces")), ("non-string-value", ["upload"])
+        )
+
 
 class FieldValuesTest(FieldTestCase):
     """frontmatter.field-values."""
