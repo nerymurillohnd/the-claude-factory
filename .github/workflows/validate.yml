@@ -1,8 +1,10 @@
 name: Validate
 
 # The merge gate. On every pull request, and on every push to main, `checks` runs every check that
-# passes today and blocks on any failure; `debt` runs the checks that a logged technical-debt item
-# holds back and never blocks. On a push to main, once `checks` passes, `release` calls release.yml,
+# passes today and blocks on any failure; `floors` runs every plugin's tests on the lowest Python
+# and Node.js that plugin code supports and blocks on any failure; `debt` runs the checks that a
+# logged technical-debt item holds back and never blocks. On a push to main, once `checks` and
+# `floors` pass, `release` calls release.yml,
 # which tags and publishes each plugin whose current version has no tag yet.
 # A check moves from `debt` to `checks` when its DEBT item closes.
 
@@ -84,6 +86,39 @@ jobs:
           CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
         run: bash scripts/checks/pr-checks.sh links
 
+  # Plugin code runs on users' python3 and node from Python 3.12 and Node.js 24, while `checks`
+  # runs on the maintainers' Python 3.15 and Node 26. This job sets up the same toolchain, puts the
+  # floor runtimes first on PATH and runs every plugin's tests on them. plugins.sh runs bare python3
+  # and node; npm stays out, since the root devEngines rejects Node 24 and its npm.
+  floors:
+    name: Floors (Python 3.12, Node.js 24)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Python 3.12 first on PATH
+        run: |
+          set -euo pipefail
+          uv python install 3.12
+          python="$(uv python find 3.12)"
+          dirname "${python}" >> "${GITHUB_PATH}"
+      - name: Check the floor runtimes
+        run: |
+          set -euo pipefail
+          python3 -c 'import sys; v = sys.version_info[:2]; print(sys.version); sys.exit(v != (3, 12))'
+          node -e 'console.log(process.version); process.exit(process.versions.node.split(".")[0] === "24" ? 0 : 1)'
+      - name: Plugin tests on the floors
+        run: bash scripts/checks/plugins.sh tests
+
   debt:
     name: Debt (non-blocking)
     runs-on: ubuntu-24.04
@@ -106,7 +141,7 @@ jobs:
   release:
     name: Release
     if: github.event_name == 'push'
-    needs: checks
+    needs: [checks, floors]
     permissions:
       contents: write # release.yml creates the tags and the Releases
       checks: read # release.yml reads Checks when it is dispatched by hand
