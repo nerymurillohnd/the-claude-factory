@@ -74,7 +74,7 @@ Keep every script inside the skill or its plugin: users receive only that folder
 Choose the language by who runs the skill:
 
 - A personal or project skill: the project's language and toolchain, which the user already has and maintains.
-- A plugin for third parties: an interpreter every user has, because it runs on machines you never see. Prefer POSIX `sh` or bash and the Python 3 standard library. On macOS, bash is an old version and the tools are BSD, so avoid GNU-only options such as `sed -i` without a suffix, `grep -P` and `readlink -f`. Use forward slashes in every path, and run shell scripts on Windows only through Git Bash, in a plugin that declares Windows support.
+- A plugin for third parties: an interpreter every user has, because it runs on machines you never see. Prefer POSIX `sh` or bash and the Python 3 standard library. On macOS, bash is an old version and the tools are BSD, so avoid GNU-only options such as `sed -i` without a suffix, `grep -P` and `readlink -f`. Use forward slashes in every path the script writes, and normalize `\` to `/` in every path it reads from Claude Code, such as a hook's `tool_input.file_path`, before comparing it: on Windows that path arrives with backslashes even under Git Bash, so a pattern written with `/` never matches. Run shell scripts on Windows only through Git Bash, in a plugin that declares Windows support.
 
 Keep dependencies to what each surface can run:
 
