@@ -24,6 +24,7 @@
 | 2026-11-21 | DEBT-013 | resolved | cc-github-actions reaches a failed step's goal by any method within the session's permissions | none |
 | 2026-11-22 | DEBT-011 | resolved | bash-lsp-intelligence's post-edit hook passes its tests on macOS's Bash 3.2 and Homebrew's Bash 5.3 | none |
 | 2026-11-23 | DEBT-015 | resolved | typescript6-lsp-intelligence's post-edit hook caps a long issue list without failing | none |
+| 2026-11-23 | DEBT-006 | resolved | npm run lint:js passes on every file, and Validate's Lint step runs it | none |
 
 ## 🏁 Closed items
 
@@ -258,6 +259,49 @@ Since the hook declares `onFailure: "block"`, Claude received "the post-edit hoo
 - **Residual risk:** the 300-issue test never failed locally, even under load, so the CI failures are attributed to this cause by matching symptom (`1 !== 2` from the ERR trap) and mechanism, not by a stderr captured in CI; the test now prints it if it ever fails again. In typescript7's hook, `find … | head -n "${MAX_WALK_FILES}"` runs inside a command substitution where errexit is off, so it survives SIGPIPE (probed on Bash 3.2.57 and 5.3.20); a regression test with 24,000 files guards it.
 - **Closed by:** [#122](https://github.com/nerymurillohnd/the-claude-factory/pull/122), squash commit `f110832`.
 - **Related records:** [#119](https://github.com/nerymurillohnd/the-claude-factory/pull/119).
+- **Superseded by:** none
+
+### DEBT-006 — npm run lint:js passes on every file, and Validate's Lint step runs it
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-23 |
+| **Logged on** | 2026-11-14 |
+| **Owner** | unassigned |
+
+#### ❗ The problem
+
+`npm run lint:js` (Biome) failed on findings in plugin files: 31 errors when logged, 20 on `main` after the earlier fixes, and 21 with the nursery rules of Biome 2.6.8. So `npm run lint` and `npm run check` couldn't serve as the local check, and Validate linted with Biome only the files a pull request changed, so a finding in an untouched file went unreported.
+
+#### 🔧 The closure
+
+On branch `claude/modest-mcnulty-ce49d2`, each finding was fixed at its cause, with no suppression and no change to `biome.jsonc`:
+
+- **Code:** file-tree-pane 0.2.1 (`75b5481`), model-trace 0.1.6 (`5598dff`) and tailwind-development 0.3.6 (`d51d969`) meet the nursery rules by rewriting loops and spreads and extracting functions to stay under the complexity limit.
+- **Markdown:**
+  - github-operations 0.10.1 (`bdc9e58`) nests the cleanup plan's action headings.
+  - skill-diagnostics 0.4.4 (`645413e`) gives the cold executor's brief its own template.
+  - plugin-engineering (`eb16d7e`) tags four example fences.
+  - svelte-development 0.2.1 (`121b394`) tags a checklist fence.
+- **The last five, `useTopLevelHeading` in `plugin-testing-and-debugging/assets/`:** the owner had them removed with the skill rather than given a heading or an override. That skill's fixed eval templates duplicated what `claude plugin eval init` writes. Plugin-engineering 0.5.0 (`5843189`) replaces the skill with `test-and-evals` and `troubleshoot-and-debug`.
+- **CI** (`24144ed`):
+  - the `lint` step of `scripts/checks/pr-checks.sh` runs `npm run lint`, which includes `lint:js`, on every file;
+  - the `biome-changed` step, Validate's "Biome on changed files" step and the `DEBT-006` step of the `Debt` job are removed;
+  - `.claude/rules/architecture/github.md` and the `plugin-catalog-changes` skill say the same.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | At `24144ed`, `npm run lint:js`: `Checked 747 files … No fixes applied.`, exit 0. `bash scripts/checks/pr-checks.sh lint` exits 0. `grep` finds no `DEBT-006`, `biome-changed` or `Biome on changed` left in `validate.yml` or `pr-checks.sh`. |
+| 🚫 **Negative:** the original failure or condition is gone | The same command reported 20 errors at the start of this branch and 21 under Biome 2.6.8, and now reports none. The five `useTopLevelHeading` files no longer exist. Every other listed file passes the pre-commit gate's Biome check. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the branch is not yet pushed or merged, so `main` still runs the old steps until it lands; Validate on its pull request is the first CI run of the new `lint` step.
+- **Closed by:** commits `75b5481` to `24144ed` on `claude/modest-mcnulty-ce49d2`.
+- **Related records:** none.
 - **Superseded by:** none
 
 <!--
