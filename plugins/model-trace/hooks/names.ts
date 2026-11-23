@@ -128,7 +128,29 @@ export function hookName(handler: Readonly<Record<string, unknown>>): string {
   return `${typeof type === 'string' ? type : 'command'} hook`
 }
 
-type HookGroups = Readonly<Record<string, ReadonlyArray<{ matcher?: unknown; hooks?: unknown }>>>
+type HookGroup = { matcher?: unknown; hooks?: unknown }
+type HookGroups = Readonly<Record<string, readonly HookGroup[]>>
+
+/** The handlers of one matcher group, keyed by their place in the settings layer. */
+function groupDefs(source: string, event: string, g: number, group: HookGroup): HookDef[] {
+  const matcher = typeof group?.matcher === 'string' ? group.matcher : ''
+  const handlers = Array.isArray(group?.hooks) ? (group.hooks as Record<string, unknown>[]) : []
+  const defs: HookDef[] = []
+  for (const [i, handler] of handlers.entries()) {
+    if (!handler || typeof handler !== 'object') {
+      continue
+    }
+    defs.push({
+      id: `${source}:${event}:${g}:${i}`,
+      name: hookName(handler),
+      event,
+      source,
+      matcher,
+      conditional: typeof handler['if'] === 'string' && handler['if'].length > 0,
+    })
+  }
+  return defs
+}
 
 /** Every handler a settings layer configures, named and keyed. */
 export function hookDefs(source: string, hooks: unknown): HookDef[] {
@@ -140,23 +162,9 @@ export function hookDefs(source: string, hooks: unknown): HookDef[] {
     if (!Array.isArray(groups)) {
       continue
     }
-    groups.forEach((group, g) => {
-      const matcher = typeof group?.matcher === 'string' ? group.matcher : ''
-      const handlers = Array.isArray(group?.hooks) ? (group.hooks as Record<string, unknown>[]) : []
-      handlers.forEach((handler, i) => {
-        if (!handler || typeof handler !== 'object') {
-          return
-        }
-        defs.push({
-          id: `${source}:${event}:${g}:${i}`,
-          name: hookName(handler),
-          event,
-          source,
-          matcher,
-          conditional: typeof handler['if'] === 'string' && handler['if'].length > 0,
-        })
-      })
-    })
+    for (const [g, group] of groups.entries()) {
+      defs.push(...groupDefs(source, event, g, group))
+    }
   }
   return defs
 }

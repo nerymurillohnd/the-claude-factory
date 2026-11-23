@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The code that reads the hooks each settings file configures now follows the marketplace's newest lint rules. Nothing changes in how the plugin works.
+
 ## [0.1.5] - 2026-11-13
 
 ### Changed
