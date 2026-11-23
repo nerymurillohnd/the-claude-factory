@@ -19,9 +19,21 @@
 # unexpected failure exits 1, which hooks.json
 # turns into a block with onFailure "block". Needs Node.js, which tsc runs on; the hook uses it
 # only to read and write JSON.
+#
+# The plugin supports Node.js 24 or later. On a lower Node.js, or one that reports no version, the
+# check does not run and the hook never blocks (exit 0). It stays silent for an event that changed
+# no TypeScript or JavaScript file, tells the user once per session (on every such event without
+# CLAUDE_PLUGIN_DATA, where it may keep its marker), and tells Claude on each event that changed
+# one that those files were not checked. To tell whether an event changed one, it reads the event
+# with that same Node.js, which reads JSON on every Node.js this hook ever supported; when that
+# fails, it cannot tell and gives the user the notice once, without telling Claude.
 
 set -Eeuo pipefail
-trap 'printf "typescript6-lsp-intelligence: the hook failed at line %s, so the changed files were not verified.\n" "${LINENO}" >&2; exit 1' ERR
+hook_failed() {
+  printf 'typescript6-lsp-intelligence: the hook failed at line %s, so the changed files were not verified.\n' "$1" >&2
+  exit 1
+}
+trap 'hook_failed "${LINENO}"' ERR
 
 PLUGIN='typescript6-lsp-intelligence'
 SKILL="${PLUGIN}:ts-6-writing-and-navigation"
@@ -36,20 +48,12 @@ if ! command -v node > /dev/null 2>&1; then
   exit 0
 fi
 
-# The Node.js floor the plugin's README states; a lower tsc minimum does not lower it.
-NODE_MIN_MAJOR=24
-NODE_VERSION="$(node --version 2> /dev/null || true)"
-NODE_MAJOR="${NODE_VERSION#v}"
-NODE_MAJOR="${NODE_MAJOR%%.*}"
-if [[ ! ${NODE_MAJOR} =~ ^[0-9]+$ ]] || ((10#${NODE_MAJOR} < NODE_MIN_MAJOR)); then
-  [[ ${MODE} != --new-turn ]] || exit 0
-  printf '{"systemMessage":"typescript6-lsp-intelligence: tsc check did not run: Node.js %s is on PATH, and the plugin needs Node.js %s or later."}\n' \
-    "${NODE_VERSION//[!0-9A-Za-z.]/}" "${NODE_MIN_MAJOR}"
-  exit 0
-fi
-
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
+
+# Kept in a file, because read_event reads it with Node.js and a Node.js below the floor may need
+# the raw text instead.
+cat > "${TMP}/stdin"
 
 # Writes the event name, the session key, the cwd and the changed files the event names, one per
 # line, to $1: an Edit or Write call's file_path and a Bash call's bashEditDiff.changedFiles on
@@ -70,7 +74,7 @@ const head = [
   id(e.session_id, "unknown") + "-" + id(e.agent_id, "main"),
   typeof e.cwd === "string" ? e.cwd : "",
 ]
-process.stdout.write(head.concat(files).join("\n") + "\n")' > "$1"
+process.stdout.write(head.concat(files).join("\n") + "\n")' < "${TMP}/stdin" > "$1"
 }
 
 # Prints the hook's JSON output for event $1: $2 for the user, $3 (optional) for Claude.
@@ -130,17 +134,91 @@ find_tsc() {
   fi
 }
 
-read_event "${TMP}/event"
-EVENT="$(sed -n 1p "${TMP}/event")"
-KEY="$(sed -n 2p "${TMP}/event")"
-CWD="$(sed -n 3p "${TMP}/event")"
-BASE="$(cd "${CLAUDE_PROJECT_DIR:-${CWD:-.}}" && pwd -P)"
-sed 1,3d "${TMP}/event" > "${TMP}/named"
-CHANGED=()
-while IFS= read -r line; do
-  file="$(source_file "${line}")"
-  [[ -z ${file} ]] || CHANGED+=("${file}")
-done < "${TMP}/named"
+# Reads the event and sets EVENT, KEY, CWD, BASE and CHANGED, the source files the event names.
+# Returns 1 when it cannot. Where errexit and the ERR trap are on, as for a supported Node.js, a
+# failed step ends the hook with exit 1 first; skip_without_node lifts both to read the event
+# with a Node.js below the floor, so every step that can fail also returns on its own.
+classify_event() {
+  local line file read_status
+  read_event "${TMP}/event"
+  read_status=$?
+  [[ ${read_status} -eq 0 ]] || return 1
+  EVENT="$(sed -n 1p "${TMP}/event")"
+  KEY="$(sed -n 2p "${TMP}/event")"
+  CWD="$(sed -n 3p "${TMP}/event")"
+  BASE="$(cd "${CLAUDE_PROJECT_DIR:-${CWD:-.}}" && pwd -P)" || return 1
+  sed 1,3d "${TMP}/event" > "${TMP}/named"
+  CHANGED=()
+  while IFS= read -r line; do
+    file="$(source_file "${line}")"
+    [[ -z ${file} ]] || CHANGED+=("${file}")
+  done < "${TMP}/named"
+}
+
+# Ends the run for a Node.js the plugin does not support, $1 saying why, without ever blocking:
+# a --new-turn call forgets the turn list and stays silent; any other call is silent unless the
+# event changed a TypeScript or JavaScript file, or cannot be read to tell. The user then gets
+# the notice once per session, and Claude, when the event was read, that the files were not checked.
+skip_without_node() {
+  local why="$1" session marker_dir="" marker="" message="" context="" fields="" read_ok=no status
+  local nl=$'\n'
+  # The session id from the raw event, cleaned as read_event cleans it, since this Node.js may not read it.
+  session="$(sed -n 's/.*"session_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${TMP}/stdin")"
+  session="$(printf '%s' "${session%%"${nl}"*}" | tr -c 'A-Za-z0-9_-' '_')"
+  session="${session:-unknown}"
+  if [[ ${MODE} == --new-turn ]]; then
+    if [[ -n ${TURNS} ]]; then
+      rm -f "${TURNS}/${session}-main.list" || exit 0
+    fi
+    exit 0
+  fi
+  # Bash runs the ERR trap even with errexit off, so both are lifted while the event is read.
+  EVENT=''
+  trap - ERR
+  set +e
+  classify_event 2> /dev/null
+  status=$?
+  set -e
+  trap 'hook_failed "${LINENO}"' ERR
+  if [[ ${status} -eq 0 && ${EVENT} =~ ^(PostToolUse|PostToolBatch|UserPromptSubmit)$ ]]; then
+    [[ ${#CHANGED[@]} -gt 0 ]] || exit 0
+    read_ok=yes
+  fi
+  if [[ -n ${CLAUDE_PLUGIN_DATA:-} ]]; then
+    marker_dir="${CLAUDE_PLUGIN_DATA}/notices"
+    marker="${marker_dir}/node-${session}"
+  fi
+  if [[ -z ${marker} || ! -f ${marker} ]]; then
+    message="${PLUGIN}: tsc check did not run: ${why}."
+    # A marker that cannot be written is kept by nobody: the notice then repeats, and nothing blocks.
+    [[ -z ${marker} ]] || { mkdir -p "${marker_dir}" && : > "${marker}"; } 2> /dev/null || marker=''
+  fi
+  if [[ ${read_ok} == yes ]]; then
+    context="${PLUGIN}: the post-edit type check did not run, because ${why}. The TypeScript or JavaScript files changed in this call were not type-checked: do not treat them as checked."
+  fi
+  [[ -z ${message} ]] || fields="\"systemMessage\":\"${message}\""
+  if [[ -n ${context} ]]; then
+    fields="${fields:+${fields},}\"hookSpecificOutput\":{\"hookEventName\":\"${EVENT}\",\"additionalContext\":\"${context}\"}"
+  fi
+  [[ -z ${fields} ]] || printf '{%s}\n' "${fields}"
+  exit 0
+}
+
+# The Node.js floor the plugin's README states; a lower tsc minimum does not lower it. The version
+# is the last line of `node --version` that looks like one, so a shim's warning before it does not
+# misclassify a valid Node.js.
+NODE_MIN_MAJOR=24
+NODE_VERSION="$(node --version 2> /dev/null | grep -E '^v?[0-9]+\.' | tail -n 1 || true)"
+NODE_VERSION="${NODE_VERSION%%[[:space:]]*}"
+NODE_MAJOR="${NODE_VERSION#v}"
+NODE_MAJOR="${NODE_MAJOR%%.*}"
+if [[ -z ${NODE_VERSION} ]]; then
+  skip_without_node "the node on PATH did not report a version, so the plugin cannot tell whether it is Node.js ${NODE_MIN_MAJOR} or later, which it needs"
+elif ((10#${NODE_MAJOR} < NODE_MIN_MAJOR)); then
+  skip_without_node "Node.js ${NODE_VERSION//[!0-9A-Za-z.-]/} is on PATH, and the plugin needs Node.js ${NODE_MIN_MAJOR} or later"
+fi
+
+classify_event
 
 case "${MODE}:${EVENT}" in
   --new-turn:*)

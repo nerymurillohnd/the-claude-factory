@@ -92,6 +92,29 @@ function stubTsc(script, version = 'Version 6.0.3') {
 }
 
 /**
+ * A `node` in a folder that answers --version with the given lines (nothing for an empty list) and
+ * otherwise runs the real Node.js, so the hook reads its events as it would; with dead set, it
+ * prints nothing and exits 1 for every call, as a broken shim does.
+ * @param {string[]} versionLines
+ * @param {{ bin?: string, dead?: boolean }} [options] bin is a folder that already holds a stub tsc.
+ * @returns {string} The folder.
+ */
+function fakeNode(versionLines, { bin = freshDir(), dead = false } = {}) {
+  const quoted = versionLines.map((line) => `'${line}'`).join(' ')
+  const answer = versionLines.length === 0 ? 'exit 0' : `printf '%s\\n' ${quoted}\n  exit 0`
+  // A link to the real node is removed first: writing through it would overwrite the real binary.
+  rmSync(join(bin, 'node'), { force: true })
+  writeFileSync(
+    join(bin, 'node'),
+    dead
+      ? '#!/bin/sh\nexit 1\n'
+      : `#!/bin/sh\nif [ "$1" = --version ]; then\n  ${answer}\nfi\nexec "${process.execPath}" "$@"\n`,
+  )
+  chmodSync(join(bin, 'node'), 0o755)
+  return bin
+}
+
+/**
  * A folder holding a `node` link and a `tsc` link to the real compiler, standing for a global
  * install on PATH.
  * @returns {string}
@@ -529,19 +552,6 @@ describe('tsc-check.sh with a stub or no compiler', { concurrency: true }, () =>
     assert.match(context(run.stdout), /did not run/)
   })
 
-  it('does not run on a Node.js older than 24, the floor the README states', () => {
-    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
-    const bin = freshDir()
-    writeFileSync(join(bin, 'node'), '#!/bin/sh\necho v22.12.0\n')
-    chmodSync(join(bin, 'node'), 0o755)
-    const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
-    assert.equal(run.code, 0, run.stderr)
-    assert.match(
-      message(run.stdout),
-      /Node\.js v22\.12\.0 is on PATH, and the plugin needs Node\.js 24 or later/,
-    )
-  })
-
   it('skips a tsc that is not TypeScript 6 and leaves the decision to the user', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
     const run = runHook(edit(folder, 'src/a.ts'), { path: stubTsc('exit 0', 'Version 7.0.0') })
@@ -587,5 +597,164 @@ describe('tsc-check.sh with a stub or no compiler', { concurrency: true }, () =>
     )
     assert.equal(run.code, 0)
     assert.equal(run.stdout + run.stderr, '')
+  })
+})
+
+describe('tsc-check.sh on a Node.js below the floor of 24', { concurrency: true }, () => {
+  const OLD = /Node\.js v22\.12\.0 is on PATH, and the plugin needs Node\.js 24 or later/
+  const NO_VERSION = /the node on PATH did not report a version/
+
+  /** A stub tsc that is not TypeScript 6, so a run that reaches tsc says so, under a fake node. */
+  function reachable(versionLines = ['v24.0.0']) {
+    return fakeNode(versionLines, { bin: stubTsc('exit 0', 'Version 7.0.0') })
+  }
+
+  it('does not run, never blocks, and tells the user and Claude', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const run = runHook(edit(folder, 'src/a.ts'), { path: fakeNode(['v22.12.0']) })
+    assert.equal(run.code, 0)
+    assert.equal(run.stderr, '')
+    assert.match(message(run.stdout), OLD)
+    assert.equal(output(run.stdout).hookSpecificOutput?.hookEventName, 'PostToolUse')
+    assert.match(context(run.stdout), /post-edit type check did not run/)
+    assert.match(context(run.stdout), /not type-checked: do not treat them as checked/)
+  })
+
+  it('names the batch event when Claude is told', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const run = runHook(batch(folder, [['Write', 'src/a.ts']]), { path: fakeNode(['v22.12.0']) })
+    assert.equal(run.code, 0)
+    assert.equal(run.stderr, '')
+    assert.equal(output(run.stdout).hookSpecificOutput?.hookEventName, 'PostToolBatch')
+    assert.match(message(run.stdout), OLD)
+  })
+
+  it('stays silent for a batch that changed no TypeScript or JavaScript file', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'README.md': '# x\n' }, false)
+    const run = runHook(
+      batch(folder, [
+        ['Read', 'README.md'],
+        ['Edit', 'README.md'],
+        ['Bash', 'ls'],
+      ]),
+      { path: fakeNode(['v22.12.0']) },
+    )
+    assert.equal(run.code, 0)
+    assert.equal(run.stdout + run.stderr, '')
+  })
+
+  it('stays silent for a Bash call that changed no source file', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG }, false)
+    const event = { ...bash(folder, []), tool_response: { stdout: '' } }
+    const run = runHook(event, { path: fakeNode(['v22.12.0']) })
+    assert.equal(run.code, 0)
+    assert.equal(run.stdout + run.stderr, '')
+  })
+
+  it('tells the user once per session and Claude on every changing event', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const path = fakeNode(['v22.12.0'])
+    const data = freshDir()
+    const first = runHook(edit(folder, 'src/a.ts'), { path, data })
+    const second = runHook(edit(folder, 'src/a.ts'), { path, data })
+    const other = runHook(edit(folder, 'src/a.ts', { session_id: 'session-2' }), { path, data })
+    for (const run of [first, second, other]) {
+      assert.equal(run.code, 0)
+      assert.equal(run.stderr, '')
+      assert.match(context(run.stdout), /did not run/)
+    }
+    assert.match(message(first.stdout), OLD)
+    assert.equal(output(second.stdout).systemMessage, undefined)
+    assert.match(message(other.stdout), OLD)
+  })
+
+  it('tells the user on every changing event without CLAUDE_PLUGIN_DATA', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const path = fakeNode(['v22.12.0'])
+    for (const run of [
+      runHook(edit(folder, 'src/a.ts'), { path, data: null }),
+      runHook(edit(folder, 'src/a.ts'), { path, data: null }),
+    ]) {
+      assert.equal(run.code, 0)
+      assert.equal(run.stderr, '')
+      assert.match(message(run.stdout), OLD)
+    }
+  })
+
+  it('ends a turn silently and forgets its list, as it does on Node.js 24', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG }, false)
+    const prompt = {
+      hook_event_name: 'UserPromptSubmit',
+      session_id: 'session-1',
+      cwd: folder,
+      prompt: 'x',
+    }
+    for (const path of [fakeNode(['v22.12.0']), fakeNode([], { dead: true })]) {
+      const data = freshDir()
+      mkdirSync(join(data, 'turns'))
+      writeFileSync(join(data, 'turns', 'session-1-main.list'), `${join(folder, 'src/a.ts')}\n`)
+      const run = runHook(prompt, { path, data, args: ['--new-turn'] })
+      assert.equal(run.code, 0)
+      assert.equal(run.stdout + run.stderr, '')
+      assert.deepEqual(readdirSync(join(data, 'turns')), [])
+    }
+  })
+
+  /** @type {[string, string[]][]} */
+  const unversioned = [
+    ['prints nothing', []],
+    ['prints text that is not a version', ['garbage']],
+    ['prints only a version without a dot', ['v24']],
+  ]
+  for (const [name, lines] of unversioned) {
+    it(`says so when node --version ${name}, without a blank where the version goes`, () => {
+      const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+      const run = runHook(edit(folder, 'src/a.ts'), { path: fakeNode(lines) })
+      assert.equal(run.code, 0)
+      assert.equal(run.stderr, '')
+      assert.match(message(run.stdout), NO_VERSION)
+      assert.doesNotMatch(message(run.stdout), /Node\.js {2}/)
+      assert.doesNotMatch(message(run.stdout), /garbage/)
+    })
+  }
+
+  it('tells the user once, and Claude nothing, when a node that cannot run reads no event', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const path = fakeNode([], { dead: true })
+    const data = freshDir()
+    const first = runHook(edit(folder, 'src/a.ts'), { path, data })
+    const second = runHook(edit(folder, 'src/a.ts'), { path, data })
+    assert.equal(first.code, 0)
+    assert.equal(first.stderr, '')
+    assert.match(message(first.stdout), NO_VERSION)
+    assert.equal(output(first.stdout).hookSpecificOutput, undefined)
+    assert.equal(second.code, 0)
+    assert.equal(second.stdout + second.stderr, '')
+  })
+
+  it('takes the last line that looks like a version, so a warning before it does not count', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const warned = runHook(edit(folder, 'src/a.ts'), {
+      path: reachable(['warning: node shim v22 in use', 'v24.1.0']),
+    })
+    assert.equal(warned.code, 0, warned.stderr)
+    assert.match(message(warned.stdout), /Version 7\.0\.0/)
+    const old = runHook(edit(folder, 'src/a.ts'), {
+      path: reachable(['warning: node shim v24 in use', 'v22.12.0']),
+    })
+    assert.equal(old.code, 0, old.stderr)
+    assert.match(message(old.stdout), OLD)
+  })
+
+  it('skips v23.11.1 and lets v24.0.0 reach tsc: the floor is 24.0.0', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const below = runHook(edit(folder, 'src/a.ts'), { path: reachable(['v23.11.1']) })
+    assert.equal(below.code, 0, below.stderr)
+    assert.match(message(below.stdout), /Node\.js v23\.11\.1 is on PATH/)
+    assert.doesNotMatch(message(below.stdout), /Version 7\.0\.0/)
+    const floor = runHook(edit(folder, 'src/a.ts'), { path: reachable(['v24.0.0']) })
+    assert.equal(floor.code, 0, floor.stderr)
+    assert.match(message(floor.stdout), /Version 7\.0\.0/)
+    assert.doesNotMatch(message(floor.stdout), /is on PATH/)
   })
 })
