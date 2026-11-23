@@ -48,6 +48,7 @@ Add an item only when all of these hold:
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
 | DEBT-012 | The TypeScript 6 post-edit check informs Claude but does not stop it, and finds Node only on PATH | 🟠 Blocked |
 | DEBT-014 | cc-github-actions references still mix old-style placeholders, inline commands and cross-file links | 🟠 Blocked |
+| DEBT-016 | main has no ruleset, so Validate doesn't gate a merge by itself | 🔴 Risk accepted |
 
 ## 📂 Open items
 
@@ -320,6 +321,34 @@ Add an item only when all of these hold:
 - **Next action:** the owner chooses one pass or file by file; then convert the files with `skills-engineering:authoring-skills`, one plan per pass.
 - **Review condition:** both greps return nothing, and each reference has `## Gotchas`, `## Official sources` and `## Exit`.
 - **Related records:** [#118](https://github.com/nerymurillohnd/the-claude-factory/pull/118).
+
+### DEBT-016 — main has no ruleset, so Validate doesn't gate a merge by itself
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🔴 Risk accepted |
+| **Category** | reliability |
+| **Owner** | Nery |
+| **Logged** | 2026-11-23 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-11-23, while tracking [#124](https://github.com/nerymurillohnd/the-claude-factory/pull/124): `gh api repos/nerymurillohnd/the-claude-factory/rules/branches/main` returned `[]`, `gh api repos/nerymurillohnd/the-claude-factory/rulesets` returned `[]`, and the classic protection endpoint answered 404 "Branch not protected". No status check is required on `main`.
+  - `git log origin/main --since=2026-11-01 --first-parent` on 2026-11-23: 163 of 189 commits were pushed directly, without a pull request, as `.claude/rules/architecture/github.md` allows for changes outside `plugins/`.
+  - A required-status-check rule also applies to direct pushes, and an admin bypass also lets an admin merge a pull request whose checks failed.
+  - Stated by the user on 2026-11-23: no ruleset on `main` for now.
+  - Today each merge waits on the `github-operations:auto-pr-lifecycle` agents, whose tracker and finalizer require Validate's `Checks` and `Floors` to succeed at the head before they report a pull request ready.
+- **Inferences:** a merge made outside that lifecycle, by hand or by a session that skips it, can land a pull request whose Validate run failed.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** nothing in GitHub stops a red pull request from merging, and a red merge to `main` runs `release.yml`, which publishes plugin versions to users.
+- **Why it is not fixed now:** the owner accepted the risk: a ruleset without bypass would block the direct pushes the project relies on, and one with an admin bypass would not stop the only person who merges.
+- **Next action:** check the review condition.
+- **Review condition:** someone other than the owner gets merge rights, direct pushes to `main` stop, or a pull request is merged with a failed Validate run.
+- **Related records:** [#124](https://github.com/nerymurillohnd/the-claude-factory/pull/124).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
