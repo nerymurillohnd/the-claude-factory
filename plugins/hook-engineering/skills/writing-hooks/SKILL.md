@@ -7,7 +7,7 @@ description: Use for every request or task that creates, rewrites or wires a hoo
 
 This skill owns the order of work. For a specific part of it, use the session's skill or tool built for that part together with this skill, and continue with this skill's own steps when there is none:
 
-- the hook's evals, tests and plugin debugging: `plugin-engineering:plugin-testing-and-debugging`;
+- the hook's tests and evals: `plugin-engineering:test-and-evals`; plugin debugging: `plugin-engineering:troubleshoot-and-debug`;
 - a mod's hooks module (JavaScript that Claude Code runs in its own process, listed under `modules` in `hooks/hooks.json`): the built-in `plugin-authoring` skill.
 
 ## Workflow

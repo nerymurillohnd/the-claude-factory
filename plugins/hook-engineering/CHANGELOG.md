@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- `writing-hooks` now sends a hook's tests and evals to `plugin-engineering:test-and-evals` and plugin debugging to `plugin-engineering:troubleshoot-and-debug`, which replace `plugin-testing-and-debugging`.
+
 ## [0.3.3] - 2026-11-23
 
 ### Fixed
