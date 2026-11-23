@@ -40,7 +40,7 @@ Load `skills-engineering:auditing-skills` and run its full battery, with all its
 - A skill in a plugin: plugin evals.
   - Run `claude plugin eval .` from the plugin root. It runs each case in an isolated session with the plugin, again with no plugin loaded, and scores the case's graders.
   - Read [Plugin evals](https://code.claude.com/docs/en/plugin-evals) for the suite layout, graders and commands.
-  - Load `plugin-engineering:plugin-testing-and-debugging` and use it, when available. When it isn't, look for another specialized skill you have for plugin evals and use it. When none exists, proceed with the documentation above.
+  - Load `plugin-engineering:test-and-evals` and use it, when available. When it isn't, look for another specialized skill you have for plugin evals and use it. When none exists, proceed with the documentation above.
 - A personal or project skill: evals for skills, the Agent Skills method.
   - Store the cases in `evals/evals.json` inside the skill directory, each with a prompt, an expected output and any input files.
   - Run each case twice, each time from a clean context: once with the skill, and once without it or with its previous version. In Claude Code, spawn one subagent per run.

@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- `authoring-skills` now loads `plugin-engineering:test-and-evals` for the evals of a skill in a plugin, which replaces `plugin-testing-and-debugging`.
+
 ## [0.4.1] - 2026-11-23
 
 ### Fixed
