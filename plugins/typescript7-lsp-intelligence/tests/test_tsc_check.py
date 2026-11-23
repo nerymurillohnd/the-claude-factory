@@ -114,8 +114,11 @@ def field(stdout: str, *keys: str) -> str:
 
 HOOK = Path(__file__).resolve().parents[1] / "hooks" / "tsc-check.sh"
 MODULE = "export const answer: number = 42\n"
-# Folders the hook searches for a compiler on top of PATH and the Node version managers' folders.
-FIXED_FOLDERS = ("/opt/homebrew/bin", "/usr/local/bin", "/home/linuxbrew/.linuxbrew/bin")
+# The hook's test seam: the folders it searches for a compiler and a Node.js on top of PATH and
+# the Node version managers' folders, whatever PATH holds, are /opt/homebrew/bin, /usr/local/bin
+# and /home/linuxbrew/.linuxbrew/bin. Set, even empty, this variable's colon-separated folders
+# replace them, so no test depends on what the machine has installed there.
+FIXED_FOLDERS_SEAM = "TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS"
 # One more than the hook's MAX_LOOSE_FILES.
 TOO_MANY = 21
 # A tsc that runs on Node.js: a script that reports a TypeScript 5 version.
@@ -125,15 +128,8 @@ JS_TSC = "#!/bin/sh\necho Version 5.9.3\n"
 def path_without_compiler() -> str:
     """PATH minus every folder with a tsc or tsc6.
 
-    The test is skipped when the hook would still find a compiler: it also searches a few
-    fixed folders, whatever PATH holds.
+    `_run` empties the hook's fixed folders, so the machine's own compilers are out of reach.
     """
-    for fixed in FIXED_FOLDERS:
-        if any((Path(fixed) / name).exists() for name in ("tsc", "tsc6")):
-            message = (
-                f"a TypeScript compiler is installed in {fixed}, which the hook always searches"
-            )
-            raise unittest.SkipTest(message)
     kept = [
         folder
         for folder in os.environ["PATH"].split(os.pathsep)
@@ -145,13 +141,8 @@ def path_without_compiler() -> str:
 def path_without_node(path: str) -> str:
     """`path` minus every folder with a node.
 
-    The test is skipped when the hook would still find a Node.js: it also searches a few fixed
-    folders, whatever PATH holds.
+    `_run` empties the hook's fixed folders, so the machine's own Node.js is out of reach.
     """
-    for fixed in FIXED_FOLDERS:
-        if (Path(fixed) / "node").exists():
-            message = f"a Node.js is installed in {fixed}, which the hook always searches"
-            raise unittest.SkipTest(message)
     kept = [folder for folder in path.split(os.pathsep) if not (Path(folder) / "node").exists()]
     return os.pathsep.join(kept)
 
@@ -210,6 +201,7 @@ class TscHookTest(unittest.TestCase):
 
         With changed, the event carries that list as the files Claude Code recorded. With
         path, it replaces PATH. Extra sets environment variables, and removes those set to None.
+        The hook's fixed folders are empty unless extra sets FIXED_FOLDERS_SEAM.
         """
         response: dict[str, object] = {"stdout": "", "stderr": "", "interrupted": False}
         if changed is not None:
@@ -230,6 +222,7 @@ class TscHookTest(unittest.TestCase):
             "TMPDIR": str(tmp),
             "CLAUDE_PLUGIN_DATA": str(tmp / "data"),
             "CLAUDE_PROJECT_DIR": str(tmp / "work"),
+            FIXED_FOLDERS_SEAM: "",
             **GIT_ENV,
         }
         for name, value in (extra or {}).items():
@@ -348,6 +341,21 @@ class TscHookTest(unittest.TestCase):
         self.assertIn("Compilers skipped first:\n", message)
         self.assertIn(f"{tmp}/work/node_modules/.bin/tsc (runs on Node.js, and none", message)
         self.assertIn(f"Node.js skipped:\n{old}/node (22.12.0; needs 24.0.0 or later)", message)
+
+    def test_fixed_folders_seam_replaces_the_fixed_folders(self) -> None:
+        """A tsc and a Node.js 24 in a folder the seam names are found, with none on PATH."""
+        path = path_without_node(path_without_compiler())
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            fixed = tmp / "fixed"
+            node_reporting(fixed, "24.0.0")
+            write(fixed / "tsc", JS_TSC)
+            (fixed / "tsc").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            outcome = self._run(tmp, path=path, extra={FIXED_FOLDERS_SEAM: str(fixed)})
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn("tsc 5.9.3 · the edited files pass the strictest policy", message)
 
     def test_typescript_7_package_without_its_platform_package_names_it(self) -> None:
         """When the wrapper cannot run, the notice names the missing native compiler package."""

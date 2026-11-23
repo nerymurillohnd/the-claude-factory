@@ -21,6 +21,12 @@
 # load the user's shell profile. Nothing is installed. This plugin runs the native compiler
 # directly.
 #
+# Test seam, not a setting: the hook always searches three fixed folders (/opt/homebrew/bin,
+# /usr/local/bin, /home/linuxbrew/.linuxbrew/bin) on top of PATH, and the default prefix of n
+# is /usr/local too. When TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS is set, even to nothing,
+# its colon-separated folders replace those, so a test can hide the machine's own compiler and
+# Node.js; unset, which is every real run, the hook behaves as described above. tests/ uses it.
+#
 # The hook judges only what the tool call changed. Files that a Bash command left under a nested
 # Git work tree count only when Git lists them as modified, untracked or staged there, so a
 # clone, a checkout or a pull is never checked. More than MAX_LOOSE_FILES files found by
@@ -280,7 +286,7 @@ add_nvm_dirs() {
 # Candidate bin folders: the inherited PATH first, then every Node manager's global folder.
 collect_dirs() {
   local entry data_home="${XDG_DATA_HOME:-${HOME}/.local/share}" os fnm_dir prefix pnpm_home
-  local -a entries
+  local -a entries fixed
   IFS=: read -r -a entries <<< "${PATH}"
   for entry in "${entries[@]+"${entries[@]}"}"; do
     add_dir "${entry}"
@@ -293,7 +299,12 @@ collect_dirs() {
   add_posix_dir "${VOLTA_HOME:-${HOME}/.volta}" /bin
   add_posix_dir "${ASDF_DATA_DIR:-${HOME}/.asdf}" /shims
   add_posix_dir "${MISE_DATA_DIR:-${data_home}/mise}" /shims
-  add_posix_dir "${N_PREFIX:-/usr/local}" /bin
+  # The default prefix of n, /usr/local, is one of the fixed folders: the test seam drops it too.
+  if [[ -n ${N_PREFIX:-} ]]; then
+    add_posix_dir "${N_PREFIX}" /bin
+  elif [[ -z ${TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS+set} ]]; then
+    add_dir /usr/local/bin
+  fi
   [[ -n ${NPM_CONFIG_PREFIX:-} ]] && add_posix_dir "${NPM_CONFIG_PREFIX}" /bin
   if [[ -f "${HOME}/.npmrc" ]]; then
     prefix="$(sed -n 's/^[[:space:]]*prefix[[:space:]]*=[[:space:]]*//p' "${HOME}/.npmrc")"
@@ -314,9 +325,17 @@ collect_dirs() {
   add_posix_dir "${pnpm_home}" /bin
   add_posix_dir "${pnpm_home}" ""
   add_posix_dir "${BUN_INSTALL:-${HOME}/.bun}" /bin
-  add_dir /opt/homebrew/bin
-  add_dir /usr/local/bin
-  add_dir /home/linuxbrew/.linuxbrew/bin
+  # The fixed folders of the common package managers, whatever PATH holds. Test seam: when
+  # TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS is set, even empty, its colon-separated folders
+  # replace them; unset, the folders below are searched as always.
+  if [[ -n ${TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS+set} ]]; then
+    IFS=: read -r -a fixed <<< "${TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS}"
+  else
+    fixed=(/opt/homebrew/bin /usr/local/bin /home/linuxbrew/.linuxbrew/bin)
+  fi
+  for entry in "${fixed[@]+"${fixed[@]}"}"; do
+    add_dir "${entry}"
+  done
   [[ -n ${APPDATA:-} ]] && add_posix_dir "${APPDATA}" /npm
   return 0
 }
