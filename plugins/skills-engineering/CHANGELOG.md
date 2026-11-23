@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- `authoring-skills` now tells Claude to convert backslashes to forward slashes in every path a skill's script reads from Claude Code, such as a hook's file path, before comparing it: on Windows that path arrives with backslashes even under Git Bash. Its scripts guidance now matches what `auditing-skills` already checks.
+
 ## [0.4.0] - 2026-11-23
 
 ### Added

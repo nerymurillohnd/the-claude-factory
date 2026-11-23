@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- `writing-hooks` now tells Claude that on Windows a file path in the hook input arrives with backslashes, even under Git Bash, and has it convert them to forward slashes before the hook compares the path. Before, a hook it wrote could miss every Windows path and let through a call it was meant to block.
+
 ## [0.3.2] - 2026-11-19
 
 ### Changed
