@@ -134,6 +134,19 @@ class NameFormatTest(NameTestCase):
         """A YAML 1.1 integer isn't a name."""
         self.assertEqual(self.rule_names(NAME, "name: 12", folder="12"), ["not-a-string"])
 
+    def test_not_a_string_is_upload_only(self) -> None:
+        """skills-ref reads a scalar name as a string; only uploads, through PyYAML, type it."""
+        result = self.result(NAME, "name: 12", folder="12")
+        findings = result.get("findings")
+        first = findings[0] if is_list(findings) and findings else None
+        if not isinstance(first, JsonObject):
+            self.fail(f"expected a finding, got {result!r}")
+        self.assertEqual((first.get("rule"), first.get("surfaces")), ("not-a-string", ["upload"]))
+
+    def test_pyyaml_text_is_a_name(self) -> None:
+        """`n` is text to PyYAML, so it is a name, not another type."""
+        self.assertEqual(self.rule_names(NAME, "name: n", folder="n"), [])
+
 
 class NamePlainTest(NameTestCase):
     """frontmatter.name-plain."""

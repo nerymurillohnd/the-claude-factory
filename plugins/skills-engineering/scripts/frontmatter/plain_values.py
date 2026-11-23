@@ -13,6 +13,7 @@ from common.fields import SPEC_FIELDS, TEXT_FIELDS
 from common.frontmatter import NO_BLOCK_REASON, Loaded, load, values
 from common.report import CheckResult, Finding, Surface
 from common.yaml_reader import Node
+from common.yaml_types import pyyaml_tag
 
 CHECK: Final = "frontmatter.plain-values"
 YAML11_BOOLEANS: Final = frozenset({"yes", "no", "on", "off"})
@@ -66,7 +67,19 @@ def _comment(loaded: Loaded, node: Node, field: str) -> Finding | None:
 
 
 def _boolean_or_null(node: Node, field: str) -> Finding | None:
-    """A plain value read as a boolean or null."""
+    """A plain value read as a boolean or null.
+
+    The open-spec validator, skills-ref, reads every scalar of a specification field as a string
+    through strictyaml, so there the finding is on uploads only, and only when PyYAML, which
+    uploads load with, types the value; `yEs` stays text to PyYAML and gives none.
+    """
+    if field in SPEC_FIELDS:
+        tag = pyyaml_tag(node)
+        if tag not in {"bool", "null"}:
+            return None
+        rule = "reads-as-boolean" if tag == "bool" else "reads-as-null"
+        expected = "Quote the value so uploads read it as text."
+        return replace(_finding(rule, node, field, expected), surfaces=UPLOAD)
     lowered = node.value.lower()
     if lowered in BOOLEANS:
         return replace(
@@ -155,10 +168,8 @@ def check(ctx: Context) -> CheckResult:
             if node.kind == "scalar" and node.style == "plain" and node.value:
                 findings.extend(_plain_findings(loaded, node, field))
                 if field == "metadata":
-                    # The open-spec validator reads every metadata scalar as text; only uploads,
-                    # which load with PyYAML, turn it into a boolean or null.
                     extra = _boolean_or_null(node, field)
-                    findings.extend([] if extra is None else [replace(extra, surfaces=UPLOAD)])
+                    findings.extend([] if extra is None else [extra])
     return CheckResult(
         check=CHECK,
         status="ran",

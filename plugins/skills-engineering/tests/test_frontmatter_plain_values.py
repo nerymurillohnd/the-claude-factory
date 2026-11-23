@@ -84,6 +84,22 @@ class PlainValuesTest(unittest.TestCase):
             with self.subTest(yaml=yaml):
                 self.assertEqual(self.first(yaml).get("surfaces"), ["upload"])
 
+    def test_spec_field_typing_is_upload_only(self) -> None:
+        """skills-ref reads every scalar as a string: a typed spec field fails uploads only."""
+        for yaml in ("description: yes", "name: ~", "license: off", "compatibility: null"):
+            with self.subTest(yaml=yaml):
+                self.assertEqual(self.first(yaml).get("surfaces"), ["upload"])
+
+    def test_text_pyyaml_keeps_is_no_finding(self) -> None:
+        """A value PyYAML reads as a string, such as `n` or `yEs`, gives no typing finding."""
+        for yaml in ("name: n", "description: n", "description: yEs", "metadata:\n  a: yEs"):
+            with self.subTest(yaml=yaml):
+                self.assertEqual(rules(self.result(yaml)), [])
+
+    def test_claude_code_field_typing_unchanged(self) -> None:
+        """A Claude Code field keeps its claude-code surface."""
+        self.assertEqual(self.first("argument-hint: yes").get("surfaces"), ["claude-code"])
+
     def test_boolean_field_is_fine(self) -> None:
         """A boolean field may hold a boolean form."""
         self.assertEqual(rules(self.result("user-invocable: no")), [])

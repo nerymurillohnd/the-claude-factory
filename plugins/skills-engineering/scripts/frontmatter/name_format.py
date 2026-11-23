@@ -17,7 +17,7 @@ from common.frontmatter import NO_BLOCK_REASON, load
 from common.report import Basis, CheckResult, Finding, Surface
 from common.text import utf16_len
 from common.yaml_reader import Node
-from common.yaml_types import yaml11_tag
+from common.yaml_types import pyyaml_tag
 
 CHECK: Final = "frontmatter.name"
 MAX_LENGTH: Final = 64
@@ -112,8 +112,8 @@ def _not_run(ctx: Context) -> CheckResult:
 
 
 def _is_string(node: Node) -> bool:
-    """True when YAML 1.1 reads the name as a string."""
-    return node.kind == "scalar" and node.value != "" and yaml11_tag(node) == "str"
+    """True when PyYAML, which uploads load with, reads the name as a string."""
+    return node.kind == "scalar" and node.value != "" and pyyaml_tag(node) == "str"
 
 
 def check(ctx: Context) -> CheckResult:
@@ -136,7 +136,10 @@ def check(ctx: Context) -> CheckResult:
             findings.extend(_format_findings(name, node, folder))
         else:
             expected = "A string; this value reads as another type or a collection."
-            findings.append(_finding("not-a-string", expected, node, SPEC, "official"))
+            # skills-ref reads every scalar as a string through strictyaml: a typed scalar
+            # fails uploads only, and a collection fails both.
+            surfaces = ("upload",) if node.kind == "scalar" else SPEC
+            findings.append(_finding("not-a-string", expected, node, surfaces, "official"))
         findings.extend(_reserved(name, node))
     data: dict[str, object] = {
         "name": name,
