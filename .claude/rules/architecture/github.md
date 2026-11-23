@@ -25,6 +25,7 @@ paths:
 
 - Send every change inside `plugins/` through a pull request, skill, agent and command files included, except a documentation-only change that alters neither behavior nor what users installed.
 - Commit a change outside `plugins/`, or a documentation-only plugin change, without a pull request unless the owner asks for one.
+- Delete only the local branch after a merge: GitHub deletes the merged pull request's head branch itself (`delete_branch_on_merge`).
 - Reproduce a review finding, from any reviewer, before changing code for it, and answer it with the result: fix what holds, and say with the evidence what doesn't. Reply on the finding's own thread; when it has none on GitHub, ask the owner where to answer.
 
 ## Checks before a commit and a merge

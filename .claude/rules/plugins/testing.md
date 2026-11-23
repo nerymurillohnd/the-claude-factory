@@ -13,6 +13,7 @@ paths:
 - Run each hook as Claude Code does: start it as a subprocess, write its input JSON to stdin, and check the exit code, stdout and stderr.
 - Run the tests with `python3 -m unittest discover -s plugins/<plugin>/tests -p 'test_*.py'` or `node --test plugins/<plugin>/tests/*.test.mjs`: they run on the `python3` and `node` first on `PATH`, the machine's Python 3.15 and Node 26 at the top of the supported range, until the floor runtimes go first on `PATH` (see "Before a release").
 - Run plugin code and its tests with bare `python3` and `node`, never `uv run` or `.venv/bin/python`: plugins run on the user's interpreter, and `npm-and-uv.md`'s `uv run` rule covers maintainer Python only.
+- Never let a hook test skip itself because a machine holds a tool the hook always searches (the CI runner's `/usr/local/bin` holds `node`): give the hook an environment-variable seam that the tests set, and check that `Checks` and `Floors` report 0 skipped tests for the changed plugin.
 - Run one hook by hand with `echo '<input JSON>' | ./<script>; echo $?` to see its output and exit code.
 
 ## Mods
