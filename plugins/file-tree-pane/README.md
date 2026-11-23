@@ -260,7 +260,7 @@ brew install hunk
 
 </details>
 <details>
-<summary>📦 <b>npm</b> (Node.js 22+) — macOS, Linux</summary>
+<summary>📦 <b>npm</b> (Node.js 24+) — macOS, Linux</summary>
 
 ```bash
 npm install --global hunkdiff

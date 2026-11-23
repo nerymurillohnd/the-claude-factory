@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** installing the optional hunk diff tool with npm now needs Node.js 24 or later, up from Node.js 22, because that install runs hunk through your Node.js. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. Installing hunk with its install script, Homebrew or mise needs no Node.js, and the pane itself needs none.
+
 ## [0.1.7] - 2026-11-19
 
 ### Fixed
