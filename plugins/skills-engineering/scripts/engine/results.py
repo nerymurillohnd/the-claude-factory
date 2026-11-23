@@ -2,7 +2,8 @@
 
 A results folder is created by tempfile.mkdtemp with PREFIX, directly in a temp folder, and holds
 MARKER. Nothing is read from or removed outside a folder that meets all three conditions, and a
-symlink never counts as one.
+symlink never counts as one. The sweep also removes old folders of the earlier entry,
+frontmatter-checks.py, which named them with OLD_PREFIX and OLD_MARKER.
 """
 
 import os
@@ -11,8 +12,10 @@ import shutil
 import tempfile
 import time
 
-PREFIX = "auditing-skills-fm-"
-MARKER = ".auditing-skills-results"
+PREFIX = "skills-engineering-checks-"
+MARKER = ".skills-engineering-results"
+OLD_PREFIX = "auditing-skills-fm-"
+OLD_MARKER = ".auditing-skills-results"
 MAX_AGE_SECONDS = 24 * 3600
 
 
@@ -27,11 +30,11 @@ def temp_roots() -> set[Path]:
     return {Path(c).resolve() for c in candidates if c}
 
 
-def is_results_folder(path: Path) -> bool:
-    """True for a real folder named with PREFIX, holding MARKER as a regular file."""
-    marker = path / MARKER
+def is_results_folder(path: Path, prefix: str = PREFIX, marker_name: str = MARKER) -> bool:
+    """True for a real folder named with the prefix, holding the marker as a regular file."""
+    marker = path / marker_name
     return (
-        path.name.startswith(PREFIX)
+        path.name.startswith(prefix)
         and not path.is_symlink()
         and path.is_dir()
         and not marker.is_symlink()
@@ -59,13 +62,14 @@ def sweep() -> None:
     """Remove results folders in the temp folder that are older than MAX_AGE_SECONDS."""
     root = Path(tempfile.gettempdir())
     cutoff = time.time() - MAX_AGE_SECONDS
-    try:
-        entries = list(root.glob(f"{PREFIX}*"))
-    except OSError:
-        return
-    for entry in entries:
+    for prefix, marker in ((PREFIX, MARKER), (OLD_PREFIX, OLD_MARKER)):
         try:
-            if is_results_folder(entry) and entry.lstat().st_mtime < cutoff:
-                shutil.rmtree(entry)
+            entries = list(root.glob(f"{prefix}*"))
         except OSError:
             continue
+        for entry in entries:
+            try:
+                if is_results_folder(entry, prefix, marker) and entry.lstat().st_mtime < cutoff:
+                    shutil.rmtree(entry)
+            except OSError:
+                continue

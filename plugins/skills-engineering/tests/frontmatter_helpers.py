@@ -1,6 +1,6 @@
 """Shared helpers for the frontmatter check tests: paths, JSON narrowing and script runs.
 
-Every check is run the way the main session runs it, through `frontmatter-checks.py`, on a
+Every check is run the way the main session runs it, through `skill-checks.py`, on a
 throwaway skill folder, so the tests see exactly the bytes a reviewer would receive.
 """
 
@@ -17,7 +17,7 @@ from typing import TypeGuard
 sys.dont_write_bytecode = True
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
-ENTRY = SCRIPTS / "frontmatter-checks.py"
+ENTRY = SCRIPTS / "skill-checks.py"
 
 
 class JsonObject(dict[str, object]):

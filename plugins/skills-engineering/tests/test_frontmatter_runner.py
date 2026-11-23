@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Tests for frontmatter-checks.py: the entry, the runner and the results lifecycle.
+"""Tests for skill-checks.py: the entry, the runner and the results lifecycle.
 
-Each test copies the skill's scripts folder into a throwaway folder and registers three demo
-checks there, so the runner is exercised as shipped without changing the real registry. TMPDIR
+Each test copies the plugin's scripts folder into a throwaway folder and replaces the frontmatter
+family's checks there with three demo checks, so the runner is exercised as shipped without
+changing the real registry. TMPDIR
 points at a test folder in every run, so the 24-hour sweep never touches the real temp folder.
 """
 
@@ -19,10 +20,10 @@ from frontmatter_helpers import SCRIPTS, is_list, parse_object, run_python
 
 sys.path.insert(0, str(SCRIPTS))
 
-from frontmatter.results import is_removable
+from engine.results import is_removable
 
-PREFIX = "auditing-skills-fm-"
-MARKER = ".auditing-skills-results"
+PREFIX = "skills-engineering-checks-"
+MARKER = ".skills-engineering-results"
 PYTHON_311 = Path("/usr/bin/python3.11")
 
 DEMO_OK = """\
@@ -104,11 +105,9 @@ class RunnerTest(unittest.TestCase):
             ("demo_dep", DEMO_DEP),
         ):
             _ = (scripts / "frontmatter" / f"{name}.py").write_text(source, encoding="utf-8")
-        registry = scripts / "common" / "registry.py"
-        _ = registry.write_text(
-            registry.read_text(encoding="utf-8") + DEMO_REGISTRY, encoding="utf-8"
-        )
-        self.entry = scripts / "frontmatter-checks.py"
+        family = scripts / "frontmatter" / "__init__.py"
+        _ = family.write_text(family.read_text(encoding="utf-8") + DEMO_REGISTRY, encoding="utf-8")
+        self.entry = scripts / "skill-checks.py"
         self.temp_root = self.tmp / "temp-root"
         self.temp_root.mkdir()
         self.skill = self.tmp / "skills" / "demo-skill" / "SKILL.md"
@@ -320,7 +319,7 @@ class RunnerTest(unittest.TestCase):
         code, out, err = self.entry_run("run", str(self.skill), python=str(PYTHON_311))
         self.assertEqual((code, out), (2, ""))
         self.assertRegex(
-            err, r"^frontmatter-checks\.py: needs Python 3\.12 or later; this is 3\.11\.\d+\.\n$"
+            err, r"^skill-checks\.py: needs Python 3\.12 or later; this is 3\.11\.\d+\.\n$"
         )
 
 
