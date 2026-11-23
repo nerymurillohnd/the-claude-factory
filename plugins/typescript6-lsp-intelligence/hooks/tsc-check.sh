@@ -323,7 +323,9 @@ check_group() {
   done < "${TMP}/parsed"
   if [[ ${#unknown[@]} -gt 0 ]]; then
     printf '%s: tsc printed output the hook could not classify, so the changed files were not verified:\n' "${PLUGIN}" >&2
-    printf '%s\n' "${unknown[@]}" | head -20 >&2
+    # Through a file, not a pipe: under pipefail a `head` that stops reading early fails the writer.
+    printf '%s\n' "${unknown[@]}" > "${TMP}/unknown"
+    head -n 20 "${TMP}/unknown" >&2
     exit 1
   fi
   if [[ ${status} -ne 0 && ${#mine[@]} -eq 0 && ${#other[@]} -eq 0 ]]; then
@@ -362,9 +364,13 @@ RAN_TEXT="${RAN_TEXT%; }"
 CLAUDE=()
 
 if [[ ${#MINE[@]} -gt 0 ]]; then
-  printf '%s\n' "${MINE[@]}" | cut -d: -f1 | sort -u > "${TMP}/mine-files"
+  printf '%s\n' "${MINE[@]}" > "${TMP}/mine-all"
+  cut -d: -f1 "${TMP}/mine-all" | sort -u > "${TMP}/mine-files"
   FILES="$(join_lines "${TMP}/mine-files")"
-  printf '%s\n' "${MINE[@]}" | head -n "${MAX_LINES}" > "${TMP}/mine-lines"
+  # Through a file, not a pipe: under pipefail a `head` that stops reading after MAX_LINES lines
+  # fails the writer (SIGPIPE) whenever the list is still being written, which a slow machine
+  # or a list larger than a pipe makes certain.
+  head -n "${MAX_LINES}" "${TMP}/mine-all" > "${TMP}/mine-lines"
   LIST="$(cat "${TMP}/mine-lines")"
   [[ ${#MINE[@]} -le ${MAX_LINES} ]] || LIST="${LIST}"$'\n'"… $((${#MINE[@]} - MAX_LINES)) more (run ${COMMAND} to see them all)"
   TEXT="Unresolved type errors in files changed this turn (${FILES}), from ${COMMAND}:"$'\n'"${LIST}"
@@ -375,7 +381,8 @@ if [[ ${#MINE[@]} -gt 0 ]]; then
   USER_NOTES+=("${COMMAND} found ${#MINE[@]} ${NOUN} in ${FILES} (${RAN_TEXT}); Claude received them to fix.")
 fi
 if [[ ${#BLIND[@]} -gt 0 ]]; then
-  printf '%s\n' "${BLIND[@]}" | head -n "${MAX_LINES}" > "${TMP}/blind"
+  printf '%s\n' "${BLIND[@]}" > "${TMP}/blind-all"
+  head -n "${MAX_LINES}" "${TMP}/blind-all" > "${TMP}/blind"
   TEXT="$(cat "${TMP}/blind")"
   USER_NOTES+=("the changed files were not type-checked: ${TEXT}")
   CLAUDE+=("The post-edit type check did not cover the changed files: ${TEXT}")

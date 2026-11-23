@@ -478,11 +478,30 @@ describe('tsc-check.sh with the real compiler', { skip: REAL, concurrency: true 
     )
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': `${lines}\n` })
     const run = runHook(edit(folder, 'src/a.ts'))
-    assert.equal(run.code, 2)
+    assert.equal(run.code, 2, run.stderr)
     assert.match(
       run.stderr,
       /… 200 more \(run tsc --noEmit --pretty false --strict to see them all\)/,
+      run.stderr,
     )
+  })
+
+  // 2000 issues are about 150 KB, more than a pipe holds, so a `head` that stops reading after 100
+  // lines closes the pipe while the list is still being written. The cap above stays under 64 KB,
+  // where that happens only when the machine is slow.
+  it('caps an issue list larger than a pipe buffer without failing', () => {
+    const lines = Array.from({ length: 2000 }, (_, i) => `export const v${i}: number = "a"`).join(
+      '\n',
+    )
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': `${lines}\n` })
+    const run = runHook(edit(folder, 'src/a.ts'))
+    assert.equal(run.code, 2, run.stderr)
+    assert.match(
+      run.stderr,
+      /… 1900 more \(run tsc --noEmit --pretty false --strict to see them all\)/,
+      run.stderr,
+    )
+    assert.doesNotMatch(run.stderr, /the hook failed/, run.stderr)
   })
 
   it('leaves no .tsbuildinfo in an incremental project', () => {

@@ -12,6 +12,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - **Breaking:** the plugin now needs Node.js 24 or later, for both typescript-language-server and the post-edit hook, up from Node.js 22.22.2 for the language server and Node.js 14.17 for the hook alone. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. If `node --version` shows an older version, update Node.js before you update the plugin. With an older Node.js first on your `PATH`, or a `node` that reports no version, the post-edit check doesn't run and nothing blocks. It stays silent unless Claude changes a TypeScript or JavaScript file; then you get one message per session, and Claude is told on each such change that those files were not type-checked, so it doesn't treat them as checked. A `--new-turn` call on an older Node.js still clears the turn's list.
 
+### Fixed
+
+- When Claude changed a file with more than 100 type errors, the post-edit check could end with "the hook failed" and no list, instead of giving Claude the first 100 errors and a count of the rest. It happened at random on a busy machine, and every time when the list was very long. Claude now always gets the first 100 errors and the count of the rest.
+
 ## [0.5.0] - 2026-11-20
 
 ### Added
