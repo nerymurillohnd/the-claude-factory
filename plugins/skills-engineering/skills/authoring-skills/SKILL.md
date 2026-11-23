@@ -176,6 +176,7 @@ Exit: every planned file exists and passes its checks.
 Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing what fails.
 
 - Read [Phase 5: Self-review](references/phase-5-self-review.md) when you start this phase.
+- Run the skill checks it calls for with `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" run <the SKILL.md you wrote>`, written exactly so, quotes included.
 
 Exit: every check passes, or each one that can't is listed for the report.
 

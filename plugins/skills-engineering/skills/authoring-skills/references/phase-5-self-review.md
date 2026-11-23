@@ -3,7 +3,11 @@
 How to review the skill from the model's seat and run its checks before you deliver it.
 
 1. Walk each use case from the model's seat: from the description, through the body and the pointers it follows, to its result, naming what the model decides at each step. Rewrite wherever it would decide wrong.
-2. Run the mechanical check: `claude plugin validate [path]`, where `[path]` is the plugin or skills folder, wherever the Claude Code CLI exists; for an upload, check the skill against the fields every surface accepts, in the frontmatter file of Phase 2.
+2. Run the mechanical checks:
+   - `claude plugin validate [path]`, where `[path]` is the plugin or skills folder, wherever the Claude Code CLI exists.
+   - The skill checks, with the command Phase 5 of `SKILL.md` gives: it prints one line per check and the results folder. For each check with findings, run the same command with `show [folder] --check [id]` in place of `run [SKILL.md]`, then `clean [folder]` once you have read them all.
+   - Fix every finding on a surface the skill reaches. A plugin skill reaches Claude and Claude Code through its plugin, so fix its `claude-code` findings, and its `open-spec` and `upload` findings only when the skill is also distributed on its own, as an upload or for agents outside Claude. A field such as `argument-hint` is valid in a plugin skill even though `non-spec-key` reports it.
+   - The skill pre-approves this command only in the turn that invoked it, so Claude Code may ask the user to approve it here: say that it runs the plugin's read-only checks. Where `python3` isn't found, use `python`; where neither runs, or the command says Python is older than 3.12, list the skill checks as not run in the report.
 3. Copy this checklist and check the skill you write against it:
 
    ```text
