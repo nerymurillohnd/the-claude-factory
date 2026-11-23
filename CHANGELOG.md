@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-11-23
 
+### Fixed
+
+- **hook-engineering** 0.3.3 — `writing-hooks` now has hooks convert Windows backslash paths to forward slashes before comparing them, so a hook it writes no longer lets a call through on Windows.
+- **skills-engineering** 0.4.1 — `authoring-skills` now tells skill scripts to convert Windows backslash paths from Claude Code before comparing them, as `auditing-skills` already checks.
+
 ### Changed
 
 - **skills-engineering** 0.4.0 — **Breaking:** `auditing-skills` saves each reviewer's full report under `.claude/skill-audits/` in your project and shows you the critical, high and medium findings instead of every report; `authoring-skills` now runs the plugin's skill checks on the skill it writes and fixes what they find; both skills share one checks script, which adds `frontmatter.keys` for keys Claude Code ignores or uploads reject, runs in `auditing-skills` before it asks you anything, needs only Python 3.12 or later, and reports fewer wrong findings; the checks' results now live in the plugin's data folder for the session, and a new `SessionEnd` hook removes them when it ends, unless it ends to resume.
