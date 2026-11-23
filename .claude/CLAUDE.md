@@ -67,8 +67,6 @@
 
 ## Skills by task
 
-Load `extended-memory:extended-memory` at the start of every session.
-
 Do every task, area, phase and function through the skill this section designates for it: load it before the task and keep using it until the task ends.
 
 ### Skills
