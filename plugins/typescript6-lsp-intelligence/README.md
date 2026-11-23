@@ -51,13 +51,13 @@ TypeScript 6 LSP Intelligence connects the TypeScript 6 language server you inst
 | :------------------------- | :-------------- | :-------------------------------------------------------------------------- |
 | Claude Code                | 2.1.295         | `claude --version`                                                          |
 | Bash                       | 3.2             | `bash --version`                                                            |
-| Node.js                    | 22.22.2         | `node --version`                                                            |
+| Node.js                    | 24              | `node --version`                                                            |
 | TypeScript 6               | —               | `npx --no-install tsc --version` (project copy) or `tsc --version` (global) |
 | typescript-language-server | —               | `typescript-language-server --version`                                      |
 
 The plugin also uses `sed`, `awk`, `grep`, `tr`, `cut`, `head`, `sort`, `find`, `paste`, `dirname`, `basename`, `mktemp`, `mkdir`, `rm`, `cp` and `cat`, which come with macOS and Linux.
 
-Node.js 22.22.2 is the minimum of typescript-language-server; the hook alone runs on Node.js 14.17 or later, the minimum of `tsc`. Node.js must be on the `PATH` of the shell you start `claude` from: the hook reads each event with it, and without it the check doesn't run. For the check, the hook uses the nearest `node_modules/.bin/tsc` above the edited file, else the first `tsc` on your `PATH`, and only when that `tsc` is TypeScript 6. Install typescript-language-server globally, on the same `PATH`. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship.
+Both typescript-language-server and the hook need Node.js 24 or later, the oldest Node.js this plugin supports. Node.js must be on the `PATH` of the shell you start `claude` from: the hook reads each event with it, and without it the check doesn't run. For the check, the hook uses the nearest `node_modules/.bin/tsc` above the edited file, else the first `tsc` on your `PATH`, and only when that `tsc` is TypeScript 6. Install typescript-language-server globally, on the same `PATH`. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship.
 
 ### 🐚 Bash
 
