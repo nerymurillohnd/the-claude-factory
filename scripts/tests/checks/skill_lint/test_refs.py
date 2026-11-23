@@ -69,7 +69,8 @@ class ResolveTest(unittest.TestCase):
             skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
             self.assertTrue(escapes(skill, "../other/x.md", "SKILL.md"))
             self.assertTrue(escapes(skill, "/etc/passwd", "SKILL.md"))
-            self.assertTrue(escapes(skill, "${CLAUDE_PLUGIN_ROOT}/x.sh", "SKILL.md"))
+            self.assertTrue(escapes(skill, "${CLAUDE_PLUGIN_ROOT}/../x.sh", "SKILL.md"))
+            self.assertFalse(escapes(skill, "${CLAUDE_PLUGIN_ROOT}/x.sh", "SKILL.md"))
             self.assertFalse(escapes(skill, "../b.md", "references/a.md"))
             self.assertFalse(escapes(skill, "b.md", "SKILL.md"))
 

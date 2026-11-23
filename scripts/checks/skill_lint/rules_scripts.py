@@ -17,7 +17,7 @@ from scripts.checks.skill_lint.commands import (
     script_commands,
 )
 from scripts.checks.skill_lint.model import Finding, Severity
-from scripts.checks.skill_lint.refs import Resolver, escapes, imported_or_sourced
+from scripts.checks.skill_lint.refs import Resolver, escapes, imported_or_sourced, plugin_file
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -146,8 +146,8 @@ def _sc03(skill: Skill) -> list[Finding]:
         interpreter, script = found
         if not LOCAL_PATH.match(script) or escapes(skill, script, rel):
             continue
-        if resolver.resolve(script, rel) is None:
-            message = f"`{script}` names no file in the skill"
+        if resolver.resolve(script, rel) is None and plugin_file(skill, script) is None:
+            message = f"`{script}` names no file in the skill or its plugin"
             findings.append(_finding("SC-03", Severity.ERROR, rel, command.line, message))
             continue
         allowed = INTERPRETERS.get(_ext(script), frozenset())

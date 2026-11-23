@@ -159,6 +159,18 @@ class InvocationTest(unittest.TestCase):
         files = {"SKILL.md": _skill_md(_run_block(commands)), "scripts/run.py": RUN_PY}
         self.assertEqual(_pairs(files, executable=("scripts/run.py",)), [])
 
+    def test_sc03_checks_plugin_root_script(self) -> None:
+        """A plugin-root script the Markdown runs must exist; one that does passes."""
+        command = 'python3 "${CLAUDE_PLUGIN_ROOT}/scripts/shared.py" run'
+        files = {"SKILL.md": _skill_md(_run_block(command))}
+        self.assertEqual(_pairs(files), [("SC-03", "SKILL.md")])
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = _build(Path(tmp), files)
+            shared = skill.parent.parent / "scripts" / "shared.py"
+            shared.parent.mkdir()
+            _ = shared.write_text(RUN_PY, encoding="utf-8")
+            self.assertEqual([f.rule for f in check(load(skill))], [])
+
     def test_sc03_other_variable_ignored(self) -> None:
         """A path under another shell variable is not judged."""
         files = {"SKILL.md": _skill_md(_run_block('python3 "$TMPDIR/x.py"'))}

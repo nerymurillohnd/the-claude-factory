@@ -90,6 +90,22 @@ class LinkRulesTest(unittest.TestCase):
         body = "```bash\npython3 ../../shared/run.py\n```\n"
         self.assertEqual(self._rules({"SKILL.md": _skill_md(body)}), ["CO-08"])
 
+    def test_co08_plugin_root_inside_plugin_ok(self) -> None:
+        """A ${CLAUDE_PLUGIN_ROOT} path to a script the plugin ships at its root stays inside."""
+        body = '```bash\npython3 "${CLAUDE_PLUGIN_ROOT}/scripts/x.py" run\n```\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": _skill_md(body)})
+            shared = skill.parent.parent / "scripts" / "x.py"
+            shared.parent.mkdir()
+            _ = shared.write_text("print(1)\n", encoding="utf-8")
+            rules = [f.rule for f in check(load(skill))]
+        self.assertEqual(rules, [])
+
+    def test_co08_plugin_root_outside_still_flagged(self) -> None:
+        """A ${CLAUDE_PLUGIN_ROOT} path that climbs out of the plugin is CO-08."""
+        body = '```bash\npython3 "${CLAUDE_PLUGIN_ROOT}/../x.py"\n```\n'
+        self.assertEqual(self._rules({"SKILL.md": _skill_md(body)}), ["CO-08"])
+
     def test_co08_symlink_outside(self) -> None:
         """A symlink inside the skill that points outside is CO-08 (Review Focus 4)."""
         with tempfile.TemporaryDirectory() as tmp:
