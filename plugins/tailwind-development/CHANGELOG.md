@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The MCP server's code that reads list options and lists class conflicts now follows the marketplace's newest lint rules. Nothing changes in how the plugin works.
+
 ## [0.3.5] - 2026-11-19
 
 ### Changed

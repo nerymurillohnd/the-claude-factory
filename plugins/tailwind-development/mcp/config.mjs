@@ -154,6 +154,14 @@ export function parseBoolean(name, raw, fallback) {
 const LIST_SEPARATOR = /[,\n]/u
 
 /**
+ * Whether a parsed JSON value is an array of strings.
+ * @param {unknown} value
+ * @returns {value is string[]}
+ */
+const isStringList = (value) =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string')
+
+/**
  * Reads a list option: a JSON array of strings, or names separated by commas or new lines.
  * @param {string} name
  * @param {string | undefined} raw
@@ -173,7 +181,7 @@ export function parseList(name, raw, fallback) {
     } catch {
       throw new Error(`${name} is not a valid JSON array: ${JSON.stringify(raw)}`)
     }
-    if (!Array.isArray(parsed) || !parsed.every((item) => typeof item === 'string')) {
+    if (!isStringList(parsed)) {
       throw new Error(`${name} must be a list of strings, got ${JSON.stringify(raw)}`)
     }
     return parsed.map((item) => item.trim()).filter((item) => item !== '')
