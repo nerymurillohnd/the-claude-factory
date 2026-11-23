@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- Four command and message examples in `public-marketplace-dev`'s MCP and skills references now say they are plain text. Nothing changes in how the plugin works.
+
 ## [0.4.0] - 2026-11-18
 
 ### Changed
