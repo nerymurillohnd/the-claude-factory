@@ -11,7 +11,7 @@ On Claude Code 2.1.323, a trace with an InstructionsLoaded hook (2026-11-13) sho
 
 The memory page documents the same (`*.md`: "anywhere under the base directory"; `/*.md`: "directly in the base directory").
 
-The `instruction-engineering` checker assumed the opposite through plugin 0.1.3; 0.1.4 (2026-11-15) matches the documented behavior. Until 0.1.4 reaches the installed copy, run the repository's checker (`plugins/instruction-engineering/skills/cc-md-and-rules/scripts/check_instructions.py`), not the synced one.
+The `instruction-engineering` checker assumed the opposite through plugin 0.1.3; 0.1.4 (2026-11-15) matches the documented behavior, and the installed copy was 0.2.2 on 2026-11-22.
 
 **Why:** bare root names made `npm-and-uv.md` load for `plugins/tailwind-development/package.json`, and made `plugins.md` and `categories.md` load for `.claude/references/README.md`.
 

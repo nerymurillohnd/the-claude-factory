@@ -14,7 +14,7 @@ Ask the owner for any of these that the files don't already hold; never invent o
 | Document | Owner's values |
 | :-- | :-- |
 | Plugin and root `CHANGELOG.md` | Release date (from the release); marketplace display name |
-| Plugin `README.md` | Plugin emoji; surfaces (`metadata.surfaces`) when not yet set; minimum Claude Code version when neither `engines` nor a changelog entry sets it |
+| Plugin `README.md` | Plugin emoji; surfaces (`metadata.surfaces`) when not yet set; minimum Claude Code version when neither `engines` nor a changelog entry sets it; the runtime floors, which the owner set at Node.js 24 or later and Python 3.12 or later, and which change only by the owner's decision |
 | Root `README.md` | Marketplace display name and emoji |
 | `LICENSE` | Copyright year and holders |
 | `NOTICE.txt` | Source, exact version and license of each third-party work, when the files don't show them |
