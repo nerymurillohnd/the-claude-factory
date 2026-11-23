@@ -18,7 +18,7 @@ Write and edit every skill with `skills-engineering:authoring-skills`; these are
 - Prioritize progressive disclosure: keep in `SKILL.md` what every run needs, and move the rest to reference files linked directly from `SKILL.md`, one level deep.
 - Keep the `SKILL.md` body under about 5,000 tokens.
 - Use examples where they change the output, and embed each command, template, snippet or quote in its proper form: a fenced block with its language, a template file in `assets/`, a quote marked with its source.
-- Keep the scripts a plugin skill runs inside its own folder, because users receive only `plugins/<plugin>/`; write a project skill in `.claude/skills/` as a procedure that calls maintainer scripts through `npm run`.
+- Keep a script one plugin skill runs in that skill's folder, and a script several skills of one plugin share in the plugin root's `scripts/`, run through `${CLAUDE_PLUGIN_ROOT}`; never in a top-level `bin/`, which blocks claude.ai and Cowork installs. Write a project skill in `.claude/skills/` as a procedure that calls maintainer scripts through `npm run`.
 - Never set `disable-model-invocation: true` on a skill that other skills or subagents load.
 
 ## Descriptions
