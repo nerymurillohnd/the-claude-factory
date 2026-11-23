@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The procedure checklist in `svelte-docs-and-autofixer` now says it is plain text. Nothing changes in how the plugin works.
+
 ## [0.2.0] - 2026-11-23
 
 ### Changed

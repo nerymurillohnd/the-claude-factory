@@ -79,7 +79,7 @@ Section paths are written exactly as `list-sections` prints them, without a lead
 
 Copy this checklist for any Svelte code you write, change or review, and run the calls in this order.
 
-```
+```text
 - [ ] 1 Baseline  in a project, when the change touches what other files use: the project check once (ground rule 5)
 - [ ] 2 Find      choose the sections in docs-map.md; call list-sections only for a topic the map lacks
 - [ ] 3 Read      one get-documentation call with every section the code touches; look each page up in known-doc-errata.md
