@@ -8,6 +8,7 @@ from frontmatter import (
     description,
     field_combinations,
     field_values,
+    keys,
     listing_cap,
     metadata,
     name_format,
@@ -78,6 +79,12 @@ CHECKS: tuple[CheckSpec, ...] = (
     CheckSpec(
         allowed_tools.CHECK,
         allowed_tools.check,
+        ("frontmatter-description", "runtime-contract"),
+        requires=(yaml_syntax.CHECK,),
+    ),
+    CheckSpec(
+        keys.CHECK,
+        keys.check,
         ("frontmatter-description", "runtime-contract"),
         requires=(yaml_syntax.CHECK,),
     ),
