@@ -1,0 +1,20 @@
+{
+  "description": "Validates a plugin with claude plugin validate --strict, and runs its mod tests with claude plugin test, after Claude edits or writes a file inside it",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/validate-plugin.sh\"",
+            "shell": "bash",
+            "timeout": 60,
+            "statusMessage": "plugin-engineering: checking the edited plugin",
+            "onFailure": "block"
+          }
+        ]
+      }
+    ]
+  }
+}

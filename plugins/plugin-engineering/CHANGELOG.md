@@ -6,8 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- `test-and-evals`: tests a plugin right after it is created and after every change, before the work is reported as done. It runs the checks that cost nothing first: strict validation, what the validator never reads, loading from the folder, each component, mod tests, an install from a git-hosted source into a throwaway configuration, and the directory and policy review before publishing. It then builds an eval suite only after you say yes to it and its cost, with Claude proposing and writing the cases, and covers suites, graders, fixtures, mocks, CI gates and reading the results, all checked against Claude Code 2.1.330.
+- `troubleshoot-and-debug`: diagnoses a plugin or marketplace that won't add, install, enable, update, load or run, or whose wrong copy, scope or version loaded. It matches the exact message to its stage and documented cause, or reads the loading rules and the state on disk, checks every place the same cause reaches, fixes it in one pass and verifies it once. It covers cloud sessions, project threads, Claude, Cowork, the Agent SDK and mods.
+- A `PostToolUse` hook that runs `claude plugin validate --strict` on a plugin after Claude edits or writes a file inside it, or on a marketplace after Claude edits its `.claude-plugin/` folder, and shows Claude every error and warning, in full, so it fixes them. When the edited file is code in a plugin with mod tests, it also runs `claude plugin test` and shows every failed test. It stays silent for files outside a plugin, reads only the edited file's path and the plugin's file names, writes nothing and makes no network call. It needs Bash 3.2 or later, `awk` and `find`.
+
+### Removed
+
+- **Breaking:** `plugin-testing-and-debugging` and its eval case templates. Use `/plugin-engineering:test-and-evals` to test a plugin or write its evals, and `/plugin-engineering:troubleshoot-and-debug` to fix one that won't install, load or run. Claude now writes eval cases with `claude plugin eval init` instead of copying fixed templates.
+
 ### Changed
 
+- **Breaking:** the Plugin Evals plugin is merged into this one, and `test-and-evals` replaces its `plugin-evals` skill. If you had `plugin-evals@the-claude-factory` installed, Claude Code moves it to `plugin-engineering@the-claude-factory`; run `/plugin install plugin-engineering@the-claude-factory` once.
+- `cli-commands-guide` and `public-marketplace-dev` now load `test-and-evals` and `troubleshoot-and-debug` where they loaded `plugin-testing-and-debugging`.
 - Four command and message examples in `public-marketplace-dev`'s MCP and skills references now say they are plain text. Nothing changes in how the plugin works.
 
 ## [0.4.0] - 2026-11-18
