@@ -231,7 +231,13 @@ resolve_link() {
 # ── Tool discovery ──────────────────────────────────────────────────────────────────────
 
 SEARCHED=""
+# The compilers the hook found and could not use, one per line.
 SKIPPED=""
+# The Node.js installations below NODE_MIN, one per line. They are not compilers: the native
+# compiler runs without Node.js, so they are listed only where a compiler that runs on Node.js was
+# rejected for lack of a supported one (NODE_NEEDED), or in the no-compiler notice.
+SKIPPED_NODE=""
+NODE_NEEDED=no
 DIRS=()
 
 add_dir() {
@@ -350,17 +356,20 @@ find_node() {
         return 0
       fi
     fi
-    SKIPPED="${SKIPPED}${dir}/node (${version:-did not run}; needs ${NODE_MIN} or later)${NL}"
+    SKIPPED_NODE="${SKIPPED_NODE}${dir}/node (${version:-did not run}; needs ${NODE_MIN} or later)${NL}"
   done
   return 0
 }
 
 # Sets NATIVE_TSC to the native compiler of TypeScript 7 package $1, found the way Node
-# resolves its platform package: in node_modules folders from the package upward.
+# resolves its platform package: in node_modules folders from the package upward. Sets PLATFORM_PKG
+# to the name of that platform package, empty on an OS or CPU that has none.
 NATIVE_TSC=""
+PLATFORM_PKG=""
 native_compiler() {
   local dir os arch platform exe=tsc
   NATIVE_TSC=""
+  PLATFORM_PKG=""
   os="$(uname -s)"
   case "${os}" in
     Darwin) os=darwin ;;
@@ -377,7 +386,8 @@ native_compiler() {
     x86_64 | amd64) arch=x64 ;;
     *) return 0 ;;
   esac
-  platform="@typescript/typescript-${os}-${arch}/lib/${exe}"
+  PLATFORM_PKG="@typescript/typescript-${os}-${arch}"
+  platform="${PLATFORM_PKG}/lib/${exe}"
   dir="$1"
   while :; do
     if [[ -x "${dir}/node_modules/${platform}" ]]; then
@@ -438,7 +448,7 @@ typescript_7_package() {
 FOUND_ID=""
 PROBED="${NL}"
 use_tsc() {
-  local tsc="$1" package="" version line
+  local tsc="$1" package="" version line missing=""
   FOUND_ID=""
   if [[ ${PROBED} == *"${NL}${tsc}"$'\t'* ]]; then
     line="${PROBED#*"${NL}${tsc}"$'\t'}"
@@ -456,14 +466,26 @@ use_tsc() {
     if [[ -n ${NATIVE_TSC} ]]; then
       version="$("${NATIVE_TSC}" --version 2> /dev/null || true)"
       [[ ${version} == Version* ]] && FOUND_ID="native|${NATIVE_TSC}|${version#Version }"
+    elif [[ -n ${PLATFORM_PKG} ]]; then
+      missing="the TypeScript 7 package is installed without its native compiler ${PLATFORM_PKG}"
+    else
+      missing="the TypeScript 7 package has no native compiler for this OS and CPU"
     fi
   fi
   if [[ -z ${FOUND_ID} && -z ${NODE_DIR} ]]; then
-    SKIPPED="${SKIPPED}${tsc} (no Node.js ${NODE_MIN} or later to run it)${NL}"
+    if [[ -n ${missing} ]]; then
+      SKIPPED="${SKIPPED}${tsc} (${missing})${NL}"
+    else
+      # NODE_MIN is the support floor, not what tsc needs: tsc would run on an older Node.js.
+      NODE_NEEDED=yes
+      SKIPPED="${SKIPPED}${tsc} (runs on Node.js, and none at the support floor of ${NODE_MIN} or later was found)${NL}"
+    fi
   elif [[ -z ${FOUND_ID} ]]; then
     version="$(PATH="${NODE_DIR}:${PATH}" "${tsc}" --version 2> /dev/null || true)"
     if [[ ${version} == Version* ]]; then
       FOUND_ID="node|${tsc}|${version#Version }"
+    elif [[ -n ${missing} ]]; then
+      SKIPPED="${SKIPPED}${tsc} (${missing})${NL}"
     else
       SKIPPED="${SKIPPED}${tsc} (did not run with ${NODE_DIR}/node)${NL}"
     fi
@@ -1121,7 +1143,7 @@ compiler_notice() {
     [[ -f ${marker} ]] && return 0
   fi
   NOTICE="${PLUGIN}: no usable TypeScript compiler was found, so edited files are not type-checked.${NL}Searched:${NL}${SEARCHED:-(no node or tsc in any known folder)${NL}}"
-  [[ -n ${SKIPPED} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}"
+  [[ -n ${SKIPPED}${SKIPPED_NODE} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}${SKIPPED_NODE}"
   NOTICE="${NOTICE}Requirements: ${README_URL}"
   if [[ -n ${marker} ]]; then
     mkdir -p "${marker_dir}"
@@ -1169,7 +1191,10 @@ emit() {
       message="${message:+${message}${NL}}${PLUGIN}: tsc ${used} · the edited files pass the strictest policy"
       ((IGNORED > 0)) && message="${message}; strictest-only errors in other files not counted, since the project's own config accepts them: ${IGNORED}"
       message="${message} · ${NAMES}"
-      [[ -n ${SKIPPED} ]] && message="${message}${NL}Compilers skipped first:${NL}${SKIPPED%"${NL}"}"
+      if [[ -n ${SKIPPED} ]]; then
+        message="${message}${NL}Compilers skipped first:${NL}${SKIPPED%"${NL}"}"
+        [[ ${NODE_NEEDED} == yes && -n ${SKIPPED_NODE} ]] && message="${message}${NL}Node.js skipped:${NL}${SKIPPED_NODE%"${NL}"}"
+      fi
     fi
     if [[ -n ${context} ]]; then
       json_escape "${event}"

@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from typing import TYPE_CHECKING, NamedTuple, cast
 import unittest
@@ -117,6 +118,8 @@ MODULE = "export const answer: number = 42\n"
 FIXED_FOLDERS = ("/opt/homebrew/bin", "/usr/local/bin", "/home/linuxbrew/.linuxbrew/bin")
 # One more than the hook's MAX_LOOSE_FILES.
 TOO_MANY = 21
+# A tsc that runs on Node.js: a script that reports a TypeScript 5 version.
+JS_TSC = "#!/bin/sh\necho Version 5.9.3\n"
 
 
 def path_without_compiler() -> str:
@@ -137,6 +140,59 @@ def path_without_compiler() -> str:
         if not any((Path(folder) / name).exists() for name in ("tsc", "tsc6"))
     ]
     return os.pathsep.join(kept)
+
+
+def path_without_node(path: str) -> str:
+    """`path` minus every folder with a node.
+
+    The test is skipped when the hook would still find a Node.js: it also searches a few fixed
+    folders, whatever PATH holds.
+    """
+    for fixed in FIXED_FOLDERS:
+        if (Path(fixed) / "node").exists():
+            message = f"a Node.js is installed in {fixed}, which the hook always searches"
+            raise unittest.SkipTest(message)
+    kept = [folder for folder in path.split(os.pathsep) if not (Path(folder) / "node").exists()]
+    return os.pathsep.join(kept)
+
+
+def node_reporting(folder: Path, version: str) -> None:
+    """Put in folder a `node` that reports `version` and otherwise runs the real one."""
+    real = need("node")
+    script = (
+        "#!/bin/sh\n"
+        f'if [ "$1" = --version ]; then echo v{version}; exit 0; fi\n'
+        f'exec "{real}" "$@"\n'
+    )
+    write(folder / "node", script)
+    (folder / "node").chmod(0o755)
+
+
+def platform_package() -> str:
+    """The native compiler package of this OS and CPU; the test is skipped without one."""
+    systems = {"darwin": "darwin", "linux": "linux"}
+    machines = {"arm64": "arm64", "aarch64": "arm64", "x86_64": "x64", "amd64": "x64"}
+    system = systems.get(sys.platform)
+    machine = machines.get(os.uname().machine) if hasattr(os, "uname") else None
+    if system is None or machine is None:
+        message = "TypeScript 7 has no native compiler package for this OS and CPU"
+        raise unittest.SkipTest(message)
+    return f"@typescript/typescript-{system}-{machine}"
+
+
+def install_typescript_7(project: Path, *, native: bool) -> None:
+    """Install in project a TypeScript 7 package, with its native compiler when `native`.
+
+    The package's own bin/tsc fails, as the wrapper does without its platform package.
+    """
+    package = project / "node_modules" / "typescript"
+    write(package / "package.json", '{"name": "typescript", "version": "7.0.0"}\n')
+    write(package / "bin" / "tsc", "#!/bin/sh\nexit 1\n")
+    (package / "bin" / "tsc").chmod(0o755)
+    if native:
+        compiler = project / "node_modules" / platform_package() / "lib" / "tsc"
+        write(compiler, "#!/bin/sh\n[ \"$1\" = --version ] && echo 'Version 7.0.0'\nexit 0\n")
+        compiler.chmod(0o755)
 
 
 class TscHookTest(unittest.TestCase):
@@ -217,6 +273,98 @@ class TscHookTest(unittest.TestCase):
         self.assertEqual((outcome.code, outcome.stderr), (0, ""))
         message = field(outcome.stdout, "systemMessage")
         self.assertIn(f"{old}/node (22.12.0; needs 24.0.0 or later)", message)
+
+    def test_node_floor_is_24_0_0(self) -> None:
+        """A Node.js of 23.11.1 is rejected and one of 24.0.0 is accepted."""
+        path = path_without_compiler()
+        for version, rejected in (("23.11.1", True), ("24.0.0", False)):
+            with (
+                self.subTest(version=version),
+                tempfile.TemporaryDirectory() as raw,
+            ):
+                tmp = Path(raw).resolve()
+                wrapper = tmp / "wrapper"
+                node_reporting(wrapper, version)
+                write(tmp / "work" / "new.ts", MODULE)
+                outcome = self._run(tmp, path=os.pathsep.join((str(wrapper), path)))
+                self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                message = field(outcome.stdout, "systemMessage")
+                self.assertIn(f"{wrapper}/node\n", message)
+                if rejected:
+                    self.assertIn(f"{wrapper}/node ({version}; needs 24.0.0 or later)", message)
+                else:
+                    self.assertNotIn(f"{wrapper}/node (", message)
+
+    def test_native_compiler_runs_without_listing_a_skipped_node(self) -> None:
+        """A Node.js 22 first on PATH is no skipped compiler: the native one needs no Node.js."""
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            install_typescript_7(tmp / "work", native=True)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn("tsc 7.0.0 · the edited files pass the strictest policy", message)
+        self.assertNotIn("Compilers skipped first", message)
+        self.assertNotIn("22.12.0", message)
+
+    def test_compiler_rejected_for_lack_of_node_names_the_floor_and_the_nodes(self) -> None:
+        """A tsc that runs on Node.js, with only a Node.js 22 at hand, is skipped for the floor."""
+        path = path_without_node(path_without_compiler())
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            write(tmp / "work" / "node_modules" / ".bin" / "tsc", JS_TSC)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        floor = "runs on Node.js, and none at the support floor of 24.0.0 or later was found"
+        self.assertIn(f"{tmp}/work/node_modules/.bin/tsc ({floor})", message)
+        self.assertIn(f"{old}/node (22.12.0; needs 24.0.0 or later)", message)
+        self.assertNotIn("to run it", message)
+
+    def test_pass_lists_skipped_nodes_only_where_a_compiler_needed_one(self) -> None:
+        """A tsc rejected for lack of Node.js 24 is listed with the Node.js found, beside a pass."""
+        path = path_without_node(path_without_compiler())
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            write(tmp / "work" / "node_modules" / ".bin" / "tsc", JS_TSC)
+            install_typescript_7(tmp / "work", native=True)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn("the edited files pass the strictest policy", message)
+        self.assertIn("Compilers skipped first:\n", message)
+        self.assertIn(f"{tmp}/work/node_modules/.bin/tsc (runs on Node.js, and none", message)
+        self.assertIn(f"Node.js skipped:\n{old}/node (22.12.0; needs 24.0.0 or later)", message)
+
+    def test_typescript_7_package_without_its_platform_package_names_it(self) -> None:
+        """When the wrapper cannot run, the notice names the missing native compiler package."""
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "new.ts", MODULE)
+            install_typescript_7(tmp / "work", native=False)
+            outcome = self._run(tmp, path=path)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        missing = f"installed without its native compiler {platform_package()}"
+        self.assertIn(
+            f"{tmp}/work/node_modules/typescript/bin/tsc (the TypeScript 7 package is {missing})",
+            message,
+        )
+        self.assertNotIn("did not run with", message)
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: the hook prints nothing."""
