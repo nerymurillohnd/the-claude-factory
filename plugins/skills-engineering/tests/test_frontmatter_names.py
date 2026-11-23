@@ -66,6 +66,18 @@ class NameFormatTest(NameTestCase):
             ["charset", "folder-mismatch", "hyphen", "reserved-word"],
         )
 
+    def test_unicode_name_upload_only(self) -> None:
+        """skills-ref accepts lowercase Unicode letters; only uploads require `a-z`."""
+        result = self.result(NAME, "name: café-skill", folder="café-skill")
+        findings = result.get("findings")
+        items: list[object] = findings if is_list(findings) else []
+        charset = [
+            item.get("surfaces")
+            for item in items
+            if isinstance(item, JsonObject) and item.get("rule") == "charset"
+        ]
+        self.assertEqual(charset, [["upload"]])
+
     def test_length(self) -> None:
         """65 characters are one too many."""
         name = "a" * 65

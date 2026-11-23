@@ -1,10 +1,11 @@
 """frontmatter.name: the name's format, its folder, refused characters and reserved words.
 
-The open specification and uploads require a name of 1 to 64 characters in `a-z`, `0-9` and
-`-`, with no leading, trailing or consecutive hyphen, equal to the folder name. Claude Code
-makes the name optional, using the folder name, and refuses a name holding `<`, `>`, control,
-format, private-use or unassigned characters, or any blank but one space between words. The
-Claude API and claude.ai reject `anthropic` and `claude` in a name.
+The open specification and uploads require a name of 1 to 64 characters with no leading,
+trailing or consecutive hyphen, equal to the folder name; uploads allow only `a-z`, `0-9` and
+`-`, while the open-spec validator also accepts lowercase letters and digits of any script.
+Claude Code makes the name optional, using the folder name, and refuses a name holding `<`,
+`>`, control, format, private-use or unassigned characters, or any blank but one space between
+words. The Claude API and claude.ai reject `anthropic` and `claude` in a name.
 """
 
 import re
@@ -54,6 +55,16 @@ def _refused(name: str) -> bool:
     )
 
 
+def _open_spec_letters(name: str) -> bool:
+    """True when the open-spec validator, skills-ref, accepts the name's characters.
+
+    It wants the name lowercase and, after NFKC, made only of letters and digits of any script
+    and hyphens.
+    """
+    normalized = unicodedata.normalize("NFKC", name)
+    return name == name.lower() and all(ch.isalnum() or ch == "-" for ch in normalized)
+
+
 def _format_findings(name: str, node: Node, folder: str) -> list[Finding]:
     """The format, folder and refused-character findings of a name that is a string."""
     found: list[Finding] = []
@@ -61,7 +72,8 @@ def _format_findings(name: str, node: Node, folder: str) -> list[Finding]:
         found.append(_finding("length", "1 to 64 characters.", node, SPEC, "official"))
     if CHARSET.fullmatch(name) is None:
         expected = "Only lowercase letters, digits and hyphens."
-        found.append(_finding("charset", expected, node, SPEC, "official"))
+        surfaces = ("upload",) if _open_spec_letters(name) else SPEC
+        found.append(_finding("charset", expected, node, surfaces, "official"))
     if name.startswith("-") or name.endswith("-") or "--" in name:
         expected = "No leading, trailing or consecutive hyphen."
         found.append(_finding("hyphen", expected, node, SPEC, "official"))

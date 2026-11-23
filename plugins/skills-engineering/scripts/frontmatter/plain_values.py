@@ -9,9 +9,9 @@ from dataclasses import replace
 from typing import Final
 
 from common.context import Context
-from common.fields import TEXT_FIELDS
+from common.fields import SPEC_FIELDS, TEXT_FIELDS
 from common.frontmatter import NO_BLOCK_REASON, Loaded, load, values
-from common.report import CheckResult, Finding
+from common.report import CheckResult, Finding, Surface
 from common.yaml_reader import Node
 
 CHECK: Final = "frontmatter.plain-values"
@@ -25,7 +25,13 @@ YAML11_CONDITION: Final = (
 
 
 def _finding(rule: str, node: Node, field: str, expected: str) -> Finding:
-    """A finding at the node's position, quoting its source text."""
+    """A finding at the node's position, quoting its source text.
+
+    A specification field is read by open-spec and upload, any other field by Claude Code.
+    """
+    surfaces: tuple[Surface, ...] = (
+        ("open-spec", "upload") if field in SPEC_FIELDS else ("claude-code",)
+    )
     return Finding(
         check=CHECK,
         rule=rule,
@@ -35,7 +41,7 @@ def _finding(rule: str, node: Node, field: str, expected: str) -> Finding:
         found=node.raw,
         expected=expected,
         basis="inference",
-        surfaces=("open-spec", "upload"),
+        surfaces=surfaces,
     )
 
 
@@ -78,12 +84,16 @@ def _plain_findings(loaded: Loaded, node: Node, field: str) -> list[Finding]:
     if comment is not None:
         found.append(comment)
     if node.value[:1] in LEADING_INDICATORS and node.value:
+        # YAML 1.2 and PyYAML read `-x` as plain text; quoting it is a convention, not a fix.
         found.append(
-            _finding(
-                "leading-indicator",
-                node,
-                field,
-                "Quote a value that starts with `-`, `?` or `:`.",
+            replace(
+                _finding(
+                    "leading-indicator",
+                    node,
+                    field,
+                    "Quote a value that starts with `-`, `?` or `:`.",
+                ),
+                basis="convention",
             )
         )
     return found

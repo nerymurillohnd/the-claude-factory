@@ -54,6 +54,22 @@ class PlainValuesTest(unittest.TestCase):
         """A plain value starting with `-`."""
         self.assertEqual(rules(self.result("compatibility: -x")), [("leading-indicator", 2)])
 
+    def first(self, yaml: str) -> JsonObject:
+        """The first finding of a run."""
+        findings = self.result(yaml).get("findings")
+        first = findings[0] if is_list(findings) and findings else None
+        if not isinstance(first, JsonObject):
+            self.fail(f"expected a finding for {yaml!r}")
+        return first
+
+    def test_plain_values_cc_field_surface(self) -> None:
+        """A Claude Code field outside the specification concerns Claude Code only."""
+        self.assertEqual(self.first("argument-hint: [file]").get("surfaces"), ["claude-code"])
+
+    def test_leading_dash_is_convention(self) -> None:
+        """YAML 1.2 and PyYAML read `-x` as text, so quoting it is a convention."""
+        self.assertEqual(self.first("compatibility: -x").get("basis"), "convention")
+
     def test_quoted_value_is_fine(self) -> None:
         """A quoted `yes` is text."""
         self.assertEqual(rules(self.result('description: "yes"')), [])
