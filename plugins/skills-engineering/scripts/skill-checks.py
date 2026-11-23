@@ -5,9 +5,7 @@ It checks the Python version before importing anything written for 3.12, turns o
 the installed plugin folder stays clean, and puts its own folder first on the import path, so it
 finds its packages from any working directory and under `python3 -I`.
 
-    python3 skill-checks.py run [--family F] <SKILL.md>
-    python3 skill-checks.py show <folder> (--check <id> | --reviewer <name>)
-    python3 skill-checks.py clean <folder>
+    python3 skill-checks.py run [--family F] [--out DIR] <SKILL.md>
     python3 skill-checks.py check <id> <SKILL.md> [options]
 """
 

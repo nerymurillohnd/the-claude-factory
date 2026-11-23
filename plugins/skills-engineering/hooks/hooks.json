@@ -1,0 +1,15 @@
+{
+  "description": "Removes this session's skill-checks results from the plugin's data folder when the session ends",
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -d \"${CLAUDE_PLUGIN_DATA}/checks\" ] || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session-end.py\" 2>/dev/null || python \"${CLAUDE_PLUGIN_ROOT}/scripts/session-end.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

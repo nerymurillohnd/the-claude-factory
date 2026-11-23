@@ -9,6 +9,7 @@ points at a test folder in every run, so the 24-hour sweep never touches the rea
 
 import os
 from pathlib import Path
+import shlex
 import shutil
 import sys
 import tempfile
@@ -20,10 +21,11 @@ from frontmatter_helpers import SCRIPTS, is_list, parse_object, run_python
 
 sys.path.insert(0, str(SCRIPTS))
 
-from engine.results import is_removable
+from engine.results import remove_run
 
 PREFIX = "skills-engineering-checks-"
 MARKER = ".skills-engineering-results"
+SESSION_MARKER = ".skills-engineering-session"
 PYTHON_311 = Path("/usr/bin/python3.11")
 
 DEMO_OK = """\
@@ -82,7 +84,7 @@ CHECKS = (
 
 
 class RunnerTest(unittest.TestCase):
-    """The run, show and clean subcommands, and the entry that starts them."""
+    """The run and check subcommands, the run folder's lifecycle, and the entry."""
 
     def __init__(self, method_name: str = "runTest") -> None:
         """Hold the throwaway folders each test builds; setUp fills them, tearDown removes them."""
@@ -179,6 +181,62 @@ class RunnerTest(unittest.TestCase):
         for name in ("frontmatter.demo-ok.json", "frontmatter.demo-dep.json", "summary.json"):
             self.assertEqual((first / name).read_bytes(), (second / name).read_bytes())
 
+    def run_out(self, out: str, cwd: Path | None = None) -> Path:
+        """Run every check with --out; return the run folder the summary names."""
+        code, out_text, err = self.entry_run("run", "--out", out, str(self.skill), cwd=cwd)
+        self.assertEqual(code, 0, err)
+        last = out_text.splitlines()[-1]
+        self.assertTrue(last.startswith("results: "), out_text)
+        return Path(last.removeprefix("results: "))
+
+    def test_run_out_creates_run_folder_inside(self) -> None:
+        """--out <dir> puts the marked run folder in <dir>, which gets the session marker."""
+        session = self.tmp / "data" / "checks" / "session-1"
+        folder = self.run_out(str(session))
+        self.assertEqual(folder.parent, session)
+        self.assertTrue((folder / MARKER).is_file())
+        self.assertTrue((session / SESSION_MARKER).is_file())
+
+    def test_run_out_literal_session_through_shell(self) -> None:
+        """A literal ${CLAUDE_SESSION_ID} in single quotes reaches the script; the run goes up."""
+        checks = self.tmp / "data" / "checks"
+        env = {
+            k: v
+            for k, v in self.env.items()
+            if k not in {"CLAUDE_SESSION_ID", "CLAUDE_PLUGIN_DATA"}
+        }
+        command = (
+            f"{shlex.quote(sys.executable)} {shlex.quote(str(self.entry))} run "
+            f"--out '{checks}/${{CLAUDE_SESSION_ID}}' {shlex.quote(str(self.skill))}"
+        )
+        done = run_python(["-c", command], env=env, python="bash")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        folder = Path(done.stdout.splitlines()[-1].removeprefix("results: "))
+        self.assertEqual(folder.parent, checks)
+
+    def test_run_out_literal_root_uses_temp(self) -> None:
+        """An --out that starts with an unexpanded variable falls back to the temp folder."""
+        folder = self.run_out("${CLAUDE_PLUGIN_DATA}/checks/${CLAUDE_SESSION_ID}")
+        self.assertEqual(folder.parent, self.temp_root)
+
+    def test_run_out_relative_uses_temp(self) -> None:
+        """A relative --out never writes into the working directory."""
+        project = self.tmp / "project"
+        project.mkdir()
+        folder = self.run_out("results", cwd=project)
+        self.assertEqual(folder.parent, self.temp_root)
+        self.assertEqual(list(project.iterdir()), [])
+
+    def test_show_and_clean_are_gone(self) -> None:
+        """The removed subcommands exit 2 as unknown choices and leave the run folder alone."""
+        folder, _ = self.run_all()
+        for args in (("show", str(folder), "--reviewer", "scripts"), ("clean", str(folder))):
+            with self.subTest(command=args[0]):
+                code, out, err = self.entry_run(*args)
+                self.assertEqual((code, out), (2, ""), err)
+                self.assertIn("invalid choice", err)
+        self.assertTrue((folder / MARKER).is_file())
+
     def test_failed_prerequisite_gives_not_run(self) -> None:
         """A check whose prerequisite reported a finding doesn't run, and says which one."""
         code, out, err = self.entry_run("check", "frontmatter.demo-dep", str(self.skill))
@@ -188,77 +246,6 @@ class RunnerTest(unittest.TestCase):
             (data["status"], data["reason"], data["findings"]),
             ("not_run", "frontmatter.demo-fail failed", []),
         )
-
-    def test_show_by_reviewer(self) -> None:
-        """Show --reviewer prints exactly the checks whose receivers include that reviewer."""
-        folder, _ = self.run_all()
-        code, out, err = self.entry_run("show", str(folder), "--reviewer", "scripts")
-        self.assertEqual(code, 0, err)
-        shown = [parse_object(line)["check"] for line in out.splitlines()]
-        self.assertEqual(shown, ["frontmatter.demo-ok", "frontmatter.demo-fail"])
-        code, out, _ = self.entry_run("show", str(folder), "--reviewer", "feature-fit")
-        self.assertEqual((code, out), (0, ""))
-
-    def test_show_by_check(self) -> None:
-        """Show --check prints that check's result line."""
-        folder, _ = self.run_all()
-        code, out, err = self.entry_run("show", str(folder), "--check", "frontmatter.demo-ok")
-        self.assertEqual(code, 0, err)
-        self.assertEqual(out, (folder / "frontmatter.demo-ok.json").read_text(encoding="utf-8"))
-
-    def test_show_refuses_unknown_names_and_foreign_folders(self) -> None:
-        """An unknown check or reviewer, or a folder the runner didn't create, exits 2."""
-        folder, _ = self.run_all()
-        for args in (
-            ("--check", "frontmatter.nope"),
-            ("--reviewer", "nobody"),
-        ):
-            code, out, _ = self.entry_run("show", str(folder), *args)
-            self.assertEqual((code, out), (2, ""))
-        foreign = self.temp_root / f"{PREFIX}foreign"
-        foreign.mkdir()
-        code, out, _ = self.entry_run("show", str(foreign), "--reviewer", "scripts")
-        self.assertEqual((code, out), (2, ""))
-
-    def test_clean_removes_its_folder(self) -> None:
-        """Clean removes a results folder the runner created."""
-        folder, _ = self.run_all()
-        code, out, err = self.entry_run("clean", str(folder))
-        self.assertEqual((code, out), (0, f"removed {folder}\n"), err)
-        self.assertFalse(folder.exists())
-
-    def test_root_and_home_are_never_removable(self) -> None:
-        """/ and the home folder fail the removal check, tested in process, never by cleaning."""
-        for target in (Path("/"), Path.home()):
-            with self.subTest(target=target):
-                self.assertFalse(is_removable(target))
-
-    def test_clean_refuses_what_it_did_not_create(self) -> None:
-        """A throwaway home, the cwd, a symlink, and a prefixed folder with no marker survive."""
-        folder, _ = self.run_all()
-        link = self.temp_root / f"{PREFIX}link"
-        link.symlink_to(folder, target_is_directory=True)
-        unmarked = self.temp_root / f"{PREFIX}unmarked"
-        unmarked.mkdir()
-        cwd = self.tmp / "cwd"
-        cwd.mkdir()
-        home = self.tmp / "home"
-        home.mkdir()
-        self.env["HOME"] = str(home)
-        for target in (home, cwd, link, unmarked):
-            code, out, _ = self.entry_run("clean", str(target), cwd=cwd)
-            self.assertEqual((code, out), (2, ""), target)
-            self.assertTrue(target.exists(), target)
-        self.assertTrue((folder / MARKER).exists())
-
-    def test_clean_refuses_a_marked_folder_outside_the_temp_root(self) -> None:
-        """A prefixed, marked folder that isn't directly in a temp folder survives."""
-        elsewhere = self.tmp / "elsewhere" / f"{PREFIX}x"
-        elsewhere.mkdir(parents=True)
-        _ = (elsewhere / MARKER).write_text("", encoding="utf-8")
-        code, out, _ = self.entry_run("clean", str(elsewhere))
-        self.assertEqual((code, out), (2, ""))
-        self.assertTrue(elsewhere.exists())
 
     def test_sweep_removes_only_old_marked_folders(self) -> None:
         """A run removes marked folders older than 24 hours, and keeps everything else."""
@@ -283,6 +270,64 @@ class RunnerTest(unittest.TestCase):
         self.assertFalse(old.exists())
         for kept in (unmarked, target, link, fresh):
             self.assertTrue(kept.exists(), kept)
+
+    def test_sweep_checks_root(self) -> None:
+        """A run with --out sweeps old runs in the checks root and in its marked session folders."""
+        day_ago = time.time() - 25 * 3600
+        checks = self.tmp / "data" / "checks"
+
+        def run_folder(parent: Path, name: str, *, marked: bool = True, old: bool = True) -> Path:
+            path = parent / f"{PREFIX}{name}"
+            path.mkdir(parents=True)
+            if marked:
+                _ = (path / MARKER).write_text("", encoding="utf-8")
+            if old:
+                os.utime(path, (day_ago, day_ago))
+            return path
+
+        def session(parent: Path, name: str, *, old: bool = True) -> Path:
+            path = parent / name
+            path.mkdir(parents=True)
+            marker = path / SESSION_MARKER
+            _ = marker.write_text("", encoding="utf-8")
+            if old:
+                os.utime(marker, (day_ago, day_ago))
+            return path
+
+        direct = run_folder(checks, "direct")
+        ended = session(checks, "ended")
+        ended_run = run_folder(ended, "run")
+        live = session(checks, "live", old=False)
+        live_run = run_folder(live, "run", old=False)
+        plain = checks / "plain"
+        plain.mkdir()
+        os.utime(plain, (day_ago, day_ago))
+        unmarked = run_folder(checks, "unmarked", marked=False)
+        elsewhere = session(self.tmp / "elsewhere", "target")
+        elsewhere_run = run_folder(elsewhere, "run")
+        (checks / "link").symlink_to(elsewhere, target_is_directory=True)
+        _ = self.run_out(str(checks / "new"))
+        for gone in (direct, ended_run, ended):
+            self.assertFalse(gone.exists(), gone)
+        for kept in (live_run, plain, unmarked, elsewhere_run):
+            self.assertTrue(kept.exists(), kept)
+
+    @unittest.skipIf(os.geteuid() == 0, "root can delete inside a read-only folder")
+    def test_remove_run_deletes_marker_last(self) -> None:
+        """When part of a run can't be deleted, the rest goes and the marker stays."""
+        folder = self.temp_root / f"{PREFIX}partial"
+        locked = folder / "locked"
+        locked.mkdir(parents=True)
+        _ = (locked / "held.json").write_text("{}", encoding="utf-8")
+        _ = (folder / "summary.json").write_text("{}", encoding="utf-8")
+        _ = (folder / MARKER).write_text("", encoding="utf-8")
+        locked.chmod(0o500)
+        try:
+            remove_run(folder)
+        finally:
+            locked.chmod(0o700)
+        self.assertFalse((folder / "summary.json").exists())
+        self.assertTrue((folder / MARKER).is_file())
 
     def test_unreadable_input_creates_no_folder(self) -> None:
         """Run on a missing file exits 2 and leaves no results folder behind."""

@@ -1,4 +1,4 @@
-"""Every check family's checks, in run order, and the reviewers a result can go to."""
+"""Every check family's checks, in run order."""
 
 import frontmatter
 
@@ -10,19 +10,6 @@ FAMILIES: dict[str, tuple[CheckSpec, ...]] = {
 }
 
 CHECKS: tuple[CheckSpec, ...] = tuple(spec for specs in FAMILIES.values() for spec in specs)
-
-# Every reviewer a result can go to; `show --reviewer` refuses any other name.
-REVIEWERS: tuple[str, ...] = (
-    "content-patterns",
-    "runtime-contract",
-    "size-limits-and-budgets",
-    "knowledge-delta",
-    "task-mechanisms",
-    "frontmatter-description",
-    "comprehension",
-    "feature-fit",
-    "scripts",
-)
 
 
 def find(check_id: str) -> CheckSpec | None:

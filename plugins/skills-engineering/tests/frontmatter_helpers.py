@@ -48,10 +48,12 @@ def run_python(
     cwd: Path | None = None,
     env: dict[str, str] | None = None,
     python: str = sys.executable,
+    stdin: str = "",
 ) -> subprocess.CompletedProcess[str]:
-    """Run a Python command line and capture its text output, decoded as UTF-8."""
+    """Run a command line with this text on stdin and capture its output, decoded as UTF-8."""
     return subprocess.run(
         [python, *args],
+        input=stdin,
         capture_output=True,
         text=True,
         encoding="utf-8",

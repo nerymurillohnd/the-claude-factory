@@ -1,12 +1,10 @@
-"""The skill-checks command: run the checks, show results, clean up, or run one check.
+"""The skill-checks command: run the checks into a run folder, or run one check.
 
-    run [--family F] <SKILL.md>                       every check, or one family's; a line each
-    show <folder> (--check <id> | --reviewer <name>)  results from a run, one JSON line each
-    clean <folder>                                    remove a run's results folder
-    check <id> <SKILL.md> [options]                   one check, printed to stdout
+    run [--family F] [--out DIR] <SKILL.md>  every check, or one family's; a line each
+    check <id> <SKILL.md> [options]          one check, printed to stdout
 
 Each check runs in this process, so `check <id>` prints exactly what `run` writes to that
-check's file.
+check's file. Run folders are removed by the session cleanup and by the 24-hour sweep.
 """
 
 import argparse
@@ -22,14 +20,14 @@ from common.context import Context
 from common.report import CheckResult, to_json
 
 from engine import results
-from engine.registry import CHECKS, FAMILIES, REVIEWERS, find
+from engine.registry import CHECKS, FAMILIES, find
 from engine.spec import CheckSpec
 
 PROG = "skill-checks.py"
 
 EXIT_CODES = """\
 exit 0: the command ran; a check with findings still exits 0.
-exit 2: it can't run: a usage error, an unknown check, family or reviewer, or a SKILL.md that
+exit 2: it can't run: a usage error, an unknown check or family, or a SKILL.md that
         is missing, a folder or unreadable; one line on stderr and nothing on stdout."""
 
 
@@ -96,14 +94,15 @@ def _write(folder: Path, name: str, content: str) -> None:
     _ = (folder / name).write_text(content, encoding="utf-8", newline="\n")
 
 
-def run_all(skill_md: str, family: str | None) -> NoReturn:
-    """`run [--family F] <SKILL.md>`: the checks into a new results folder, then a summary."""
+def run_all(skill_md: str, family: str | None, out: str | None) -> NoReturn:
+    """`run [--family F] [--out DIR] <SKILL.md>`: the checks into a new run folder, a summary."""
     specs = CHECKS if family is None else FAMILIES[family]
     context_for = _contexts(skill_md)
     contexts = {spec.check: context_for(spec) for spec in specs}
-    results.sweep()
+    parent, checks_root = results.resolve_out(out)
+    results.sweep(checks_root)
     try:
-        folder = results.create()
+        folder = results.create(parent, mark_session=parent is not None and parent != checks_root)
     except OSError as error:
         cant_run(PROG, f"can't create the results folder: {error.strerror}")
     try:
@@ -135,52 +134,13 @@ def run_all(skill_md: str, family: str | None) -> NoReturn:
     sys.exit(0)
 
 
-def show(folder: Path, check_id: str | None, reviewer: str | None) -> NoReturn:
-    """`show <folder> --check <id> | --reviewer <name>`: one JSON line per matching result."""
-    if not results.is_results_folder(folder):
-        cant_run(PROG, f"not a results folder of this runner: {folder}")
-    if check_id is not None and find(check_id) is None:
-        cant_run(PROG, f"unknown check: {check_id}")
-    if reviewer is not None and reviewer not in REVIEWERS:
-        cant_run(PROG, f"unknown reviewer: {reviewer}")
-    wanted = [
-        spec
-        for spec in CHECKS
-        if spec.check == check_id or (reviewer is not None and reviewer in spec.receivers)
-    ]
-    try:
-        out = "".join(
-            (folder / f"{spec.check}.json").read_text(encoding="utf-8")
-            for spec in wanted
-            if (folder / f"{spec.check}.json").exists() or spec.check == check_id
-        )
-    except OSError as error:
-        cant_run(PROG, f"can't read a result in {folder}: {error.strerror}")
-    _ = sys.stdout.write(out)
-    sys.exit(0)
-
-
-def clean(folder: Path) -> NoReturn:
-    """`clean <folder>`: remove a results folder this runner created, and nothing else."""
-    if not results.is_removable(folder):
-        cant_run(PROG, f"not a results folder of this runner, so nothing was removed: {folder}")
-    try:
-        shutil.rmtree(folder)
-    except OSError as error:
-        cant_run(PROG, f"can't remove {folder}: {error.strerror}")
-    _ = sys.stdout.write(f"removed {folder}\n")
-    sys.exit(0)
-
-
 class Arguments(argparse.Namespace):
     """The parsed command line."""
 
     command: str = ""
     skill_md: str = ""
     family: str | None = None
-    folder: str = ""
-    check: str | None = None
-    reviewer: str | None = None
+    out: str | None = None
     check_id: str = ""
     rest: list[str] | None = None
 
@@ -205,14 +165,12 @@ def _parser() -> OneLineParser:
     commands = parser.add_subparsers(dest="command", required=True, parser_class=OneLineParser)
     run_parser = commands.add_parser("run", help="run every check, or one family's")
     _ = run_parser.add_argument("--family", choices=tuple(FAMILIES))
+    _ = run_parser.add_argument(
+        "--out",
+        metavar="DIR",
+        help="the folder to create the run folder in; the system temp folder when omitted",
+    )
     _ = run_parser.add_argument("skill_md", metavar="SKILL.md")
-    show_parser = commands.add_parser("show", help="print results from a run")
-    _ = show_parser.add_argument("folder")
-    which = show_parser.add_mutually_exclusive_group(required=True)
-    _ = which.add_argument("--check")
-    _ = which.add_argument("--reviewer")
-    clean_parser = commands.add_parser("clean", help="remove a run's results folder")
-    _ = clean_parser.add_argument("folder")
     check_parser = commands.add_parser(
         "check",
         help="run one check and print its result",
@@ -230,11 +188,7 @@ def main(argv: Sequence[str]) -> NoReturn:
     args = _parser().parse_args(argv, namespace=Arguments())
     if args.command == "check":
         run_one(args.check_id, args.rest or [])
-    if args.command == "run":
-        run_all(args.skill_md, args.family)
-    if args.command == "show":
-        show(Path(args.folder), args.check, args.reviewer)
-    clean(Path(args.folder))
+    run_all(args.skill_md, args.family, args.out)
 
 
 if __name__ == "__main__":
