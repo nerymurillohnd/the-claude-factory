@@ -16,7 +16,7 @@ from typing import TypeGuard
 # without this, Python would write bytecode into the plugin's scripts folder.
 sys.dont_write_bytecode = True
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "skills" / "auditing-skills" / "scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 ENTRY = SCRIPTS / "frontmatter-checks.py"
 
 
