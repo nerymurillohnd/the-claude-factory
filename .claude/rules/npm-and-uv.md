@@ -20,7 +20,7 @@ paths:
 - Add or change a dev dependency with `npm install -D <package>@<version>`, and commit `package.json` and `package-lock.json` together.
 - Add a package to `allowScripts` with `npm approve-scripts <package>` only when it needs its install script to work.
 - Install the Python version in `.python-version` with `uv python install`.
-- Write each npm script that runs maintainer Python as `uv run python -m scripts.<folder>.<module>`, never by file path, bare `python3` or `.venv/bin/python`: npm runs it from the repository root, where `scripts` imports as a package.
+- Write each npm script that runs maintainer Python as `uv run python -m scripts.<folder>.<module>`, never by file path, bare `python3` or `.venv/bin/python`: npm runs it from the repository root, where `scripts` imports as a package. Plugin code is the exception: `scripts/checks/plugins.sh` runs it with bare `python3` and `node`, the user's interpreter.
 - Add a package a maintainer script imports with `uv add --dev <package>`, and commit `pyproject.toml` and `uv.lock` together.
 - Run `uv sync --locked` before `npm run typecheck:python`: basedpyright reads `.venv` directly.
 - Pin ruff, basedpyright, zizmor and check-jsonschema with `uv tool install <tool>==<version>`, never `uv add --dev`, then run `npm run tools:install`.

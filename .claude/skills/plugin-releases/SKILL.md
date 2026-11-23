@@ -40,11 +40,11 @@ These go beyond the docs and stay unless the owner changes them:
 
 1. **Identify the case.**
    - A new plugin: its first version is `0.1.0`. Go to step 4.
-   - Only the plugin's `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`, `tests/`, `*.test.ts(x)` or `evals/` changed: no bump. Stop.
+   - Only the plugin's `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`, `tests/`, `*.test.ts(x)` or `evals/` changed: no bump. Stop. A README change that raises a Node.js or Python minimum is the exception: bump, and continue.
    - Only `.claude-plugin/marketplace.json` changed: no plugin bump. A rename or removal goes through the `plugin-catalog-changes` skill.
    - Anything else in `plugins/<plugin>/` changed: bump. Continue.
 2. **Choose the level** from the diff against `origin/main`; when a change mixes levels, take the highest.
-   - Major: a removed or renamed skill, agent, command or plugin; changed configuration keys; a new mandatory dependency; changed behavior users rely on.
+   - Major: a removed or renamed skill, agent, command or plugin; changed configuration keys; a new mandatory dependency; changed behavior users rely on; a higher Node.js or Python minimum in the plugin's README Prerequisites, because it drops users whose runtime meets the old one.
    - Minor: a new backward-compatible component, option or capability, or a higher `engines["claude-code"]` floor.
    - Patch: a bug fix, prompt wording, a performance improvement, a refactor with the same behavior, or a metadata change such as the category, the listing URLs or the icon.
    - In `0.x`, a breaking change bumps Minor. Moving from `0.x` to `1.0.0` needs the owner's authorization, because it promises users a stable interface.
@@ -55,7 +55,8 @@ These go beyond the docs and stay unless the owner changes them:
 7. **Check it**, and show the raw output:
    - `npm run release:status` exits 0 and lists `changed: <plugin> <old> -> <new>`; it exits 1 on a version that isn't semver, which the validator accepts.
    - `claude plugin validate --strict plugins/<plugin>` and `claude plugin validate --strict .` exit 0.
-   - For a mod (`tests/*.test.ts(x)`), `claude plugin test plugins/<plugin>` exits 0; for hook tests, `npm run test:plugins` exits 0.
+   - For a mod (`tests/*.test.ts(x)`), `claude plugin test plugins/<plugin>` exits 0; for plugin tests (`tests/test_*.py`, `tests/*.test.mjs`), `npm run test:plugins` exits 0.
+   - When the plugin's Python or Node.js code changed, its tests also pass on the floor runtimes users may have, Python 3.12 and Node.js 24, since `npm run test:plugins` runs on the `python3` and `node` first on `PATH`, the maintainers' Python 3.15 and Node.js 26. Keep both runtimes in the session's scratchpad and delete them right after: Python 3.12 through `UV_PYTHON_DOWNLOADS=automatic UV_PYTHON_INSTALL_DIR=<scratchpad>/py UV_CACHE_DIR=<scratchpad>/uvcache uv run --isolated --no-project --python 3.12 …`, lifting the machine's `UV_PYTHON_DOWNLOADS=manual` only for those commands, and Node.js 24 from the official nodejs.org tarball, checked against its `SHASUMS256.txt`. With both runtimes' `bin` first on `PATH`, run the `test:plugins` script's own command from `package.json` with `bash`, not through `npm run`, and it exits 0: the root `package.json` `devEngines` requires Node 26 and npm 12, so npm rejects the tarball's Node 24 and its npm with `EBADDEVENGINES`. `.claude/rules/plugins/testing.md` holds the full procedure.
    - `npm run check:consistency -- --offline` exits 0.
    - `npm run check:install -- --from local <plugin>` exits 0 and prints the new version. It runs in a throwaway configuration, because this checkout and an installed `the-claude-factory` can't both be added under the same marketplace name.
    - With the owner's approval of the spend, a local smoke eval: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`.

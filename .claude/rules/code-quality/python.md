@@ -9,7 +9,7 @@ paths:
 - Fix every finding at its cause, never its symptom. Never lower, relax, bypass or route around a gate, test, check or script to make it pass, and never add a suppression: no `# noqa`, `# type: ignore`, `cast()`, `Any` or loosened setting in `pyproject.toml`'s `[tool.ruff]` or `[tool.basedpyright]`.
 - Fix every finding the `python-lsp-intelligence` plugin's post-edit hook reports after an edit before the next edit; the hook runs `ruff check --fix`, `ruff format` and `basedpyright`, in that order.
 - Configure Ruff and basedpyright only in `pyproject.toml`, under `[tool.ruff]` and `[tool.basedpyright]`; never create `ruff.toml`, `.ruff.toml` or `pyrightconfig.json`, which take precedence over it.
-- Run `basedpyright <file>` from the repository root for any Python file: `pyproject.toml` checks `plugins/` at Python 3.12 and `scripts/` at 3.15 through `executionEnvironments`.
+- Run `basedpyright <file>` from the repository root for any Python file. In `pyproject.toml`, Ruff's `per-file-target-version` sets `plugins/**/*.py` to `py312` over `target-version = "py315"`; basedpyright's top-level `pythonVersion = "3.12"` sets the stdlib stubs for every file, and the `scripts` entry of `executionEnvironments` raises only its syntax to 3.15, because basedpyright reads stubs from the top level alone (DetachHead/basedpyright#416).
 - Give each check one owner: when Ruff and basedpyright report the same defect, basedpyright owns it. Before you turn a Ruff rule off for that reason, confirm on a probe that basedpyright in "all" mode reports the case, then add the rule to the "Owned by basedpyright" block with its basedpyright rule beside it.
 
 ## Annotations

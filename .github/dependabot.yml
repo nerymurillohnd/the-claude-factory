@@ -27,7 +27,9 @@ updates:
       default-days: 7
       semver-major-days: 14
     ignore:
-      # A new @types/node major goes with a new Node major in .nvmrc and devEngines, never on its own.
+      # @types/node follows the Node.js floor of plugin code (24), not .nvmrc: tsc checks the
+      # maintainer and plugin JavaScript against the lowest Node they must run on. A new major
+      # comes only when the owner moves that floor.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
       # A new TypeScript major moves the editor's language server, tsc and CI together, by the
