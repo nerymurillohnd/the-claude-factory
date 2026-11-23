@@ -1,13 +1,13 @@
-## <reviewer name>: <skill name>
+# <reviewer name>: <skill name>
 
 Skill: <absolute path>
 Status: complete | incomplete: <reason>
 Files read in full: <n> of <n>
 Not inspected: <file · reason · needed by <file:line> | unreferenced>, or none
 
-### Findings
+## Findings
 
-#### <D | I | R | S><n>
+### <D | I | R | S><n>
 - Item: <checklist item ID> · <area file>#<heading>
 - Severity: high | medium | low
 - Location: <path relative to the skill>:<line or lines>
@@ -18,10 +18,10 @@ Not inspected: <file · reason · needed by <file:line> | unreferenced>, or none
 
 Write `No findings.` under Findings when there are none.
 
-### Leads
+## Leads
 <check ID> · confirmed as <finding ID> | rejected: <reason>
 
-### Self-check
+## Self-check
 - [ ] Every inventory file read from its first line to its last, or listed under Not inspected with its reason
 - [ ] Every finding has all seven fields filled, none left as a placeholder
 - [ ] Every quote re-read at its file:line and matches it verbatim

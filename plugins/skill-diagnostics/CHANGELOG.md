@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The cold executor's audit brief now has its own template, `assets/cold-executor-brief.md`, instead of sharing `assets/brief-template.md` with the four reviewers' brief. The briefs say the same as before.
+- The report each reviewer fills, `assets/reviewer-report.md`, now opens with a level-1 title, and its sections move up one level to match. The report's fields and self-check are unchanged.
+
 ## [0.4.3] - 2026-11-19
 
 ### Changed
