@@ -12,6 +12,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - **Breaking:** the plugin now needs Node.js 24 or later to start the TypeScript 7 language server, up from Node.js 16.20.0. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. If `node --version` shows an older version, update Node.js before you update the plugin. The hook still runs the native compiler without Node.js, so an older Node.js on your `PATH` doesn't change its result or appear in its pass messages. When it has to start a `tsc` through Node.js, it skips a Node.js older than 24, the support floor, and its notice says so and lists each Node.js it skipped. When a TypeScript 7 package lacks its native compiler, the notice names the missing `@typescript/typescript-<os>-<arch>` package instead of blaming Node.js.
 
+### Fixed
+
+- When `tsc` crashed or stopped with a long output and no TypeScript error, the post-edit check could end with "the hook failed" instead of telling Claude that the files were not checked and showing the first lines of that output. It happened whenever the output was larger than about 64 KB, such as a long crash trace. Claude now always gets the notice and the first 20 lines.
+
 ## [0.6.0] - 2026-11-20
 
 ### Added

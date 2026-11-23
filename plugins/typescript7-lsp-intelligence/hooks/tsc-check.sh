@@ -876,10 +876,13 @@ count_errors() {
   return 0
 }
 
-# Sets FIRST_LINES to the first 20 lines of $1, or "(no output)".
+# Sets FIRST_LINES to the first 20 lines of $1, or "(no output)". The text goes to a file that
+# head reads: `printf | head` under pipefail fails with status 141 when $1 is larger than a pipe,
+# since printf is still writing when head stops reading.
 FIRST_LINES=""
 first_lines() {
-  FIRST_LINES="$(printf '%s\n' "$1" | head -n 20)"
+  printf '%s\n' "$1" > "${WORK}/first-lines"
+  FIRST_LINES="$(head -n 20 "${WORK}/first-lines")"
   [[ -n ${FIRST_LINES} ]] || FIRST_LINES="(no output)"
 }
 

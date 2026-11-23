@@ -123,6 +123,25 @@ FIXED_FOLDERS_SEAM = "TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS"
 TOO_MANY = 21
 # A tsc that runs on Node.js: a script that reports a TypeScript 5 version.
 JS_TSC = "#!/bin/sh\necho Version 5.9.3\n"
+# The hook's MAX_WALK_FILES: the walk of a folder outside Git stops after this many files.
+WALK_LIMIT = 20000
+# Enough files past WALK_LIMIT that the walk still has far more than a pipe holds to write once
+# the hook stops reading (a path is about 100 bytes, so 4000 files are about 400 KB).
+PAST_WALK_LIMIT = 4000
+# A native compiler that crashes: it prints about 350 KB of text with no TypeScript error and
+# exits 1, more than a pipe holds.
+CRASHING_TSC = """#!/bin/sh
+case "$*" in
+  --version) echo 'Version 7.0.0'; exit 0 ;;
+  *--showConfig*) exit 1 ;;
+esac
+awk 'BEGIN {
+  pad = sprintf("%48s", "")
+  gsub(/ /, "p", pad)
+  for (i = 0; i < 5000; i++) printf "crash trace line %d %s\\n", i, pad
+}'
+exit 1
+"""
 
 
 def path_without_compiler() -> str:
@@ -420,6 +439,46 @@ class TscHookTest(unittest.TestCase):
         expected = f"left {TOO_MANY} TypeScript or JavaScript files outside a Git work tree"
         self.assertIn(expected, context)
         self.assertNotIn("m0.ts", outcome.stdout)
+
+    def test_walk_of_more_files_than_the_cap_is_not_a_failure(self) -> None:
+        """Outside Git, a command that leaves more files than the walk reads does not fail the hook.
+
+        The walk stops after 20000 files by closing the pipe it writes to, while it still has far
+        more than a pipe holds to write: under `pipefail` that must not end the hook. It holds
+        today because the walk runs inside a command substitution, where `set -e` is off; this
+        test keeps a change to how the walk is called from breaking that.
+        """
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            tree = tmp / "work" / "generated"
+            tree.mkdir(parents=True)
+            for number in range(WALK_LIMIT + PAST_WALK_LIMIT):
+                _ = (tree / f"d{number % 24}-f{number}.txt").write_text("x", encoding="utf-8")
+            outcome = self._run(tmp)
+        self.assertEqual(outcome, Outcome(0, "", ""))
+
+    def test_compiler_output_larger_than_a_pipe_is_cut_to_its_first_lines(self) -> None:
+        """A compiler that crashes with a long trace and no TypeScript error is reported, cut.
+
+        The hook shows the first 20 lines of that output; the output holds far more than a pipe,
+        and under `pipefail` cutting it must not end the hook.
+        """
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "new.ts", MODULE)
+            install_typescript_7(tmp / "work", native=True)
+            compiler = tmp / "work" / "node_modules" / platform_package() / "lib" / "tsc"
+            write(compiler, CRASHING_TSC)
+            compiler.chmod(0o755)
+            outcome = self._run(tmp, path=path)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertEqual(field(outcome.stdout, "decision"), "block")
+        reason = field(outcome.stdout, "reason")
+        self.assertIn("exited with status 1 without reporting a TypeScript error", reason)
+        self.assertIn("crash trace line 0 ", reason)
+        self.assertIn("crash trace line 19 ", reason)
+        self.assertNotIn("crash trace line 20 ", reason)
 
     def test_a_few_loose_files_are_selected(self) -> None:
         """Outside Git, a handful of new files is an edit: the hook selects them."""
