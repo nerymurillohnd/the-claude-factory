@@ -176,7 +176,7 @@ Exit: every planned file exists and passes its checks.
 Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing what fails.
 
 - Read [Phase 5: Self-review](references/phase-5-self-review.md) when you start this phase.
-- Run the skill checks it calls for with `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" run --out '${CLAUDE_PLUGIN_DATA}/checks/${CLAUDE_SESSION_ID}' <the SKILL.md you wrote>`, written exactly so, both kinds of quotes included: the single quotes keep the folder path whole.
+- Run the skill checks it calls for with `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" run --out '${CLAUDE_PLUGIN_DATA}/checks/${CLAUDE_SESSION_ID}' <the SKILL.md you wrote>`, written exactly so, both kinds of quotes included: the single quotes keep the folder path whole. When that folder path, as you read it here, holds a single quote, as a home folder named `o'brien` does, write each one as `'\''` so the quoting still holds.
 
 Exit: every check passes, or each one that can't is listed for the report.
 

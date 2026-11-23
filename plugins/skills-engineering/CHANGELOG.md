@@ -11,7 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Added
 
 - A new check, `frontmatter.keys`, reports a frontmatter key Claude Code doesn't recognize and ignores without a word, with the field you most likely meant, such as `allowed-tools` for `tools`. It also reports keys outside the six fields of the Agent Skills specification, and a byte-order mark or CRLF line ends, which skill uploads reject.
-- A `SessionEnd` hook removes the skill checks' results of a session when it ends, and any left older than 24 hours. It starts nothing when no results exist, prints nothing, and never stops a session from ending.
+- A `SessionEnd` hook removes the skill checks' results of a session when it ends, unless it ends to resume, as `/resume` and `/branch` end it, and any left older than 24 hours. It starts nothing when no results exist, prints nothing, and never stops a session from ending; an unexpected error goes to one line of `session-end.log` in the plugin's data folder.
 - `authoring-skills` now runs the same checks on the skill it writes, in its self-review, and fixes what they find before it calls the skill done. It fixes only the findings that matter where the skill runs: a plugin skill keeps a valid Claude Code field such as `argument-hint`.
 
 ### Changed
@@ -25,7 +25,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Fixed
 
 - A `description` that is 1,024 characters long plus the final newline of a `|` block is no longer reported as too long for uploads, which strip that newline first.
-- `<` and `>` in `when_to_use` are now reported, since Claude Code shows them escaped there too.
+- `<` and `>` in `when_to_use` are now reported, since Claude Code shows them escaped there too, even when `description` is missing.
+- A `description` or `compatibility` such as `n` or `1e3` is no longer reported as a non-string, since uploads read it as text, and a value uploads do type, such as `5`, is reported for uploads only.
+- A key such as `Tools` or `Version` now gets the same suggestion as `tools` or `version`, whatever its case.
+- A name with a character that the open specification's validator turns into a capital, such as `ℌ`, is now reported for the open specification too.
+- A SKILL.md path that isn't a regular file, or a SKILL.md that can't be read while the checks run, now stops the checks with one line naming the file, instead of hanging or failing with a traceback.
 - `metadata` values such as `y`, `n` and `1e3` are no longer reported as non-strings: the upload validator reads them as text. A value it does type, such as `1.0` or `yes`, is now reported for uploads only.
 - A lowercase name written in another alphabet is now reported for uploads only, since the open specification accepts it.
 - Findings on Claude Code fields such as `argument-hint` no longer claim to break uploads or the open specification.

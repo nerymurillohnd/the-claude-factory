@@ -27,7 +27,7 @@ A check no command in this file covers is not run: name it to the reviewer as no
 Every frontmatter check runs through one entry script, whose path step 3 of `SKILL.md` gives already quoted, with the `--out` folder that step gives in single quotes. Below, `<entry>` stands for exactly that quoted path and `<out>` for exactly that quoted folder: the skill's permission rules approve only that spelling, and only in the turn that invoked the skill, so run `run` in that turn, before you ask the user anything. If the path doesn't exist, every frontmatter check is not run.
 
 - `python3 <entry> run --out <out> <SKILL.md>`, once: runs every frontmatter check and writes each result to `<check>.json`, and the list of checks with their status, finding count and receivers to `summary.json`, in a new results folder. It prints one line per check, `<check> <status> <n> finding(s) -> <receivers>`, then `results: <folder>`. Keep the folder's path exactly as printed for the reviewers' prompts in step 4.
-- Leave the results folder in place: reviewers read it after this turn, and the plugin removes it when the session ends, and any results older than 24 hours on the next run or session end.
+- Leave the results folder in place: reviewers read it after this turn, and the plugin removes it when the session ends, unless it ends to resume, and removes any results older than 24 hours on a later run or session end. When the folder is gone by step 4, run `run` again and use the folder it names.
 - `python3 <entry> check <id> <SKILL.md>`: one check alone, printing the line `run` writes for it, and writing no file. Use it only to run a single check again.
 - If `python3` isn't found, or Windows answers with a message about the Microsoft Store, use `python` in its place from then on. If neither runs, or the entry exits 2 saying Python is older than 3.12, every frontmatter check is not run.
 - Before you launch the reviewers, check against the summary that the prompt of every selected reviewer it names holds the results folder and the ids of the checks the summary sends that reviewer.
@@ -83,7 +83,7 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
   - `reads-as-collection`: a text field written as a list or a mapping.
   - `anchor-alias-tag`: a text field with an anchor, an alias or a tag.
   - `reads-as-boolean` and `reads-as-null`: a plain text field, or a `metadata` value at any depth, whose text a parser reads as a boolean or null; `condition` says when only YAML 1.1 parsers read it so.
-  - A finding means the parsed value differs from what the line shows. Its `surfaces` follow the field: `open-spec` and `upload` for the open specification's fields, `claude-code` for the others.
+  - A finding means the parsed value differs from what the line shows. Its `surfaces` follow the field: `open-spec` and `upload` for the open specification's fields, `claude-code` for the others; a `reads-as-boolean` or `reads-as-null` on a `metadata` value is on `upload` only, since the open-spec validator reads every scalar as a string.
   - `data.colon_cases`: `: ` inside a value is reported by `frontmatter.yaml`.
 - Goes to: `frontmatter-description`.
 
@@ -95,7 +95,7 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 - Reading the result:
   - `missing`: no `name`; Claude Code uses the folder name, and the open specification and uploads require one.
   - `not-a-string`: the value reads as another type, such as a number, or as a collection.
-  - `length`, `charset` and `hyphen`: the open specification's limits of 1 to 64 characters, `a-z`, `0-9` and `-`, and no leading, trailing or consecutive hyphen. A `charset` finding on a lowercase name of letters from other scripts is on `upload` only, since the open-spec validator accepts them.
+  - `length`, `charset` and `hyphen`: the open specification's limits of 1 to 64 characters, `a-z`, `0-9` and `-`, and no leading, trailing or consecutive hyphen. A `charset` finding on a lowercase name of letters from other scripts is on `upload` only, since the open-spec validator accepts them; it judges the name stripped and NFKC-normalized, so a character that normalizes to a capital, such as U+210C, is on both.
   - `folder-mismatch`: the name differs from the skill's folder name.
   - `refused-character`: a character Claude Code refuses, which hides the skill from the `/` menu.
   - `reserved-word`: `anthropic` or `claude` in the name, or in the folder name when the name is missing; the Claude API and claude.ai reject them.
@@ -119,8 +119,8 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 - `claude plugin validate` passed an XML tag and 1,100 characters when tested, so this check is the only source. It needs `frontmatter.yaml` to pass first.
 - Reading the result:
   - `missing`: no `description`; the open specification and uploads require one, and Claude Code uses the body's first non-empty line, as `data.claude_code_fallback` says.
-  - `not-a-string`, `empty` and `too-long`: not text, only blanks, or over 1,024 characters. A `too-long` only on `open-spec` means the length counts surrounding whitespace, such as a block scalar's final newline, which uploads strip first.
-  - `angle-bracket`: a `<` or `>` in `description`, which uploads reject and Claude Code shows as `&lt;` and `&gt;`, or in `when_to_use`, on `claude-code` only. `data.xml_tags` lists the XML tags in `description`.
+  - `not-a-string`, `empty` and `too-long`: not text, only blanks, or over 1,024 characters. Types follow PyYAML, as uploads read them, so `n` and `1e3` are text; a `not-a-string` on a scalar is on `upload` only, since the open-spec validator reads every scalar as a string, and on a list or a mapping it is on both. A `too-long` only on `open-spec` means the length counts surrounding whitespace, such as a block scalar's final newline, which uploads strip first.
+  - `angle-bracket`: a `<` or `>` in `description`, which uploads reject and Claude Code shows as `&lt;` and `&gt;`, or in `when_to_use`, on `claude-code` only, reported even when `description` is missing. `data.xml_tags` lists the XML tags in `description`.
   - `data.length` and `data.utf16_length`: the length in characters and in UTF-16 units.
 - Goes to: `frontmatter-description`, and `size-limits-and-budgets` for the lengths.
 
