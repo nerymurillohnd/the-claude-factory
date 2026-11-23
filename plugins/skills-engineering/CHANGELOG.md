@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-23
+
+### Added
+
+- A new check, `frontmatter.keys`, reports a frontmatter key Claude Code doesn't recognize and ignores without a word, with the field you most likely meant, such as `allowed-tools` for `tools`. It also reports keys outside the six fields of the Agent Skills specification, and a byte-order mark or CRLF line ends, which skill uploads reject.
+- `authoring-skills` now runs the same checks on the skill it writes, in its self-review, and fixes what they find before it calls the skill done. It fixes only the findings that matter where the skill runs: a plugin skill keeps a valid Claude Code field such as `argument-hint`.
+
+### Changed
+
+- Both skills now share one checks script, `scripts/skill-checks.py`, at the plugin's root. `--help` lists every check and the exit codes, `check --help` works, and an unknown check name lists the valid ones.
+- `auditing-skills` runs the frontmatter checks as soon as you ask for an audit, before it asks you to confirm the reviewers, so they run without a permission prompt.
+- The frontmatter checks need only Python 3.12 or later; they no longer need the `claude` command.
+
+### Fixed
+
+- A `description` that is 1,024 characters long plus the final newline of a `|` block is no longer reported as too long for uploads, which strip that newline first.
+- `<` and `>` in `when_to_use` are now reported, since Claude Code shows them escaped there too.
+- `metadata` values such as `y`, `n` and `1e3` are no longer reported as non-strings: the upload validator reads them as text. A value it does type, such as `1.0` or `yes`, is now reported for uploads only.
+- A lowercase name written in another alphabet is now reported for uploads only, since the open specification accepts it.
+- Findings on Claude Code fields such as `argument-hint` no longer claim to break uploads or the open specification.
+- A value that starts with `-` is now reported as a convention, not as an error, since YAML parsers read it as text.
+
 ## [0.3.1] - 2026-11-21
 
 ### Changed
@@ -55,7 +77,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Added the `auditing-skills` skill. It audits a skill with specialized reviewer agents, each on its own domain. Before they start, it checks the skill's frontmatter for problems `claude plugin validate` doesn't report. These checks need Python 3.12 or later; without it, the reviewers are told the checks didn't run. When it loads right after you create or edit a skill without asking for an audit, it asks you first, and runs only the reviewers you agree to.
 - Added the `authoring-skills` skill. It writes new skills and changes existing ones, wherever a skill lives: personal, project, plugin, claude.ai, the Skills API and subagents. It first learns your environment, your goal and the skills you already have, asks you only for context, and shows you a plan to approve. Then it builds the skill from the current official docs, reviews it the way Claude will read it, and reports what it checked and what it could not. At the end it offers to keep the skill as it is, take your observations, build evals, or run `auditing-skills` on it when that skill is installed.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skills-engineering--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skills-engineering--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skills-engineering--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skills-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skills-engineering--v0.3.0
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skills-engineering--v0.2.0

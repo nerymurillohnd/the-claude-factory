@@ -2,7 +2,7 @@
 
 # 🧰 Skills Engineering
 
-<p><strong>Writes and audits Claude skills wherever they live, from personal, project and plugin folders to claude.ai accounts, the Skills API and URLs: authoring-skills researches your goal, your setup and the skill's domain in current official sources, gets your approval on a versioned design and a plan, then builds and self-reviews the skill, and auditing-skills runs frontmatter checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.</strong></p>
+<p><strong>Writes and audits Claude skills wherever they live, from personal, project and plugin folders to Claude accounts, the Skills API and URLs: authoring-skills researches your goal, your setup and the skill's domain in current official sources, gets your approval on a versioned design and a plan, then builds the skill and self-reviews it with the plugin's skill checks, and auditing-skills runs the same checks, then nine specialized reviewer agents in parallel, each returning quoted file-and-line evidence, severity, an exact fix and a verdict.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskills-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
@@ -62,9 +62,9 @@ Together the descriptions of these components add about 2,100 tokens to every se
 | ShellCheck (optional) | —               | `shellcheck --version` |
 | Ruff (optional)       | —               | `ruff --version`       |
 
-Python runs the frontmatter checks of `auditing-skills`. Without it the audit still runs and the reviewers are told those checks didn't run. Git, ShellCheck and Ruff are optional: the audit uses Git to read the version tags of a plugin dependency, and ShellCheck and Ruff to lint the shell and Python scripts of the skill it audits, each only when it is installed.
+Python runs the skill checks that both skills share: `auditing-skills` runs them before it briefs its reviewers, and `authoring-skills` runs them on the skill it writes. Without it the audit still runs and the reviewers are told those checks didn't run, and `authoring-skills` reports them as not run. Git, ShellCheck and Ruff are optional: the audit uses Git to read the version tags of a plugin dependency, and ShellCheck and Ruff to lint the shell and Python scripts of the skill it audits, each only when it is installed.
 
-The plugin also uses `awk`, `basename`, `cp`, `dirname`, `head`, `ls` and `mkdir`, which come with macOS and Linux.
+The plugin also uses `basename`, `cp`, `dirname`, `head`, `ls` and `mkdir`, which come with macOS and Linux.
 
 ### 🤖 Claude Code
 
@@ -269,7 +269,7 @@ The plugin has no options. What it does depends on the skill and the project you
 
 - **Hooks:** none.
 - **MCP servers:** none.
-- **Commands:** `auditing-skills` runs its own Python script, `scripts/frontmatter-checks.py`, with `python3` (or `python`), pre-approved for that exact path. To gather what the reviewers receive it also runs `claude plugin validate`, `claude plugin details`, `claude plugin list --json` and `claude -p` with `/skill-doctor`, `/context` and `/doctor prompt-audit`, which start Claude Code sessions that use your usage. It runs `awk`, `basename`, `cp`, `head` and `ls` on your skill's files, `git ls-remote --tags` for each plugin dependency that has its own repository, and ShellCheck and Ruff on the skill's scripts when they are installed. `authoring-skills` runs `claude plugin validate` on the skill it writes. The reviewer agents have no Edit, Write or Agent tool, and are told to change none of your files.
+- **Commands:** both skills run the plugin's own Python script, `scripts/skill-checks.py`, with `python3` (or `python`), pre-approved for that exact path in the turn that invokes the skill. `auditing-skills` runs it in that turn, so it asks nothing; `authoring-skills` runs it later, in its self-review, where Claude Code may ask you once to approve it. To gather what the reviewers receive it also runs `claude plugin validate`, `claude plugin details`, `claude plugin list --json` and `claude -p` with `/skill-doctor`, `/context` and `/doctor prompt-audit`, which start Claude Code sessions that use your usage. It runs `basename`, `cp`, `head` and `ls` on your skill's files, `git ls-remote --tags` for each plugin dependency that has its own repository, and ShellCheck and Ruff on the skill's scripts when they are installed. `authoring-skills` runs `claude plugin validate` on the skill it writes. The reviewer agents have no Edit, Write or Agent tool, and are told to change none of your files.
 - **Network:** the plugin's own script makes no network call. Claude uses its web and documentation tools to read official sources while it researches a skill and while the reviewers verify their findings, and `git ls-remote` contacts a dependency's repository, so search queries and page requests leave your machine as your session's tools and permissions allow. `authoring-skills` writes no credential's value into a skill.
 - **Files written:** the skill files you approve in the plan, in the location you chose. The design document, as `design-<skill name>.md`, in the session's scratchpad or in your project's plans folder, never in the skill's folder. During an audit, a results folder named `auditing-skills-fm-…` in your temporary folder (`TMPDIR`, `TEMP` or `TMP`), a temporary copy of the skill or plugin for `claude plugin validate` when the skill sits where validate doesn't read it, and a new empty directory for a skill it downloads or exports. The audit removes its results folder when it ends, and each later audit removes any left by an interrupted one that is older than 24 hours. `auditing-skills` applies no fix until you ask. The plugin writes nothing to its data directory.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
@@ -328,7 +328,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-In Claude, `authoring-skills` plans in its reply instead of in plan mode, since plan mode is a Claude Code feature. `auditing-skills` needs its reviewer agents: where Claude can't run tasks it tells you which reviewer it can't launch and stops, and it never audits in a reviewer's place. The frontmatter checks need Python 3.12 or later and the `claude` command; where either is missing, the reviewers are told those checks didn't run.
+In Claude, `authoring-skills` plans in its reply instead of in plan mode, since plan mode is a Claude Code feature. `auditing-skills` needs its reviewer agents: where Claude can't run tasks it tells you which reviewer it can't launch and stops, and it never audits in a reviewer's place. The skill checks need only Python 3.12 or later; where it is missing, the reviewers are told those checks didn't run.
 
 **Platforms:** macOS and Linux.
 
@@ -336,7 +336,7 @@ In Claude, `authoring-skills` plans in its reply instead of in plan mode, since 
 
 - `auditing-skills` reports and recommends only: it applies no fix until you ask for one after the reports.
 - A full audit launches nine reviewer agents, each loading about 4,900 to 7,200 tokens before it reads your skill, so it uses a good part of your usage. Name only the reviewers you need to run fewer.
-- Without Python 3.12 or later the frontmatter checks don't run, and the reviewers work without their results.
+- Without Python 3.12 or later the skill checks don't run: the reviewers work without their results, and `authoring-skills` reports its self-check as not run.
 - When a selected reviewer can't be launched in your session, the audit stops and names it.
 - `authoring-skills` writes no credential's value into a skill: it names each credential by its environment variable and pushes back when you ask it to include a value.
 - `authoring-skills` runs evals only when you choose them in its closing question, and each eval run uses your usage.
