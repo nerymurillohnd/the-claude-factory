@@ -6,7 +6,7 @@
 
 <!-- One block per action, in class order. -->
 
-### A-1: <short title>
+## A-1: <short title>
 
 - **Implements:** <R-ID> · **Class:** <class>
 - **Commands:**

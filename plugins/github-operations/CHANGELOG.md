@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- In the cleanup plan that `cleanup-and-debug` writes, each action's heading is now one level below the plan's title, so the plan's headings nest in order. The plan's content is unchanged.
+
 ## [0.10.0] - 2026-11-21
 
 ### Added
