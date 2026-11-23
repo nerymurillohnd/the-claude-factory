@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the plugin now needs Node.js 24 or later to start the TypeScript 7 language server, up from Node.js 16.20.0. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. If `node --version` shows an older version, update Node.js before you update the plugin. The hook still runs the native compiler without Node.js.
+
 ## [0.6.0] - 2026-11-20
 
 ### Added
