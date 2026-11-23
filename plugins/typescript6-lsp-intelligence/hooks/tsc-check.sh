@@ -36,6 +36,18 @@ if ! command -v node > /dev/null 2>&1; then
   exit 0
 fi
 
+# The Node.js floor the plugin's README states; a lower tsc minimum does not lower it.
+NODE_MIN_MAJOR=24
+NODE_VERSION="$(node --version 2> /dev/null || true)"
+NODE_MAJOR="${NODE_VERSION#v}"
+NODE_MAJOR="${NODE_MAJOR%%.*}"
+if [[ ! ${NODE_MAJOR} =~ ^[0-9]+$ ]] || ((10#${NODE_MAJOR} < NODE_MIN_MAJOR)); then
+  [[ ${MODE} != --new-turn ]] || exit 0
+  printf '{"systemMessage":"typescript6-lsp-intelligence: tsc check did not run: Node.js %s is on PATH, and the plugin needs Node.js %s or later."}\n' \
+    "${NODE_VERSION//[!0-9A-Za-z.]/}" "${NODE_MIN_MAJOR}"
+  exit 0
+fi
+
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
 

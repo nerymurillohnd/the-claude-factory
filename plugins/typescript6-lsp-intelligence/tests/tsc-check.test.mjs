@@ -529,6 +529,19 @@ describe('tsc-check.sh with a stub or no compiler', { concurrency: true }, () =>
     assert.match(context(run.stdout), /did not run/)
   })
 
+  it('does not run on a Node.js older than 24, the floor the README states', () => {
+    const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
+    const bin = freshDir()
+    writeFileSync(join(bin, 'node'), '#!/bin/sh\necho v22.12.0\n')
+    chmodSync(join(bin, 'node'), 0o755)
+    const run = runHook(edit(folder, 'src/a.ts'), { path: bin })
+    assert.equal(run.code, 0, run.stderr)
+    assert.match(
+      message(run.stdout),
+      /Node\.js v22\.12\.0 is on PATH, and the plugin needs Node\.js 24 or later/,
+    )
+  })
+
   it('skips a tsc that is not TypeScript 6 and leaves the decision to the user', () => {
     const folder = project({ 'tsconfig.json': TSCONFIG, 'src/a.ts': BROKEN }, false)
     const run = runHook(edit(folder, 'src/a.ts'), { path: stubTsc('exit 0', 'Version 7.0.0') })

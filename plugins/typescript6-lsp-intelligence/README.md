@@ -222,7 +222,7 @@ Your project decides the environment, and `--strict` decides how strict the chec
 | Errors only in files Claude didn't change                                                                                  | Claude isn't sent them and continues; you see how many there are.                                                                                                                                                                      |
 | `tsc` stops with a status above 2                                                                                          | The check is reported as skipped, with the status.                                                                                                                                                                                     |
 | `tsc` prints output the hook can't read, or exits non-zero without a diagnostic                                            | The hook fails and blocks, because the changed files were not verified.                                                                                                                                                                |
-| No Node.js on your `PATH`                                                                                                  | The check doesn't run, and you get a message. Nothing blocks.                                                                                                                                                                          |
+| No Node.js on your `PATH`, or one older than Node.js 24                                                                    | The check doesn't run, and you get a message. Nothing blocks.                                                                                                                                                                          |
 
 The plugin never edits your `tsconfig.json`. The only one it creates in your project is the temporary fixture config the skill's script writes and deletes, as [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) describes. It never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
@@ -310,7 +310,7 @@ The skill loads in Claude, but it relies on the language server, which Claude do
 - It doesn't tell you when `skipLibCheck` skips a changed `.d.ts` file, or when a changed JavaScript file has neither `checkJs` nor `// @ts-check`, so `tsc` didn't check it.
 - A changed file your `tsconfig.json` leaves out, including under a config that only lists `references`, is named as not type-checked. Without a `tsconfig.json` above it, a changed JavaScript file isn't type-checked either.
 - Claude gets the errors in the files it changed this turn, at most 100 lines at a time. Errors only in other files are not sent to Claude; you see their count, and the hook doesn't check whether they existed before the edit.
-- Without Node.js on your `PATH`, the check doesn't run. Without `CLAUDE_PLUGIN_DATA`, it checks only the files of the current call.
+- Without Node.js 24 or later on your `PATH`, the check doesn't run. Without `CLAUDE_PLUGIN_DATA`, it checks only the files of the current call.
 - The hook never installs a compiler. Yarn Plug'n'Play projects, which have no `node_modules/.bin/tsc`, use the first `tsc` on your `PATH`.
 
 ## ❓ FAQ & Troubleshooting
@@ -357,6 +357,17 @@ If it's already installed and you still see the message, [report it](https://git
 <summary><b>I see "tsc check did not run: Node.js was not found on PATH".</b></summary>
 
 The hook reads each event with Node.js, so without it the check doesn't run, and nothing blocks. Put Node.js on the `PATH` of the shell you start `claude` from.
+
+</details>
+
+<details>
+<summary><b>I see "tsc check did not run: Node.js v… is on PATH, and the plugin needs Node.js 24 or later".</b></summary>
+
+The first `node` on your `PATH` is older than Node.js 24, the oldest Node.js this plugin supports, so the check doesn't run, and nothing blocks. Update Node.js, or put Node.js 24 or later first on the `PATH` of the shell you start `claude` from, then check it:
+
+```bash
+node --version
+```
 
 </details>
 
