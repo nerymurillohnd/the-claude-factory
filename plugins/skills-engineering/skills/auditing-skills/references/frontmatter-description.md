@@ -58,7 +58,7 @@ Read this whole file, through its final section, "Delivering the report", before
 
 Audit from the seat of a Claude that has only this skill's name and description in front of it, among every other skill it can see, and has to decide whether to load it; and then from the seat of the surface that reads the frontmatter. Ask at each point whether that Claude would load the skill for the wrong request, miss it for the right one, or whether the surface would reject the skill, ignore a field, or apply a setting the author didn't mean.
 
-The prompt you receive states what the orchestrating model's scripts already checked, such as whether the frontmatter parses, the fields it holds and their values, and the structural validator's output. Take those results as verified and judge what they mean for the skill. When a mechanical result a point needs is missing, record it under Checklist exceptions as blocked and judge everything else by reading. Where only a run or an upload would settle a point, name that check.
+The prompt you receive states what the orchestrating model's scripts already checked, such as whether the frontmatter parses, the fields it holds and their values, and the structural validator's output. The frontmatter checks' results come as files: the prompt names a results folder, where you read `summary.json` with the Read tool, then each `<check>.json` whose `receivers` names you. Take those results as verified and judge what they mean for the skill. When a mechanical result a point needs is missing, or the folder or one of its files is, record it under Checklist exceptions as blocked and judge everything else by reading. Where only a run or an upload would settle a point, name that check.
 
 ### Before auditing: establish the context
 

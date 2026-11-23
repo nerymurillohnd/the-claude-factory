@@ -11,12 +11,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Added
 
 - A new check, `frontmatter.keys`, reports a frontmatter key Claude Code doesn't recognize and ignores without a word, with the field you most likely meant, such as `allowed-tools` for `tools`. It also reports keys outside the six fields of the Agent Skills specification, and a byte-order mark or CRLF line ends, which skill uploads reject.
+- A `SessionEnd` hook removes the skill checks' results of a session when it ends, and any left older than 24 hours. It starts nothing when no results exist, prints nothing, and never stops a session from ending.
 - `authoring-skills` now runs the same checks on the skill it writes, in its self-review, and fixes what they find before it calls the skill done. It fixes only the findings that matter where the skill runs: a plugin skill keeps a valid Claude Code field such as `argument-hint`.
 
 ### Changed
 
 - **Breaking:** `auditing-skills` no longer pastes every reviewer's full report into the conversation. Each reviewer writes its report to `.claude/skill-audits/<skill name>/<date and time>/<reviewer name>.md` in your project, and the audit shows you every critical, high and medium finding with its evidence and fix, where to start, and the path of each report for the low findings and improvements. Claude Code asks you to approve writes to `.claude/`; where it can't, the reports appear in the conversation as before. Reviewers may use Write only for their own report and never change the skill they audit.
 - Both skills now share one checks script, `scripts/skill-checks.py`, at the plugin's root. `--help` lists every check and the exit codes, `check --help` works, and an unknown check name lists the valid ones.
+- The skill checks write their results to the plugin's data folder, one folder per session, instead of your temporary folder, and never to your project. The reviewers that receive them read them there, instead of a copy in their prompt.
 - `auditing-skills` runs the frontmatter checks as soon as you ask for an audit, before it asks you to confirm the reviewers, so they run without a permission prompt.
 - The frontmatter checks need only Python 3.12 or later; they no longer need the `claude` command.
 
