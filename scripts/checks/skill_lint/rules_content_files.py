@@ -8,7 +8,7 @@ from urllib.parse import unquote
 
 from scripts.checks.skill_lint.discover import MARKDOWN
 from scripts.checks.skill_lint.model import Finding, Severity
-from scripts.checks.skill_lint.refs import Resolver, depths, escapes, reference_graph
+from scripts.checks.skill_lint.refs import VARIABLE, Resolver, depths, escapes, reference_graph
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -35,7 +35,10 @@ TOC_WINDOW = 20
 TOC_MIN_LINKS = 2
 TOC_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s.*\]\(#[^)]+\)")
 HEADING = re.compile(r"^ {0,3}#{1,6}\s")
-ESCAPING_TOKEN = re.compile(r"(?:\$\{?CLAUDE_(?:SKILL_DIR|PLUGIN_ROOT)\}?/|(?<![\w.])\.\./)\S*")
+# The token stops at a quote or backtick, so a quoted path is resolved without its closing quote.
+ESCAPING_TOKEN = re.compile(
+    r"(?:\$\{?CLAUDE_(?:SKILL_DIR|PLUGIN_ROOT)\}?/|(?<![\w.])\.\./)[^\s\"'`]*"
+)
 MONTH = "January|February|March|April|May|June|July|August|September|October|November|December"
 CO11 = (
     re.compile(
@@ -54,6 +57,15 @@ PLACEHOLDER = "{{"
 def _finding(rule: str, severity: Severity, path: str, line: int | None, message: str) -> Finding:
     """Build one finding with the rule's source URL."""
     return Finding(rule, severity, path, line, message, SOURCES[rule])
+
+
+def _bound(skill: Skill, token: str) -> str:
+    """The folder a path may not leave: the plugin for a plugin skill's plugin-root path."""
+    match = VARIABLE.match(token)
+    through_plugin_root = match is not None and "PLUGIN_ROOT" in match.group(0)
+    if through_plugin_root and skill.kind == "plugin" and skill.plugin_root is not None:
+        return "the plugin"
+    return "the skill folder"
 
 
 def _anchor_ok(fragment: str, doc: MarkdownDoc | None) -> bool:
@@ -80,7 +92,7 @@ def _link_problem(
     """Return the (rule, message) one link in file rel breaks, or None when it is fine."""
     path = target.partition("#")[0].partition("?")[0]
     if path and escapes(skill, path, rel):
-        return "CO-08", f"link `{target}` leaves the skill folder"
+        return "CO-08", f"link `{target}` leaves {_bound(skill, path)}"
     if _template(skill, rel):
         return None
     message = _co07_message(resolver, docs, rel, target)
@@ -128,7 +140,7 @@ def _co08_paths(skill: Skill, docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
             tokens = {match.group(0) for match in ESCAPING_TOKEN.finditer(snippet.text)}
             for token in sorted(tokens):
                 if escapes(skill, token, rel):
-                    message = f"path `{token}` leaves the skill folder"
+                    message = f"path `{token}` leaves {_bound(skill, token)}"
                     findings.append(_finding("CO-08", Severity.ERROR, rel, snippet.line, message))
     real_root = skill.root.resolve()
     for rel in skill.files:
