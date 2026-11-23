@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-23
+
 ### Changed
 
 - **Breaking:** installing the optional hunk diff tool with npm now needs Node.js 24 or later, up from Node.js 22, because that install runs hunk through your Node.js. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. Installing hunk with its install script, Homebrew or mise needs no Node.js, and the pane itself needs none.
@@ -69,7 +71,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Settings in `/config`: Claude activity, Follow Claude, Open at start, Right column, Hints, Search spacing, Shortcut row, Open with, Edit with, Diff with, Ignore, Palette and Glyphs.
 - Validated and tested on Claude Code v2.1.310.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.7...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.2.0
 [0.1.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.7
 [0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.6
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.5

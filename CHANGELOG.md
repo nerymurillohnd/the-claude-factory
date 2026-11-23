@@ -4,6 +4,16 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-23
+
+### Changed
+
+- **bash-lsp-intelligence** 0.5.0 — **Breaking:** bash-language-server now needs Node.js 24 or later, up from Node.js 20; the hook still needs no Node.js.
+- **typescript6-lsp-intelligence** 0.6.0 — **Breaking:** the language server and the post-edit hook now need Node.js 24 or later; with an older Node.js first on your `PATH`, the check doesn't run and tells you so.
+- **typescript7-lsp-intelligence** 0.7.0 — **Breaking:** starting the TypeScript 7 language server now needs Node.js 24 or later, up from Node.js 16.20.0, and the hook skips an older Node.js.
+- **svelte-development** 0.2.0 — **Breaking:** svelte-language-server now needs Node.js 24 or later, up from Node.js 18.
+- **file-tree-pane** 0.2.0 — **Breaking:** installing the optional hunk diff tool with npm now needs Node.js 24 or later, up from Node.js 22; the pane itself needs no Node.js.
+
 ## 2026-11-22
 
 ### Fixed
