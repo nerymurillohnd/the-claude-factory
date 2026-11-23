@@ -23,6 +23,7 @@
 | 2026-11-19 | DEBT-003 | resolved | The five mods pass strict, portable and hooks-catch validation, and the checks gate every merge | none |
 | 2026-11-21 | DEBT-013 | resolved | cc-github-actions reaches a failed step's goal by any method within the session's permissions | none |
 | 2026-11-22 | DEBT-011 | resolved | bash-lsp-intelligence's post-edit hook passes its tests on macOS's Bash 3.2 and Homebrew's Bash 5.3 | none |
+| 2026-11-23 | DEBT-015 | resolved | typescript6-lsp-intelligence's post-edit hook caps a long issue list without failing | none |
 
 ## 🏁 Closed items
 
@@ -226,6 +227,37 @@ Since the hook declares `onFailure: "block"`, Claude received "the post-edit hoo
 - **Residual risk:** CI runs on Linux only, so a macOS regression shows only in a local run on macOS. `plugins/block-no-verify/hooks/block-no-verify.sh` uses the same `set -E` and ERR-trap pattern and has no tests, so it is unverified on Bash 3.2. Carried over from the pending entry, as an inference: `utf8()` in `read-event.awk` prints bytes with `sprintf("%c", n)`, so an awk that encodes code points above 127 as UTF-8 would garble a `\uXXXX` escape outside ASCII; Claude Code sends such characters unescaped, so the case is rare.
 - **Closed by:** [#120](https://github.com/nerymurillohnd/the-claude-factory/pull/120), squash commit `5ee0292`.
 - **Related records:** [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117).
+- **Superseded by:** none
+
+### DEBT-015 — typescript6-lsp-intelligence's post-edit hook caps a long issue list without failing
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-23 |
+| **Logged on** | 2026-11-22 |
+| **Owner** | typescript6-lsp-intelligence |
+
+#### ❗ The problem
+
+`tests/tsc-check.test.mjs`, "caps the issue list at 100 lines with a count of the rest", failed now and then in CI with `AssertionError 1 !== 2`: `hooks/tsc-check.sh` exited 1 instead of 2. It failed in Validate runs [44870074007](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/44870074007), [45018914400](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/45018914400) and [45126563759](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/45126563759), each time with the suite slower under load, and the test printed no stderr.
+
+#### 🔧 The closure
+
+[#122](https://github.com/nerymurillohnd/the-claude-factory/pull/122), released as typescript6-lsp-intelligence 0.6.0, removes the cause. Under `set -Eeuo pipefail`, `printf '%s\n' "${MINE[@]}" | head -n "${MAX_LINES}"` let `head` stop reading after 100 lines while `printf` still wrote; `printf` got SIGPIPE, the pipeline failed and the ERR trap exited 1. It happened at random with a few hundred issues on a slow machine, and every time with a list larger than a pipe buffer, so users with long issue lists got "the hook failed" instead of the list. The three such pipelines now write the list to a file under the hook's temporary directory and run `head` on the file. The test prints `run.stderr` in its assertions, and a new test caps a 2,000-issue list. The same defect in typescript7-lsp-intelligence's `first_lines` (`printf "$1" | head -n 20`, exit 141 on compiler output larger than a pipe buffer) is fixed in the same pull request, released as 0.7.0.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On `main` at `f110832`, `node --test --test-name-pattern 'caps' plugins/typescript6-lsp-intelligence/tests/tsc-check.test.mjs`: `✔ caps the issue list at 100 lines with a count of the rest`, `✔ caps an issue list larger than a pipe buffer without failing`, `tests 2, pass 2, fail 0`. Validate on #122's head `78aef0d` (run [45129455837](https://github.com/nerymurillohnd/the-claude-factory/actions/runs/45129455837)) passed both tests in `Checks` (Node 26) and `Floors` (Node 24): `tests 48, pass 48, fail 0, skipped 0`. |
+| 🚫 **Negative:** the original failure or condition is gone | With the hook swapped back to its `befc597` version and the same tests, in place and restored afterwards (hash unchanged): `✖ caps an issue list larger than a pipe buffer without failing`, `AssertionError [ERR_ASSERTION]: typescript6-lsp-intelligence: the hook failed at line 277, so the changed files were not verified.`, `1 !== 2`, the failure CI showed. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the 300-issue test never failed locally, even under load, so the CI failures are attributed to this cause by matching symptom (`1 !== 2` from the ERR trap) and mechanism, not by a stderr captured in CI; the test now prints it if it ever fails again. In typescript7's hook, `find … | head -n "${MAX_WALK_FILES}"` runs inside a command substitution where errexit is off, so it survives SIGPIPE (probed on Bash 3.2.57 and 5.3.20); a regression test with 24,000 files guards it.
+- **Closed by:** [#122](https://github.com/nerymurillohnd/the-claude-factory/pull/122), squash commit `f110832`.
+- **Related records:** [#119](https://github.com/nerymurillohnd/the-claude-factory/pull/119).
 - **Superseded by:** none
 
 <!--
