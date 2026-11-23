@@ -149,18 +149,18 @@ Prerequisites:
 - List in the table every tool the plugin needs beyond the POSIX base tools: Claude Code first, then each runtime, program, account or service, each with its minimum version and a check command.
 - Find each tool by reading the plugin's hooks, scripts, modules, MCP and LSP commands, skills and agents. A tool a skill only mentions as optional is marked optional in the table with `—` as its version.
 - The Claude Code row carries the minimum version of the README (see "Version numbers").
-- The minimum version of an external tool comes from the plugin's code or the tool's official documentation. State a minimum version only when the plugin or the tool's docs requires one.
+- The minimum version of an external tool comes from the plugin's code or the tool's official documentation. State a minimum version only when the plugin or the tool's docs requires one, or when the tool is Node.js or Python, which always carry the owner's floor (see the Node.js and Python bullet below).
 - Add one `###` section per tool after Claude Code, with one closed `<details>` block per install method the tool's official documentation gives. The `<summary>` names the method and the platforms; the body holds only the command in a fenced block.
 - Copy each install command and package name from the tool's official documentation or a package index, never from memory.
 - Cover macOS and Linux for every tool. Add Windows install methods only for a plugin whose Platforms line includes Windows through Git Bash.
 - Write "The plugin also uses {{baseTools}}, which come with macOS and Linux." and name the POSIX base tools the scripts run (`sed`, `awk`, `grep`, `tr`, `find`, `sh` and the like) once, with no check for each. Delete the sentence when the plugin runs none.
 - A dependency a hook installs into `${CLAUDE_PLUGIN_DATA}` is listed here and under "What this plugin runs and sends": what it downloads, from where, and where it writes.
 - Keep the Claude Code section as the template has it. With no tool beyond Claude Code, delete the tool row and the tool section.
-- State the minimum Python version the plugin's code needs when it runs Python; use 3.12 or later unless the code needs a higher one.
+- State Python as 3.12 or later when the plugin runs Python, and Node.js as 24 or later when it runs Node.js: these are the owner's floors for plugin code, not invented minimums. When the plugin's code or a tool's docs need a higher version, state that one; when a tool needs a lower one, still state the floor, so a language server that needs Node.js 20 is stated as Node.js 24 or later. A mod runs inside Claude Code, so it adds no Node.js row. A higher Node.js or Python minimum is a breaking change: name the plugin's version bump in your final message under the changes other files need.
 
 Version numbers:
 
-- The only version numbers you write by hand are the minimum Claude Code version (badge, Prerequisites, each version-gated feature as "v2.1.292+"), and the minimum version of an external tool.
+- The only version numbers you write by hand are the minimum Claude Code version (badge, Prerequisites, each version-gated feature as "v2.1.292+"), and the minimum version of an external tool or runtime; for Node.js and Python, the higher of the owner's floor and what the tool needs.
 - Set the minimum Claude Code version to the highest version of the Claude Code releases that added each feature the plugin uses or fixed a bug it would hit. Read the docs ("Requires Claude Code v... or later") and the changelog for each feature.
 - Take the minimum from the prompt or from the plugin's CHANGELOG entry that sets it. When neither gives it, derive it from the official sources and report how; when you cannot verify it, leave nothing invented and ask for it in your final message.
 - State the minimum, not the reasoning.

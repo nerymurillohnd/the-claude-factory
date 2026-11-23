@@ -22,6 +22,7 @@ paths:
 - Keep every file and link a plugin uses inside `plugins/<plugin>/`, as real files, never symlinks out of it: users receive only that folder.
 - Depend on nothing specific to the maintainer's machine.
 - Declare every tool, dependency and minimum version a plugin needs in its README Prerequisites, and state its Windows support there.
+- State Node.js 24 or later and Python 3.12 or later there for each runtime a plugin uses, or a tool's own minimum when it is higher: a tool that needs Node 22 still gets Node.js 24.
 
 ## Names and versions
 
