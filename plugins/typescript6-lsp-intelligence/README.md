@@ -51,13 +51,13 @@ TypeScript 6 LSP Intelligence connects the TypeScript 6 language server you inst
 | :------------------------- | :-------------- | :-------------------------------------------------------------------------- |
 | Claude Code                | 2.1.295         | `claude --version`                                                          |
 | Bash                       | 3.2             | `bash --version`                                                            |
-| Node.js                    | 22.22.2         | `node --version`                                                            |
+| Node.js                    | 24              | `node --version`                                                            |
 | TypeScript 6               | —               | `npx --no-install tsc --version` (project copy) or `tsc --version` (global) |
 | typescript-language-server | —               | `typescript-language-server --version`                                      |
 
 The plugin also uses `sed`, `awk`, `grep`, `tr`, `cut`, `head`, `sort`, `find`, `paste`, `dirname`, `basename`, `mktemp`, `mkdir`, `rm`, `cp` and `cat`, which come with macOS and Linux.
 
-Node.js 22.22.2 is the minimum of typescript-language-server; the hook alone runs on Node.js 14.17 or later, the minimum of `tsc`. Node.js must be on the `PATH` of the shell you start `claude` from: the hook reads each event with it, and without it the check doesn't run. For the check, the hook uses the nearest `node_modules/.bin/tsc` above the edited file, else the first `tsc` on your `PATH`, and only when that `tsc` is TypeScript 6. Install typescript-language-server globally, on the same `PATH`. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship.
+Both typescript-language-server and the hook need Node.js 24 or later, the oldest Node.js this plugin supports. Node.js must be on the `PATH` of the shell you start `claude` from: the hook reads each event with it, and without it the check doesn't run. For the check, the hook uses the nearest `node_modules/.bin/tsc` above the edited file, else the first `tsc` on your `PATH`, and only when that `tsc` is TypeScript 6. Install typescript-language-server globally, on the same `PATH`. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship.
 
 ### 🐚 Bash
 
@@ -223,6 +223,7 @@ Your project decides the environment, and `--strict` decides how strict the chec
 | `tsc` stops with a status above 2                                                                                          | The check is reported as skipped, with the status.                                                                                                                                                                                     |
 | `tsc` prints output the hook can't read, or exits non-zero without a diagnostic                                            | The hook fails and blocks, because the changed files were not verified.                                                                                                                                                                |
 | No Node.js on your `PATH`                                                                                                  | The check doesn't run, and you get a message. Nothing blocks.                                                                                                                                                                          |
+| A Node.js older than 24, or a `node` that reports no version                                                               | The check doesn't run, and nothing blocks. You get one message per session, once Claude changes a TypeScript or JavaScript file, and Claude is told each time that those files were not type-checked.                                  |
 
 The plugin never edits your `tsconfig.json`. The only one it creates in your project is the temporary fixture config the skill's script writes and deletes, as [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) describes. It never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
@@ -247,7 +248,7 @@ The plugin never edits your `tsconfig.json`. The only one it creates in your pro
   The script reads each event with `node -e`, finds the nearest `tsconfig.json` above each changed file and runs `tsc` once per folder that holds one, from that folder; a changed file with no `tsconfig.json` above it is checked on its own, with the other such files in its folder. It uses the nearest `node_modules/.bin/tsc` above the file, else the `tsc` on your `PATH`, only when it reports TypeScript 6, and installs nothing. It lists the files that changed (`--listFiles`) and reads `tsc`'s own timing report (`--extendedDiagnostics`) to tell whether `tsc` type-checked at all. If the hook fails unexpectedly, `onFailure` blocks the action instead of letting it pass. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** the hook makes no network calls. The skill tells Claude to read official docs and release notes through the first that works: WebFetch or WebSearch, `curl` to the official domain (such as typescriptlang.org), or `gh` on the official GitHub repository (such as `microsoft/TypeScript`). Each runs under your own permission rules.
-- **Files written:** the hook keeps the list of files changed this turn in `${CLAUDE_PLUGIN_DATA}/turns/<session>-<agent>.list`, one absolute path per line, clears it with each prompt you send, and deletes files in that folder older than 7 days. When that variable is unset or empty, it keeps no list, checks only the files of the current call and tells you. It also makes a temporary folder with the event data, `tsc`'s output and `tsc`'s build-info file (so a config with `incremental` or `composite` writes nothing into your project) and deletes it when it exits. The skill's `scripts/run-fixtures.sh` creates one `lsp-fixture-XXXXXX/` folder at a time in your program's `rootDir`, or beside the owning `tsconfig.json`; each holds a fixture `.ts` file and its own `tsconfig.json`, which extends yours, and the script deletes it after the check. With `--outside`, it uses a temporary folder outside your project instead. Claude Code asks you before the skill runs this script; choose **Yes, and don't ask again** to let it run the script without asking. Neither the hook nor the skill edits your source files or your `tsconfig.json`.
+- **Files written:** the hook keeps the list of files changed this turn in `${CLAUDE_PLUGIN_DATA}/turns/<session>-<agent>.list`, one absolute path per line, clears it with each prompt you send, and deletes files in that folder older than 7 days. On a Node.js older than 24, it also keeps one empty marker file, `${CLAUDE_PLUGIN_DATA}/notices/node-<session>`, so that you get its message once per session. When that variable is unset or empty, it keeps no list or marker, checks only the files of the current call and tells you. It also makes a temporary folder with the event data, `tsc`'s output and `tsc`'s build-info file (so a config with `incremental` or `composite` writes nothing into your project) and deletes it when it exits. The skill's `scripts/run-fixtures.sh` creates one `lsp-fixture-XXXXXX/` folder at a time in your program's `rootDir`, or beside the owning `tsconfig.json`; each holds a fixture `.ts` file and its own `tsconfig.json`, which extends yours, and the script deletes it after the check. With `--outside`, it uses a temporary folder outside your project instead. Claude Code asks you before the skill runs this script; choose **Yes, and don't ask again** to let it run the script without asking. Neither the hook nor the skill edits your source files or your `tsconfig.json`.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -283,7 +284,7 @@ Installed with `--scope project`:
 claude plugin uninstall typescript6-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The data directory holds only the lists of files changed in a turn, under `turns/`. Your TypeScript, your language server and your project's dependencies stay as they are.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The data directory holds only the lists of files changed in a turn, under `turns/`, and the empty once-per-session notice markers of a Node.js older than 24, under `notices/`. Your TypeScript, your language server and your project's dependencies stay as they are.
 
 ## 🧭 Compatibility
 
@@ -310,7 +311,7 @@ The skill loads in Claude, but it relies on the language server, which Claude do
 - It doesn't tell you when `skipLibCheck` skips a changed `.d.ts` file, or when a changed JavaScript file has neither `checkJs` nor `// @ts-check`, so `tsc` didn't check it.
 - A changed file your `tsconfig.json` leaves out, including under a config that only lists `references`, is named as not type-checked. Without a `tsconfig.json` above it, a changed JavaScript file isn't type-checked either.
 - Claude gets the errors in the files it changed this turn, at most 100 lines at a time. Errors only in other files are not sent to Claude; you see their count, and the hook doesn't check whether they existed before the edit.
-- Without Node.js on your `PATH`, the check doesn't run. Without `CLAUDE_PLUGIN_DATA`, it checks only the files of the current call.
+- Without Node.js 24 or later on your `PATH`, the check doesn't run. Without `CLAUDE_PLUGIN_DATA`, it checks only the files of the current call, and on a Node.js older than 24 the message repeats with each changed file instead of coming once per session.
 - The hook never installs a compiler. Yarn Plug'n'Play projects, which have no `node_modules/.bin/tsc`, use the first `tsc` on your `PATH`.
 
 ## ❓ FAQ & Troubleshooting
@@ -357,6 +358,28 @@ If it's already installed and you still see the message, [report it](https://git
 <summary><b>I see "tsc check did not run: Node.js was not found on PATH".</b></summary>
 
 The hook reads each event with Node.js, so without it the check doesn't run, and nothing blocks. Put Node.js on the `PATH` of the shell you start `claude` from.
+
+</details>
+
+<details>
+<summary><b>I see "tsc check did not run: Node.js v… is on PATH, and the plugin needs Node.js 24 or later".</b></summary>
+
+The first `node` on your `PATH` is older than Node.js 24, the oldest Node.js this plugin supports, so the check doesn't run, and nothing blocks. You see the message once per session, when Claude first changes a TypeScript or JavaScript file, and Claude is told those files were not type-checked. Update Node.js, or put Node.js 24 or later first on the `PATH` of the shell you start `claude` from, then check it:
+
+```bash
+node --version
+```
+
+</details>
+
+<details>
+<summary><b>I see "tsc check did not run: the node on PATH did not report a version".</b></summary>
+
+The first `node` on your `PATH` printed no version when the hook ran `node --version`, as a broken shim or a Node.js built for another architecture does, so the plugin can't tell whether it is Node.js 24 or later. The check doesn't run, and nothing blocks. Run this in the shell you start `claude` from, and fix the `node` it shows:
+
+```bash
+which node && node --version
+```
 
 </details>
 

@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-23
+
+### Changed
+
+- **Breaking:** the plugin now needs Node.js 24 or later to run svelte-language-server, up from Node.js 18. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. If `node --version` shows an older version, update Node.js before you update the plugin. The `svelte-lsp-intelligence` skill now gives Claude the same minimum.
+
 ## [0.1.5] - 2026-11-19
 
 ### Fixed
@@ -48,7 +54,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Svelte MCP server: the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, with no download or install.
 - Svelte language server: `svelteserver` for `.svelte` files, with diagnostics after each edit, when `svelte-language-server` 0.18.5 or later is installed on your `PATH`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.1.5...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.2.0
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.3

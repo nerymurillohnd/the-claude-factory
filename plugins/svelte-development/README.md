@@ -55,11 +55,11 @@ Svelte Development teaches Claude current Svelte 5 and SvelteKit 3 practice and 
 | :---------------------------------------------------------------------------------------- | :-------------- | :--------------------------------- |
 | Claude Code                                                                               | 2.1.288         | `claude --version`                 |
 | svelte-language-server                                                                    | 0.18.5          | `npm ls -g svelte-language-server` |
-| Node.js                                                                                   | 18              | `node --version`                   |
+| Node.js                                                                                   | 24              | `node --version`                   |
 | npm (comes with Node.js)                                                                  | —               | `npm --version`                    |
 | curl (optional: for changelogs, and for the docs when the `svelte` server is unreachable) | —               | `curl --version`                   |
 
-Install svelte-language-server globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js and brings its own TypeScript (5.9 or 6). npm comes with Node.js; Claude uses `npm view` to read the package versions it writes for. Claude reads changelogs and raw docs pages with `curl`, never with WebFetch, which returns a summary; without `curl` it can't read them.
+Install svelte-language-server globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js 24 or later, the oldest Node.js this plugin supports, and brings its own TypeScript (5.9 or 6). npm comes with Node.js; Claude uses `npm view` to read the package versions it writes for. Claude reads changelogs and raw docs pages with `curl`, never with WebFetch, which returns a summary; without `curl` it can't read them.
 
 ### 🤖 Claude Code
 

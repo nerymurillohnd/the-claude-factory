@@ -49,17 +49,16 @@ Plugin Engineering gives Claude the official documentation for running a public 
 
 ## 📋 Prerequisites
 
-| Tool                                                      | Minimum version | Check               |
-| :-------------------------------------------------------- | :-------------- | :------------------ |
-| Claude Code                                               | 2.1.295         | `claude --version`  |
-| curl                                                      | any             | `curl --version`    |
-| Python 3                                                  | any             | `python3 --version` |
-| git (optional; if installed, eval runs need this version) | 2.31            | `git --version`     |
-| bubblewrap (Linux, for eval suites that grant Bash)       | —               | `bwrap --version`   |
-| socat (Linux, for eval suites that grant Bash)            | —               | `socat -V`          |
-| Claude Code docs MCP server (recommended)                 | —               | `claude mcp list`   |
+| Tool                                                      | Minimum version | Check              |
+| :-------------------------------------------------------- | :-------------- | :----------------- |
+| Claude Code                                               | 2.1.295         | `claude --version` |
+| curl                                                      | any             | `curl --version`   |
+| git (optional; if installed, eval runs need this version) | 2.31            | `git --version`    |
+| bubblewrap (Linux, for eval suites that grant Bash)       | —               | `bwrap --version`  |
+| socat (Linux, for eval suites that grant Bash)            | —               | `socat -V`         |
+| Claude Code docs MCP server (recommended)                 | —               | `claude mcp list`  |
 
-The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux. Python 3 is needed only for the eval gate script, when you gate a CI job on eval results.
+The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux.
 
 git matters only when you run `claude plugin eval`: with a git older than 2.31 on your `PATH`, the command stops before running any case; without git, it runs normally. Eval suites that grant Bash run every command in Claude Code's OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`. The docs server is Anthropic's official docs MCP server: the skills carry dated copies of the official pages and send Claude to the live page when a copy is missing a section or may be outdated, and the server lets Claude search and read that page instead of recalling it. You add it once; the plugin doesn't install it.
 
@@ -98,39 +97,6 @@ sudo dnf install curl
 
 ```bash
 curl --version
-```
-
-### 🐍 Python 3
-
-Needed only to run the eval gate script. Most Linux distributions include it; on macOS, install it if `python3 --version` asks you to.
-
-<details>
-<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
-
-```bash
-brew install python
-```
-
-</details>
-<details>
-<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
-
-```bash
-sudo apt install python3
-```
-
-</details>
-<details>
-<summary>📦 <b>dnf</b> — Fedora, RHEL</summary>
-
-```bash
-sudo dnf install python3
-```
-
-</details>
-
-```bash
-python3 --version
 ```
 
 ### 🌿 git
@@ -368,7 +334,7 @@ My formatter plugin works with --plugin-dir, but after I install it from our mar
 Our eval job passes even when the plugin stopped helping. Make it fail then.
 ```
 
-**Result:** Claude runs the suite with both arms, reads the mean delta from the JSON result with the skill's gate script, and sets the job to fail below the minimum you choose, and on a partial run.
+**Result:** Claude runs the suite with both arms, reads the mean delta (`aggregates.meanDelta`) from the JSON result, and sets the job to fail below the minimum you choose, and on a partial run.
 
 ## 🔍 What this plugin runs and sends
 

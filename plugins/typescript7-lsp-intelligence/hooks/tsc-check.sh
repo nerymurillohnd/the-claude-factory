@@ -21,6 +21,12 @@
 # load the user's shell profile. Nothing is installed. This plugin runs the native compiler
 # directly.
 #
+# Test seam, not a setting: the hook always searches three fixed folders (/opt/homebrew/bin,
+# /usr/local/bin, /home/linuxbrew/.linuxbrew/bin) on top of PATH, and the default prefix of n
+# is /usr/local too. When TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS is set, even to nothing,
+# its colon-separated folders replace those, so a test can hide the machine's own compiler and
+# Node.js; unset, which is every real run, the hook behaves as described above. tests/ uses it.
+#
 # The hook judges only what the tool call changed. Files that a Bash command left under a nested
 # Git work tree count only when Git lists them as modified, untracked or staged there, so a
 # clone, a checkout or a pull is never checked. More than MAX_LOOSE_FILES files found by
@@ -62,13 +68,13 @@ export MISE_AUTO_INSTALL=false
 case "${PLUGIN}" in
   typescript7-*)
     readonly NATIVE=yes
-    readonly NODE_MIN=16.20.0
     ;;
   *)
     readonly NATIVE=no
-    readonly NODE_MIN=14.17.0
     ;;
 esac
+# The Node.js floor the plugin's README states; a lower tsc minimum does not lower it.
+readonly NODE_MIN=24.0.0
 readonly README_URL="https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/${PLUGIN}#-prerequisites"
 
 # Canonical, so the paths tsc prints relative to it resolve back to the same files.
@@ -231,7 +237,13 @@ resolve_link() {
 # ── Tool discovery ──────────────────────────────────────────────────────────────────────
 
 SEARCHED=""
+# The compilers the hook found and could not use, one per line.
 SKIPPED=""
+# The Node.js installations below NODE_MIN, one per line. They are not compilers: the native
+# compiler runs without Node.js, so they are listed only where a compiler that runs on Node.js was
+# rejected for lack of a supported one (NODE_NEEDED), or in the no-compiler notice.
+SKIPPED_NODE=""
+NODE_NEEDED=no
 DIRS=()
 
 add_dir() {
@@ -274,7 +286,7 @@ add_nvm_dirs() {
 # Candidate bin folders: the inherited PATH first, then every Node manager's global folder.
 collect_dirs() {
   local entry data_home="${XDG_DATA_HOME:-${HOME}/.local/share}" os fnm_dir prefix pnpm_home
-  local -a entries
+  local -a entries fixed
   IFS=: read -r -a entries <<< "${PATH}"
   for entry in "${entries[@]+"${entries[@]}"}"; do
     add_dir "${entry}"
@@ -287,7 +299,12 @@ collect_dirs() {
   add_posix_dir "${VOLTA_HOME:-${HOME}/.volta}" /bin
   add_posix_dir "${ASDF_DATA_DIR:-${HOME}/.asdf}" /shims
   add_posix_dir "${MISE_DATA_DIR:-${data_home}/mise}" /shims
-  add_posix_dir "${N_PREFIX:-/usr/local}" /bin
+  # The default prefix of n, /usr/local, is one of the fixed folders: the test seam drops it too.
+  if [[ -n ${N_PREFIX:-} ]]; then
+    add_posix_dir "${N_PREFIX}" /bin
+  elif [[ -z ${TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS+set} ]]; then
+    add_dir /usr/local/bin
+  fi
   [[ -n ${NPM_CONFIG_PREFIX:-} ]] && add_posix_dir "${NPM_CONFIG_PREFIX}" /bin
   if [[ -f "${HOME}/.npmrc" ]]; then
     prefix="$(sed -n 's/^[[:space:]]*prefix[[:space:]]*=[[:space:]]*//p' "${HOME}/.npmrc")"
@@ -308,9 +325,17 @@ collect_dirs() {
   add_posix_dir "${pnpm_home}" /bin
   add_posix_dir "${pnpm_home}" ""
   add_posix_dir "${BUN_INSTALL:-${HOME}/.bun}" /bin
-  add_dir /opt/homebrew/bin
-  add_dir /usr/local/bin
-  add_dir /home/linuxbrew/.linuxbrew/bin
+  # The fixed folders of the common package managers, whatever PATH holds. Test seam: when
+  # TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS is set, even empty, its colon-separated folders
+  # replace them; unset, the folders below are searched as always.
+  if [[ -n ${TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS+set} ]]; then
+    IFS=: read -r -a fixed <<< "${TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS}"
+  else
+    fixed=(/opt/homebrew/bin /usr/local/bin /home/linuxbrew/.linuxbrew/bin)
+  fi
+  for entry in "${fixed[@]+"${fixed[@]}"}"; do
+    add_dir "${entry}"
+  done
   [[ -n ${APPDATA:-} ]] && add_posix_dir "${APPDATA}" /npm
   return 0
 }
@@ -350,17 +375,20 @@ find_node() {
         return 0
       fi
     fi
-    SKIPPED="${SKIPPED}${dir}/node (${version:-did not run}; needs ${NODE_MIN} or later)${NL}"
+    SKIPPED_NODE="${SKIPPED_NODE}${dir}/node (${version:-did not run}; needs ${NODE_MIN} or later)${NL}"
   done
   return 0
 }
 
 # Sets NATIVE_TSC to the native compiler of TypeScript 7 package $1, found the way Node
-# resolves its platform package: in node_modules folders from the package upward.
+# resolves its platform package: in node_modules folders from the package upward. Sets PLATFORM_PKG
+# to the name of that platform package, empty on an OS or CPU that has none.
 NATIVE_TSC=""
+PLATFORM_PKG=""
 native_compiler() {
   local dir os arch platform exe=tsc
   NATIVE_TSC=""
+  PLATFORM_PKG=""
   os="$(uname -s)"
   case "${os}" in
     Darwin) os=darwin ;;
@@ -377,7 +405,8 @@ native_compiler() {
     x86_64 | amd64) arch=x64 ;;
     *) return 0 ;;
   esac
-  platform="@typescript/typescript-${os}-${arch}/lib/${exe}"
+  PLATFORM_PKG="@typescript/typescript-${os}-${arch}"
+  platform="${PLATFORM_PKG}/lib/${exe}"
   dir="$1"
   while :; do
     if [[ -x "${dir}/node_modules/${platform}" ]]; then
@@ -438,7 +467,7 @@ typescript_7_package() {
 FOUND_ID=""
 PROBED="${NL}"
 use_tsc() {
-  local tsc="$1" package="" version line
+  local tsc="$1" package="" version line missing=""
   FOUND_ID=""
   if [[ ${PROBED} == *"${NL}${tsc}"$'\t'* ]]; then
     line="${PROBED#*"${NL}${tsc}"$'\t'}"
@@ -456,14 +485,26 @@ use_tsc() {
     if [[ -n ${NATIVE_TSC} ]]; then
       version="$("${NATIVE_TSC}" --version 2> /dev/null || true)"
       [[ ${version} == Version* ]] && FOUND_ID="native|${NATIVE_TSC}|${version#Version }"
+    elif [[ -n ${PLATFORM_PKG} ]]; then
+      missing="the TypeScript 7 package is installed without its native compiler ${PLATFORM_PKG}"
+    else
+      missing="the TypeScript 7 package has no native compiler for this OS and CPU"
     fi
   fi
   if [[ -z ${FOUND_ID} && -z ${NODE_DIR} ]]; then
-    SKIPPED="${SKIPPED}${tsc} (no Node.js ${NODE_MIN} or later to run it)${NL}"
+    if [[ -n ${missing} ]]; then
+      SKIPPED="${SKIPPED}${tsc} (${missing})${NL}"
+    else
+      # NODE_MIN is the support floor, not what tsc needs: tsc would run on an older Node.js.
+      NODE_NEEDED=yes
+      SKIPPED="${SKIPPED}${tsc} (runs on Node.js, and none at the support floor of ${NODE_MIN} or later was found)${NL}"
+    fi
   elif [[ -z ${FOUND_ID} ]]; then
     version="$(PATH="${NODE_DIR}:${PATH}" "${tsc}" --version 2> /dev/null || true)"
     if [[ ${version} == Version* ]]; then
       FOUND_ID="node|${tsc}|${version#Version }"
+    elif [[ -n ${missing} ]]; then
+      SKIPPED="${SKIPPED}${tsc} (${missing})${NL}"
     else
       SKIPPED="${SKIPPED}${tsc} (did not run with ${NODE_DIR}/node)${NL}"
     fi
@@ -835,10 +876,13 @@ count_errors() {
   return 0
 }
 
-# Sets FIRST_LINES to the first 20 lines of $1, or "(no output)".
+# Sets FIRST_LINES to the first 20 lines of $1, or "(no output)". The text goes to a file that
+# head reads: `printf | head` under pipefail fails with status 141 when $1 is larger than a pipe,
+# since printf is still writing when head stops reading.
 FIRST_LINES=""
 first_lines() {
-  FIRST_LINES="$(printf '%s\n' "$1" | head -n 20)"
+  printf '%s\n' "$1" > "${WORK}/first-lines"
+  FIRST_LINES="$(head -n 20 "${WORK}/first-lines")"
   [[ -n ${FIRST_LINES} ]] || FIRST_LINES="(no output)"
 }
 
@@ -1121,7 +1165,7 @@ compiler_notice() {
     [[ -f ${marker} ]] && return 0
   fi
   NOTICE="${PLUGIN}: no usable TypeScript compiler was found, so edited files are not type-checked.${NL}Searched:${NL}${SEARCHED:-(no node or tsc in any known folder)${NL}}"
-  [[ -n ${SKIPPED} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}"
+  [[ -n ${SKIPPED}${SKIPPED_NODE} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}${SKIPPED_NODE}"
   NOTICE="${NOTICE}Requirements: ${README_URL}"
   if [[ -n ${marker} ]]; then
     mkdir -p "${marker_dir}"
@@ -1169,7 +1213,10 @@ emit() {
       message="${message:+${message}${NL}}${PLUGIN}: tsc ${used} · the edited files pass the strictest policy"
       ((IGNORED > 0)) && message="${message}; strictest-only errors in other files not counted, since the project's own config accepts them: ${IGNORED}"
       message="${message} · ${NAMES}"
-      [[ -n ${SKIPPED} ]] && message="${message}${NL}Compilers skipped first:${NL}${SKIPPED%"${NL}"}"
+      if [[ -n ${SKIPPED} ]]; then
+        message="${message}${NL}Compilers skipped first:${NL}${SKIPPED%"${NL}"}"
+        [[ ${NODE_NEEDED} == yes && -n ${SKIPPED_NODE} ]] && message="${message}${NL}Node.js skipped:${NL}${SKIPPED_NODE%"${NL}"}"
+      fi
     fi
     if [[ -n ${context} ]]; then
       json_escape "${event}"

@@ -46,18 +46,18 @@ File Tree Pane is a Claude Code mod that docks a live file explorer beside the t
 
 ## 📋 Prerequisites
 
-| Tool                                                                                                     | Minimum version      | Check                          |
-| :------------------------------------------------------------------------------------------------------- | :------------------- | :----------------------------- |
-| Claude Code                                                                                              | 2.1.299              | `claude --version`             |
-| git                                                                                                      | —                    | `git --version`                |
-| [tmux](https://github.com/tmux/tmux/wiki) (optional): opens a terminal editor or diff tool               | —                    | `tmux -V`                      |
-| [herdr](https://herdr.dev) (optional): opens a terminal editor or diff tool                              | 0.9.1 for row clicks | `herdr --version`              |
-| [Nerd Font](https://www.nerdfonts.com) (optional): file icons                                            | —                    | —                              |
-| [hunk](https://hunk.dev) (optional): your own diff tool                                                  | —                    | `hunk --version`               |
-| [lazygit](https://github.com/jesseduffield/lazygit) (optional): your own diff tool                       | —                    | `lazygit --version`            |
-| xdg-open (optional, Linux): opens a file in its default app                                              | —                    | `xdg-open --version`           |
-| fc-list (optional, Linux): finds your Nerd Font                                                          | —                    | `fc-list --version`            |
-| xdg-terminal-exec (optional, Linux): opens **Diff with** in a new terminal window outside tmux and herdr | —                    | `command -v xdg-terminal-exec` |
+| Tool                                                                                                     | Minimum version             | Check                          |
+| :------------------------------------------------------------------------------------------------------- | :-------------------------- | :----------------------------- |
+| Claude Code                                                                                              | 2.1.299                     | `claude --version`             |
+| git                                                                                                      | —                           | `git --version`                |
+| [tmux](https://github.com/tmux/tmux/wiki) (optional): opens a terminal editor or diff tool               | —                           | `tmux -V`                      |
+| [herdr](https://herdr.dev) (optional): opens a terminal editor or diff tool                              | 0.9.1 for row clicks        | `herdr --version`              |
+| [Nerd Font](https://www.nerdfonts.com) (optional): file icons                                            | —                           | —                              |
+| [hunk](https://hunk.dev) (optional): your own diff tool                                                  | — (npm install: Node.js 24) | `hunk --version`               |
+| [lazygit](https://github.com/jesseduffield/lazygit) (optional): your own diff tool                       | —                           | `lazygit --version`            |
+| xdg-open (optional, Linux): opens a file in its default app                                              | —                           | `xdg-open --version`           |
+| fc-list (optional, Linux): finds your Nerd Font                                                          | —                           | `fc-list --version`            |
+| xdg-terminal-exec (optional, Linux): opens **Diff with** in a new terminal window outside tmux and herdr | —                           | `command -v xdg-terminal-exec` |
 
 `git` on `PATH` gives the tree its status, line counts and diffs; the tree works without it.
 
@@ -260,7 +260,7 @@ brew install hunk
 
 </details>
 <details>
-<summary>📦 <b>npm</b> (Node.js 22+) — macOS, Linux</summary>
+<summary>📦 <b>npm</b> (Node.js 24+) — macOS, Linux</summary>
 
 ```bash
 npm install --global hunkdiff

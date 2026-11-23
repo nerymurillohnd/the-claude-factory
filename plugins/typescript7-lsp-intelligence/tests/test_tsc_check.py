@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from typing import TYPE_CHECKING, NamedTuple, cast
 import unittest
@@ -113,30 +114,95 @@ def field(stdout: str, *keys: str) -> str:
 
 HOOK = Path(__file__).resolve().parents[1] / "hooks" / "tsc-check.sh"
 MODULE = "export const answer: number = 42\n"
-# Folders the hook searches for a compiler on top of PATH and the Node version managers' folders.
-FIXED_FOLDERS = ("/opt/homebrew/bin", "/usr/local/bin", "/home/linuxbrew/.linuxbrew/bin")
+# The hook's test seam: the folders it searches for a compiler and a Node.js on top of PATH and
+# the Node version managers' folders, whatever PATH holds, are /opt/homebrew/bin, /usr/local/bin
+# and /home/linuxbrew/.linuxbrew/bin. Set, even empty, this variable's colon-separated folders
+# replace them, so no test depends on what the machine has installed there.
+FIXED_FOLDERS_SEAM = "TYPESCRIPT7_LSP_INTELLIGENCE_FIXED_FOLDERS"
 # One more than the hook's MAX_LOOSE_FILES.
 TOO_MANY = 21
+# A tsc that runs on Node.js: a script that reports a TypeScript 5 version.
+JS_TSC = "#!/bin/sh\necho Version 5.9.3\n"
+# The hook's MAX_WALK_FILES: the walk of a folder outside Git stops after this many files.
+WALK_LIMIT = 20000
+# Enough files past WALK_LIMIT that the walk still has far more than a pipe holds to write once
+# the hook stops reading (a path is about 100 bytes, so 4000 files are about 400 KB).
+PAST_WALK_LIMIT = 4000
+# A native compiler that crashes: it prints about 350 KB of text with no TypeScript error and
+# exits 1, more than a pipe holds.
+CRASHING_TSC = """#!/bin/sh
+case "$*" in
+  --version) echo 'Version 7.0.0'; exit 0 ;;
+  *--showConfig*) exit 1 ;;
+esac
+awk 'BEGIN {
+  pad = sprintf("%48s", "")
+  gsub(/ /, "p", pad)
+  for (i = 0; i < 5000; i++) printf "crash trace line %d %s\\n", i, pad
+}'
+exit 1
+"""
 
 
 def path_without_compiler() -> str:
     """PATH minus every folder with a tsc or tsc6.
 
-    The test is skipped when the hook would still find a compiler: it also searches a few
-    fixed folders, whatever PATH holds.
+    `_run` empties the hook's fixed folders, so the machine's own compilers are out of reach.
     """
-    for fixed in FIXED_FOLDERS:
-        if any((Path(fixed) / name).exists() for name in ("tsc", "tsc6")):
-            message = (
-                f"a TypeScript compiler is installed in {fixed}, which the hook always searches"
-            )
-            raise unittest.SkipTest(message)
     kept = [
         folder
         for folder in os.environ["PATH"].split(os.pathsep)
         if not any((Path(folder) / name).exists() for name in ("tsc", "tsc6"))
     ]
     return os.pathsep.join(kept)
+
+
+def path_without_node(path: str) -> str:
+    """`path` minus every folder with a node.
+
+    `_run` empties the hook's fixed folders, so the machine's own Node.js is out of reach.
+    """
+    kept = [folder for folder in path.split(os.pathsep) if not (Path(folder) / "node").exists()]
+    return os.pathsep.join(kept)
+
+
+def node_reporting(folder: Path, version: str) -> None:
+    """Put in folder a `node` that reports `version` and otherwise runs the real one."""
+    real = need("node")
+    script = (
+        "#!/bin/sh\n"
+        f'if [ "$1" = --version ]; then echo v{version}; exit 0; fi\n'
+        f'exec "{real}" "$@"\n'
+    )
+    write(folder / "node", script)
+    (folder / "node").chmod(0o755)
+
+
+def platform_package() -> str:
+    """The native compiler package of this OS and CPU; the test is skipped without one."""
+    systems = {"darwin": "darwin", "linux": "linux"}
+    machines = {"arm64": "arm64", "aarch64": "arm64", "x86_64": "x64", "amd64": "x64"}
+    system = systems.get(sys.platform)
+    machine = machines.get(os.uname().machine) if hasattr(os, "uname") else None
+    if system is None or machine is None:
+        message = "TypeScript 7 has no native compiler package for this OS and CPU"
+        raise unittest.SkipTest(message)
+    return f"@typescript/typescript-{system}-{machine}"
+
+
+def install_typescript_7(project: Path, *, native: bool) -> None:
+    """Install in project a TypeScript 7 package, with its native compiler when `native`.
+
+    The package's own bin/tsc fails, as the wrapper does without its platform package.
+    """
+    package = project / "node_modules" / "typescript"
+    write(package / "package.json", '{"name": "typescript", "version": "7.0.0"}\n')
+    write(package / "bin" / "tsc", "#!/bin/sh\nexit 1\n")
+    (package / "bin" / "tsc").chmod(0o755)
+    if native:
+        compiler = project / "node_modules" / platform_package() / "lib" / "tsc"
+        write(compiler, "#!/bin/sh\n[ \"$1\" = --version ] && echo 'Version 7.0.0'\nexit 0\n")
+        compiler.chmod(0o755)
 
 
 class TscHookTest(unittest.TestCase):
@@ -154,6 +220,7 @@ class TscHookTest(unittest.TestCase):
 
         With changed, the event carries that list as the files Claude Code recorded. With
         path, it replaces PATH. Extra sets environment variables, and removes those set to None.
+        The hook's fixed folders are empty unless extra sets FIXED_FOLDERS_SEAM.
         """
         response: dict[str, object] = {"stdout": "", "stderr": "", "interrupted": False}
         if changed is not None:
@@ -174,6 +241,7 @@ class TscHookTest(unittest.TestCase):
             "TMPDIR": str(tmp),
             "CLAUDE_PLUGIN_DATA": str(tmp / "data"),
             "CLAUDE_PROJECT_DIR": str(tmp / "work"),
+            FIXED_FOLDERS_SEAM: "",
             **GIT_ENV,
         }
         for name, value in (extra or {}).items():
@@ -203,6 +271,127 @@ class TscHookTest(unittest.TestCase):
                     message = field(outcome.stdout, "systemMessage")
                     self.assertIn("no usable TypeScript compiler was found", message)
                 self.assertEqual(left, [])
+
+    def test_node_below_the_floor_is_skipped(self) -> None:
+        """A Node.js older than 24, the floor the README states, is listed as skipped."""
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn(f"{old}/node (22.12.0; needs 24.0.0 or later)", message)
+
+    def test_node_floor_is_24_0_0(self) -> None:
+        """A Node.js of 23.11.1 is rejected and one of 24.0.0 is accepted."""
+        path = path_without_compiler()
+        for version, rejected in (("23.11.1", True), ("24.0.0", False)):
+            with (
+                self.subTest(version=version),
+                tempfile.TemporaryDirectory() as raw,
+            ):
+                tmp = Path(raw).resolve()
+                wrapper = tmp / "wrapper"
+                node_reporting(wrapper, version)
+                write(tmp / "work" / "new.ts", MODULE)
+                outcome = self._run(tmp, path=os.pathsep.join((str(wrapper), path)))
+                self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                message = field(outcome.stdout, "systemMessage")
+                self.assertIn(f"{wrapper}/node\n", message)
+                if rejected:
+                    self.assertIn(f"{wrapper}/node ({version}; needs 24.0.0 or later)", message)
+                else:
+                    self.assertNotIn(f"{wrapper}/node (", message)
+
+    def test_native_compiler_runs_without_listing_a_skipped_node(self) -> None:
+        """A Node.js 22 first on PATH is no skipped compiler: the native one needs no Node.js."""
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            install_typescript_7(tmp / "work", native=True)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn("tsc 7.0.0 · the edited files pass the strictest policy", message)
+        self.assertNotIn("Compilers skipped first", message)
+        self.assertNotIn("22.12.0", message)
+
+    def test_compiler_rejected_for_lack_of_node_names_the_floor_and_the_nodes(self) -> None:
+        """A tsc that runs on Node.js, with only a Node.js 22 at hand, is skipped for the floor."""
+        path = path_without_node(path_without_compiler())
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            write(tmp / "work" / "node_modules" / ".bin" / "tsc", JS_TSC)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        floor = "runs on Node.js, and none at the support floor of 24.0.0 or later was found"
+        self.assertIn(f"{tmp}/work/node_modules/.bin/tsc ({floor})", message)
+        self.assertIn(f"{old}/node (22.12.0; needs 24.0.0 or later)", message)
+        self.assertNotIn("to run it", message)
+
+    def test_pass_lists_skipped_nodes_only_where_a_compiler_needed_one(self) -> None:
+        """A tsc rejected for lack of Node.js 24 is listed with the Node.js found, beside a pass."""
+        path = path_without_node(path_without_compiler())
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            old = tmp / "old-node"
+            write(old / "node", "#!/bin/sh\necho v22.12.0\n")
+            (old / "node").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            write(tmp / "work" / "node_modules" / ".bin" / "tsc", JS_TSC)
+            install_typescript_7(tmp / "work", native=True)
+            outcome = self._run(tmp, path=os.pathsep.join((str(old), path)))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn("the edited files pass the strictest policy", message)
+        self.assertIn("Compilers skipped first:\n", message)
+        self.assertIn(f"{tmp}/work/node_modules/.bin/tsc (runs on Node.js, and none", message)
+        self.assertIn(f"Node.js skipped:\n{old}/node (22.12.0; needs 24.0.0 or later)", message)
+
+    def test_fixed_folders_seam_replaces_the_fixed_folders(self) -> None:
+        """A tsc and a Node.js 24 in a folder the seam names are found, with none on PATH."""
+        path = path_without_node(path_without_compiler())
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            fixed = tmp / "fixed"
+            node_reporting(fixed, "24.0.0")
+            write(fixed / "tsc", JS_TSC)
+            (fixed / "tsc").chmod(0o755)
+            write(tmp / "work" / "new.ts", MODULE)
+            outcome = self._run(tmp, path=path, extra={FIXED_FOLDERS_SEAM: str(fixed)})
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        self.assertIn("tsc 5.9.3 · the edited files pass the strictest policy", message)
+
+    def test_typescript_7_package_without_its_platform_package_names_it(self) -> None:
+        """When the wrapper cannot run, the notice names the missing native compiler package."""
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "new.ts", MODULE)
+            install_typescript_7(tmp / "work", native=False)
+            outcome = self._run(tmp, path=path)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        message = field(outcome.stdout, "systemMessage")
+        missing = f"installed without its native compiler {platform_package()}"
+        self.assertIn(
+            f"{tmp}/work/node_modules/typescript/bin/tsc (the TypeScript 7 package is {missing})",
+            message,
+        )
+        self.assertNotIn("did not run with", message)
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: the hook prints nothing."""
@@ -250,6 +439,46 @@ class TscHookTest(unittest.TestCase):
         expected = f"left {TOO_MANY} TypeScript or JavaScript files outside a Git work tree"
         self.assertIn(expected, context)
         self.assertNotIn("m0.ts", outcome.stdout)
+
+    def test_walk_of_more_files_than_the_cap_is_not_a_failure(self) -> None:
+        """Outside Git, a command that leaves more files than the walk reads does not fail the hook.
+
+        The walk stops after 20000 files by closing the pipe it writes to, while it still has far
+        more than a pipe holds to write: under `pipefail` that must not end the hook. It holds
+        today because the walk runs inside a command substitution, where `set -e` is off; this
+        test keeps a change to how the walk is called from breaking that.
+        """
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            tree = tmp / "work" / "generated"
+            tree.mkdir(parents=True)
+            for number in range(WALK_LIMIT + PAST_WALK_LIMIT):
+                _ = (tree / f"d{number % 24}-f{number}.txt").write_text("x", encoding="utf-8")
+            outcome = self._run(tmp)
+        self.assertEqual(outcome, Outcome(0, "", ""))
+
+    def test_compiler_output_larger_than_a_pipe_is_cut_to_its_first_lines(self) -> None:
+        """A compiler that crashes with a long trace and no TypeScript error is reported, cut.
+
+        The hook shows the first 20 lines of that output; the output holds far more than a pipe,
+        and under `pipefail` cutting it must not end the hook.
+        """
+        path = path_without_compiler()
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "new.ts", MODULE)
+            install_typescript_7(tmp / "work", native=True)
+            compiler = tmp / "work" / "node_modules" / platform_package() / "lib" / "tsc"
+            write(compiler, CRASHING_TSC)
+            compiler.chmod(0o755)
+            outcome = self._run(tmp, path=path)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertEqual(field(outcome.stdout, "decision"), "block")
+        reason = field(outcome.stdout, "reason")
+        self.assertIn("exited with status 1 without reporting a TypeScript error", reason)
+        self.assertIn("crash trace line 0 ", reason)
+        self.assertIn("crash trace line 19 ", reason)
+        self.assertNotIn("crash trace line 20 ", reason)
 
     def test_a_few_loose_files_are_selected(self) -> None:
         """Outside Git, a handful of new files is an edit: the hook selects them."""

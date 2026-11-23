@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-23
+
+### Changed
+
+- **Breaking:** the plugin now needs Node.js 24 or later to start the TypeScript 7 language server, up from Node.js 16.20.0. Node.js 24 is the oldest Node.js this marketplace supports for code that runs on your machine. If `node --version` shows an older version, update Node.js before you update the plugin. The hook still runs the native compiler without Node.js, so an older Node.js on your `PATH` doesn't change its result or appear in its pass messages. When it has to start a `tsc` through Node.js, it skips a Node.js older than 24, the support floor, and its notice says so and lists each Node.js it skipped. When a TypeScript 7 package lacks its native compiler, the notice names the missing `@typescript/typescript-<os>-<arch>` package instead of blaming Node.js.
+
+### Fixed
+
+- When `tsc` crashed or stopped with a long output and no TypeScript error, the post-edit check could end with "the hook failed" instead of telling Claude that the files were not checked and showing the first lines of that output. It happened whenever the output was larger than about 64 KB, such as a long crash trace. Claude now always gets the notice and the first 20 lines.
+
 ## [0.6.0] - 2026-11-20
 
 ### Added
@@ -151,7 +161,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `typescript7-lsp-intelligence` skill: navigates TypeScript and JavaScript with the language server; checks program membership and effective configuration before trusting a diagnostic; tells TypeScript 6 `tsserver` tooling apart from the TypeScript 7 native server; fixes compiler findings by narrowing `unknown` instead of using assertions, `any` or suppressions; and reports each check's status, the programs covered and what stayed unverified.
 - Optional controls: a bundled runner compiles known control files with the compiler you choose, in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.6.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.7.0...HEAD
+[0.7.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.7.0
 [0.6.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.6.0
 [0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.5.0
 [0.4.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.6

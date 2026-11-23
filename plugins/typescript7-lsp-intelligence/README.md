@@ -56,12 +56,12 @@ TypeScript 7 LSP Intelligence connects the native TypeScript 7 language server y
 | Claude Code    | 2.1.295         | `claude --version` |
 | Bash           | 3.2             | `bash --version`   |
 | TypeScript 7   | 7.0             | `tsc --version`    |
-| Node.js        | 16.20.0         | `node --version`   |
+| Node.js        | 24              | `node --version`   |
 | Git (optional) | —               | `git --version`    |
 
 The plugin also uses `sed`, `awk`, `grep`, `tr`, `cut`, `head`, `sort`, `find`, `dirname`, `mktemp`, `date` and `cat`, which come with macOS and Linux.
 
-The language server is a global TypeScript 7 `tsc` on the `PATH` of the shell you start `claude` from; the hook uses your project's TypeScript in `node_modules` first, then the global one. Node.js runs the `tsc` command that starts the language server; the hook runs the native compiler without it. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship. Git is optional: in a Git repository the hook asks Git which files a Bash or PowerShell command changed, and without it the hook compares modification times. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
+The language server is a global TypeScript 7 `tsc` on the `PATH` of the shell you start `claude` from; the hook uses your project's TypeScript in `node_modules` first, then the global one. Node.js runs the `tsc` command that starts the language server and needs to be Node.js 24 or later, the oldest Node.js this plugin supports; the hook runs the native compiler without it. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship. Git is optional: in a Git repository the hook asks Git which files a Bash or PowerShell command changed, and without it the hook compares modification times. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
 
 ### 🤖 Claude Code
 
