@@ -7,7 +7,7 @@ joins `description` and `when_to_use` with " - ", the separator Claude Code's li
 
 import unittest
 
-from frontmatter_helpers import JsonObject, rules, run_check
+from frontmatter_helpers import JsonObject, is_list, rules, run_check
 
 DESCRIPTION = "frontmatter.description"
 LISTING_CAP = "frontmatter.listing-cap"
@@ -39,6 +39,18 @@ class TextLimitTestCase(unittest.TestCase):
     def rule_names(self, check: str, yaml: str) -> list[str]:
         """The rules of a result's findings, in order."""
         return [rule for rule, _line in rules(self.result(check, yaml))]
+
+    def found(self, check: str, yaml: str) -> list[tuple[str, str, list[object]]]:
+        """Each finding's (rule, field, surfaces), in order."""
+        findings = self.result(check, yaml).get("findings")
+        items: list[object] = findings if is_list(findings) else []
+        out: list[tuple[str, str, list[object]]] = []
+        for item in items:
+            if isinstance(item, JsonObject):
+                surfaces = item.get("surfaces")
+                listed: list[object] = surfaces if is_list(surfaces) else []
+                out.append((str(item.get("rule")), str(item.get("field")), listed))
+        return out
 
 
 class DescriptionTest(TextLimitTestCase):
@@ -79,6 +91,30 @@ class DescriptionTest(TextLimitTestCase):
         self.assertEqual(rules(result), [])
         data = self.data(result)
         self.assertEqual((data.get("length"), data.get("utf16_length")), (1000, 2000))
+
+    def test_when_to_use_angle_brackets(self) -> None:
+        """Claude Code escapes `<` and `>` in when_to_use too; uploads don't read the field."""
+        yaml = "description: Use for branch work.\nwhen_to_use: Use for <branch> work"
+        self.assertEqual(
+            self.found(DESCRIPTION, yaml), [("angle-bracket", "when_to_use", ["claude-code"])]
+        )
+
+    def test_block_scalar_description_1024(self) -> None:
+        """1,024 characters plus a block scalar's newline: too long raw, within the upload limit.
+
+        The open-spec validator counts the raw value; the upload validator strips it first.
+        """
+        yaml = f"description: |\n  {'a' * 1024}"
+        self.assertEqual(
+            self.found(DESCRIPTION, yaml), [("too-long", "description", ["open-spec"])]
+        )
+
+    def test_block_scalar_description_1025_after_strip(self) -> None:
+        """1,025 characters stay too long on both surfaces after the strip."""
+        yaml = f"description: |\n  {'a' * 1025}"
+        self.assertEqual(
+            self.found(DESCRIPTION, yaml), [("too-long", "description", ["open-spec", "upload"])]
+        )
 
 
 class ListingCapTest(TextLimitTestCase):
@@ -157,6 +193,14 @@ class CompatibilityTest(TextLimitTestCase):
     def test_not_a_string(self) -> None:
         """A number."""
         self.assertEqual(self.rule_names(COMPATIBILITY, "compatibility: 7"), ["not-a-string"])
+
+    def test_compatibility_raw_length(self) -> None:
+        """500 characters plus a block scalar's newline: no validator strips it, on any surface."""
+        yaml = f"compatibility: |\n  {'c' * 500}"
+        self.assertEqual(
+            self.found(COMPATIBILITY, yaml),
+            [("too-long", "compatibility", ["open-spec", "upload"])],
+        )
 
 
 if __name__ == "__main__":

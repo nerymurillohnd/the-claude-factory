@@ -9,15 +9,23 @@ from common.yaml_types import yaml11_tag
 
 @dataclass(frozen=True, slots=True)
 class TextField:
-    """A free-text field: the check that owns it, its key, its limit and its surfaces."""
+    """A free-text field: the check that owns it, its key, its limit and its surfaces.
+
+    `upload_strips` is true for a field the upload validator strips of surrounding whitespace
+    before it counts the length (`quick_validate.py` does so for `description` only); the open
+    specification's validator counts the raw value on every field.
+    """
 
     check: str
     field: str
     limit: int
     surfaces: tuple[Surface, ...]
+    upload_strips: bool = False
 
-    def finding(self, node: Node, rule: str, expected: str) -> Finding:
-        """An official finding on the field's value."""
+    def finding(
+        self, node: Node, rule: str, expected: str, surfaces: tuple[Surface, ...] | None = None
+    ) -> Finding:
+        """An official finding on the field's value, on its surfaces unless others are given."""
         return Finding(
             check=self.check,
             rule=rule,
@@ -27,7 +35,7 @@ class TextField:
             found=node.value if node.kind == "scalar" else node.raw or None,
             expected=expected,
             basis="official",
-            surfaces=self.surfaces,
+            surfaces=self.surfaces if surfaces is None else surfaces,
         )
 
     def findings(self, node: Node) -> list[Finding]:
@@ -39,7 +47,10 @@ class TextField:
             return [self.finding(node, "empty", "Some text, not only blanks.")]
         if len(text) > self.limit:
             expected = f"At most {self.limit:,} characters; this one has {len(text):,}."
-            return [self.finding(node, "too-long", expected)]
+            surfaces: tuple[Surface, ...] = self.surfaces
+            if self.upload_strips and len(text.strip()) <= self.limit:
+                surfaces = tuple(surface for surface in surfaces if surface != "upload")
+            return [self.finding(node, "too-long", expected, surfaces)]
         return []
 
 

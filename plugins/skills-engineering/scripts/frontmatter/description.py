@@ -1,8 +1,10 @@
 """frontmatter.description: present, a non-blank string, at most 1,024 characters, no `<` or `>`.
 
 Claude chooses the skill by its description. The open specification and uploads require one of
-1 to 1,024 characters, the upload validator rejects `<` and `>`, and Claude Code shows them as
-`&lt;` and `&gt;`. Without one, Claude Code uses the first non-empty line of the body.
+1 to 1,024 characters (the upload validator counts it after stripping surrounding whitespace),
+the upload validator rejects `<` and `>`, and Claude Code shows them as `&lt;` and `&gt;` in
+`description` and `when_to_use`. Without one, Claude Code uses the first non-empty line of the
+body.
 """
 
 import re
@@ -16,7 +18,9 @@ from common.text_field import TextField, as_text, not_run
 
 CHECK: Final = "frontmatter.description"
 MAX_LENGTH: Final = 1024
-FIELD: Final = TextField(CHECK, "description", MAX_LENGTH, ("open-spec", "upload"))
+FIELD: Final = TextField(
+    CHECK, "description", MAX_LENGTH, ("open-spec", "upload"), upload_strips=True
+)
 XML_TAG: Final = re.compile(r"<[A-Za-z/!?][^<>]*>")
 
 
@@ -60,6 +64,22 @@ def check(ctx: Context) -> CheckResult:
                 expected="No `<` or `>`: uploads reject them and Claude Code shows them escaped.",
                 basis="official",
                 surfaces=("claude-code", "upload"),
+            )
+        )
+    when = loaded.fields.get("when_to_use")
+    when_text = as_text(when[1]) if when is not None else None
+    if when is not None and when_text is not None and ("<" in when_text or ">" in when_text):
+        findings.append(
+            Finding(
+                check=CHECK,
+                rule="angle-bracket",
+                line=when[1].line,
+                column=when[1].column,
+                field="when_to_use",
+                found=when_text,
+                expected="No `<` or `>`: Claude Code shows them escaped in the skill listing.",
+                basis="official",
+                surfaces=("claude-code",),
             )
         )
     data = {
