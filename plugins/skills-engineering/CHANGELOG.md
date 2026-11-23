@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
+- **Breaking:** `auditing-skills` no longer pastes every reviewer's full report into the conversation. Each reviewer writes its report to `.claude/skill-audits/<skill name>/<date and time>/<reviewer name>.md` in your project, and the audit shows you every critical, high and medium finding with its evidence and fix, where to start, and the path of each report for the low findings and improvements. Claude Code asks you to approve writes to `.claude/`; where it can't, the reports appear in the conversation as before. Reviewers may use Write only for their own report and never change the skill they audit.
 - Both skills now share one checks script, `scripts/skill-checks.py`, at the plugin's root. `--help` lists every check and the exit codes, `check --help` works, and an unknown check name lists the valid ones.
 - `auditing-skills` runs the frontmatter checks as soon as you ask for an audit, before it asks you to confirm the reviewers, so they run without a permission prompt.
 - The frontmatter checks need only Python 3.12 or later; they no longer need the `claude` command.

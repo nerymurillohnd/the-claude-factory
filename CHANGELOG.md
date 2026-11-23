@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **skills-engineering** 0.4.0 — `authoring-skills` now runs the plugin's skill checks on the skill it writes and fixes what they find; both skills share one checks script, which adds `frontmatter.keys` for keys Claude Code ignores or uploads reject, runs in `auditing-skills` before it asks you anything, needs only Python 3.12 or later, and reports fewer wrong findings.
+- **skills-engineering** 0.4.0 — **Breaking:** `auditing-skills` saves each reviewer's full report under `.claude/skill-audits/` in your project and shows you the critical, high and medium findings instead of every report; `authoring-skills` now runs the plugin's skill checks on the skill it writes and fixes what they find; both skills share one checks script, which adds `frontmatter.keys` for keys Claude Code ignores or uploads reject, runs in `auditing-skills` before it asks you anything, needs only Python 3.12 or later, and reports fewer wrong findings.
 - **bash-lsp-intelligence** 0.5.0 — **Breaking:** bash-language-server now needs Node.js 24 or later, up from Node.js 20; the hook still needs no Node.js.
 - **typescript6-lsp-intelligence** 0.6.0 — **Breaking:** the language server and the post-edit hook now need Node.js 24 or later; with an older Node.js first on your `PATH`, the check doesn't run and tells you so.
 - **typescript7-lsp-intelligence** 0.7.0 — **Breaking:** starting the TypeScript 7 language server now needs Node.js 24 or later, up from Node.js 16.20.0, and the hook skips an older Node.js.
