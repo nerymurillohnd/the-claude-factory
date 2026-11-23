@@ -28,7 +28,7 @@ How to run the audit and the evals the user chose in phase 6, and the final chec
 
 Load `skills-engineering:auditing-skills` and run its full battery, with all its agents, on the skill, and follow that skill to its end. When the user chose the evals too, run the audit first. Then apply its findings, with no new design or plan:
 
-1. Check each finding against the skill and the official sources, since a finding can be wrong.
+1. Read every report in full from the files the audit saved, not only the findings it presented, and check each finding against the skill and the official sources, since a finding can be wrong.
 2. Tell the user which findings you apply and which you reject, each with its reason.
 3. Apply the accepted ones. When one changes a decision of the design, update the design document and raise its version.
 4. Run phase 5 again.
@@ -197,7 +197,7 @@ The difference between the arms is what the evals measure, so set each arm to wh
 
 When the audit and the evals the user chose are done, check the final skill:
 
-1. Run every check that applies to it against the final files: the mechanical check from step 2 of phase 5, and each linter, validator or script the environment provides for skills.
+1. Run every check that applies to it against the final files: the mechanical checks from step 2 of phase 5, the skill checks included, and each linter, validator or script the environment provides for skills.
 2. Fix each finding and run every check again. After 3 rounds, or when the same failure returns after a fix, stop and report it with its output.
 3. Report each check with its exact command and raw output. The skill is done when every check passes.
 

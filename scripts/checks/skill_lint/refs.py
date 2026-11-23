@@ -98,13 +98,18 @@ class Resolver:
 
 
 def escapes(skill: Skill, token: str, from_file: str) -> bool:
-    """Tell whether a token is absolute, or its real path lies outside the skill folder."""
+    """Tell whether a token is absolute, or its real path lies outside the folder it may reach.
+
+    A `${CLAUDE_PLUGIN_ROOT}` path may reach anywhere inside its plugin, where the plugin's
+    skills share scripts; every other path must stay inside the skill folder.
+    """
     path = _path_part(token)
     if not path:
         return False
     if _is_absolute(path):
         return True
     variable = _variable_base(skill, path)
+    bound = skill.root
     if variable is None:
         target = skill.root / posixpath.dirname(from_file) / path
     else:
@@ -112,7 +117,21 @@ def escapes(skill: Skill, token: str, from_file: str) -> bool:
         if base is None:
             return False
         target = base / rest
-    return not Path(os.path.realpath(target)).is_relative_to(skill.root.resolve())
+        bound = base
+    return not Path(os.path.realpath(target)).is_relative_to(bound.resolve())
+
+
+def plugin_file(skill: Skill, token: str) -> Path | None:
+    """The file a `${CLAUDE_PLUGIN_ROOT}` token names inside the skill's plugin, if it exists."""
+    path = _path_part(token)
+    variable = _variable_base(skill, path) if path else None
+    if variable is None:
+        return None
+    base, rest = variable
+    if base is None or base == skill.root:
+        return None
+    target = Path(os.path.realpath(base / rest))
+    return target if target.is_relative_to(base.resolve()) and target.is_file() else None
 
 
 def _tokens(texts: Iterable[str]) -> set[str]:

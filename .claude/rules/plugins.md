@@ -15,7 +15,9 @@ paths:
 - Create a new plugin's folder in `plugins/<plugin>/` yourself: `claude plugin init` scaffolds only in `~/.claude/skills/<name>/`.
 - Choose the least invasive design for every action a plugin takes on a user's machine, and take any safety doubt to the owner before it ships.
 - License every plugin under MIT.
-- Build every plugin for Claude Code, for Claude, or for both, and state in its compatibility notes where a component does not work.
+- Build every plugin for both surfaces, Claude Code and Claude, with no branches by surface: a plugin installed from a marketplace in Claude, or created there, reaches Claude and Claude Code unless the user turns off `syncClaudeAiPlugins`, and one installed with `claude plugin install` stays on that machine.
+- State a surface difference in a plugin only where a documented limit applies, with its source.
+- Keep a plugin's executables in `scripts/`, never in a top-level `bin/`: Claude doesn't install a plugin that has one.
 
 ## Portability
 
@@ -35,6 +37,5 @@ paths:
 
 - Develop against the plugin's folder with `claude --plugin-dir plugins/<plugin>`, never an installed copy, and run `/reload-plugins` after each edit.
 - Run `claude plugin validate --strict plugins/<plugin>`, then `claude --plugin-dir plugins/<plugin> plugin details <plugin>` to confirm every component loaded.
-- Test each surface the plugin declares: Claude Code with `--plugin-dir`, and Claude by asking the owner to upload it to their account.
 - Run `npm run check:install -- --from local <plugin>` before any release to test what users receive.
 - Add evals only to plugins the owner chooses.

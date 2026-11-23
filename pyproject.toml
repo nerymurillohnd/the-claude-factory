@@ -146,8 +146,8 @@ pythonPlatform = "All"
 # The stubs for untyped dependencies live in typings/, basedpyright's default stubPath.
 # scripts/ imports itself as the package `scripts`, so its environment resolves from the root.
 executionEnvironments = [
-    { root = "plugins/skills-engineering/skills/auditing-skills/scripts" },
-    { root = "plugins/skills-engineering/tests", extraPaths = ["plugins/skills-engineering/skills/auditing-skills/scripts"] },
+    { root = "plugins/skills-engineering/scripts" },
+    { root = "plugins/skills-engineering/tests", extraPaths = ["plugins/skills-engineering/scripts"] },
     { root = "scripts", pythonVersion = "3.15", extraPaths = ["."] },
 ]
 # Conflicts with the Ruff formatter, per basedpyright's own pyproject.toml; Ruff's ISC rules own it.

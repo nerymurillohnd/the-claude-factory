@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for frontmatter.name and frontmatter.name-plain, run through frontmatter-checks.py.
+"""Tests for frontmatter.name and frontmatter.name-plain, run through skill-checks.py.
 
 frontmatter.name checks the name's format, its folder, the characters Claude Code refuses and
 the reserved words; frontmatter.name-plain checks that the name is written as one plain line.
@@ -66,6 +66,30 @@ class NameFormatTest(NameTestCase):
             ["charset", "folder-mismatch", "hyphen", "reserved-word"],
         )
 
+    def test_unicode_name_upload_only(self) -> None:
+        """skills-ref accepts lowercase Unicode letters; only uploads require `a-z`."""
+        result = self.result(NAME, "name: café-skill", folder="café-skill")
+        findings = result.get("findings")
+        items: list[object] = findings if is_list(findings) else []
+        charset = [
+            item.get("surfaces")
+            for item in items
+            if isinstance(item, JsonObject) and item.get("rule") == "charset"
+        ]
+        self.assertEqual(charset, [["upload"]])
+
+    def test_compatibility_letter_is_open_spec(self) -> None:
+        """skills-ref tests lowercase after NFKC: U+210C becomes `H`, so open-spec rejects it."""
+        result = self.result(NAME, "name: \N{BLACK-LETTER CAPITAL H}elp", folder="x")
+        findings = result.get("findings")
+        items: list[object] = findings if is_list(findings) else []
+        charset = [
+            item.get("surfaces")
+            for item in items
+            if isinstance(item, JsonObject) and item.get("rule") == "charset"
+        ]
+        self.assertEqual(charset, [["open-spec", "upload"]])
+
     def test_length(self) -> None:
         """65 characters are one too many."""
         name = "a" * 65
@@ -110,6 +134,19 @@ class NameFormatTest(NameTestCase):
         """A YAML 1.1 integer isn't a name."""
         self.assertEqual(self.rule_names(NAME, "name: 12", folder="12"), ["not-a-string"])
 
+    def test_not_a_string_is_upload_only(self) -> None:
+        """skills-ref reads a scalar name as a string; only uploads, through PyYAML, type it."""
+        result = self.result(NAME, "name: 12", folder="12")
+        findings = result.get("findings")
+        first = findings[0] if is_list(findings) and findings else None
+        if not isinstance(first, JsonObject):
+            self.fail(f"expected a finding, got {result!r}")
+        self.assertEqual((first.get("rule"), first.get("surfaces")), ("not-a-string", ["upload"]))
+
+    def test_pyyaml_text_is_a_name(self) -> None:
+        """`n` is text to PyYAML, so it is a name, not another type."""
+        self.assertEqual(self.rule_names(NAME, "name: n", folder="n"), [])
+
 
 class NamePlainTest(NameTestCase):
     """frontmatter.name-plain."""
@@ -135,10 +172,11 @@ class NamePlainTest(NameTestCase):
         self.assertEqual(self.rule_names(NAME_PLAIN, "name: &a demo"), ["anchor-alias-tag"])
 
     def test_yaml11_types(self) -> None:
-        """A date and a float as names."""
-        for name in ("2026-11-17", "1e3"):
+        """A date and a float as names, as PyYAML, which uploads use, types them."""
+        for name in ("2026-11-17", "1.5"):
             with self.subTest(name=name):
                 self.assertEqual(self.rule_names(NAME_PLAIN, f"name: {name}"), ["yaml11-type"])
+        self.assertEqual(self.rule_names(NAME_PLAIN, "name: 1e3"), [])
 
     def test_boolean_is_left_to_plain_values(self) -> None:
         """`on` belongs to frontmatter.plain-values."""

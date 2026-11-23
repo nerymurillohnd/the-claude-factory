@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the plain-value check, frontmatter.plain-values, run through frontmatter-checks.py.
+"""Tests for the plain-value check, frontmatter.plain-values, run through skill-checks.py.
 
 It reports plain values a YAML parser reads differently than they are written: a comment that
 cuts the text, a leading indicator, a collection, properties, and text read as a boolean or null.
@@ -54,6 +54,22 @@ class PlainValuesTest(unittest.TestCase):
         """A plain value starting with `-`."""
         self.assertEqual(rules(self.result("compatibility: -x")), [("leading-indicator", 2)])
 
+    def first(self, yaml: str) -> JsonObject:
+        """The first finding of a run."""
+        findings = self.result(yaml).get("findings")
+        first = findings[0] if is_list(findings) and findings else None
+        if not isinstance(first, JsonObject):
+            self.fail(f"expected a finding for {yaml!r}")
+        return first
+
+    def test_plain_values_cc_field_surface(self) -> None:
+        """A Claude Code field outside the specification concerns Claude Code only."""
+        self.assertEqual(self.first("argument-hint: [file]").get("surfaces"), ["claude-code"])
+
+    def test_leading_dash_is_convention(self) -> None:
+        """YAML 1.2 and PyYAML read `-x` as text, so quoting it is a convention."""
+        self.assertEqual(self.first("compatibility: -x").get("basis"), "convention")
+
     def test_quoted_value_is_fine(self) -> None:
         """A quoted `yes` is text."""
         self.assertEqual(rules(self.result('description: "yes"')), [])
@@ -61,6 +77,28 @@ class PlainValuesTest(unittest.TestCase):
     def test_metadata_at_any_depth(self) -> None:
         """A metadata value read as a boolean, on its own line."""
         self.assertEqual(rules(self.result("metadata:\n  flag: on")), [("reads-as-boolean", 3)])
+
+    def test_metadata_boolean_and_null_are_upload_only(self) -> None:
+        """The open-spec validator reads every metadata scalar as text; uploads type them."""
+        for yaml in ("metadata:\n  flag: on", "metadata:\n  gone: ~"):
+            with self.subTest(yaml=yaml):
+                self.assertEqual(self.first(yaml).get("surfaces"), ["upload"])
+
+    def test_spec_field_typing_is_upload_only(self) -> None:
+        """skills-ref reads every scalar as a string: a typed spec field fails uploads only."""
+        for yaml in ("description: yes", "name: ~", "license: off", "compatibility: null"):
+            with self.subTest(yaml=yaml):
+                self.assertEqual(self.first(yaml).get("surfaces"), ["upload"])
+
+    def test_text_pyyaml_keeps_is_no_finding(self) -> None:
+        """A value PyYAML reads as a string, such as `n` or `yEs`, gives no typing finding."""
+        for yaml in ("name: n", "description: n", "description: yEs", "metadata:\n  a: yEs"):
+            with self.subTest(yaml=yaml):
+                self.assertEqual(rules(self.result(yaml)), [])
+
+    def test_claude_code_field_typing_unchanged(self) -> None:
+        """A Claude Code field keeps its claude-code surface."""
+        self.assertEqual(self.first("argument-hint: yes").get("surfaces"), ["claude-code"])
 
     def test_boolean_field_is_fine(self) -> None:
         """A boolean field may hold a boolean form."""

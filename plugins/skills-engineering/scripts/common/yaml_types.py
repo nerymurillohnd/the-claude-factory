@@ -2,9 +2,10 @@
 
 Only plain scalars resolve implicitly; quoted and block scalars are strings. YAML 1.1 uses the
 regular expressions of ruamel.yaml's 1.1 resolver: those of the YAML 1.1 type repository, with
-`1e3` read as a float, as YAML 1.1 loaders read it. A value with no digit, such as `_`, is never
-a number. YAML 1.2 uses the core schema. An explicit standard tag, such as `!!str`, decides the
-type; the non-specific tag `!` makes a string.
+`1e3` read as a float, as ruamel.yaml reads it. PyYAML, which the upload validator loads with,
+has its own narrower patterns: `pyyaml_tag` resolves by them. A value with no digit, such as `_`,
+is never a number. YAML 1.2 uses the core schema. An explicit standard tag, such as `!!str`,
+decides the type; the non-specific tag `!` makes a string.
 """
 
 from collections.abc import Callable, Hashable
@@ -17,6 +18,9 @@ from common.yaml_source import Node
 
 type Tag = Literal["str", "bool", "int", "float", "null", "timestamp"]
 type Schema = Literal["1.1", "1.2"]
+# How a scalar's type is resolved: a schema, or PyYAML's own resolver, which the upload
+# validator loads frontmatter with. Values are built only under a schema.
+type Resolution = Literal["1.1", "1.2", "pyyaml"]
 
 
 def _either(*alternatives: str) -> re.Pattern[str]:
@@ -104,9 +108,61 @@ _YAML12: tuple[tuple[Tag, re.Pattern[str]], ...] = (
         ),
     ),
 )
-_SCHEMAS: dict[Schema, tuple[tuple[Tag, re.Pattern[str]], ...]] = {
+# PyYAML's implicit resolvers, from yaml/pyyaml lib/yaml/resolver.py (`Resolver`), in the order
+# it registers them. They differ from the YAML 1.1 type repository: no `y` or `n` booleans, a
+# float needs a dot and any exponent needs a sign, and an octal needs its leading 0. Its merge
+# (`<<`) and value (`=`) resolvers build no scalar type, so those texts stay strings here.
+_PYYAML: tuple[tuple[Tag, re.Pattern[str]], ...] = (
+    (
+        "bool",
+        _either(
+            "yes",
+            "Yes",
+            "YES",
+            "no",
+            "No",
+            "NO",
+            "true",
+            "True",
+            "TRUE",
+            "false",
+            "False",
+            "FALSE",
+            "on",
+            "On",
+            "ON",
+            "off",
+            "Off",
+            "OFF",
+        ),
+    ),
+    (
+        "float",
+        _either(
+            r"[-+]?[0-9][0-9_]*\.[0-9_]*(?:[eE][-+][0-9]+)?",
+            r"\.[0-9][0-9_]*(?:[eE][-+][0-9]+)?",
+            r"[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*",
+            r"[-+]?\.(?:inf|Inf|INF)",
+            r"\.(?:nan|NaN|NAN)",
+        ),
+    ),
+    (
+        "int",
+        _either(
+            r"[-+]?0b[0-1_]+",
+            r"[-+]?0[0-7_]+",
+            r"[-+]?(?:0|[1-9][0-9_]*)",
+            r"[-+]?0x[0-9a-fA-F_]+",
+            r"[-+]?[1-9][0-9_]*(?::[0-5]?[0-9])+",
+        ),
+    ),
+    ("null", _either("~", "null", "Null", "NULL", "")),
+    ("timestamp", _TIMESTAMP),
+)
+_SCHEMAS: dict[Resolution, tuple[tuple[Tag, re.Pattern[str]], ...]] = {
     "1.1": _YAML11,
     "1.2": _YAML12,
+    "pyyaml": _PYYAML,
 }
 _SCALAR_TAGS: dict[str, Tag] = {
     "str": "str",
@@ -141,7 +197,7 @@ def _is_number_text(text: str) -> bool:
     return any(ch in "0123456789" for ch in text) or text.lstrip("+-").lower() in {".inf", ".nan"}
 
 
-def _implicit(text: str, schema: Schema) -> Tag:
+def _implicit(text: str, schema: Resolution) -> Tag:
     """The type a plain scalar's text resolves to, without a tag."""
     for tag, pattern in _SCHEMAS[schema]:
         if pattern.fullmatch(text) is None:
@@ -152,7 +208,7 @@ def _implicit(text: str, schema: Schema) -> Tag:
     return "str"
 
 
-def _fits(text: str, tag: Tag, schema: Schema) -> bool:
+def _fits(text: str, tag: Tag, schema: Resolution) -> bool:
     """True when text is a valid value of an explicitly tagged type."""
     if tag == "str":
         return True
@@ -166,8 +222,8 @@ def _fits(text: str, tag: Tag, schema: Schema) -> bool:
     )
 
 
-def resolve(node: Node, schema: Schema) -> Tag:
-    """The type of a scalar node under a schema; TypeError for a collection or an alias."""
+def resolve(node: Node, schema: Resolution) -> Tag:
+    """The type of a scalar node under a resolution; TypeError for a collection or an alias."""
     if node.kind != "scalar":
         msg = f"a {node.kind} has no scalar type"
         raise TypeError(msg)
@@ -181,8 +237,13 @@ def resolve(node: Node, schema: Schema) -> Tag:
 
 
 def yaml11_tag(node: Node) -> Tag:
-    """The YAML 1.1 type of a scalar node, as YAML 1.1 loaders such as PyYAML resolve it."""
+    """The YAML 1.1 type of a scalar node, by the YAML 1.1 type repository's patterns."""
     return resolve(node, "1.1")
+
+
+def pyyaml_tag(node: Node) -> Tag:
+    """The type PyYAML's resolver gives a scalar node, as the upload validator loads it."""
+    return resolve(node, "pyyaml")
 
 
 def yaml12_tag(node: Node) -> Tag:

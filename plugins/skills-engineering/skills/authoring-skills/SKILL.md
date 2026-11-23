@@ -1,6 +1,7 @@
 ---
 name: authoring-skills
-description: Use every time the user asks to write or create a skill, and proactively when the work shows one is needed without being asked, such as a repetitive or manual process in the project or a prompt or procedure worth reusing across sessions. Covers personal skills in ~/.claude/skills, project skills in .claude/skills, skills in a repository or an added directory, plugin skills at the plugin root or in its skills/ folder, skills synced from or uploaded to claude.ai or sent to the Skills API, and skills preloaded into subagents, in local and cloud sessions. Also for rewriting, correcting, improving or restructuring a skill, at the user's request or after an audit. Teaches Claude to engineer skills from current official docs, first the user's intent, the environment and the kind of work, then where the skill lives and how it runs, its structure and the components it needs, and how to weigh the user's instructions against the skill's goal. Not for auditing a skill, but for implementing what an audit recommends.
+description: Use every time the user asks to write or create a skill, and proactively when the work shows one is needed without being asked, such as a repetitive or manual process in the project or a prompt or procedure worth reusing across sessions. Covers personal skills in ~/.claude/skills, project skills in .claude/skills, skills in a repository or an added directory, plugin skills at the plugin root or in its skills/ folder, skills synced from or uploaded to Claude or sent to the Skills API, and skills preloaded into subagents, in local and cloud sessions. Also for rewriting, correcting, improving or restructuring a skill, at the user's request or after an audit. Teaches Claude to engineer skills from current official docs, first the user's intent, the environment and the kind of work, then where the skill lives and how it runs, its structure and the components it needs, and how to weigh the user's instructions against the skill's goal. Not for auditing a skill, but for implementing what an audit recommends.
+allowed-tools: Bash(python3 "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" *), Bash(python "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" *)
 ---
 
 # Authoring skills
@@ -175,6 +176,7 @@ Exit: every planned file exists and passes its checks.
 Walk the use cases from the model's seat, check the skill against its checklist and run its checks, fixing what fails.
 
 - Read [Phase 5: Self-review](references/phase-5-self-review.md) when you start this phase.
+- Run the skill checks it calls for with `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/skill-checks.py" run --out '${CLAUDE_PLUGIN_DATA}/checks/${CLAUDE_SESSION_ID}' <the SKILL.md you wrote>`, written exactly so, both kinds of quotes included: the single quotes keep the folder path whole. When that folder path, as you read it here, holds a single quote, as a home folder named `o'brien` does, write each one as `'\''` so the quoting still holds.
 
 Exit: every check passes, or each one that can't is listed for the report.
 

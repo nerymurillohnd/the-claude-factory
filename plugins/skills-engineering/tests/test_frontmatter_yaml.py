@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the strict YAML check, frontmatter.yaml, run through frontmatter-checks.py.
+"""Tests for the strict YAML check, frontmatter.yaml, run through skill-checks.py.
 
 It reports the strict-YAML failures claude plugin validate passes, and the bytes that aren't
 UTF-8; a missing block or a root that isn't a mapping, which validate reports, gives `not_run`.

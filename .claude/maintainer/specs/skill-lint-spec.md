@@ -28,7 +28,7 @@ Each check has one owner:
   - ⚠: a lead that needs judgment. Exit 0.
   - `--strict` turns ⚠ into failures.
 - **Reserved words** (`anthropic`, `claude`) in a name give ⚠. A rename goes in a plugin PR with a major version bump.
-- **Scope:** the linter reads only files inside each skill folder, plus the git index mode of those files.
+- **Scope:** the linter reads only files inside each skill folder, plus the git index mode of those files, and, for a `${CLAUDE_PLUGIN_ROOT}` path in a plugin skill, whether the file it names exists inside the plugin, where a plugin's skills share scripts.
 - **Every finding in every skill is reported**, project skills included. The linter filters nothing out by surface. The owner decides what gets fixed and when.
 - **When and by whom the linter runs is not decided.** This work builds the script and its `npm run lint:skills` entry point only. It is not wired into `lint`, `check`, Git hooks or CI.
 - **On every run,** Claude reports each defect to the owner and asks whether to fix it now, record it as technical debt, or decide something else. Claude fixes nothing on its own initiative.
@@ -87,7 +87,7 @@ Each finding carries a rule id, family, severity, `file:line`, message and sourc
 | CO-05 | ✗ | `compatibility` is at most 500 characters. `metadata` is a map of strings |
 | CO-06 | ✗ | The SKILL.md body (the lines after the closing `---`) has fewer than 500 lines; 500 fails, matching "under 500 lines" |
 | CO-07 | ✗ | Every relative link and `#anchor` resolves (slugs as github-slugger 2.0.0 builds them; links in code and in HTML comments are ignored; a target with a URI scheme of two or more characters, or starting with `//`, is external and not checked). Output templates are exempt (see below) |
-| CO-08 | ✗ | No link or path leaves the skill folder |
+| CO-08 | ✗ | No link or path leaves the skill folder, except a `${CLAUDE_PLUGIN_ROOT}` path in a plugin skill, which may reach anywhere inside its plugin but not out of it |
 | CO-09 | ✗ | Depth: a `.md` file that is reached only through another bundled file, never linked from SKILL.md (depth > 1) |
 | CO-10 | ✗ | A reference file over 100 lines has a table of contents: within the first 20 non-blank lines after its first heading, at least 2 list items that link to `#anchors` in the same file. Output templates are exempt (see below) |
 | CO-11 | ⚠ | Time-sensitive text outside code, case-insensitive: `\b(before\|after\|until\|since\|as of)\s+(January\|…\|December\|Q[1-4])?\s*(19\|20)\d{2}\b`, `\b(currently\|now\|today\|recently)\b.{0,40}\b(19\|20)\d{2}\b`, `\bin (19\|20)\d{2}\b` |
@@ -119,7 +119,7 @@ An **entry point** is a file the skill's Markdown runs (a command line that name
 | :-- | :-- | :-- |
 | SC-01 | ✗ | An entry point's first line is `#!/usr/bin/env <interpreter>` |
 | SC-02 | ✗ | An entry point's git index mode is `100755`. A file not in the index is checked by its filesystem exec bit instead, and the message says "untracked: filesystem mode"; when git itself failed (anything but "not a git repository"), the message names git's error instead |
-| SC-03 | ✗ | Every script the skill's Markdown runs exists inside the skill folder and is called with its interpreter. The path may take any of three forms: relative to SKILL.md, through `${CLAUDE_SKILL_DIR}`, or through `${CLAUDE_PLUGIN_ROOT}` (plugin skills only). The rule resolves each form to a file and judges only existence and interpreter, never which form the path uses |
+| SC-03 | ✗ | Every script the skill's Markdown runs exists inside the skill folder, or inside its plugin for a `${CLAUDE_PLUGIN_ROOT}` path, and is called with its interpreter. The path may take any of three forms: relative to SKILL.md, through `${CLAUDE_SKILL_DIR}`, or through `${CLAUDE_PLUGIN_ROOT}` (plugin skills only). The rule resolves each form to a file and judges only existence and interpreter, never which form the path uses |
 | SC-04 | ✗ | A Python script that imports a module outside the stdlib declares it in a PEP 723 block |
 | SC-05 | ⚠ | An external command in a script (`jq`, `gh`, …) that neither SKILL.md nor `compatibility` mentions |
 | SC-06 | ⚠ | A global package install (`pip install` outside a venv, `npm install -g`) |
@@ -143,7 +143,7 @@ The manifest always lists these.
 - **Python syntax at the 3.12 floor:** ruff covers it. `pyproject.toml` sets `per-file-target-version` to `py312` for `plugins/**/*.py`. Confirmed: ruff reports syntax newer than py312. `ruff check --no-cache --isolated --target-version py312` on `def f[T = int](): ...` exits 1 with `invalid-syntax: Cannot set default type for a type parameter on Python 3.12 (syntax was added in Python 3.13)`. No rule is needed here.
 - **Basic frontmatter parsing:** `claude plugin validate`.
 - **Semantics:** agents and `/doctor prompt-audit`.
-- **Cross-checks against files outside the skill folder** (the README surface badge, Prerequisites): excluded by the skill-folder-only rule. If the owner wants them, they become a separate script.
+- **Cross-checks against files outside the skill folder** (the README surface badge, Prerequisites): excluded by the scope rule, which reaches past the skill folder only to check that a `${CLAUDE_PLUGIN_ROOT}` path names a file inside the plugin. If the owner wants them, they become a separate script.
 
 ## Architecture
 

@@ -12,6 +12,7 @@ from scripts.checks.skill_lint.refs import (
     depths,
     escapes,
     imported_or_sourced,
+    plugin_file,
     reference_graph,
 )
 from scripts.tests.checks.skill_lint.helpers import VALID_SKILL_MD, build_skill
@@ -69,9 +70,24 @@ class ResolveTest(unittest.TestCase):
             skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
             self.assertTrue(escapes(skill, "../other/x.md", "SKILL.md"))
             self.assertTrue(escapes(skill, "/etc/passwd", "SKILL.md"))
-            self.assertTrue(escapes(skill, "${CLAUDE_PLUGIN_ROOT}/x.sh", "SKILL.md"))
+            self.assertTrue(escapes(skill, "${CLAUDE_PLUGIN_ROOT}/../x.sh", "SKILL.md"))
+            self.assertFalse(escapes(skill, "${CLAUDE_PLUGIN_ROOT}/x.sh", "SKILL.md"))
             self.assertFalse(escapes(skill, "../b.md", "references/a.md"))
             self.assertFalse(escapes(skill, "b.md", "SKILL.md"))
+
+    def test_plugin_file_is_a_file(self) -> None:
+        """plugin_file names a file inside the plugin, never a folder."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD})
+            shared = folder.parent.parent / "scripts"
+            shared.mkdir()
+            _ = (shared / "x.py").write_text("print(1)\n", encoding="utf-8")
+            skill = load_skill(folder / "SKILL.md")
+            self.assertIsNone(plugin_file(skill, "${CLAUDE_PLUGIN_ROOT}/scripts"))
+            self.assertEqual(
+                plugin_file(skill, "${CLAUDE_PLUGIN_ROOT}/scripts/x.py"),
+                (shared / "x.py").resolve(),
+            )
 
     def test_escape_symlink(self) -> None:
         """A symlink inside the folder that points outside escapes."""

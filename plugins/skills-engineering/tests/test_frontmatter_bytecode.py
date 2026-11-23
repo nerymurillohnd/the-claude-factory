@@ -13,7 +13,7 @@ import tempfile
 import unittest
 
 PLUGIN = Path(__file__).resolve().parents[1]
-SCRIPTS = Path("skills") / "auditing-skills" / "scripts"
+SCRIPTS = Path("scripts")
 IN_PROCESS = (
     "test_frontmatter_foundation",
     "test_frontmatter_reader",

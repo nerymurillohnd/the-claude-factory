@@ -2,7 +2,8 @@
 
 A project convention, not an official rule: tools that read the name as text and YAML parsers
 agree only when the name is plain, on one line, with no anchor, alias or tag, and not a value
-YAML 1.1 reads as a number or a date. Booleans and null are frontmatter.plain-values' findings.
+PyYAML, which uploads load with, reads as a number or a date. Booleans and null are
+frontmatter.plain-values' findings.
 """
 
 from typing import Final
@@ -11,7 +12,7 @@ from common.context import Context
 from common.frontmatter import NO_BLOCK_REASON, load
 from common.report import CheckResult, Finding
 from common.yaml_reader import Node
-from common.yaml_types import yaml11_tag
+from common.yaml_types import pyyaml_tag
 
 CHECK: Final = "frontmatter.name-plain"
 YAML11_TYPES: Final = frozenset({"int", "float", "timestamp"})
@@ -44,9 +45,11 @@ def _findings(node: Node) -> list[Finding]:
     if node.kind == "alias" or node.anchor is not None or node.tag is not None:
         found.append(_finding("anchor-alias-tag", node, "Write the name with no anchor or tag."))
     if node.kind == "scalar" and node.style == "plain" and node.tag is None:
-        tag = yaml11_tag(node)
+        tag = pyyaml_tag(node)
         if tag in YAML11_TYPES:
-            expected = f"A name YAML 1.1 reads as text; this one reads as a {tag}."
+            expected = (
+                f"A name PyYAML, which uploads use, reads as text; this one reads as a {tag}."
+            )
             found.append(
                 Finding(
                     check=CHECK,

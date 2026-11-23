@@ -1,6 +1,6 @@
 """Shared helpers for the frontmatter check tests: paths, JSON narrowing and script runs.
 
-Every check is run the way the main session runs it, through `frontmatter-checks.py`, on a
+Every check is run the way the main session runs it, through `skill-checks.py`, on a
 throwaway skill folder, so the tests see exactly the bytes a reviewer would receive.
 """
 
@@ -16,8 +16,8 @@ from typing import TypeGuard
 # without this, Python would write bytecode into the plugin's scripts folder.
 sys.dont_write_bytecode = True
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "skills" / "auditing-skills" / "scripts"
-ENTRY = SCRIPTS / "frontmatter-checks.py"
+SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
+ENTRY = SCRIPTS / "skill-checks.py"
 
 
 class JsonObject(dict[str, object]):
@@ -48,10 +48,12 @@ def run_python(
     cwd: Path | None = None,
     env: dict[str, str] | None = None,
     python: str = sys.executable,
+    stdin: str = "",
 ) -> subprocess.CompletedProcess[str]:
-    """Run a Python command line and capture its text output, decoded as UTF-8."""
+    """Run a command line with this text on stdin and capture its output, decoded as UTF-8."""
     return subprocess.run(
         [python, *args],
+        input=stdin,
         capture_output=True,
         text=True,
         encoding="utf-8",

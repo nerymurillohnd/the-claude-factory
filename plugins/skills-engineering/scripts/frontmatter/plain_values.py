@@ -9,23 +9,31 @@ from dataclasses import replace
 from typing import Final
 
 from common.context import Context
-from common.fields import TEXT_FIELDS
+from common.fields import SPEC_FIELDS, TEXT_FIELDS
 from common.frontmatter import NO_BLOCK_REASON, Loaded, load, values
-from common.report import CheckResult, Finding
+from common.report import CheckResult, Finding, Surface
 from common.yaml_reader import Node
+from common.yaml_types import pyyaml_tag
 
 CHECK: Final = "frontmatter.plain-values"
 YAML11_BOOLEANS: Final = frozenset({"yes", "no", "on", "off"})
 BOOLEANS: Final = frozenset({"true", "false"}) | YAML11_BOOLEANS
 NULLS: Final = frozenset({"null", "~"})
 LEADING_INDICATORS: Final = "-?:"
+UPLOAD: Final[tuple[Surface, ...]] = ("upload",)
 YAML11_CONDITION: Final = (
     "YAML 1.1 parsers, such as PyYAML, read it as a boolean; YAML 1.2 keeps it as text"
 )
 
 
 def _finding(rule: str, node: Node, field: str, expected: str) -> Finding:
-    """A finding at the node's position, quoting its source text."""
+    """A finding at the node's position, quoting its source text.
+
+    A specification field is read by open-spec and upload, any other field by Claude Code.
+    """
+    surfaces: tuple[Surface, ...] = (
+        ("open-spec", "upload") if field in SPEC_FIELDS else ("claude-code",)
+    )
     return Finding(
         check=CHECK,
         rule=rule,
@@ -35,7 +43,7 @@ def _finding(rule: str, node: Node, field: str, expected: str) -> Finding:
         found=node.raw,
         expected=expected,
         basis="inference",
-        surfaces=("open-spec", "upload"),
+        surfaces=surfaces,
     )
 
 
@@ -59,7 +67,19 @@ def _comment(loaded: Loaded, node: Node, field: str) -> Finding | None:
 
 
 def _boolean_or_null(node: Node, field: str) -> Finding | None:
-    """A plain value read as a boolean or null."""
+    """A plain value read as a boolean or null.
+
+    The open-spec validator, skills-ref, reads every scalar of a specification field as a string
+    through strictyaml, so there the finding is on uploads only, and only when PyYAML, which
+    uploads load with, types the value; `yEs` stays text to PyYAML and gives none.
+    """
+    if field in SPEC_FIELDS:
+        tag = pyyaml_tag(node)
+        if tag not in {"bool", "null"}:
+            return None
+        rule = "reads-as-boolean" if tag == "bool" else "reads-as-null"
+        expected = "Quote the value so uploads read it as text."
+        return replace(_finding(rule, node, field, expected), surfaces=UPLOAD)
     lowered = node.value.lower()
     if lowered in BOOLEANS:
         return replace(
@@ -78,12 +98,16 @@ def _plain_findings(loaded: Loaded, node: Node, field: str) -> list[Finding]:
     if comment is not None:
         found.append(comment)
     if node.value[:1] in LEADING_INDICATORS and node.value:
+        # YAML 1.2 and PyYAML read `-x` as plain text; quoting it is a convention, not a fix.
         found.append(
-            _finding(
-                "leading-indicator",
-                node,
-                field,
-                "Quote a value that starts with `-`, `?` or `:`.",
+            replace(
+                _finding(
+                    "leading-indicator",
+                    node,
+                    field,
+                    "Quote a value that starts with `-`, `?` or `:`.",
+                ),
+                basis="convention",
             )
         )
     return found
