@@ -29,9 +29,9 @@ paths:
 
 ## Before a release
 
-Before releasing a plugin whose Python or Node code changed, run its tests on the floors too, Python 3.12 and Node.js 24, from the session scratchpad, and delete the runtimes right after the run:
+Validate's `Floors` job runs every plugin's tests on Python 3.12 and Node.js 24 on each pull request. Before releasing a plugin whose Python or Node code changed, or to reproduce a `Floors` failure, run its tests on those floors locally, from the session scratchpad, and delete the runtimes right after the run:
 
 - Get Python 3.12 with `UV_PYTHON_DOWNLOADS=automatic UV_PYTHON_INSTALL_DIR=<scratchpad>/py UV_CACHE_DIR=<scratchpad>/uvcache uv run --isolated --no-project --python 3.12 python3 -V`; lift `UV_PYTHON_DOWNLOADS=manual` only for that command, which links nothing into `~/.local/bin`.
-- Download `node-v24.<x>-<os>-<arch>.tar.xz` and `SHASUMS256.txt` from `https://nodejs.org/dist/v24.<x>/` into `<scratchpad>`, check it with `shasum -a 256 -c --ignore-missing SHASUMS256.txt`, then `tar -xJf` it.
+- Download `node-v24.<x>-<os>-<arch>.tar.xz` and `SHASUMS256.txt` from the newest `v24` folder under `https://nodejs.org/dist/` into `<scratchpad>`, check it with `shasum -a 256 -c --ignore-missing SHASUMS256.txt`, then `tar -xJf` it.
 - Run `PATH="$(echo <scratchpad>/py/cpython-3.12-*/bin):<scratchpad>/node-v24.<x>-<os>-<arch>/bin:$PATH" bash scripts/checks/plugins.sh tests`, not `npm run test:plugins`: the tarball's Node 24 and its npm fall outside the root `devEngines`.
 - Delete `<scratchpad>/py`, `<scratchpad>/uvcache` and the Node folder and tarball.

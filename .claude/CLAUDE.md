@@ -32,7 +32,7 @@
 - Run `npm run lint:agents -- <file>` after each edit of a subagent in `plugins/*/agents/` or `.claude/agents/`: it reports any Markdown heading outside the frontmatter and fenced blocks.
 - Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
 - Run `shfmt -w <file>`, then `shellcheck <file>`, which takes its options from `SHELLCHECK_OPTS` and `.shellcheckrc`, to format and lint a shell script after each edit.
-- Run `npx tsc -p tsconfig.json --noEmit` to type-check the maintainer and plugin JavaScript after each change to a `.mjs`, `.cjs` or `.js` file: the root `tsconfig.json` checks them against Node 26 types, so it misses an API above the Node 24 floor of plugin JavaScript, which `.claude/rules/code-quality/typescript.md` covers. Run no `tsc` on a mod's `.ts` files: `claude plugin validate` type-checks them against the mod API.
+- Run `npx tsc -p tsconfig.json --noEmit` to type-check the maintainer and plugin JavaScript after each change to a `.mjs`, `.cjs` or `.js` file: the root `tsconfig.json` checks them against `@types/node` 24, the Node.js floor of plugin code, so an API newer than Node 24 fails. Run no `tsc` on a mod's `.ts` files: `claude plugin validate` type-checks them against the mod API.
 - Run `basedpyright --outputjson` to type-check the Python after each change to a Python file.
 
 **Tests and plugins**
@@ -45,7 +45,7 @@
 
 - Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
 - Run `npm run check:links -- <file>...` to check that the URLs in those files answer, or with no file for every tracked file; 404, 410 and no connection fail, other answers warn. List a URL that only works for a tool, or a documented example, in `scripts/checks/live-urls.ignore`. Validate runs it on a pull request's changed files, and the weekly Links workflow on every file.
-- Run `npm run check:pr` before a push to run the checks of Validate's `Checks` job, or `npm run check:pr -- <step>` for one of them.
+- Run `npm run check:pr` before a push to run the checks of Validate's `Checks` job, or `npm run check:pr -- <step>` for one of them. Validate's `Floors` job runs only in CI; reproduce it as `.claude/rules/plugins/testing.md` says.
 - Expect each commit to run the Git pre-commit gate, which `npm ci` turns on through `prepare`: on the staged `.sh`, `.ts`, `.mjs`, `.md`, `.py`, `.pyi` and `.json` files only, it applies Biome's and Ruff's lint and format fixes and `shfmt -w`, stages those fixes, then runs Biome, Ruff, basedpyright, ShellCheck, `tsc --noEmit` and, on subagent files, `agent-headings`, and it refuses a file with unstaged changes on top. Run `npm run check:staged` to run it before committing, and fix what it reports instead of committing with `--no-verify`.
 
 **Platforms**
