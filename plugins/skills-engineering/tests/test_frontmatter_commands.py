@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the shell commands MECHANICAL-CHECKS.md gives for the block, the keys and the folder.
+"""Tests for the shell commands MECHANICAL-CHECKS.md gives for the block and the folder.
 
 Each command is run with `sh -c` on fixtures, after its placeholders are replaced with quoted
 paths, and each must appear verbatim in MECHANICAL-CHECKS.md. The validate tests need the
@@ -23,12 +23,8 @@ SKILL_MD = SKILL_DIR / "SKILL.md"
 MAKE_SKILLS = 'mkdir -p "<temporary plugin>/skills"'
 COPY_SKILL = 'cp -RL "<skill folder>" "<temporary plugin>/skills/<skill name>"'
 VALIDATE = 'claude plugin validate --json "<temporary plugin>"'
-KEYS = (
-    "awk 'NR==1 && !/---[[:space:]]*$/{exit} NR>1 && /^---[[:space:]]*$/{exit} "
-    'NR>1 && /^[^[:space:]#]/{print NR": "substr($(0),1,80)}\' "<SKILL.md>"'
-)
 FOLDER = 'basename "$(dirname "<SKILL.md>")"'
-COMMANDS = (MAKE_SKILLS, COPY_SKILL, VALIDATE, KEYS, FOLDER)
+COMMANDS = (MAKE_SKILLS, COPY_SKILL, VALIDATE, FOLDER)
 NO_FRONTMATTER = "No frontmatter block found"
 
 
@@ -145,8 +141,8 @@ class CopyAndValidateTest(unittest.TestCase):
             self.assertTrue(any(NO_FRONTMATTER in message for message in messages))
 
 
-class KeysAndFolderTest(unittest.TestCase):
-    """The top-level keys with their lines, and the folder name."""
+class FolderTest(unittest.TestCase):
+    """The folder name."""
 
     def run_on(self, command: str, folder: str, data: bytes) -> str:
         """Write <tmp>/<folder>/SKILL.md and run the command on it."""
@@ -157,24 +153,6 @@ class KeysAndFolderTest(unittest.TestCase):
             done = sh(fill(command, {"SKILL.md": str(skill)}))
         self.assertEqual(done.returncode, 0)
         return done.stdout
-
-    def test_keys_with_bom_and_crlf(self) -> None:
-        """Top-level keys with their file lines; nested lines, comments and the body left out."""
-        data = (
-            "﻿---\r\nname: demo\r\n# note\r\nmetadata:\r\n  a: b\r\n"
-            "bogus-key: x\r\n---\r\nbody: not a key\r\n"
-        ).encode()
-        lines = [line.rstrip("\r") for line in self.run_on(KEYS, "demo", data).splitlines()]
-        self.assertEqual(lines, ["2: name: demo", "4: metadata:", "6: bogus-key: x"])
-
-    def test_keys_without_frontmatter(self) -> None:
-        """No opening marker: nothing printed."""
-        self.assertEqual(self.run_on(KEYS, "demo", b"name: x\n---\n"), "")
-
-    def test_long_key_line_is_cut(self) -> None:
-        """A key's line is cut at 80 characters."""
-        data = f"---\ndescription: {'d' * 200}\n---\n".encode()
-        self.assertEqual(len(self.run_on(KEYS, "demo", data).strip()), len("2: ") + 80)
 
     def test_folder_name(self) -> None:
         """The folder name as written, capitals kept."""
