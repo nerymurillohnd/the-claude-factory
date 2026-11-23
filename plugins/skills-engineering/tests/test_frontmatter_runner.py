@@ -17,7 +17,7 @@ import time
 from typing import override
 import unittest
 
-from frontmatter_helpers import SCRIPTS, is_list, parse_object, run_python
+from frontmatter_helpers import SCRIPTS, parse_object, run_python
 
 sys.path.insert(0, str(SCRIPTS))
 
@@ -161,9 +161,16 @@ class RunnerTest(unittest.TestCase):
         )
         self.assertEqual(folder.parent, self.temp_root)
         self.assertTrue(folder.name.startswith(PREFIX))
-        summary = parse_object((folder / "summary.json").read_text(encoding="utf-8"))
-        checks = summary.get("checks")
-        self.assertTrue(is_list(checks))
+        self.assertEqual(
+            (folder / "summary.json").read_text(encoding="utf-8"),
+            '{"checks":['
+            '{"check":"frontmatter.demo-ok","status":"ran","findings":1,'
+            '"receivers":["comprehension","scripts"]},'
+            '{"check":"frontmatter.demo-fail","status":"ran","findings":1,'
+            '"receivers":["scripts"]},'
+            '{"check":"frontmatter.demo-dep","status":"not_run","findings":0,'
+            '"receivers":["runtime-contract"]}]}\n',
+        )
 
     def test_result_file_matches_the_single_check(self) -> None:
         """Each result file holds exactly what `check <id>` prints for that check."""
@@ -191,15 +198,83 @@ class RunnerTest(unittest.TestCase):
 
     def test_run_out_creates_run_folder_inside(self) -> None:
         """--out <dir> puts the marked run folder in <dir>, which gets the session marker."""
+        (self.tmp / "data").mkdir()
         session = self.tmp / "data" / "checks" / "session-1"
         folder = self.run_out(str(session))
         self.assertEqual(folder.parent, session)
         self.assertTrue((folder / MARKER).is_file())
         self.assertTrue((session / SESSION_MARKER).is_file())
 
+    def test_run_out_hand_written_folder_is_no_session(self) -> None:
+        """--out <dir> not shaped <data>/checks/<id> gets the run, no session marker, no sweep."""
+        out = self.tmp / "audit-results"
+        old_neighbour = self.tmp / f"{PREFIX}neighbour"
+        old_neighbour.mkdir()
+        _ = (old_neighbour / MARKER).write_text("", encoding="utf-8")
+        day_ago = time.time() - 25 * 3600
+        os.utime(old_neighbour, (day_ago, day_ago))
+        folder = self.run_out(str(out))
+        self.assertEqual(folder.parent, out)
+        self.assertFalse((out / SESSION_MARKER).exists())
+        self.assertTrue(old_neighbour.exists())
+
+    def test_run_out_under_a_file_exits_2(self) -> None:
+        """--out below a regular file exits 2 with one line naming the path, and no run folder."""
+        blocker = self.tmp / "blocker"
+        _ = blocker.write_text("", encoding="utf-8")
+        code, out, err = self.entry_run("run", "--out", str(blocker / "sub"), str(self.skill))
+        self.assertEqual((code, out), (2, ""))
+        self.assertEqual(len(err.splitlines()), 1, err)
+        self.assertTrue(err.startswith("skill-checks.py: can't create the results folder"), err)
+        self.assertIn(str(blocker), err)
+        self.assertEqual(list(self.temp_root.iterdir()), [])
+
+    def replace_demo_ok(self, body: str) -> None:
+        """Make the demo-ok check run this body instead of its own."""
+        source = f"from common.report import CheckResult\n\n\ndef check(ctx):\n{body}"
+        _ = (self.entry.parent / "frontmatter" / "demo_ok.py").write_text(source, encoding="utf-8")
+
+    def test_read_failure_in_run_is_a_read_error(self) -> None:
+        """A check that fails reading SKILL.md exits 2 with `can't read <path>`, no run folder."""
+        self.replace_demo_ok(
+            "    import errno\n"
+            "    raise OSError(errno.EIO, 'Input/output error', str(ctx.skill_md))\n"
+        )
+        code, out, err = self.entry_run("run", str(self.skill))
+        self.assertEqual((code, out), (2, ""))
+        self.assertEqual(err, f"skill-checks.py: can't read {self.skill}: Input/output error\n")
+        self.assertEqual(list(self.temp_root.iterdir()), [])
+
+    def test_read_failure_in_check_is_a_read_error(self) -> None:
+        """`check <id>` reports a read failure on one stderr line with exit 2, no traceback."""
+        self.replace_demo_ok(
+            "    import errno\n"
+            "    raise OSError(errno.EIO, 'Input/output error', str(ctx.skill_md))\n"
+        )
+        code, out, err = self.entry_run("check", "frontmatter.demo-ok", str(self.skill))
+        self.assertEqual((code, out), (2, ""))
+        self.assertEqual(err, f"frontmatter.demo-ok: can't read {self.skill}: Input/output error\n")
+
+    def test_check_that_raises_leaves_no_run_folder(self) -> None:
+        """A check that raises leaves no run folder behind."""
+        self.replace_demo_ok("    raise RuntimeError('boom')\n")
+        code, out, _ = self.entry_run("run", str(self.skill))
+        self.assertEqual((code, out), (1, ""))
+        self.assertEqual(list(self.temp_root.iterdir()), [])
+
+    def test_not_a_regular_file_exits_2(self) -> None:
+        """A SKILL.md path that is a device, as /dev/null, exits 2 as not a regular file."""
+        for command in (("run", "/dev/null"), ("check", "frontmatter.demo-ok", "/dev/null")):
+            with self.subTest(command=command[0]):
+                code, out, err = self.entry_run(*command)
+                self.assertEqual((code, out), (2, ""))
+                self.assertEqual(len(err.splitlines()), 1, err)
+                self.assertIn("not a regular file: /dev/null", err)
+
     def test_run_out_literal_session_through_shell(self) -> None:
         """A literal ${CLAUDE_SESSION_ID} in single quotes reaches the script; the run goes up."""
         checks = self.tmp / "data" / "checks"
+        (self.tmp / "data").mkdir()
         env = {
             k: v
             for k, v in self.env.items()
@@ -213,6 +288,7 @@ class RunnerTest(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         folder = Path(done.stdout.splitlines()[-1].removeprefix("results: "))
         self.assertEqual(folder.parent, checks)
+        self.assertFalse((checks / SESSION_MARKER).exists())
 
     def test_run_out_literal_root_uses_temp(self) -> None:
         """An --out that starts with an unexpanded variable falls back to the temp folder."""

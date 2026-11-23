@@ -11,11 +11,18 @@ import argparse
 from collections.abc import Callable, Sequence
 import json
 from pathlib import Path
-import shutil
 import sys
 from typing import NoReturn
 
-from common.cli import OneLineParser, cant_run, parse, reconfigure_streams, run
+from common.cli import (
+    OneLineParser,
+    cant_read,
+    cant_run,
+    describe,
+    parse,
+    reconfigure_streams,
+    run,
+)
 from common.context import Context
 from common.report import CheckResult, to_json
 
@@ -27,8 +34,9 @@ PROG = "skill-checks.py"
 
 EXIT_CODES = """\
 exit 0: the command ran; a check with findings still exits 0.
-exit 2: it can't run: a usage error, an unknown check or family, or a SKILL.md that
-        is missing, a folder or unreadable; one line on stderr and nothing on stdout."""
+exit 2: it can't run: a usage error, an unknown check or family, a SKILL.md that is
+        missing, a folder, not a regular file or unreadable, or a results folder it
+        can't create or write; one line on stderr and nothing on stdout."""
 
 
 def failed(result: CheckResult) -> bool:
@@ -95,22 +103,31 @@ def _write(folder: Path, name: str, content: str) -> None:
 
 
 def run_all(skill_md: str, family: str | None, out: str | None) -> NoReturn:
-    """`run [--family F] [--out DIR] <SKILL.md>`: the checks into a new run folder, a summary."""
+    """`run [--family F] [--out DIR] <SKILL.md>`: the checks into a new run folder, a summary.
+
+    Every check runs before the run folder exists, so a check that fails to read SKILL.md is
+    reported as a read error and leaves no folder behind.
+    """
     specs = CHECKS if family is None else FAMILIES[family]
     context_for = _contexts(skill_md)
     contexts = {spec.check: context_for(spec) for spec in specs}
-    parent, checks_root = results.resolve_out(out)
-    results.sweep(checks_root)
+    done: dict[str, CheckResult] = {}
     try:
-        folder = results.create(parent, mark_session=parent is not None and parent != checks_root)
-    except OSError as error:
-        cant_run(PROG, f"can't create the results folder: {error.strerror}")
-    try:
-        done: dict[str, CheckResult] = {}
-        summary: list[dict[str, object]] = []
         for spec in specs:
             if spec.check not in done:
                 done[spec.check] = evaluate(spec, contexts[spec.check], context_for, done)
+    except OSError as error:
+        cant_run(PROG, cant_read(error, skill_md))
+    parent, checks_root = results.resolve_out(out)
+    results.sweep(checks_root)
+    mark_session = parent is not None and checks_root is not None and parent != checks_root
+    try:
+        folder = results.create(parent, mark_session=mark_session)
+    except OSError as error:
+        cant_run(PROG, f"can't create the results folder: {describe(error)}")
+    try:
+        summary: list[dict[str, object]] = []
+        for spec in specs:
             result = done[spec.check]
             _write(folder, f"{spec.check}.json", to_json(result) + "\n")
             summary.append(
@@ -124,10 +141,10 @@ def run_all(skill_md: str, family: str | None, out: str | None) -> NoReturn:
         document = {"checks": summary}
         _write(folder, "summary.json", json.dumps(document, separators=(",", ":")) + "\n")
     except OSError as error:
-        shutil.rmtree(folder, ignore_errors=True)
-        cant_run(PROG, f"can't write the results: {error.strerror}")
+        results.remove_run(folder)
+        cant_run(PROG, f"can't write the results: {describe(error)}")
     except BaseException:
-        shutil.rmtree(folder, ignore_errors=True)
+        results.remove_run(folder)
         raise
     lines = [_summary_line(spec, done[spec.check]) for spec in specs]
     _ = sys.stdout.write("".join(f"{line}\n" for line in lines) + f"results: {folder}\n")

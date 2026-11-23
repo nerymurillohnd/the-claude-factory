@@ -2,8 +2,8 @@
 
 `<check> <SKILL.md> [options]` prints one result and exits 0, with or without findings. It exits
 2, with one line on stderr and nothing on stdout, when the check can't run: a usage error, a
-missing path, a folder, or a file it can't read. It never exits 1, which the Bash tool shows as
-a failure.
+missing path, a folder or other path that is not a regular file, or a file it can't read. It
+never exits 1, which the Bash tool shows as a failure.
 """
 
 import argparse
@@ -49,6 +49,29 @@ def cant_run(prog: str, message: str) -> NoReturn:
     sys.exit(CANT_RUN)
 
 
+def _filename(error: OSError) -> str | None:
+    """The path an OSError names, as text, or None when it names none."""
+    match error:
+        case OSError(filename=str() as name):
+            return name
+        case OSError(filename=bytes() as raw):
+            return raw.decode(errors="replace")
+        case _:
+            return None
+
+
+def describe(error: OSError) -> str:
+    """`<reason>: <path>` for an OSError, falling back to its text when it has no strerror."""
+    reason = error.strerror or str(error)
+    filename = _filename(error)
+    return f"{reason}: {filename}" if filename is not None else reason
+
+
+def cant_read(error: OSError, skill_md: str) -> str:
+    """`can't read <path>: <reason>`, naming the file the error names, else the SKILL.md."""
+    return f"can't read {_filename(error) or skill_md}: {error.strerror or error}"
+
+
 def _context(check_id: str, args: Arguments) -> Context:
     """Validate the SKILL.md path and build the check's context."""
     path = Path(args.skill_md)
@@ -56,11 +79,13 @@ def _context(check_id: str, args: Arguments) -> Context:
         cant_run(check_id, f"no such file: {args.skill_md}")
     if path.is_dir():
         cant_run(check_id, f"a folder, not a SKILL.md file: {args.skill_md}")
+    if not path.is_file():
+        cant_run(check_id, f"not a regular file: {args.skill_md}")
     try:
         with path.open("rb"):
             pass
     except OSError as error:
-        cant_run(check_id, f"can't read {args.skill_md}: {error.strerror}")
+        cant_run(check_id, cant_read(error, args.skill_md))
     given = path.absolute()
     options: dict[str, object] = dict(vars(args))
     del options["skill_md"]
@@ -92,7 +117,16 @@ def run(
     extra: Callable[[argparse.ArgumentParser], None] | None = None,
     argv: Sequence[str] | None = None,
 ) -> NoReturn:
-    """Parse the command line, run the check on the SKILL.md it names, print the result, exit 0."""
+    """Parse the command line, run the check on the SKILL.md it names, print the result, exit 0.
+
+    A failure reading SKILL.md while the check runs exits 2 with one stderr line, as when the
+    path is checked.
+    """
     reconfigure_streams()
-    emit(check(parse(check_id, extra, argv)))
+    ctx = parse(check_id, extra, argv)
+    try:
+        result = check(ctx)
+    except OSError as error:
+        cant_run(check_id, cant_read(error, str(ctx.skill_md)))
+    emit(result)
     sys.exit(0)
