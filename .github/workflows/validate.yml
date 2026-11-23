@@ -38,15 +38,9 @@ jobs:
         uses: ./.github/actions/setup
       # Every check runs once the toolchain is in place, so one run reports each failing check. Each
       # step runs its pr-checks.sh step, the source it shares with `npm run check:pr`.
-      - name: Lint (Python, shell, workflows, GitHub files)
+      - name: Lint (Biome, Python, shell, workflows, GitHub files)
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: bash scripts/checks/pr-checks.sh lint
-      # lint:js is held back by DEBT-006 in `debt`; this gates the files the pull request changed.
-      - name: Biome on changed files
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
-        env:
-          CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
-        run: bash scripts/checks/pr-checks.sh biome-changed
       - name: Type check
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: bash scripts/checks/pr-checks.sh typecheck
@@ -131,9 +125,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: DEBT-006 — npm run lint:js
-        continue-on-error: true
-        run: npm run lint:js
       - name: DEBT-005 — npm run lint:frontmatter
         continue-on-error: true
         run: npm run lint:frontmatter
