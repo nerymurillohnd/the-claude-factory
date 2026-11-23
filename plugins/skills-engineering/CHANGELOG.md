@@ -26,7 +26,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - A `description` that is 1,024 characters long plus the final newline of a `|` block is no longer reported as too long for uploads, which strip that newline first.
 - `<` and `>` in `when_to_use` are now reported, since Claude Code shows them escaped there too, even when `description` is missing.
-- A `description` or `compatibility` such as `n` or `1e3` is no longer reported as a non-string, since uploads read it as text, and a value uploads do type, such as `5`, is reported for uploads only.
+- A `name`, `description` or `compatibility` such as `n` or `1e3` is no longer reported as a non-string, since uploads read it as text, and a value uploads do type, such as `5`, is reported for uploads only.
+- A specification field whose value reads as a boolean or null, such as `description: yes`, is now reported for uploads only, since the open specification's validator reads it as text, and a value uploads also keep as text, such as `yEs`, is no longer reported.
 - A key such as `Tools` or `Version` now gets the same suggestion as `tools` or `version`, whatever its case.
 - A name with a character that the open specification's validator turns into a capital, such as `ℌ`, is now reported for the open specification too.
 - A SKILL.md path that isn't a regular file, or a SKILL.md that can't be read while the checks run, now stops the checks with one line naming the file, instead of hanging or failing with a traceback.

@@ -82,8 +82,8 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
   - `leading-indicator`, basis `convention`: a plain value starting with `-`, `?` or `:`, which strict parsers may read as syntax.
   - `reads-as-collection`: a text field written as a list or a mapping.
   - `anchor-alias-tag`: a text field with an anchor, an alias or a tag.
-  - `reads-as-boolean` and `reads-as-null`: a plain text field, or a `metadata` value at any depth, whose text a parser reads as a boolean or null; `condition` says when only YAML 1.1 parsers read it so.
-  - A finding means the parsed value differs from what the line shows. Its `surfaces` follow the field: `open-spec` and `upload` for the open specification's fields, `claude-code` for the others; a `reads-as-boolean` or `reads-as-null` on a `metadata` value is on `upload` only, since the open-spec validator reads every scalar as a string.
+  - `reads-as-boolean` and `reads-as-null`: a plain text field, or a `metadata` value at any depth, whose text a parser reads as a boolean or null. On the open specification's fields, `metadata` included, the finding is on `upload` only, and only when PyYAML, which uploads load with, types the value: the open-spec validator reads every scalar as a string, and PyYAML keeps text such as `y`, `n` or `yEs`. On a Claude Code field it is on `claude-code`, and `condition` says when only YAML 1.1 parsers read it so.
+  - A finding means the parsed value differs from what the line shows. The other rules' `surfaces` follow the field: `open-spec` and `upload` for the open specification's fields, `claude-code` for the others.
   - `data.colon_cases`: `: ` inside a value is reported by `frontmatter.yaml`.
 - Goes to: `frontmatter-description`.
 
@@ -94,7 +94,7 @@ Each frontmatter check prints one line of JSON and exits 0, whether or not it fo
 - `claude plugin validate` passed a malformed name when tested, so this check is the only source for these rules. It needs `frontmatter.yaml` to pass first.
 - Reading the result:
   - `missing`: no `name`; Claude Code uses the folder name, and the open specification and uploads require one.
-  - `not-a-string`: the value reads as another type, such as a number, or as a collection.
+  - `not-a-string`: the value reads as another type, such as a number, or as a collection. Types follow PyYAML, so `n` is a name; a typed scalar is on `upload` only, since the open-spec validator reads every scalar as a string, and a collection is on both.
   - `length`, `charset` and `hyphen`: the open specification's limits of 1 to 64 characters, `a-z`, `0-9` and `-`, and no leading, trailing or consecutive hyphen. A `charset` finding on a lowercase name of letters from other scripts is on `upload` only, since the open-spec validator accepts them; it judges the name stripped and NFKC-normalized, so a character that normalizes to a capital, such as U+210C, is on both.
   - `folder-mismatch`: the name differs from the skill's folder name.
   - `refused-character`: a character Claude Code refuses, which hides the skill from the `/` menu.
