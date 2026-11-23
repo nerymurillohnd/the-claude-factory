@@ -870,7 +870,8 @@ const toggle = async ($: EngineInterface, path: string, open?: boolean): Promise
     await quietly(async () => loadDir($, await rootOf($), path))
     expanded.add(path)
   } else {
-    for (const dir of [...expanded]) {
+    // Deleting from a Set while iterating it is safe: the iterator skips only deleted entries.
+    for (const dir of expanded) {
       if (dir === path || dir.startsWith(`${path}/`)) {
         expanded.delete(dir)
       }

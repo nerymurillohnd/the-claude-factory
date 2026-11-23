@@ -225,14 +225,14 @@ export const nextStop = (stops: readonly number[], current: number, direction: 1
 export const withoutHeadings = (diff: ParsedDiff): ParsedDiff => {
   const rows: DiffRow[] = []
   const hunks: number[] = []
-  diff.rows.forEach((row, i) => {
+  for (const [i, row] of diff.rows.entries()) {
     if (row.kind === 'file') {
-      return
+      continue
     }
     if (diff.hunks.includes(i)) {
       hunks.push(rows.length)
     }
     rows.push(row)
-  })
+  }
   return { rows, files: [], hunks }
 }
