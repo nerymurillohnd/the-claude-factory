@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-25
+
 ### Changed
 
 - The procedure checklist in `svelte-docs-and-autofixer` now says it is plain text. Nothing changes in how the plugin works.
@@ -58,7 +60,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Svelte MCP server: the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, with no download or install.
 - Svelte language server: `svelteserver` for `.svelte` files, with diagnostics after each edit, when `svelte-language-server` 0.18.5 or later is installed on your `PATH`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.2.0
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.4

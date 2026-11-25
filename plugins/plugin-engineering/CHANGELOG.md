@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-25
+
 ### Added
 
 - `test-and-evals`: tests a plugin right after it is created and after every change, before the work is reported as done. It runs the checks that cost nothing first: strict validation, what the validator never reads, loading from the folder, each component, mod tests, an install from a git-hosted source into a throwaway configuration, and the directory and policy review before publishing. It then builds an eval suite only after you say yes to it and its cost, with Claude proposing and writing the cases, and covers suites, graders, fixtures, mocks, CI gates and reading the results, all checked against Claude Code 2.1.330.
@@ -101,7 +103,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.4.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.5.0...HEAD
+[0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.5.0
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.0

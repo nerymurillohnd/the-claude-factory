@@ -4,6 +4,21 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-25
+
+### Changed
+
+- **plugin-evals** is merged into **plugin-engineering** 0.5.0 — **Breaking:** `test-and-evals` replaces the `plugin-evals` skill; Claude Code moves existing installs to `plugin-engineering@the-claude-factory`, and you run `/plugin install plugin-engineering@the-claude-factory` once.
+- **plugin-engineering** 0.5.0 — **Breaking:** `plugin-testing-and-debugging` is replaced by `test-and-evals`, which tests a plugin and writes its evals, and `troubleshoot-and-debug`, which fixes one that won't install, load or run; a new hook validates a plugin after Claude edits it.
+- **hook-engineering** 0.3.4 — `writing-hooks` now points a hook's tests, evals and debugging at the new `plugin-engineering` skills.
+- **skills-engineering** 0.4.2 — `authoring-skills` now loads `plugin-engineering:test-and-evals` for the evals of a skill in a plugin.
+- **github-operations** 0.10.1 — the headings of the cleanup plan that `cleanup-and-debug` writes now nest in order; its content is unchanged.
+- **skill-diagnostics** 0.4.4 — the cold executor's audit brief has its own template, and the reviewer report's headings nest in order; what they say is unchanged.
+- **file-tree-pane** 0.2.1 — the diff and folder code now follow the marketplace's newest lint rules; nothing changes in how the plugin works.
+- **model-trace** 0.1.6 — the code that reads the hooks each settings file configures now follows the marketplace's newest lint rules; nothing changes in how the plugin works.
+- **tailwind-development** 0.3.6 — the MCP server's code now follows the marketplace's newest lint rules; nothing changes in how the plugin works.
+- **svelte-development** 0.2.1 — the procedure checklist in `svelte-docs-and-autofixer` now says it is plain text; nothing changes in how the plugin works.
+
 ## 2026-11-23
 
 ### Fixed

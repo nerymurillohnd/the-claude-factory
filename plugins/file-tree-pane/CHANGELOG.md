@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-25
+
 ### Changed
 
 - The code that builds a single file's diff and the code that collapses a folder now follow the marketplace's newest lint rules. Nothing changes in how the plugin works.
@@ -75,7 +77,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Settings in `/config`: Claude activity, Follow Claude, Open at start, Right column, Hints, Search spacing, Shortcut row, Open with, Edit with, Diff with, Ignore, Palette and Glyphs.
 - Validated and tested on Claude Code v2.1.310.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.2.0
 [0.1.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.7
 [0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.6
