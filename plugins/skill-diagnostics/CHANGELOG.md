@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-25
+
+### Changed
+
+- The cold executor's audit brief now has its own template, `assets/cold-executor-brief.md`, instead of sharing `assets/brief-template.md` with the four reviewers' brief. The briefs say the same as before.
+- The report each reviewer fills, `assets/reviewer-report.md`, now opens with a level-1 title, and its sections move up one level to match. The report's fields and self-check are unchanged.
+
 ## [0.4.3] - 2026-11-19
 
 ### Changed
@@ -115,7 +122,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Verification gate: before the verdict, every finding is checked against the skill's files, the live official documentation and the Claude Code changelog from the user's version on (the five releases before it and every newer one); findings that don't hold up go back to their lens once; the verdict is marked provisional only when an official page or the changelog could not be reached.
 - Hook that offers an audit after a `SKILL.md` is created or changed, configurable with `on_skill_write` (`suggest`, `run`, `off`); it needs Python 3.9+ as `python3`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.4.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.4.4...HEAD
+[0.4.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.4.4
 [0.4.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.4.3
 [0.4.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.4.2
 [0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.4.1

@@ -42,7 +42,6 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while six plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on Biome findings in plugin files | 🟠 Blocked |
 | DEBT-008 | public-marketplace-dev's body teaches more than its description promises | 🟠 Blocked |
 | DEBT-009 | authoring-skills' SKILL.md is over the 5,000-token budget | 🔴 Risk accepted |
 | DEBT-010 | The TypeScript 6 skill still describes the post-edit hook's old strict profile | 🟠 Blocked |
@@ -145,43 +144,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the fixes are plugin-scope changes with version bumps in five plugins. The owner schedules plugin fixes.
 - **Next action:** the owner schedules the fixes; each plugin rewords its values without colons, quotes or leading brackets in its own pull request with a patch bump. Then chain `npm run lint:frontmatter` into `npm run lint`, and move its `DEBT-005` step from Validate's `Debt` job into `Checks`.
 - **Review condition:** `npm run lint:frontmatter` exits 0.
-- **Related records:** none.
-
-### DEBT-006 — npm run lint:js fails on Biome findings in plugin files
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | unassigned |
-| **Logged** | 2026-11-14 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - `npx biome check --error-on-warnings --max-diagnostics=none .` (Biome 2.6.6) on 2026-11-14, on branch `ccr-7fcd6ef3-rku7l1`, checks 654 files and finds 26 errors, all under `plugins/`:
-    - Markdown, found once instruction Markdown is linted: `useFencedCodeLanguage` ×13 (github-operations `cc-github-actions/references/claude-step-diagnosis.md` and `version-drift.md`; plugin-engineering `public-marketplace-dev/SKILL.md`, `references/03-feature-references/mcp.md` and `skills.md`; skill-diagnostics `skills-best-practices/SKILL.md`; svelte-development `svelte-docs-and-autofixer/SKILL.md` and `svelte-lsp-intelligence/SKILL.md`), `useSingleTopLevelHeading` ×1 (skill-diagnostics `assets/brief-template.md`), `useTopLevelHeading` ×1 (skill-diagnostics `assets/reviewer-report.md`), `useConsistentHeadingLevel` ×1 (github-operations `cleanup-and-debug/assets/cleanup-plan.md`).
-    - Code, already failing before this change: `noArrayForEach` ×4 (file-tree-pane `hooks/diff.ts`, model-trace `hooks/names.ts` ×2, tailwind-development `mcp/format.mjs`), `noNegatedArrayPredicate` ×4 (file-tree-pane `hooks/register.tsx`, project-maintainer `hooks/debt.ts` ×2, tailwind-development `mcp/config.mjs`), `noUselessLengthCheck` ×1 (project-maintainer `hooks/guard.ts`), and the format of `plugins/github-operations/README.md`.
-  - No maintainer file has a Biome finding.
-  - After merging `ccr-60dfcba3-fsbz16` on 2026-11-14, Biome checks 702 files and finds 31 errors: the 26 above plus `useTopLevelHeading` ×5 in plugin-engineering's new `plugin-testing-and-debugging/assets/` (`eval-case/prompt.md`, `eval-case/graders/result.md`, `eval-negative-case/prompt.md`, `eval-negative-case/graders/answered.md`, `mock-tool.md`). They are eval prompt templates, prompts rather than documents, so the owner chooses between adding the folder to the `useTopLevelHeading` override and adding a heading.
-  - Rechecked 2026-11-15 on `main` at ceecd50: Biome checks 721 files and finds 31 errors. The tag `github-operations--v0.8.0` now exists on the remote, so the github-operations fix no longer waits on that release.
-  - Update, 2026-11-16, after #110 (merged as a55cd4e): Validate's `Checks` job now runs `pr-checks.sh biome-changed`, Biome on the files a pull request changes, so a new finding in a changed file blocks the merge. `npm run check:pr` runs the same step locally and the pre-push hook runs it before every push. Rechecked on `main` at a55cd4e: Biome checks 714 files and finds 31 errors, the same ones.
-  - Rechecked 2026-11-18 on branch `claude/project-thread-983v3d`: `npm run lint:js` checks 695 files and finds 31 errors, exit 1.
-  - Update, 2026-11-18, on branch `ccr-74c453c5-5x0jvi`: renaming `claude-github-actions` to `cc-github-actions` made its two reference files changed files, so `biome-changed` blocked the push. Their 5 `useFencedCodeLanguage` findings were fixed by tagging the fences `bash`, and `biome check --write` fixed the format of `plugins/github-operations/README.md`. `npm run lint:js` now checks 705 files and finds 25 errors, exit 1.
-  - Rechecked 2026-11-19 on `main` at 96d6a8d: `npm run lint:js` checks 744 files and finds 24 errors, exit 1. CI run 44486756899 on pull request [#113](https://github.com/nerymurillohnd/the-claude-factory/pull/113) reports the same 24.
-  - Update, 2026-11-19: the Claude Code pre-push hook is removed, so nothing runs `biome-changed` before a push any more; it still runs in Validate's `Checks` job and in `npm run check:pr`. The Git pre-commit gate (`.githooks/pre-commit`) now runs Biome on each commit's staged `.ts`, `.mjs`, `.md` and `.json` files, so a file with one of the 24 findings can't be committed until it is fixed.
-  - Update, 2026-11-19, on branch `claude/tech-debt-parallel-9lsn8d`: the DEBT-003 fixes staged `file-tree-pane/hooks/register.tsx`, `project-maintainer/hooks/debt.ts` and `project-maintainer/hooks/guard.ts`, so the pre-commit gate required their findings fixed: `noNegatedArrayPredicate` ×3 and `noUselessLengthCheck` ×1, by equivalent rewrites. `npm run lint:js` now checks 742 files and finds 20 errors, exit 1.
-  - Rechecked 2026-11-20 on `main` at 12c404d, after [#117](https://github.com/nerymurillohnd/the-claude-factory/pull/117): `npm run lint:js` checks 744 files and finds 20 errors, unchanged; #117 added none.
-  - Update, 2026-11-22, on branch `chore/scripts-hygiene`: Biome 2.6.8 and its 17 newly recommended nursery rules add one finding, `noUselessSpread` in `plugins/file-tree-pane/hooks/register.tsx`, so `npm run lint:js` finds 21 errors, all under `plugins/`. `pr-checks.sh` moved to `scripts/checks/`.
-- **Inferences:** none.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** `npm run lint` and `npm run check` fail on the existing findings, so they can't serve as the local check; `npm run check:pr` replaces them. A finding in a file a pull request doesn't touch still goes unreported.
-- **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes.
-- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then add `npm run lint:js` to the `lint` step of `scripts/checks/pr-checks.sh`, drop its `biome-changed` step and Validate's "Biome on changed files" step, and remove the `DEBT-006` step from the `Debt` job.
-- **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** none.
 
 ### DEBT-008 — public-marketplace-dev's body teaches more than its description promises

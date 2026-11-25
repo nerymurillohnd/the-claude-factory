@@ -6,25 +6,19 @@
 #   With no step, runs every step of the Checks job, keeps going after a failure, and exits 1 if any
 #   failed. With steps, runs only those, in order.
 #
-# Steps: lint biome-changed typecheck test-scripts test-plugins validate mods consistency
-#        release-notes install links
+# Steps: lint typecheck test-scripts test-plugins validate mods consistency release-notes install
+#        links
 #
-# CHECKS_BASE is the commit the branch is compared with for biome-changed, install and links; it
-# defaults to origin/main. They read committed changes only, as CI sees them.
+# CHECKS_BASE is the commit the branch is compared with for install and links; it defaults to
+# origin/main. They read committed changes only, as CI sees them.
 set -Eeuo pipefail
 trap 'exit 1' ERR
 
-ALL_STEPS="lint biome-changed typecheck test-scripts test-plugins validate mods consistency release-notes install links"
+ALL_STEPS="lint typecheck test-scripts test-plugins validate mods consistency release-notes install links"
 
 root="$(git rev-parse --show-toplevel)"
 cd "${root}"
 base="${CHECKS_BASE:-origin/main}"
-
-step_biome_changed() {
-  # New Biome findings only: the files changed since the base, so DEBT-006 can't hide them.
-  npx biome check --changed --since="${base}" --error-on-warnings --max-diagnostics=none \
-    --no-errors-on-unmatched
-}
 
 step_release_notes() {
   # release.yml stops at the first plugin whose notes are missing, so every plugin is checked.
@@ -68,10 +62,8 @@ step_links() {
 
 run_step() {
   case "$1" in
-    # lint:pr is `npm run lint` without lint:js, held back by DEBT-006; biome-changed gates the
-    # files a branch changes instead.
-    lint) npm run lint:pr ;;
-    biome-changed) step_biome_changed ;;
+    # Every linter on the whole repository, Biome (lint:js) included.
+    lint) npm run lint ;;
     typecheck) npm run typecheck ;;
     test-scripts) npm run test:scripts ;;
     test-plugins) npm run test:plugins ;;

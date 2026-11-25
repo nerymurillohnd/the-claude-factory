@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "skillListingBudgetFraction": 0.1,
-  "skillListingMaxDescChars": 2048,
   "syncClaudeAiSkills": true,
   "syncClaudeAiPlugins": true,
+  "skillListingMaxDescChars": 2048,
+  "skillListingBudgetFraction": 0.1,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
@@ -17,20 +17,6 @@
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000",
     "BASH_MAX_OUTPUT_LENGTH": "150000",
     "CLAUDE_CODE_AUTO_CONNECT_IDE": "true"
-  },
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-setup.sh\"",
-            "statusMessage": "Preparing the project for this cloud session"
-          }
-        ]
-      }
-    ]
   },
   "permissions": {
     "allow": [
@@ -119,6 +105,26 @@
       "Bash(curl *://google.com/*)",
       "Bash(curl *://*.google.com/*)"
     ],
+    "deny": [
+      "Bash(gh repo delete*)",
+      "Bash(pip *)",
+      "Bash(pip3*)",
+      "Bash(python* -m pip *)",
+      "Bash(uv pip *)",
+      "Bash(* pip *)",
+      "Edit(/uv.lock)",
+      "mcp__Github_MCP_Server__delete_repository",
+      "mcp__*Gmail__*",
+      "mcp__*Google_Drive__*",
+      "mcp__*Google_Calendar__*",
+      "mcp__*Google_Sheets__*",
+      "mcp__*Google_Docs__*",
+      "mcp__*Astro_docs__*",
+      "mcp__*cloudflare__*",
+      "mcp__*Cloudflare__*",
+      "mcp__*svelte__*",
+      "mcp__*Svelte__*"
+    ],
     "ask": [
       "Bash(git push*)",
       "Bash(git *--no-verify*)",
@@ -162,27 +168,11 @@
       "mcp__Github_MCP_Server__create_branch",
       "mcp__Github_MCP_Server__actions_run_trigger",
       "mcp__Github_MCP_Server__label_write"
-    ],
-    "deny": [
-      "Bash(gh repo delete*)",
-      "Bash(pip *)",
-      "Bash(pip3*)",
-      "Bash(python* -m pip *)",
-      "Bash(uv pip *)",
-      "Bash(* pip *)",
-      "Edit(/uv.lock)",
-      "mcp__Github_MCP_Server__delete_repository",
-      "mcp__*Gmail__*",
-      "mcp__*Google_Drive__*",
-      "mcp__*Google_Calendar__*",
-      "mcp__*Google_Sheets__*",
-      "mcp__*Google_Docs__*",
-      "mcp__*Astro_docs__*",
-      "mcp__*cloudflare__*",
-      "mcp__*Cloudflare__*",
-      "mcp__*svelte__*",
-      "mcp__*Svelte__*"
     ]
+  },
+  "skillOverrides": {
+    "anthropic-skills:google-workspace": "off",
+    "anthropic-skills:morning": "off"
   },
   "deniedMcpServers": [
     {
@@ -234,20 +224,22 @@
       "serverName": "svelte"
     }
   ],
-  "skillOverrides": {
-    "anthropic-skills:google-workspace": "off",
-    "anthropic-skills:morning": "off"
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-setup.sh\"",
+            "statusMessage": "Preparing the project for this cloud session"
+          }
+        ]
+      }
+    ]
   },
   "enableWorkflows": true,
   "enabledPlugins": {
-    "plugin-evals@the-claude-factory": true,
-    "project-maintainer@the-claude-factory": true,
-    "github-operations@the-claude-factory": true,
-    "bash-lsp-intelligence@the-claude-factory": true,
-    "python-lsp-intelligence@the-claude-factory": true,
-    "typescript6-lsp-intelligence@the-claude-factory": true,
-    "hook-engineering@the-claude-factory": true,
-    "instruction-engineering@the-claude-factory": true,
     "forestal-mt@forestal-mt": false,
     "forestal-mt@synced": false,
     "forestal-mt@inline": false,
@@ -259,15 +251,8 @@
     "feature-dev@synced": false,
     "svelte-development@synced": false,
     "tailwind-development@synced": false,
-    "pdf-viewer@synced": false,
-    "mcp-server-dev@claude-plugins-official": true,
-    "skill-diagnostics@the-claude-factory": false,
-    "plugin-engineering@the-claude-factory": true,
-    "skills-engineering@the-claude-factory": true,
-    "work-lifecycle@the-claude-factory": true
+    "pdf-viewer@synced": false
   },
-  "autoMemoryEnabled": true,
-  "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory",
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
       "source": {
@@ -282,5 +267,7 @@
       },
       "autoUpdate": true
     }
-  }
+  },
+  "autoMemoryEnabled": true,
+  "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory"
 }

@@ -81,8 +81,8 @@ Use `plugin-engineering:cli-commands-guide`, which governs plugins and their com
 - Use `plugin-authoring` to create a plugin that ships mods, or to change a mod.
 - Use `hook-engineering:writing-hooks` to write or rewrite a Claude Code hook.
 - Use `hook-engineering:hook-development` to debug or audit a hook.
-- Use `plugin-engineering:plugin-testing-and-debugging` to test, debug and validate a plugin, right after building it, after every change to it and before publishing it.
-- Use `plugin-evals:plugin-evals` to write or run a plugin's evals; every run bills the owner.
+- Use `plugin-engineering:test-and-evals` to validate and test a plugin right after building it, after every change to it and before publishing it, and to write or run its evals; every eval run bills the owner.
+- Use `plugin-engineering:troubleshoot-and-debug` to diagnose a plugin that won't install, load or run, or whose wrong copy, scope or version loaded.
 - Use `plugin-releases` to set or bump a plugin's version, or to release and tag it.
 - Use `plugin-catalog-changes` to rename, remove or merge a plugin.
 - Use `plugin-icons` to draw or change a plugin's icon.

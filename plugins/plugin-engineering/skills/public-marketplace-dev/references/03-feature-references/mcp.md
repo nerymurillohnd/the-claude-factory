@@ -105,7 +105,7 @@ To have Claude scaffold a server, use the official [`mcp-server-dev` plugin](htt
 
 In the VS Code extension or the desktop app, follow [Install a plugin](https://code.claude.com/docs/en/plugins/install.md#install-a-plugin) instead of this step. In a terminal, start Claude Code with `claude`, then enter this at its prompt:
 
-```
+```text wrap theme={null}
 /plugin install mcp-server-dev@claude-plugins-official
 ```
 
@@ -118,7 +118,7 @@ If the install summary reports `Run /reload-plugins to apply.`, Claude Code runs
 
 **2. Run the build skill**
 
-```
+```text wrap theme={null}
 /mcp-server-dev:build-mcp-server
 ```
 
@@ -635,7 +635,7 @@ To see what the plugin configured, [find the plugin on disk](https://code.claude
 
 Tools from a plugin-bundled MCP server include both the plugin name and the server key in their callable name. The full form is `mcp__plugin_<plugin-name>_<server-name>__<tool-name>`, where any character outside `A-Z`, `a-z`, `0-9`, `_`, and `-` is replaced with `_`. For the `database-tools` server bundled in a plugin named `my-plugin`, a `query` tool is callable as:
 
-```
+```text theme={null}
 mcp__plugin_my-plugin_database-tools__query
 ```
 

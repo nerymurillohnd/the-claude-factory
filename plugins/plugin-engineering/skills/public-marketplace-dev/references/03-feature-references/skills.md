@@ -228,7 +228,7 @@ Enabling a personal skill for a claude.ai account, for example to use it in [Cow
 
 If the frontmatter includes any field the spec doesn't allow, packaging or upload fails with a hard error instead of ignoring the field:
 
-```
+```text theme={null}
 Unexpected key(s) in SKILL.md frontmatter: argument-hint. Allowed properties are: allowed-tools, compatibility, description, license, metadata, name
 ```
 

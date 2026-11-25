@@ -68,6 +68,29 @@ function entries(findings) {
 }
 
 /**
+ * One class conflict as plain text: the classes involved, then one lettered alternative per class
+ * it could keep, each with its fix's exact replacement.
+ * @param {string} where
+ * @param {readonly Finding[]} group
+ * @returns {string[]}
+ */
+function conflictLines(where, group) {
+  const names = group.map((f) => `'${conflictClass(f)}'`).join(', ')
+  const lines = [
+    `- ${where} ${names} apply the same CSS properties. Keep one: apply only the fix of the class you keep.`,
+  ]
+  for (const [index, finding] of group.entries()) {
+    const fix = finding.fixes[0]
+    if (fix !== undefined) {
+      lines.push(
+        `  ${String.fromCodePoint(97 + index)}) keep '${conflictClass(finding)}' (${fix.title}), ${replacement(fix)}`,
+      )
+    }
+  }
+  return lines
+}
+
+/**
  * The findings as plain text, one entry per problem, with each fix's exact replacement. A class
  * conflict lists one alternative per class it could keep.
  * @param {string} relativePath
@@ -89,18 +112,7 @@ export function findingsText(relativePath, findings) {
     }
     const where = `${relativePath}:${first.line}:${first.column} ${first.severity} [${first.rule}]`
     if (group.length > 1) {
-      const names = group.map((f) => `'${conflictClass(f)}'`).join(', ')
-      lines.push(
-        `- ${where} ${names} apply the same CSS properties. Keep one: apply only the fix of the class you keep.`,
-      )
-      group.forEach((finding, index) => {
-        const fix = finding.fixes[0]
-        if (fix !== undefined) {
-          lines.push(
-            `  ${String.fromCodePoint(97 + index)}) keep '${conflictClass(finding)}' (${fix.title}), ${replacement(fix)}`,
-          )
-        }
-      })
+      lines.push(...conflictLines(where, group))
       continue
     }
     lines.push(`- ${where} ${first.message}`)
