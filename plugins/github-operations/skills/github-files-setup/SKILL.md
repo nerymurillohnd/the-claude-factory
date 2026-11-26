@@ -80,7 +80,7 @@ Run each from the repository's root with its full path, exactly as below. `pytho
 
 `<kind>` selects the check: `issue`, `issue-config`, `discussion` or `dependabot`.
 
-`check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When it exits 2, it checked nothing: never install anything yourself. Tell the user what it printed, check the files by hand against [references/form-rules.md](references/form-rules.md), and record the check as not run, with the reason.
+`check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When it exits 2, it checked nothing: never install anything yourself, since it changes the user's Python. Show the user what it printed, with the install command it gives, and tell them they can run that command at this session's prompt typed after a `!`, which runs it in the session's shell, the one whose `python3` runs the script, and adds its output to the conversation (the VS Code extension has no `!` prefix; there they use a terminal). Once it has run, run the script again. While it still exits 2, check the files by hand against [references/form-rules.md](references/form-rules.md), and record the check as not run, with the reason.
 
 `labels-sync.py --dry-run` changes nothing; with `--apply` in place of `--dry-run`, and without `--current`, it creates and updates the approved labels and never deletes one. It needs `gh` signed in; without `gh`, and when `--apply` exits 2, follow [references/labels.md](references/labels.md).
 

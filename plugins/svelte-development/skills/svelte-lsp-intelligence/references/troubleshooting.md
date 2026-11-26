@@ -23,7 +23,7 @@ Claude Code returns an error for each LSP call on a file whose server it cannot 
    command -v svelteserver || echo "svelteserver not found"
    ```
 
-   Missing means the user installs it globally with `npm install -g svelte-language-server`; in `/plugin`, the **Errors** tab shows `Executable not found in $PATH: "svelteserver"`. Tell the user; do not install packages without their confirmation.
+   Missing means the user installs it globally with `npm install -g svelte-language-server`; in `/plugin`, the **Errors** tab shows `Executable not found in $PATH: "svelteserver"`. Offer the install as the skill's rule 11 says, never run it yourself, and after `/reload-plugins` probe the server with `documentSymbol` again.
 2. **File type**: the plugin maps only `.svelte`. A `.ts`, `.js`, `.svelte.ts` or `.svelte.js` file needs a TypeScript language server the user installed separately; for that server to see `.svelte` callers, the project also needs `typescript-svelte-plugin` installed and listed in the tsconfig's `compilerOptions.plugins`:
 
    ```json
