@@ -1,6 +1,6 @@
 # Example: a bug fix in Python, with a pre-existing failure
 
-Judgment to copy: the baseline runs first, so a failure that was already there is reported, not fixed or blamed on the change; the test names its break and fails for that reason before the fix. Don't copy the language, names or numbers.
+Judgment to copy: the baseline runs first, so a failure that was already there is never blamed on the change, and it is diagnosed and its fix offered as a separate change instead of only listed; the test names its break and fails for that reason before the fix. Don't copy the language, names or numbers.
 
 <example>
 <request>
@@ -32,7 +32,7 @@ Phase 5, green. `apply_discount` now returns `max(price - price * percent / 100,
 
 Phase 6. Renamed the local `d` to `discount`; the test stays green.
 
-Phase 7. `uv run pytest -q` → `42 passed, 1 failed`, the same `test_vat_rounding_eu` as the baseline; ruff and mypy unchanged. Committed as `fix(pricing): clamp discounted price at zero`.
+Phase 7. `uv run pytest -q` → `42 passed, 1 failed`, the same `test_vat_rounding_eu` as the baseline; ruff and mypy unchanged. Committed as `fix(pricing): clamp discounted price at zero`. Cause of `test_vat_rounding_eu`: `src/tax.py` quantizes with `ROUND_HALF_EVEN`, and the test expects `ROUND_HALF_UP`. The project's instructions don't ask for every failure to be fixed, so the fix is offered as its own commit, not made.
 
 ## Test-first report
 
@@ -45,7 +45,7 @@ Phase 7. `uv run pytest -q` → `42 passed, 1 failed`, the same `test_vat_roundi
 
 **Final check against baseline**
 - New failures: none
-- Pre-existing failures: `tests/test_tax.py::test_vat_rounding_eu`, untouched
+- Pre-existing failures: `tests/test_tax.py::test_vat_rounding_eu`; cause: `src/tax.py` rounds with `ROUND_HALF_EVEN` where the test expects `ROUND_HALF_UP`; fix offered: switch to `ROUND_HALF_UP` in its own commit `fix(tax): round EU VAT half up`, shall I make it?
 
 **Mutation check:** not run; a pricing bug fix with one branch, not high-stakes for this project
 
@@ -55,6 +55,6 @@ Phase 7. `uv run pytest -q` → `42 passed, 1 failed`, the same `test_vat_roundi
 
 ## Why each step did what it did
 
-- The baseline caught `test_vat_rounding_eu` before the change, so the final run's failure is shown to be pre-existing instead of fixed silently or blamed on the fix.
+- The baseline caught `test_vat_rounding_eu` before the change, so the final run's failure is shown to be pre-existing instead of fixed silently inside the pricing commit or blamed on the fix; it still gets a cause and a concrete fix, and in a project whose instructions ask for every failure fixed, that fix would be its own commit.
 - The expected value 0.00 was written by hand from the requirement, not by calling `apply_discount`.
 - The neighbouring risk (negative percentages) is reported, not fixed, because it is outside the request.

@@ -29,7 +29,7 @@ Each rule says what to do and why, so it holds in cases the phases don't name.
 4. Watch every test fail for the reason you named, then pass. A test never seen failing may test nothing.
 5. Record the command and output of every red and green run. On planned work the plan gate reads them.
 6. Name the break before writing the test: which production change would make it fail, and whether that change is a bug or a decision. A test that can't name its break catches nothing.
-7. Compare the final suite, lint and type check with the baseline. Fix every new failure and report the pre-existing ones by name.
+7. Compare the final suite, lint and type check with the baseline. Fix every new failure. Never leave a pre-existing failure only listed: report each by name with its cause and fix, fix it in its own commit when the user or the project's instructions ask for every failure or finding to be fixed, and otherwise offer that fix before you close the task. A pre-existing failure is outside the change, so its fix stays separate from it, and a project that asks for every finding fixed expects it gone, not noted.
 8. Report flaky tests as flaky. A lucky pass is a false pass.
 9. Mock only the slow or external level (network, clock, filesystem outside the project, paid services), mirroring the real structure. Assertions on a mock test the mock.
 10. Leave push, deploys and anything outside the task to the user. Commit at green only as the project's conventions say.
@@ -95,7 +95,7 @@ While green, improve names and structure without adding behavior, and run the te
 ### 7. Close the task
 
 1. Run the full suite, lint and type check, and compare each with the baseline.
-2. Fix every new failure. List each pre-existing failure by name, untouched.
+2. Fix every new failure. For each pre-existing failure, find its cause and act as rule 7 says: fixed in its own commit, after the task's own commit, or offered with its fix. A fix that would change a test is still the user's call (gotcha 5).
 3. On high-stakes work (money, data, security, anything costly to get wrong), run a real mutation check: break one line of the new code on purpose, confirm a test fails, revert, and record both runs. Read `references/writing-good-tests.md` for how to pick the line.
 4. Commit only as the project's conventions say; never push.
 
@@ -115,7 +115,7 @@ Deliver this report:
 
 **Final check against baseline**
 - New failures: <none, or each by name with its fix>
-- Pre-existing failures: <each by name, untouched>
+- Pre-existing failures: <none, or each by name with its cause and either its fix commit or the fix offered>
 
 **Mutation check:** <the line broken and the test that failed | not run, and why>
 

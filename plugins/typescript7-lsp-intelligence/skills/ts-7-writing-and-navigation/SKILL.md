@@ -136,7 +136,7 @@ Send `LSP` calls in their own message, never in parallel with another tool; seve
 3. Stop expanding research when material relationships are resolved or explicitly blocked, and justify that boundary.
 4. In `implementation` mode, run the project's own gates (type check, lint, tests, build) on the final state, plus a fresh semantic check: `hover` or `findReferences` on each changed symbol after the last edit. When no diagnostics arrive, the type check is the gate (lint and tests when there is no type-check layer) and semantic diagnostics are reported as unavailable.
    In `research` mode, run only the gates the research mode allows and list the others as proposed checks.
-5. Report baseline failures and unverified surfaces; never claim the project clean with unresolved actionable errors or missing evidence.
+5. Report unverified surfaces, and each baseline failure with its cause and fix. In `implementation` mode, fix a baseline failure as its own change, apart from the task's diff, when the user or the project's instructions ask for every failure or finding to be fixed; otherwise offer that fix before closing, since it lies outside the authorized change. Never claim the project clean with unresolved actionable errors or missing evidence.
 6. Reopen research when implementation reveals new assumptions or components.
 
 ## Workflow: a three-facet lifecycle
@@ -165,7 +165,7 @@ Send `LSP` calls in their own message, never in parallel with another tool; seve
 - In `implementation` mode, run [fixtures.md](references/fixtures.md) once per program the change touches, before the first time you report its checks clean. Its type-check fixtures run with `bash ${CLAUDE_SKILL_DIR}/scripts/run-fixtures.sh <owning tsconfig.json>`.
 - In `research` mode, run only `bash ${CLAUDE_SKILL_DIR}/scripts/run-fixtures.sh --outside`, and only when a conclusion rests on the compiler's sensitivity; otherwise skip the fixtures and say so. `--outside` never proves which files a program contains, which `--listFilesOnly` does.
 - Restore every probe and confirm with `git diff` or a hash that only the intended change remains.
-- Run each gate on the final state and compare it with the baseline: only a failure that is new against the baseline blocks closing.
+- Run each gate on the final state and compare it with the baseline: only a failure that is new against the baseline blocks closing, and each baseline failure is then fixed or offered as rule 5 of "Close only on attributable evidence" says.
 
 #### Probes
 
@@ -199,7 +199,7 @@ LSP sees static code references only. Grep the name in: strings and reflection (
 - [ ] Official sources, and release history where a decision depends on a version or another tool, support each material decision; research boundary and dependent blockers stated.
 - [ ] Applicable semantic operations have current, scoped evidence; retries and fallbacks are accounted for.
 - [ ] Authorized final diff preserves contracts; positive/negative checks and checking-layer sensitivity have attributable results; all probes restored.
-- [ ] Applicable project gates show no failure that is new against the baseline; baseline failures are listed under Gaps. Research-only completion reports supported conclusions and proposed checks, never implementation/test success. Blocked required checks mean execution remains incomplete.
+- [ ] Applicable project gates show no failure that is new against the baseline; each baseline failure is fixed as its own change or listed under Gaps with its cause and the fix offered. Research-only completion reports supported conclusions and proposed checks, never implementation/test success. Blocked required checks mean execution remains incomplete.
 
 ## Report
 
@@ -212,5 +212,5 @@ Versions: <declared, locked, installed and invoked compiler and counterparts>
 Change: <applied diff in implementation mode, or the diff given in the reply when no tool could write the files; the proposed change in research mode>
 Evidence: <each claim as observation, inference, contradiction or unavailable, with its command or source>
 Checks: <command, baseline result, final result>; fixtures <run | not run, why>; probes restored <yes | n/a>
-Gaps: <blocked decisions, missing evidence, pre-existing failures>
+Gaps: <blocked decisions, missing evidence, pre-existing failures each with its cause and fix: made in <change> | offered>
 ```
