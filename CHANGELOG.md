@@ -4,6 +4,22 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-26
+
+### Changed
+
+- **work-lifecycle** 0.3.0 — `testing-before-implementation` gives each failure that was already in the baseline its cause and fix, fixes it in its own commit when you or your project ask for every failure fixed, and offers it otherwise.
+- **typescript6-lsp-intelligence** 0.7.0 and **typescript7-lsp-intelligence** 0.8.0 — failures the project's checks already had get their cause and fix, made in their own change or offered, instead of only a line under Gaps.
+- **svelte-development** 0.3.0 — errors the project check already had get their cause and fix, made or offered; a missing svelte-language-server, svelte-check or `@sveltejs/mcp` comes with its install command to run at the prompt after `!`.
+- **skills-engineering** 0.5.0 — `auditing-skills` presents Low defects with their fixes too, and recommends fixing every finding.
+- **bash-lsp-intelligence** 0.5.1 and **python-lsp-intelligence** 0.5.1 — a missing language server, formatter or linter comes with its install command to run at the prompt after `!`, so Claude sees the result and checks again.
+- **github-operations** 0.10.2 — `github-files-setup` gives the install command for `check-forms.py`'s missing packages to run at the prompt after `!`.
+
+### Fixed
+
+- **github-operations** 0.10.2 — `cleanup-and-debug` was checked again against the current git and GitHub docs, records that check in one place, and quotes git-filter-repo's fresh-clone rule from its manual.
+- **instruction-engineering** 0.2.3 — the loading reference was checked again against the current Claude Code docs and changelog and names that version in one place; it adds the `--add-dir` rule for rules with `paths` and the `--restricted` condition for agent-memory files.
+
 ## 2026-11-25
 
 ### Changed

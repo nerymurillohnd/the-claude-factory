@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-26
+
+### Changed
+
+- When basedpyright or ruff is missing, the skill gives you its install command to run at the prompt after `!`, so Claude sees the result and checks again. It names the terminal for the VS Code extension. Claude still never installs anything itself.
+
 ## [0.5.0] - 2026-11-20
 
 ### Added
@@ -123,7 +129,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `python-lsp-intelligence` skill: navigates Python code with the language server; checks aliases, re-exports, entry points and dynamic consumers before a rename or deletion; fixes basedpyright and Ruff findings by validating untrusted data instead of casting, suppressing or weakening rules; and reports each check's status, the files covered and what stayed unverified.
 - Optional controls: a bundled runner checks basedpyright and Ruff against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.5.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.5.1...HEAD
+[0.5.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.5.1
 [0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.5.0
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.4.0
 [0.3.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.4

@@ -51,8 +51,6 @@ Record each domain's reachability in the coverage ledger. A refused consent scop
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-rev-parse][git-rev-parse]: `--show-ref-format`, `--show-object-format`.
 - [git-init][git-init]: `--ref-format=<format>`, with `files` (the default) and `reftable`.
 

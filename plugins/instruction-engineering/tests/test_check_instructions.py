@@ -121,6 +121,17 @@ class PathPatternTest(unittest.TestCase):
         data = run(self.project, ["/missing.json"], ["package.json"])
         self.assertIn("glob-no-match", finding_codes(data))
 
+    def test_checked_against_names_the_reference_version(self) -> None:
+        """The JSON names the Claude Code version in the loading reference's recheck line."""
+        reference = SCRIPT.parents[1] / "references" / "loading-semantics.md"
+        line = next(
+            ln for ln in reference.read_text("utf-8").splitlines() if ln.startswith("Checked with")
+        )
+        version = line.split()[4]
+        data = run(self.project, ["*.md"], ["README.md"])
+        expected = f"Claude Code {version}, as references/loading-semantics.md records"
+        self.assertEqual(data.get("checked_against"), expected)
+
 
 if __name__ == "__main__":
     _ = unittest.main()

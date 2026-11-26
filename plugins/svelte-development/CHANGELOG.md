@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-26
+
+### Changed
+
+- When svelte-language-server, svelte-check or `@sveltejs/mcp` is missing, the skills give you its install command to run at the prompt after `!`, so Claude sees the result and checks again. Claude still never installs anything itself.
+- Errors the project check already reported before a change are no longer only listed: Claude gives each one its cause and fix, fixes it in its own change when you or your project's instructions ask for every error fixed, and offers the fix otherwise.
+
 ## [0.2.1] - 2026-11-25
 
 ### Changed
@@ -60,7 +67,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Svelte MCP server: the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, with no download or install.
 - Svelte language server: `svelteserver` for `.svelte` files, with diagnostics after each edit, when `svelte-language-server` 0.18.5 or later is installed on your `PATH`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.2.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/svelte-development--v0.3.0...HEAD
+[0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.3.0
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.2.0
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/svelte-development--v0.1.5

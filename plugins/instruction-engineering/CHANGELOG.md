@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-26
+
+### Fixed
+
+- The loading reference was checked again against the current Claude Code docs and changelog, and it now names that version in one place: the skill and the reviewer agent point to it instead of repeating older versions, and the checker's report reads the version from it.
+- The loading reference now says that `--add-dir` with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` loads no rule that sets `paths`, and that Markdown files in agent-memory folders are exempt from the protected-path prompt only in a session started without `--restricted`.
+
 ## [0.2.2] - 2026-11-19
 
 ### Changed
@@ -67,7 +74,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - A read-only checker, `check_instructions.py`, that the skill runs with `python3` 3.12 or later: it inventories the instruction files at project and user scope and reports frontmatter problems, path globs that match nothing, imports that do not resolve, duplicate lines and size limits. It never edits, runs or uploads anything.
 - `instruction-engineering:reviewer` agent: an independent, read-only reviewer that audits a large instruction set, a refactor or proposed changes in its own context, without loading your `CLAUDE.md` files.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/instruction-engineering--v0.2.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/instruction-engineering--v0.2.3...HEAD
+[0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.2.0

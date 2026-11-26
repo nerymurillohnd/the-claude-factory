@@ -27,8 +27,6 @@ Present the audit and get the user's decision on what to act on. This phase is r
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [GitHub: removing sensitive data][gh-sensitive]: "if the sensitive data you need to remove is a secret … you need to revoke and/or rotate that secret"; after a rewrite the commits "may still be accessible … In any clones or forks of your repository … in cached views on GitHub … Through any pull requests that reference them".
 
 [gh-sensitive]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository

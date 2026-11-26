@@ -39,8 +39,6 @@ Diagnose the approved recommendations that need debugging. This phase changes no
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-bisect][git-bisect]: exit "code between 1 and 127 (inclusive), except 125" is bad; "125 … the current revision will be skipped"; "Any other exit code will abort the bisect process"; `--first-parent` "Follow only the first parent commit upon seeing a merge commit"; `reset` cleans up "the bisection state and return to the original HEAD".
 - [git-worktree][git-worktree]: `--detach` detaches HEAD in the new worktree; "refs inside refs/bisect, refs/worktree and refs/rewritten are not shared".
 - [git-blame][git-blame]: `-w` "Ignore whitespace"; `-M` "Detect moved or copied lines within a file"; `-C` also detects "lines moved or copied from other files"; "commits marked with caret (boundary)".

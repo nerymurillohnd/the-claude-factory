@@ -11,12 +11,16 @@ Work with the language server first and the toolchain second. This skill does no
 
 Do these steps once per session, before you read or edit the first shell file of the task, and again after `/reload-plugins` or when every `LSP` call starts failing:
 
-1. Binary: run `command -v bash-language-server`. When it prints nothing, the language server is not installed: tell the user to install it as [toolchain.md](references/toolchain.md) says, and go to step 4.
+1. Binary: run `command -v bash-language-server`. When it prints nothing, the language server is not installed: offer its install as "Missing tools" below says, and go to step 4.
 2. Tool: when the `LSP` tool is not loaded, load it with `ToolSearch` and the query `select:LSP`. When that finds nothing, this session runs no language servers, as in cloud sessions and in the Claude app's chat and Cowork: go to step 4.
 3. Start: call `documentSymbol` on a shell script of the task, or on another `.sh` file of the project when the task creates the first one, alone in its message; Claude Code starts the server on that first call. Repeat it until the three-identical rule below holds. When every call errors, the server can't start here: go to step 4.
 4. Without a language server: answer each `LSP` question in the table below with Grep and reading the files, report semantic evidence as unavailable and why, and run the checks under "Checks" all the same.
 
-Then run `command -v shfmt shellcheck`: the checks under "Checks" need both. Tell the user about each one missing, give its install command from [toolchain.md](references/toolchain.md), and report its check as not run.
+Then run `command -v shfmt shellcheck`: the checks under "Checks" need both. Offer each one missing as "Missing tools" says, and report its check as not run until it is there.
+
+### Missing tools
+
+Never install a tool yourself: it changes the user's machine. Give the user the install command from [toolchain.md](references/toolchain.md) for their system, and tell them to run it at this session's prompt, typed after a `!`, as in `! <install command>`: Claude Code runs it in the session's shell and adds its output to the conversation, so you see whether it worked. The VS Code extension has no `!` prefix, and a command that waits for a password, such as `sudo apt install`, may not get one there; in both cases they run it in a terminal. Once it has run, repeat the `command -v` check. For a newly installed language server, ask the user to run `/reload-plugins`, then repeat steps 2 and 3. If every call still fails, say that Claude Code starts the server from the `PATH` of the shell it was launched from, so the user may need to restart Claude Code, after putting the install folder on that `PATH`.
 
 ### Three identical results
 

@@ -54,8 +54,6 @@ Audit the whole history, from the first commit, and the health of the object sto
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-gc][git-gc]: `gc.auto` "The default value is 6700"; `gc.autoPackLimit` "The default value is 50"; `--prune` "default is 2 weeks ago"; `gc.reflogExpire` "defaults to 90 days"; `gc.reflogExpireUnreachable` "defaults to 30 days".
 - [git-fsck][git-fsck]: `--connectivity-only` does "not do any semantic checks"; `--lost-found` writes "into .git/lost-found/".
 

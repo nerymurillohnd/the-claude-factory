@@ -17,10 +17,11 @@ Standard library only, Python 3.12 or later.
 Exit codes: 0 no error-level finding, 1 at least one error-level finding,
 2 bad arguments.
 
-Loader facts encoded here were checked against
-https://code.claude.com/docs/en/memory and the Claude Code changelog through
-v2.1.312 (2026-10-28). The glob matcher approximates Claude Code's: treat a
-match result as strong evidence and confirm loading in a session with
+Loader facts encoded here follow references/loading-semantics.md, whose line
+under the title records the Claude Code version they were last checked with;
+the checker reads that version from there, so that line stays the only
+recheck point. The glob matcher approximates Claude Code's: treat
+a match result as strong evidence and confirm loading in a session with
 /context or an InstructionsLoaded hook.
 """
 
@@ -39,9 +40,26 @@ import sys
 from typing import NoReturn, cast
 import warnings
 
-CHECKED_AGAINST = (
-    "code.claude.com/docs/en/memory and changelog through Claude Code v2.1.312 (2026-10-28)"
-)
+LOADING_REFERENCE = Path(__file__).resolve().parent.parent / "references" / "loading-semantics.md"
+RECHECK_PATTERN = re.compile(r"Checked with Claude Code (\S+) against")
+
+
+def read_checked_against(reference: Path = LOADING_REFERENCE) -> str:
+    """Return the Claude Code version the loading reference was checked with.
+
+    The version is read, not repeated here, so the reference's recheck line stays the only one.
+    """
+    try:
+        text = reference.read_text(encoding="utf-8")
+    except OSError:
+        return "unknown: references/loading-semantics.md is not readable"
+    match = RECHECK_PATTERN.search(text)
+    if match is None:
+        return "unknown: references/loading-semantics.md has no recheck line"
+    return f"Claude Code {match.group(1)}, as references/loading-semantics.md records"
+
+
+CHECKED_AGAINST = read_checked_against()
 # Never instruction or source files Claude Code would scope rules to.
 SKIP_DIRS = {".git", "node_modules"}
 MAX_WALK_FILES = 300_000

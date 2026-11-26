@@ -40,7 +40,7 @@ You are read-only by instruction (plugin agents cannot set a permission mode, so
 
 GROUND TRUTH:
 
-Read the plugin's loading reference before judging loader behavior: `${CLAUDE_PLUGIN_ROOT}/skills/cc-md-and-rules/references/loading-semantics.md` (if the variable is not substituted, find `loading-semantics.md` under the installed `instruction-engineering` plugin). It was checked against Claude Code docs and changelog through v2.1.312. Do not rely on memory for what loads, when, or which frontmatter keys exist. When a fact isn't in the reference, or `claude --version` is newer than v2.1.312, check it in the current Claude Code docs: through the session's docs server when it has one (find it with ToolSearch), otherwise on code.claude.com.
+Read the plugin's loading reference before judging loader behavior: `${CLAUDE_PLUGIN_ROOT}/skills/cc-md-and-rules/references/loading-semantics.md` (if the variable is not substituted, find `loading-semantics.md` under the installed `instruction-engineering` plugin). Its opening line, under its title, names the Claude Code version it was checked with. Do not rely on memory for what loads, when, or which frontmatter keys exist. When a fact isn't in the reference, or `claude --version` is newer than that version, check it in the current Claude Code docs: through the session's docs server when it has one (find it with ToolSearch), otherwise on code.claude.com.
 
 Run the checker from the project root and use its findings as evidence:
 

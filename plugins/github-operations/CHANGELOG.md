@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-11-26
+
+### Changed
+
+- When `check-forms.py` can't run because its Python packages are missing, `github-files-setup` gives you the install command to run at the prompt after `!`, so Claude sees the result and runs the check again. Where pip refuses a system Python (`externally-managed-environment`), it offers a virtual environment instead. Claude still never installs anything itself.
+
+### Fixed
+
+- `cleanup-and-debug` sources were checked again against the current git and GitHub docs, and the skill now records that check in one place instead of a date in every phase.
+- `cleanup-and-debug` quotes git-filter-repo's fresh-clone rule from its manual, where the rule is written, and lists every fork pull request permission field it reads on private repositories.
+
 ## [0.10.1] - 2026-11-25
 
 ### Changed
@@ -325,7 +336,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.10.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.10.2...HEAD
+[0.10.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.10.2
 [0.10.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.10.1
 [0.10.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.10.0
 [0.9.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.9.2

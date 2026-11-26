@@ -8,7 +8,7 @@ compatibility: Claude Code or Cowork. The checker needs python3 3.12+; git is op
 
 Claude Code instruction files are context, not configuration. Every file that loads is concatenated into the conversation; nothing overrides anything, conflicts are resolved arbitrarily, and nothing in prose is enforced. The work is to keep the fewest, truest, most concrete lines in the place that loads exactly when they are needed, to cut what Claude would do anyway, and to move what must never bend into hooks, permission rules or settings.
 
-Loader details (what loads when, glob bases, size limits, AGENTS.md interplay) change between releases and differ from most blog posts and generators. They are in [references/loading-semantics.md](references/loading-semantics.md), checked against the docs and changelog through Claude Code v2.1.312 on 2026-10-28. Read it before stating how loading works; when `claude --version` is newer, check the changelog for `CLAUDE.md`, `rules` and `paths` entries after v2.1.312. Never answer loader questions from memory.
+Loader details (what loads when, glob bases, size limits, AGENTS.md interplay) change between releases and differ from most blog posts and generators. They are in [references/loading-semantics.md](references/loading-semantics.md), whose opening line, under its title, names the Claude Code version they were checked with. Read it before stating how loading works; when `claude --version` is newer than that version, check the changelog as that line says. Never answer loader questions from memory.
 
 ## Standing behavior: read, understand, act, surface
 

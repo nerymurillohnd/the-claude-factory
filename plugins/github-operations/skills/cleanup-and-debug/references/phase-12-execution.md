@@ -34,7 +34,7 @@ Run the approved actions. Nothing outside the approved plan runs.
 ## History rewrite
 
 - Only when the user asked for it by name, with its own approval.
-- Use `git filter-repo` in a fresh mirror clone: it refuses to run outside a fresh clone without `--force` ([git-filter-repo][filter-repo]).
+- Use `git filter-repo` in a fresh mirror clone: it refuses to run outside a fresh clone without `--force` ([git-filter-repo manual][filter-repo-manual]).
 - Publish with `--force-with-lease` and nothing broader ([git-push][git-push]).
 
 ## Never
@@ -58,13 +58,11 @@ Run the approved actions. Nothing outside the approved plan runs.
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-branch][git-branch]: "The branch must be fully merged in its upstream branch, or in HEAD"; `-D` is a "Shortcut for --delete --force".
 - [git-clean][git-clean]: `-X` "Remove only files ignored by Git"; Git refuses untracked nested repositories "unless a second -f is given".
 - [git-worktree][git-worktree]: "remove refuses to remove an unclean worktree unless --force is used".
 - [git-gc][git-gc]: "--prune=now prunes loose objects regardless of their age and increases the risk of corruption if another process is writing to the repository concurrently".
-- [git-filter-repo][filter-repo]: aborts "if run from a repo that is not a fresh clone"; requires git 2.36.0 or later and python3 3.6 or later.
+- [git-filter-repo manual][filter-repo-manual]: "abort if run from a repo that is not a fresh clone"; [its README][filter-repo] requires "git >= 2.36.0" and "python3 >= 3.6".
 - [git-push][git-push]: `--force-with-lease` updates the remote ref only "if the current value of the remote ref is the expected value".
 
 [git-branch]: https://git-scm.com/docs/git-branch
@@ -72,4 +70,5 @@ Checked on 2026-11-04.
 [git-worktree]: https://git-scm.com/docs/git-worktree
 [git-gc]: https://git-scm.com/docs/git-gc
 [filter-repo]: https://github.com/newren/git-filter-repo
+[filter-repo-manual]: https://github.com/newren/git-filter-repo/blob/main/Documentation/git-filter-repo.txt
 [git-push]: https://git-scm.com/docs/git-push
