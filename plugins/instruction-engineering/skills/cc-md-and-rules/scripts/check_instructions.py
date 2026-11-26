@@ -17,10 +17,10 @@ Standard library only, Python 3.12 or later.
 Exit codes: 0 no error-level finding, 1 at least one error-level finding,
 2 bad arguments.
 
-Loader facts encoded here were checked against
-https://code.claude.com/docs/en/memory and the Claude Code changelog through
-v2.1.312 (2026-10-28). The glob matcher approximates Claude Code's: treat a
-match result as strong evidence and confirm loading in a session with
+Loader facts encoded here follow references/loading-semantics.md, whose first
+line records the Claude Code version they were last checked with; keep that
+line the only recheck point. The glob matcher approximates Claude Code's: treat
+a match result as strong evidence and confirm loading in a session with
 /context or an InstructionsLoaded hook.
 """
 
@@ -39,9 +39,8 @@ import sys
 from typing import NoReturn, cast
 import warnings
 
-CHECKED_AGAINST = (
-    "code.claude.com/docs/en/memory and changelog through Claude Code v2.1.312 (2026-10-28)"
-)
+# Points to the reference instead of repeating its recheck point, so one line holds the version.
+CHECKED_AGAINST = "the loader facts in references/loading-semantics.md, at its recheck point"
 # Never instruction or source files Claude Code would scope rules to.
 SKIP_DIRS = {".git", "node_modules"}
 MAX_WALK_FILES = 300_000
