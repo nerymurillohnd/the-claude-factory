@@ -57,8 +57,6 @@ Read every scope (system, global, local, worktree and conditional includes) with
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-config][git-config]: "The following modes have been deprecated in favor of subcommands"; `--get-regexp` is "Replaced by `git config get --all --show-names --regexp`".
 
 [git-config]: https://git-scm.com/docs/git-config

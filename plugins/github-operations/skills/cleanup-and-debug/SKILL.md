@@ -110,6 +110,8 @@ Run every phase the same way:
 4. If an item fails, redo it or record why it cannot pass, then check again.
 5. Only move to the next phase when every item passes.
 
+Each reference ends with the sources its facts quote. This line is their only recheck point: they were checked with git 2.56.1 and GitHub's REST API version 2026-03-10. When the installed git is newer and a command behaves differently from a quote, trust the installed git's own manual and report the difference.
+
 ### 1. Audit
 
 Rules for Phases 0 to 6:

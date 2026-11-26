@@ -58,7 +58,7 @@ List disabled workflows too: `gh workflow list --all`. A filtered run list retur
 - Allowed actions and whether Actions is enabled: `gh api repos/<owner>/<repo>/actions/permissions` (`allowed_actions`).
 - The default `GITHUB_TOKEN` permissions and whether workflows can approve pull requests: `.../actions/permissions/workflow` (`default_workflow_permissions`, `can_approve_pull_request_reviews`).
 - The approval policy for workflows from fork pull requests: `.../actions/permissions/fork-pr-contributor-approval` (`approval_policy`).
-- On a private repository, whether fork pull requests run workflows and receive write tokens or secrets: `.../actions/permissions/fork-pr-workflows-private-repos` (`run_workflows_from_fork_pull_requests`, `send_write_tokens_to_workflows`). Write tokens sent to fork pull requests are a security finding, report-only.
+- On a private repository, whether fork pull requests run workflows and receive write tokens or secrets: `.../actions/permissions/fork-pr-workflows-private-repos` (`run_workflows_from_fork_pull_requests`, `send_write_tokens_to_workflows`, `send_secrets_and_variables`, `require_approval_for_fork_pr_workflows`). Write tokens or secrets sent to fork pull requests are a security finding, report-only.
 
 Security findings inside workflow files (injection, permissions, unpinned actions, `pull_request_target`, claude-code-action configuration) are not part of this inventory: they go to `github-operations:cc-github-actions`.
 
@@ -111,8 +111,6 @@ Security findings inside workflow files (injection, permissions, unpinned action
 - [ ] Every fork has its ahead and behind counts, or is in the coverage ledger.
 
 ## Sources
-
-Checked on 2026-11-04.
 
 - [GitHub REST: deploy keys][deploy-keys]: the response includes "last_used: string or null, format: date-time".
 - [GitHub REST: workflow runs][workflow-runs]: "This endpoint will return up to 1,000 results for each search when using the following parameters: actor, branch, check_suite_id, created, event, head_sha, status."

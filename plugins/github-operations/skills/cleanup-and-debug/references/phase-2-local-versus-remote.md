@@ -62,8 +62,6 @@ States 3 and 4 come from `git merge-tree --write-tree`: exit status 0 means a cl
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-merge-tree][git-merge-tree]: "For a successful, non-conflicted merge, the exit status is 0. When the merge has conflicts, the exit status is 1"; "a new toplevel tree object is created".
 
 [git-merge-tree]: https://git-scm.com/docs/git-merge-tree

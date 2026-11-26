@@ -70,8 +70,6 @@ Inventory everything in the local clone. This phase is read-only.
 
 ## Sources
 
-Checked on 2026-11-04.
-
-- [git-stash][git-stash]: the stash commit's first parent is HEAD and its second records the index; `stash save` "is deprecated in favour of `git stash push`". The third parent for untracked files was confirmed with a probe on git 2.43.0.
+- [git-stash][git-stash]: the stash commit's first parent is HEAD and its second records the index; `stash save` "is deprecated in favour of `git stash push`". The third parent for untracked files was confirmed with a probe on the git version the skill's recheck point names.
 
 [git-stash]: https://git-scm.com/docs/git-stash

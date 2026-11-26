@@ -45,8 +45,6 @@ Only with consent:
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [GitHub REST: search][search-rest]: "The Search code endpoint requires you to authenticate and limits you to 10 requests per minute"; "up to 1,000 results for each search".
 - [Searching code][search-code]: "Only the default branch is indexed for code search"; "Only files smaller than 384 KB are searchable."
 

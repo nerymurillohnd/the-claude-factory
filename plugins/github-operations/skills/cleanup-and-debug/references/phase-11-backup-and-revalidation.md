@@ -33,8 +33,6 @@ Make every approved change recoverable, and confirm the repository still matches
 
 ## Sources
 
-Checked on 2026-11-04.
-
 - [git-bundle][git-bundle]: "`--all` can be used to package all refs"; `verify` checks "that a bundle file is valid and will apply cleanly", and "The exit code is zero for success"; "It is possible git-clone a new repository from a bundle."
 
 [git-bundle]: https://git-scm.com/docs/git-bundle
