@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- When `check-forms.py` can't run because its Python packages are missing, `github-files-setup` gives you the install command to run at the prompt after `!`, so Claude sees the result and runs the check again. Claude still never installs anything itself.
+- When `check-forms.py` can't run because its Python packages are missing, `github-files-setup` gives you the install command to run at the prompt after `!`, so Claude sees the result and runs the check again. Where pip refuses a system Python (`externally-managed-environment`), it offers a virtual environment instead. Claude still never installs anything itself.
 
 ### Fixed
 

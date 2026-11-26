@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
-- The loading reference was checked again against the current Claude Code docs and changelog, and it now names that version in one place: the skill, the reviewer agent and the checker point to it instead of repeating older versions.
+- The loading reference was checked again against the current Claude Code docs and changelog, and it now names that version in one place: the skill and the reviewer agent point to it instead of repeating older versions, and the checker's report reads the version from it.
 - The loading reference now says that `--add-dir` with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` loads no rule that sets `paths`, and that Markdown files in agent-memory folders are exempt from the protected-path prompt only in a session started without `--restricted`.
 
 ## [0.2.2] - 2026-11-19

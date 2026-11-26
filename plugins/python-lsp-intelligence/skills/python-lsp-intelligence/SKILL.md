@@ -20,7 +20,7 @@ Then run `command -v ruff basedpyright`: the checks under "Checks" need both. Of
 
 ### Missing tools
 
-Never install a tool yourself: it changes the user's machine. Give the user the install command from [toolchain.md](references/toolchain.md), and tell them to run it at this session's prompt, typed after a `!`, as in `! uv tool install ruff`: Claude Code runs it in the session's shell and adds its output to the conversation, so you see whether it worked. The VS Code extension has no `!` prefix; there they run it in a terminal. Once it has run, repeat the `command -v` check. A newly installed language server starts only after the user runs `/reload-plugins`.
+Never install a tool yourself: it changes the user's machine. Give the user the install command from [toolchain.md](references/toolchain.md), and tell them to run it at this session's prompt, typed after a `!`, as in `! <install command>`: Claude Code runs it in the session's shell and adds its output to the conversation, so you see whether it worked. The VS Code extension has no `!` prefix; there they run it in a terminal. Once it has run, repeat the `command -v` check. For a newly installed language server, ask the user to run `/reload-plugins`, then repeat steps 2 and 3. If every call still fails, say that Claude Code starts the server from the `PATH` of the shell it was launched from, so the user may need to restart Claude Code, after putting the install folder on that `PATH`.
 
 ### Three identical results
 
