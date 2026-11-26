@@ -243,7 +243,6 @@
     "forestal-mt@forestal-mt": false,
     "forestal-mt@synced": false,
     "forestal-mt@inline": false,
-    "frontend-design@claude-plugins-official": false,
     "frontend-design@synced": false,
     "frontend-design@inline": false,
     "superpowers@synced": false,
@@ -253,21 +252,7 @@
     "tailwind-development@synced": false,
     "pdf-viewer@synced": false
   },
-  "extraKnownMarketplaces": {
-    "claude-plugins-official": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-plugins-official"
-      }
-    },
-    "the-claude-factory": {
-      "source": {
-        "source": "github",
-        "repo": "nerymurillohnd/the-claude-factory"
-      },
-      "autoUpdate": true
-    }
-  },
+  "extraKnownMarketplaces": {},
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory"
 }
